@@ -1,0 +1,351 @@
+---
+title: "Mini-Project #00: Course Set-Up"
+---
+
+In lieu of traditional homework, this course has a set of four *mini-projects*,
+which will be assessed in two stages. In the first, you will complete a small 
+data analysis project[^1]; after submission of your analysis, it will be assigned
+to a classmate, who will evaluate it according to an instructor-provided rubric.
+This *peer feedback* stage is an opportunity to see how your classmates answered
+questions and to compare it to your own response. In doing so, you will learn to
+evaluate data science work product and will develop a critical eye that can be turned
+to your own work.
+
+This *mini-project*, however, is a *meta-mini-project*, designed to help
+you set up the course infrastructure you will use for the four graded mini-projects.
+
+**NB: Mini-Project #00 is not graded, but it is required. For STA/OPR 9750, it serves
+as the legally mandated 
+[*Verification of Enrollment*](https://enrollmentmanagement.baruch.cuny.edu/registrar/verification-of-enrollment/) 
+activity. If it is not completed on time, you may be involuntarily disenrolled from the course.** 
+
+*Estimated Time*: 2 hours. 
+
+---
+
+This course will use the industry-standard code sharing platform [`GitHub`](https://github.com). 
+Mini-projects and course-projects will be submitted by posting to a relevant GitHub project
+and creating a world-readable HTML page. A secondary goal of this course is to help
+students build a web-presence and a data science portfolio, giving you a place to showcase
+your skills to potential employers. The four mini-projects and the final course project
+should form an excellent basis for a portfolio. The main aim of Mini-Project #00 is
+to set up the "skeleton" of this portfolio. 
+
+You may choose to complete these tasks under a [*pseudonym*](https://en.wikipedia.org/wiki/Pseudonym) if you do not want current or potential employers, classmates, or the world at large to see your work. You will be
+required to disclose your pseudonym to the instructor. If you choose to use a pseudonym, it will be
+straightforward to add your name to any or all coursework after the semester ends. Within the course, you
+will have the option to switch to a pseudonym as desired, but it is difficult to fully anonymize anything
+once it has been posted on the public internet.  With all those cautions, please take a moment to reflect
+as to whether you wish to proceed under your own name or using a pseudonym. 
+
+## Stage 1: GitHub Account Creation
+
+To complete this course, you will need a free `GitHub` personal account, which 
+you can create [here](https://github.com/signup). Please note that whatever account
+name you use will be public, so you need to define a pseudonym here if you choose to use one.
+
+## Stage 2: Course Repo Creation
+
+### Creating GitHub Repo
+
+Now that you have created a GitHub account, log in and proceed to your dashboard
+at [https://github.com](https://github.com). In the top right corner, 
+click the `+` symbol and select "New Repository."[^2]
+
+![](../images/gh_topbar.png) 
+
+Create a new repository named `STA9750-2024-FALL` with a suitable description. 
+
+![](../images/gh_new_repo.png) 
+
+This repo needs to be *public*. You do not need to select a `README`, `.gitignore`, 
+or a license at this time. 
+
+After you create your repo, you should see a page like this: 
+
+![](../images/empty_repo.png)
+
+Note the URL highlighted in the main box: 
+
+``**https://github.com/<USERNAME>/STA9750-2024-FALL.git**``
+
+You will need this in the next step.
+
+### Connecting GitHub Repo to RStudio
+
+Now that you have set up an *empty* repo, you need to connect it to your personal machine
+and to RStudio. RStudio's concept of [projects](https://support.posit.co/hc/en-us/articles/200526207-Using-RStudio-Projects) roughly
+map to GitHub repos and that is what we will use here. 
+
+
+Open RStudio and click the project menu in the top right corner: 
+
+![](../images/project_menu.png)
+
+Follow through the menu to click: 
+
+- New Project
+- Version Control
+- Git
+
+This will take you to the following screen:
+
+![](../images/new_project_wizard.png)
+
+Copy the `.git` URL from the previous step into `Repository URL`.[^3]
+
+### Initial Push
+
+Now, to make sure everything is working, let's save a basic `README` file and
+push it to GitHub. This is a plain text file with no particular structure. 
+
+To create it, click the new file button in RStudio (top left; piece of paper with
+a green plus) and select `Text File`. RStudio will open this file in the editor: type some basic content, *e.g.*, 
+
+```
+Submission materials for STA9750 at Baruch College. 
+
+Owner: <YOURNAME>
+```
+
+(It doesn't matter what you push: whatever you type will be the default text appearing
+when someone visits your repo.)
+
+Save the file and open the `Git` pane in RStudio.
+
+![](../images/git_pane_nostage.png)
+
+Check the box next to the `README` file to `stage` it for `git`.
+
+![](../images/git_pane_staged.png)
+
+Then click the  `Commit` button a type a brief message (`Initial commit` is fine). 
+
+![](../images/git_precommit.png)
+
+Finally, push the  `Push` button. If everything works, you should see a screen like the below: 
+
+![](../images/git_postcommit.png)
+
+To confirm everything worked, return to the GitHub repo in your browser. You should see
+the text of your `README` file displayed at the bottom of the page. 
+
+## Stage 3: Personal Website Creation
+
+Now that you created a place where you can push files to GitHub and have successfully
+pushed a basic `README`, it's time to build a webpage using [`quarto`](https://quarto.org/).
+
+We will need three pages to build a website: 
+
+1. A configuration file, `_quarto.yml`, used to specify the look and layout of your website. 
+2. An `index.qmd` file used to create the homepage. 
+3. A build script to create the website. 
+
+### Configuration File
+
+Open a new text file and save it as `_quarto.yml`. This is a configuration file used
+by `quarto` to control the layout of your site. For a barebones site, copy the following
+into `_quarto.yml`:
+
+```
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "STA 9750 2024 Submission Material"
+  description:
+    Course Projects for STA 9750 at Baruch College
+  site-url: "https://<GITHUB_NAME>.github.io/STA9750-2024-FALL/"
+  navbar:
+    background: primary
+    search: false
+    
+format:
+  html:
+    theme: <THEME>
+    toc: false
+```
+
+Note that the indentation pattern is important so copy this exactly. 
+
+Replace `<GITHUB_NAME>` with your GitHub user name. 
+
+For `<THEME>`, visit the [Bootswatch theme gallery](https://bootswatch.com/) and pick
+your preferred theme. Replace `<THEME>` with a lower case version of the theme name; if you 
+want to use the [Sandstone theme](https://bootswatch.com/sandstone/) used for this course website,
+`<THEME>` will be `sandstone`.
+
+Once you have created this `_quarto.yml`, stage it (click the check mark) in RStudio's
+git pane. 
+
+### `index.qmd`
+
+Next, we'll build your home page, conventionally called `index.html`. We will not write
+the HTML code by hand - it's quite cumbersome - and will instead let `quarto` create it
+for us. Create another plain text file and save it as `index.qmd`. 
+
+This file will be divided into two parts, a header giving the *metadata* for the site,
+and a body, giving the *content* of the site.
+
+First write the header, separated by three horizontal bars (minus signs) above and below.
+For now, all you need to specify is a `title`: 
+
+```
+---
+title: "YOUR TITLE GOES HERE"
+---
+```
+
+Below the header, write the basic content of your website: a brief introduction
+of who you are.[^4] You can use `markdown` here for formatting. Basic text will
+suffice, but this is also a great opportunity to include things like a personal
+headshot, a link to a full resume, or similar. 
+
+As you work on this, click the "Render" button at the top of the editor pane to 
+see what your site will look like. 
+
+Once you are happy with this landing page, stage it and we'll move on to building
+the website properly. 
+
+### `build_site.R`
+
+Finally, open a new file - but now it's an `R` script, not a text file, in RStudio. 
+Copy the following into `build_site.R`: 
+
+```
+#!/usr/bin/env Rscript
+if(!require("quarto")){
+    install.packages("quarto")
+}
+library(quarto)
+if(!quarto::quarto_binary_sitrep()){
+    stop("Something is wrong with your quarto installation.")
+}
+quarto::quarto_render(".")
+system("git add docs/*")
+if(!any(grepl("rstudio", search()))){q("no")}
+```
+
+Click the `Source` button in the top-right corner of the editor pane to run this code. 
+If everything works, it will build your website and automatically stage it. Stage
+`build_site.R` as well. 
+
+Finally, `Commit` all these staged files and `Push` them to GitHub. You have now
+created a website and just need to turn on a web server so you can access it. 
+
+## Stage 4: GitHub Pages Deployment
+
+Return to the GitHub repo you created; recall that the URL is something like:
+
+`https://github.com/<GITHUB_USERNAME>/STA9750-2024-FALL`
+
+Open the "Settings" menu and proceed to the "Pages" submenu. You should see a 
+page that looks like this: 
+
+![](../images/pages_window.png)
+
+Under `Build and Deployment`, set the `main` branch to deploy and select the `docs`
+directory on that branch. Hit save and your website will go live!
+
+To check your website is working, proceed to 
+
+`https://<GITHUB_USERNAME>.github.io/STA9750-2024-FALL`
+
+If everything works, you will see your site! (If you used the `Render` feature in 
+RStudio, it should look familiar.) 
+
+If you get stuck, use the course discussion board to seek help from your classmates
+and, if necessary, the instructor. 
+
+## Stage 5: Submission
+
+Once your site is live, you will submit it to the instructor in two ways: 
+
+1) Log into the course discussion board (Piazza) and send me your GitHub name so I 
+   can link it to my gradebook. 
+2) Tag `@michaelweylandt` on GitHub to make sure I can access your repo. 
+
+These both must be completed to complete the assignment and verify enrollment.
+
+
+### Discussion Board (Piazza)
+
+First, send me a **private** message through the course discussion board with the 
+following details:
+
+- Real Name
+- CUNY EmplID (8 digit ID code)
+- CUNY email
+- GitHub user name
+- Which course section you are enrolled in: STA 9750 or OPR 9750
+
+This is the only place where you are required to connect your GitHub ID with your 
+real name and CUNY credentials. I need this information to connect your public activity
+with my (private) gradebook and the CUNY system. 
+
+If all your information looks good, I might not reply through the discussion board.
+When I reply through GitHub, I'm acknowledging both parts of your submission. 
+
+### Instructor Tagging
+
+Finally, you're going to contact me through `GitHub`: go to 
+
+`https://github.com/<GITHUB_USERNAME>/STA9750-2024-FALL/issues/new`
+
+to open a new issue. Title the issue `STA9750 <GITHUB_USERNAME> MiniProject #00`
+and fill in the following text for the issue: 
+
+```
+Hi @michaelweylandt!
+
+I've created my STA9750 website - check it out!
+
+https://<GITHUB_USERNAME>.github.io/STA9750-2024-FALL
+```
+
+(Replace `<GITHUB_USERNAME>` with your username throughout.)
+
+![](../images/github_issue.png)
+
+This will send me a notification through GitHub and I will confirm that I can access
+your repository and website. If you don't do this, I may not be able to access your
+graded assignments when you submit them! I will confirm that I have your real ID
+verified as well. 
+
+## Wrap-Up
+
+Once I acknowledge receipt of your ID and website, you're done with Mini-Project #00!
+You've built a website and are ready for the course to begin in earnest. 
+
+Mini-Projects #01-#04 will be submitted as separate pages in your website (different
+quarto documents) and hosted via GitHub pages for peer feedback. We will discuss that process
+in more detail after Mini-Project #01 is complete.
+
+## Hints
+
+If you need help, the course discussion board should be your first stop. 
+
+If you want to personalize your website further, you can see how I have created
+mine on [GitHub](https://github.com/michaelweylandt/michaelweylandt.github.io). 
+Recall that the Markdown syntax used by `quarto` is summarized at [https://www.markdownguide.org/basic-syntax/](https://www.markdownguide.org/basic-syntax/).
+
+You may want to use the [`postcards` package](https://github.com/seankross/postcards)
+to build a more attractive home page. 
+
+[^1]: Early in the course, I will 'scaffold' most of the analysis, leaving only
+some small steps for you to fill in. As the course progresses, the mini-projects
+will be more self-directed. 
+
+[^2]: Alternatively, simply go to [https://github.com/new](https://github.com/new) after
+logging in.
+
+[^3]: You can leave the next two boxes blank or set a custom directory name and location. 
+RStudio's defaults are reasonable; the default directory name will simply be `STA9750-2024-FALL`
+and it will be located in your home directory. 
+
+[^4]: If you choose to complete the course using a pseudonym, make up something fun. 
+If you are using your real name, this is a great place to state that you are a Baruch student, 
+your expected graduation date, your field of employment (current or desired), and one or two
+personal facts. This, along with a LinkedIn page, will quickly become one of the first
+things that comes up when a potential employer searches your name, so make a good impression!
