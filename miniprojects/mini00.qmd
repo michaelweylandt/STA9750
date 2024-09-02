@@ -77,7 +77,6 @@ Now that you have set up an *empty* repo, you need to connect it to your persona
 and to RStudio. RStudio's concept of [projects](https://support.posit.co/hc/en-us/articles/200526207-Using-RStudio-Projects) roughly
 map to GitHub repos and that is what we will use here. 
 
-
 Open RStudio and click the project menu in the top right corner: 
 
 ![](../images/project_menu.png)
@@ -93,6 +92,50 @@ This will take you to the following screen:
 ![](../images/new_project_wizard.png)
 
 Copy the `.git` URL from the previous step into `Repository URL`.[^3]
+
+### Securing Connections to GitHub
+
+An important aspect of source code management is *access control* to your code
+repository. While it's typically no risk to make your code _world-readable_, you
+don't want just anyone being able to add code to your repository. Traditionally,
+this type of access would be controlled with a username+password scheme, but
+GitHub has moved to a _Access Token_ structure. 
+
+This process is a "one-time" task, documented in the [Connect Section](https://happygitwithr.com/connect-intro)
+of the *Happy Git with R* book, but we'll cover the highlights here. 
+
+#### Git Credential Manager
+
+Before starting, you will want to make sure you have installed the Git Credential
+Manager (GCM). If you used the Git for Windows bundle, you already have GCM
+installed. If you are on a Mac, you can download the GCM installer [directly](https://github.com/git-ecosystem/git-credential-manager/releases) 
+or install GCM via the [GitHub Desktop Client](https://desktop.github.com/download/).
+
+#### GitHub Personal Access Token
+
+Next, you need to create a Personal Access Token (PAT) for GitHub. You can think
+of this as a "special-purpose" password. Unlike your general account password, 
+a PAT can be restricted to only perform certain activities or only for a limited
+time period. 
+
+After logging in to GitHub via a web browser, visit
+[https://github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
+to begin the token creation process. Give the token a meaningful name and
+description and set an expiration date after (at least) the end of the semester. 
+
+Set the "Repository Access" to "All repositories" and, under 
+"Permissions > Repository Permissions", set "Contents" to "Read and Write". This
+will now let anyone using your token _read and write_ to all your repositories.
+After you create your token, you will be given **only one opportunity** to copy
+it. (Note that you can change permissions later, but you can only copy the token
+once.) Copy this and save it for later use. If you loose this token, you may need
+to generate a new one. 
+
+When you make your first push to GitHub (as described below), use this token
+as your password. If everything is set up correctly, GCM will save this token
+and use it to authenticate you every time you push to GitHub. You should not 
+need to paste this token every time. 
+
 
 ### Initial Push
 
@@ -349,3 +392,4 @@ If you are using your real name, this is a great place to state that you are a B
 your expected graduation date, your field of employment (current or desired), and one or two
 personal facts. This, along with a LinkedIn page, will quickly become one of the first
 things that comes up when a potential employer searches your name, so make a good impression!
+
