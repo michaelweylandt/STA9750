@@ -1,4 +1,71 @@
 #!/usr/bin/env Rscript
+library(tidyverse)
+
+## Generate Google Calendar Formatted CSV for Student Events
+DATES <- read_csv("key_dates.csv")
+
+### i) First get lectures
+LECTURES <- DATES |>
+    filter(`Course Element` == "Class Session") |>
+    mutate(Subject=paste("STA/OPR 9750 Lecture", `Item Number`),
+           `Start Date`=Date,
+           `Start Time`="6:05 PM",
+           `End Date`=Date,
+           `End Time`="9:00 PM",
+           `All Day Event`="False",
+           `Location`="Zoom [Link distributed via CUNY Brightspace]") |>
+    select(-`Course Element`,
+           -`Item Number`,
+           -`Action`,
+           -`Responsible Party`,
+           -`Date`,
+           -`Time`,
+           -`Details`)
+
+`%rep_na%` <- function(x, y) ifelse(is.na(x), y, x)
+
+ASSIGNMENTS <- DATES |>
+    filter(`Responsible Party` == "Student") |>
+    mutate(Subject = paste0("STA/OPR 9750 ",
+                           str_replace(`Course Element`, "s$", ""),
+                           " ",
+                           `Item Number` %rep_na% "",
+                           ": ",
+                           Details),
+           Subject = str_replace(Subject, " :", ":"),
+           dt = paste(Date, Time),
+           start = parse_date_time(dt, "%Y-%m-%d %H:%M%p"),
+           end = start - minutes(30),
+           `Start Date`=as_date(start),
+           `End Date`=as_date(end),
+           `Start Time`=format(start, "%I:%M %p"),
+           `End Time`=format(end, "%I:%M %p"),
+           `All Day Event`="False",
+           `Location`=case_when(
+               `Course Element` == "Mini-Projects" ~ "Submitted via GitHub",
+               `Course Element` == "Pre-Assignments" ~ "Submitted via Brightspace",
+               str_detect(Details, "Team Roster Submission") ~ "Direct Submission to Instructor",
+               str_detect(Details, "Presentation") ~ "In-Class Presentation",
+               str_detect(Details, "Peer Feedback") ~ "TBD"
+           )) |>
+    select(-`Course Element`,
+           -`Item Number`,
+           -`Action`,
+           -`Responsible Party`,
+           -`Date`,
+           -`Time`,
+           -`Details`,
+           -dt,
+           -start,
+           -end
+           )
+
+bind_rows(LECTURES, ASSIGNMENTS) |>
+    arrange(`Start Date`) |>
+    write_csv("key_dates_students_gcal.csv")
+
+## Build site
+
 if(!require("quarto")){
     install.packages("quarto")
 }
@@ -8,4 +75,6 @@ if(!quarto::quarto_binary_sitrep()){
 }
 quarto::quarto_render(".")
 system("git add docs/*")
+
+
 if(!any(grepl("rstudio", search()))){q("no")}
