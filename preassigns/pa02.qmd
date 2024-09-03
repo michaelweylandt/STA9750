@@ -2,7 +2,20 @@
 title: "STA 9750 Week 2 Pre Assignment: Getting Started with Markdown"
 ---
 
-**Due Date**: 2024-09-04 (Wednesday) at 11:45pm.
+
+```{r echo=FALSE, message=FALSE}
+library(tidyverse)
+NUMBER <- 2
+due_date_str <- read_csv("../key_dates.csv") |> 
+    filter(`Course Element` == "Pre-Assignments", 
+           `Item Number` == NUMBER, 
+           str_detect(Details, "Due")) |> 
+    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
+    pull(dt) |>
+    format("%Y-%m-%d (%A) at %I:%M%P")
+```
+
+**Due Date**: `{r} due_date_str`
 
 **Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
 
