@@ -1,0 +1,31 @@
+---
+title: "Mini-Project #02"
+format:
+  html:
+    code-link: true
+---
+
+```{r echo=FALSE, message=FALSE}
+library(tidyverse)
+DATES <- readr::read_csv("../key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, Time)))
+```
+
+```{r echo=FALSE}
+mp <-  DATES |> filter(element == "Mini-Projects", item == 2)
+```
+
+### Due Dates
+
+-   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+-   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
+-   **Peer Feedback:**
+    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
+    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
+
+---
+
+This work ©2024 by [Michael Weylandt](https://michael-weylandt.com) is licensed under a [Creative Commons BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en) license. ![](http://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png){width=10%}
