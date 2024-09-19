@@ -1,0 +1,288 @@
+---
+title: "STA/OPR 9750 - Week 4 Update"
+author: "Michael Weylandt"
+format: revealjs
+---
+
+## STA/OPR 9750 Mini-Project #00
+
+Thank you to those of you who provided peer feedback!
+
+(Over 75% of the class reported receiving useful peer feedback.)
+
+. . .
+
+Instructor's Note: For graded MPs #01-04, be a bit more direct
+in peer feedback. Goal is to help your peers improve: _constructive_ criticism.
+
+. . .
+
+A few of you still haven't completed MP#00. Too late for peer feedback, but
+you need to get this done in order to submit MP#01. 
+
+[No late work accepted on graded MPs.](../syllabus.html#late-work-policy)
+
+## STA/OPR 9750 Mini-Project #01
+
+[MP#01 released](../miniprojcts/mini01.html) - Transit System Financials
+
+. . . 
+
+**Due September 25th**
+
+  - GitHub post (used for peer feedback) AND Brightspace
+  
+. . . 
+
+Pay attention to [the rubric](../miniprojects/mini01.html#rubric) 
+
+- Writing and presentation are about 50% of your grade
+- Evaluated on _rigor_ and _thoughtfulness_, not necessarily correctness
+
+## MP#01 Corrections
+
+Thanks to EL and JA for finding two mistakes in MP statement:
+
+- Apples/Oranges problem in "longest average trip" (JA)
+- Data cleaning problem in `FARES` table (EL)
+
+Will fix after class:
+
+- Skip longest average trip question
+- Better instructor-provided code for `FARES` table
+
+## Upcoming Mini-Projects
+MP#02 assigned next week: 
+
+- Hollywood Development Executive Case Study
+- MP#03: Political Analysis (tentative)
+- MP#04: Retirement Forecasting (tentative)
+
+## Pre-Assignments
+
+Brightspace - Wednesdays at 11:45
+
+- Reading, typically on course website
+- Brightspace auto-grades. 
+  - I have to manually change to completion grading. 
+
+## Course Project
+
+3 teams already formed!
+
+- Breakout rooms in teams 
+  - Team/Room 1: GZ + VF + EY + AG + TD
+  - Team/Room 2: YZ + HM + TN + NG
+  - Team/Room 3: SK + HA + DS
+- All team commitments due 2024-10-02
+
+## Graduate Teaching Assistant (GTA)
+
+- Charles Ramirez
+- Twice Weekly Office Hours (Zoom - Links of Brightspace)
+  - Tuesdays 4-5pm
+  - Fridays 12-1pm
+- Will also help coordinate peer feedback (GitHub), Piazza responses, *etc.*
+- Excellent resource for course project advice!
+
+## Upcoming Week
+
+Next Wednesday at 11:45pm: 
+
+- Next Pre-Assignment
+- MP#01 Initial Submission due
+
+# Pre-Assignment #04 FAQs
+
+## FAQ: `select(-)`
+
+`data |> select(colname)` **keeps** `colname`, dropping everything else
+
+`data |> select(-colname)` **drops** `colname`, keeping everything else
+
+Dropping is mainly useful for
+
+- Presentation (removing unwanted columns)
+- Advanced:
+  - Operations _across_ columns
+  
+## FAQ: `filter` vs `group_by`
+
+`group_by` is an _adverb_. On its own, it does nothing; it changes the
+behavior of later functionality. 
+
+```{r include=FALSE}
+library(palmerpenguins)
+library(tidyverse)
+```
+
+```{r echo=TRUE}
+penguins |> drop_na() |> print(n=2)
+```
+
+
+```{r echo=TRUE}
+penguins |> drop_na() |> group_by(species) |> print(n=2)
+```
+
+---
+
+
+No `group_by` - full summarization:
+```{r echo=TRUE}
+penguins |> drop_na() |> summarize(mean(body_mass_g))
+```
+
+With `group_by` - summary within groups. 
+```{r echo=TRUE}
+penguins |> drop_na() |> group_by(species) |> summarize(mean(body_mass_g))
+```
+
+---
+
+With multiple grouping - "cross-tabs" of results: 
+
+```{r echo=TRUE}
+penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass_g))
+```
+
+Note that result of multi-`group_by` is still grouped: 
+
+```{r echo=TRUE}
+penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass_g))
+```
+
+---
+
+Changes next call to `summarize`:
+
+```{r echo=TRUE}
+penguins |> drop_na() |> group_by(species) |> 
+    summarize(mbmg = mean(body_mass_g)) |> summarize(mean(mbmg))
+```
+
+```{r echo=TRUE}
+penguins |> drop_na() |> group_by(species, sex) |> 
+    summarize(mbmg = mean(body_mass_g)) |> summarize(mean(mbmg))
+```
+
+```{r echo=TRUE}
+penguins |> drop_na() |> group_by(sex, species) |> 
+    summarize(mbmg = mean(body_mass_g)) |> summarize(mean(mbmg))
+```
+
+## FAQ: Order of `group_by`
+
+- No change to first "grouped" operations
+- Change in grouping structure of result
+- Last group "removed" by `summarize`
+- No impact on grouped operations performed by `mutate` or `filter` 
+
+## FAQ: `ungroup`
+
+- Remove all grouping structure
+- Defensive to keep group structure from "propogating" unwantedly
+
+```{r, eval=FALSE, echo=TRUE}
+sum_penguins <- penguins |> 
+    group_by(sex, species) |> 
+    summarize(mbmg = mean(body_mass_g))
+
+... # Lots of code 
+
+sum_penguins |> filter(mbmg == max(mbmg)) # Still grouped!!
+```
+
+## FAQ: Named Arguments in `mutate` and `summarize`
+
+`mutate` and `summarize` create new columns: 
+
+ - `mutate` creates "one-to-one"
+ - `summarize` creates "one-per-group"
+
+--- 
+
+If you want to name them (so you can use them later), use named argument
+
+```{r echo=TRUE}
+penguins |> group_by(species) |> summarize(n())
+```
+
+vs
+
+```{r echo=TRUE}
+penguins |> group_by(species) |> summarize(n_species = n())
+```
+
+## FAQ: Pipe Syntax
+
+Pipe syntax (`|>`) is "syntactic sugar"
+
+Just makes code easier to read: 
+
+```{r, eval=FALSE, echo=TRUE}
+penguins |> group_by(species) |> summarize(n_species = n())
+# vs
+summarize(group_by(penguins, species), n_species=n())
+```
+
+_Exactly_ the same execution: improved UX
+
+## FAQ: Assignment of Pipeline Results
+
+When to start a pipeline with `NAME <-`? Creating a new variable: 
+
+. . . 
+
+- Data you intend to reuse
+- Assignment operator 'up front' indicates __important__
+- My rules of thumb for names:
+  - New names for "new complete thoughts" - whole summary in one pipeline
+  - _Overwrite_ existing names for "like-for-like improvements" (`USAGE <- USAGE |> code(...)`)
+    - Recoding variable names, fixing typos, *etc.*
+    - Use name repeatedly so downstream code picks up effects 'for free'
+
+## FAQ: Comparison with SQL and Pandas (Python)
+
+`dplyr` is _heavily_ inspired by `SQL` (standard query language for data bases)
+
+- MW (2014): "Why bother? Can't folks just use SQL"
+
+`pandas` (in Python) inspired by `R` `data.frame` and `SQL`: 
+ 
+- A bit older than `dplyr` (cousins?)
+- "New hotness" (`polars`) directly inspired by `dplyr`
+
+## FAQ: Performance
+
+`dplyr` is _fast_, but advanced options: 
+
+- `dbplyr`: translates `dplyr` syntax to SQL and executes in DB
+- `dtplyr`: uses alternate `data.table` back-end (HFT)
+
+Hard to have bad performance in single-table analysis
+
+- Danger of accidentally creating 'extra' data in multi-table context
+- Will discuss more next week
+
+--- 
+
+Tools for slow code: 
+
+- Profiler: [`profvis`](https://profvis.r-lib.org/)
+- Benchmarking: [`bench`](https://bench.r-lib.org/)
+
+Don't worry about improving code performance until: 
+
+1) You're sure it's right
+2) You're sure it's slow
+
+Incorrect code is _infinitely slow_.
+
+# Today
+
+## Diving Deeper with `group_by`, `filter`, and `summarize`
+
+Data Set: [`nycflights13`](https://nycflights13.tidyverse.org/)
+
+Exercise: [Lab #04](../labs/lab04.html)
