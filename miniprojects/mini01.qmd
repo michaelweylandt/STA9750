@@ -151,7 +151,15 @@ FARES <- readxl::read_xlsx("2022_fare_revenue.xlsx") |>
            -`Passenger Paid Fares`,
            -`Organization Paid Fares`) |>
     filter(`Expense Type` == "Funds Earned During Period") |>
-    select(-`Expense Type`)
+    select(-`Expense Type`) |>
+    group_by(`NTD ID`,       # Sum over different `TOS` for the same `Mode`
+             `Agency Name`,  # These are direct operated and sub-contracted 
+             `Mode`) |>      # of the same transit modality
+                             # Not a big effect in most munis (significant DO
+                             # tends to get rid of sub-contractors), but we'll sum
+                             # to unify different passenger experiences
+    summarize(`Total Fares` = sum(`Total Fares`)) |>
+    ungroup()
 
 # Next, expenses
 if(!file.exists("2022_expenses.csv")){
@@ -268,7 +276,8 @@ USAGE <- USAGE |>
 ```
 :::
 
-Now that your data is clean, you may want to create an attractive summary table of your cleaned up `USAGE` table using the following snippet:
+Now that your data is clean, you may want to create an attractive
+summary table of your cleaned up `USAGE` table using the following snippet:
 
 ```{r, eval=FALSE}
 if(!require("DT")) install.packages("DT")
@@ -279,17 +288,26 @@ sample_n(USAGE, 1000) |>
     DT::datatable()
 ```
 
-To make your table cleaner, you might want to modify this code to unselect the `NTD ID` and `3 Mode` columns and/or rename the `UPT` and `VRM` columns.
+To make your table cleaner, you might want to modify this code to unselect
+the `NTD ID` and `3 Mode` columns and/or rename the `UPT` and `VRM` columns.
+
+*Note: The use of `sample_n` here is just to make a sufficiently small sample
+to view it in a table. For your actual analysis, you should use the entire
+data set.*
 
 ::: callout-tip
 ### Task 3: Answering Instructor Specified Questions with `dplyr`
 
-Using functions we have studied in class, including `filter`, `group_by`, `summarize`, `arrange`, answer the following questions in your analysis:
+Using functions we have studied in class, including `filter`, `group_by`,
+`summarize`, `arrange`, answer the following questions in your analysis:
 
-1.  What transit agency had the most total VRM in this sample?
-2.  What transit mode had the most total VRM in this sample?
+1.  What transit agency had the most total VRM in our data set?
+2.  What transit mode had the most total VRM in our data set?
 3.  How many trips were taken on the NYC Subway (Heavy Rail) in May 2024?
-4.  What mode of transport had the *longest average trip* in May 2024?
+4.  ~~What mode of transport had the *longest average trip* in May 2024?~~
+
+    *Note: This question can't be answered with _vehicle_ miles. To get average
+     passenger trip length, we need _passenger_ miles.*
 5.  How much did NYC subway ridership fall between April 2019 and April 2020?
 :::
 
