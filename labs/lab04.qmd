@@ -760,14 +760,13 @@ This has the advantage of being readily adaptable to other non-summarizing
 questions: for instance, of the _delayed_ flights of the major carrier, how
 many were going to Houston?
 
-
 ```{webr}
 flights |> 
     filter(!is.na(arr_delay)) |>
     group_by(carrier) |>
     mutate(n = n()) |>
     filter(n > 10000,
-          (arr_delay > 0, # Could also write as separate filter()s
+           arr_delay > 0, # Could also write as separate filter()s
            dest %in% c("HOU", "IAH")) |>
     summarize(n = n())
 ```
