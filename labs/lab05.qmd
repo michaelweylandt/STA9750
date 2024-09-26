@@ -313,7 +313,53 @@ Work with your group to answer the following questions using `inner_join`.
 
 ## Left Join
 
+Left joins are useful when you don't want to dropped unmatched columns
+in one table. For instance, suppose we misplace some rows from our
+`airlines` table: 
 
+```{r}
+airlines_major <- airlines |>
+    filter(carrier %in% c("AA", "DL", "UA", "WN", "B6", "AS"))
+```
+
+If we inner join on `airlines_major`, we _loose_ many of the rows
+in `flights`. 
+
+```{r}
+NROW(flights)
+inner_join(flights, 
+           airlines_major, 
+           join_by(carrier == carrier)) |>
+    NROW()
+```
+
+Sometimes this is what we want, but not always. If we instead use
+a left join, we keep all of the rows in `flights`: 
+
+```{r}
+NROW(flights)
+left_join(flights, 
+          airlines_major, 
+          join_by(carrier == carrier)) |>
+    NROW()
+```
+
+Rows lacking a pair in `airlines_major` fill the missing columns with
+`NA`. This fits our mental model of missing values in `R`: in theory,
+these flights should have some carrier name, but given the data at hand, 
+we don't know what it is. 
+
+```{r}
+NROW(flights)
+left_join(flights, 
+          airlines_major, 
+          join_by(carrier == carrier)) |>
+    filter(carrier %in% c("MQ", "OO", "VX")) |>
+    glimpse() # Look at 'name' column
+```
+
+`left_join`s are useful if we want to join two tables, but want to avoid
+dropping any rows from a 'gold standard' table.
 
 ## Outer Join
 
