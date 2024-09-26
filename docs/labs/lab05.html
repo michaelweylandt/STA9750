@@ -676,6 +676,76 @@ $ time_hour  &lt;dttm&gt; 2013-01-01 01:00:00, 2013-01-01 02:00:00, 2013-01-01 0
 </section>
 <section id="left-join" class="level2">
 <h2 class="anchored" data-anchor-id="left-join">Left Join</h2>
+<p>Left joins are useful when you don’t want to dropped unmatched columns in one table. For instance, suppose we misplace some rows from our <code>airlines</code> table:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>airlines_major <span class="ot">&lt;-</span> airlines <span class="sc">|&gt;</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(carrier <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"AA"</span>, <span class="st">"DL"</span>, <span class="st">"UA"</span>, <span class="st">"WN"</span>, <span class="st">"B6"</span>, <span class="st">"AS"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If we inner join on <code>airlines_major</code>, we <em>loose</em> many of the rows in <code>flights</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">NROW</span>(flights)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 336776</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">inner_join</span>(flights, </span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>           airlines_major, </span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>           <span class="fu">join_by</span>(carrier <span class="sc">==</span> carrier)) <span class="sc">|&gt;</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">NROW</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 207128</code></pre>
+</div>
+</div>
+<p>Sometimes this is what we want, but not always. If we instead use a left join, we keep all of the rows in <code>flights</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">NROW</span>(flights)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 336776</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(flights, </span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>          airlines_major, </span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>          <span class="fu">join_by</span>(carrier <span class="sc">==</span> carrier)) <span class="sc">|&gt;</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">NROW</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 336776</code></pre>
+</div>
+</div>
+<p>Rows lacking a pair in <code>airlines_major</code> fill the missing columns with <code>NA</code>. This fits our mental model of missing values in <code>R</code>: in theory, these flights should have some carrier name, but given the data at hand, we don’t know what it is.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">NROW</span>(flights)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 336776</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(flights, </span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>          airlines_major, </span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>          <span class="fu">join_by</span>(carrier <span class="sc">==</span> carrier)) <span class="sc">|&gt;</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(carrier <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"MQ"</span>, <span class="st">"OO"</span>, <span class="st">"VX"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">glimpse</span>() <span class="co"># Look at 'name' column</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 31,591
+Columns: 20
+$ year           &lt;int&gt; 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2013, 2…
+$ month          &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+$ day            &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+$ dep_time       &lt;int&gt; 600, 602, 608, 624, 656, 658, 729, 749, 800, 805, 811, …
+$ sched_dep_time &lt;int&gt; 600, 605, 600, 630, 705, 700, 730, 710, 810, 815, 630, …
+$ dep_delay      &lt;dbl&gt; 0, -3, 8, -6, -9, -2, -1, 39, -10, -10, 101, -4, -5, -8…
+$ arr_time       &lt;int&gt; 837, 821, 807, 840, 1007, 1027, 1049, 939, 949, 1006, 1…
+$ sched_arr_time &lt;int&gt; 825, 805, 735, 830, 940, 1025, 1115, 850, 955, 1010, 83…
+$ arr_delay      &lt;dbl&gt; 12, 16, 32, 10, 27, 2, -26, 49, -6, -4, 137, -13, -13, …
+$ carrier        &lt;chr&gt; "MQ", "MQ", "MQ", "MQ", "MQ", "VX", "VX", "MQ", "MQ", "…
+$ flight         &lt;int&gt; 4650, 4401, 3768, 4599, 4534, 399, 11, 3737, 4406, 4490…
+$ tailnum        &lt;chr&gt; "N542MQ", "N730MQ", "N9EAMQ", "N518MQ", "N722MQ", "N627…
+$ origin         &lt;chr&gt; "LGA", "LGA", "EWR", "LGA", "LGA", "JFK", "JFK", "EWR",…
+$ dest           &lt;chr&gt; "ATL", "DTW", "ORD", "MSP", "XNA", "LAX", "SFO", "ORD",…
+$ air_time       &lt;dbl&gt; 134, 105, 139, 166, 233, 361, 356, 148, 80, 101, 118, 5…
+$ distance       &lt;dbl&gt; 762, 502, 719, 1020, 1147, 2475, 2586, 719, 427, 479, 5…
+$ hour           &lt;dbl&gt; 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 6, 8, 8, 8, 8, 18, 9, 9, …
+$ minute         &lt;dbl&gt; 0, 5, 0, 30, 5, 0, 30, 10, 10, 15, 30, 25, 35, 40, 50, …
+$ time_hour      &lt;dttm&gt; 2013-01-01 06:00:00, 2013-01-01 06:00:00, 2013-01-01 0…
+$ name           &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…</code></pre>
+</div>
+</div>
+<p><code>left_join</code>s are useful if we want to join two tables, but want to avoid dropping any rows from a ‘gold standard’ table.</p>
 </section>
 <section id="outer-join" class="level2">
 <h2 class="anchored" data-anchor-id="outer-join">Outer Join</h2>
