@@ -1,0 +1,528 @@
+---
+title: "{{< var course.short >}} Week 7 Pre Assignment: Lots of Plots"
+---
+
+```{r echo=FALSE, message=FALSE}
+library(tidyverse)
+NUMBER <- 7
+due_date_str <- read_csv("../key_dates.csv") |> 
+    filter(`Course Element` == "Pre-Assignments", 
+           `Item Number` == NUMBER, 
+           str_detect(Details, "Due")) |> 
+    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
+    pull(dt) |>
+    format("%Y-%m-%d (%A) at %I:%M%P")
+```
+
+**Due Date**: `{r} due_date_str`
+
+**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
+
+This week we begin to explore _statistical_ visualizations. Visualizations
+play several interrelated roles in statistical practice: we use visualization
+to explore new data sets, to see how well models fit to data, and to communicate
+the results of analyses to new audiences. Compared with the 'point summary' tools
+we have discussed to date, visualizations are far more flexible and more
+powerful: we can extract novel insights from data visualizations, but we can
+also deceive ourselves and others.
+
+
+As you review this document, also watch how I iterate and refine each figure
+until I have something I'm finally happy with. This is quite typical of how
+working data scientists produce plots: you rarely know exactly what you want,
+particularly before you begin to explore your data. You should adapt a similar
+pattern of "take a sad plot and make it better" as you create plots for your
+mini-projects and, ultimately, your final project.
+
+## Grammar of Graphics
+
+Computer graphics is a field of essentially infinite possibility - anything
+you dream can be represented in the digital domain. At one limit, we have
+the option to work on a "per pixel" basis, telling the computer exactly what
+to draw and where. Because this is clearly overwhelmingly monotonous, very
+little work is actually done at such fine detail and _abstraction layers_ are
+provided to automate the low-level detail work. We will use an abstraction
+model known as the _Grammar of Graphics_. 
+
+Designed by Leland Wilkinson and popularized by Hadley Wickham, the _Grammar
+of Graphics_ poses a set of rules for visualizing (tidy) data. It draws its
+name from the concept of linguistic grammar - the rules that dictate how
+basic elements (nouns, verbs, and adjectives) may and may not be combined into
+clear and meaningful sentences The Grammar of Graphics provides specifications
+for combining different plot elements (legends, data, axes, *etc.*) into clear
+and meaningful statistical graphics. Taking the metaphor too far, we might
+say that the Grammar of Graphics is the Strunk and White to the Ska that are
+"Infographics." 
+
+The grammar of graphics has several interconnected components, which are
+combined to form a meaningful graphic. We assume that we have a "tidy" data
+set we want to visualize; recall that, by "tidy", we mean that our data is
+
+- Organized in a rectangular array
+- Homogenously-typed within a column
+- One observation per row
+- One value per cell
+
+Given this form of tidy data, the grammar of graphics provides us the 
+"parts of speach" necessary to convert tidy data to a visual representation.
+We'll only cover the basic components here, leaving more advanced tools for
+class session: 
+
+- The _aesthetics_ are mappings between columns of the data and aspects
+  of the visualization. For instance, "put the grade column on the $y$ axis"
+  or "use color to represent the course ID". 
+- _Scales_ convert data values to the aesthetics: scales may be quite trivial,
+  *e.g.* placing continuous values on the $x$ axis in proper order, or more
+  advanced, *e.g.*, binning values and converting them to a sequence of 
+  perceptually-ordered colors. 
+)
+- _Geometric elements_ or `geom`s specify how the data are represented on
+  the page through the scales. `geom`s include basic representations, like
+  points for a scatter plot or lines for a trend plot, as well as more
+  complex objects like boundaries on a map.
+- _Guides_ provide interpretational assistance to the viewer. Most guides
+  take the form of legends. 
+  
+That's all a bit abstract, so let's put it into practice. For now, you shouldn't
+worry so much about what each of these really mean; it's just useful to have
+a rough sense of what "knob" you want to turn to modify plots. 
+
+## Getting started with `ggplot2`
+
+The leading implementation of the grammar of graphics is the `ggplot2` package
+in `R` (`gg` = Grammar of Graphics). It comes to us from Hadley Wickham and
+the `tidyverse` team, who also developed the `dplyr` and `tidyr` tools we have
+been using for the past several weeks. 
+
+Let's begin by using `ggplot2` to explore our `penguins` data: 
+
+```{r}
+library(ggplot2)
+library(palmerpenguins)
+ggplot(penguins)
+```
+
+Somewhat underwhelming... 
+
+`ggplot2`, like many of the tools in this course, do exactly what we ask, and 
+no more. Because we have not specified any of the Grammar of Graphics elements,
+we only get a blank canvas. Let's now begin by adding an _aesthetic_ to map
+some of the elements of our data to aspects of our plot. 
+
+Specifically, suppose we want to see how flipper length correlates with
+body mass. Let's make a scatter plot with flipper length on the $x$-axis
+and body mass on the $y$-axis.[^1]
+
+```{r}
+ggplot(penguins, aes(x=flipper_length_mm, y=body_mass_g))
+```
+
+Ok - this is perhaps a bit better. We can see that the columns
+`flipper_lenth_mm` and `body_mass_g` have been placed on the $x$- and $y$-axes
+as we wanted, but we still don't see anything. 
+
+We need a `geom` to actually put "ink to paper". The simplest `geom` is 
+a point, useful for making scatter plots. 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, y=body_mass_g)) + 
+    geom_point()
+```
+
+Pretty nifty! Before we go forward, note that `ggplot2` _adds_ elements to
+create ever more complex plots. This is different than `dplyr` where we 
+"piped" data from one step to the next, refining it along the way. 
+
+How can we improve the plot above? Before anything else, let's clean up
+the $x$ and $y$ axis labels. While the default behavior of showing variable
+names is helpful for exploratory data analysis, we never want to let variable
+names "leak" in plots we intend to share with others. We should instead use
+meaningful (and attractive) axis labels. 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, y=body_mass_g)) + 
+    geom_point() + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)")
+```
+
+We can also take advantage of the `theme` mechanisms of `ggplot2` to change
+the color of the "infrastructure" of our plot. The `theme` mechanism doesn't
+change how the data itself is visualized, but it controls how things like
+the background, font sizing, *etc* behave. I tend to prefer the black and
+white theme over the grey default: 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, y=body_mass_g)) + 
+    geom_point() + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw()
+```
+
+### Adding Color to Depict Species
+
+Our data set three distinct species and the correlation between flipper
+and body size may vary across species. Let's add some color to our plot:
+since color maps a data element (`species`) to a graphical aspect (color)
+we add it to our aesthetic mapping (`aes`). 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw()
+```
+
+We see here that a few things happened automatically for us: 
+
+1) The color element was automatically propagated into `geom_point`. 
+   By default, any "top-level" aesthetics are automatically applied
+   to any `geom` that can handle them. 
+2) A legend was created.
+3) A color scale was chosen.
+
+The [`geom_point`](https://ggplot2.tidyverse.org/reference/geom_point.html#aesthetics) help page tells us which aesthetics are required ($x, y$) and which
+are optional for the point geom. We couldn't have gotten away without providing
+$x, y$ coordinates, but until this point, we were just using the default (black)
+color. 
+
+To improve the look of the colors, we can choose a different color scale. 
+I tend to like the colors of the [Color Brewer](https://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3) project,
+though strictly speaking these are designed for use in maps, not scatter plots.
+You can access these in `ggplot2` as follows: 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw() + 
+    scale_color_brewer(type="qual", palette=2)
+```
+
+Here, I'm using a `type="qual"` (qualitative) palette because there is
+no inherent ordering to the penguin types. I like the "bolder" colors of
+the second palette in this set, but you can adjust the number to try different
+schemes. 
+
+Next, let's improve the look of the legend. As before, we see that it is
+by default titled with the variable name (`species`). We can provide
+a proper title instead: 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw() + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Species")
+```
+I still don't like this legend on the side - it takes too much room, so let's
+move it below the image instead. This involves changing a "non-data"
+element of the plot, so we go through the theme machinery.
+[`theme()`](https://ggplot2.tidyverse.org/reference/theme.html) allows an 
+enormous number of possible changes, but here we want `legend.position`:
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw() + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Species") + 
+    theme(legend.position="bottom")
+```
+
+Not so bad!
+
+### Visualizing Statistical Relationships
+
+Recall that our goal was to measure the correlation between Body Mass
+and Flipper Length. We can visualize this correlation on the plot by adding
+a regression line (recall that for univariate regression like this, the
+slope of the regression line is $\hat{\beta} = \rho_{XY}\frac{\sigma_Y}{\sigma_X}$). 
+
+This is a new geometric element, called a `smoother`. `ggplot2` allows
+many possible smoothers, but let's use the `lm` (linear model) version, which
+we specify by setting the `method` argument:
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    geom_smooth(method="lm") + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw() + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Species") + 
+    theme(legend.position="bottom")
+```
+
+By default, `ggplot2` is giving us confidence intervals around the linear trend.
+These are sometimes useful, but perhaps a bit crowded for now, so let's turn
+them off: 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    geom_smooth(method="lm", 
+                se=FALSE) + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw() + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Species") + 
+    theme(legend.position="bottom")
+```
+
+This is nicer, but maybe still a bit crowded. It would be nicer if we could
+avoid the "overlaps" of the different species. Here, let's break out a 
+"small multiples" plot: this is, in essence, a `group_by` for plotting. 
+
+In `ggplot2` speak, this is called a faceted plot: 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    geom_smooth(method="lm", 
+                se=FALSE) + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw() + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Species") + 
+    theme(legend.position="bottom") + 
+    facet_wrap(~species)
+```
+
+Not too shabby. But now it's a bit too hard to tell the lines from the points. 
+Let's override the color used: 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    geom_smooth(method="lm", 
+                se=FALSE, 
+                color="black") + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw() + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Species") + 
+    theme(legend.position="bottom") + 
+    facet_wrap(~species)
+```
+
+These plots give us some idea of the correlation, but what if we want
+actual numbers? We can't do this in "plain" `ggplot2`, but now we can take
+advantage of the _enormous_ number of [`ggplot2` extension
+packages](https://exts.ggplot2.tidyverse.org/). It turns out that the `ggpmisc`
+package supports what we need, so let's download and install it: 
+
+```{r}
+if(!require("ggpmisc")) install.packages("ggpmisc")
+library(ggpmisc)
+```
+
+Now we have access to the various `geom_`, `scale_`, *etc* objects from
+that package. We can now introduce a new category, `stat_`, that represents
+statistical transformations or modeling. Generally, these are applied 
+"automagically" for us, as in `geom_smooth`, but here we need to build
+our regression models explicitly: 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    stat_poly_line(se=FALSE, 
+                   color="black") +
+    stat_poly_eq() + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw() + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Species") + 
+    theme(legend.position="bottom") + 
+    facet_wrap(~species)
+```
+
+See how, even though we're using functionality from outside `ggplot2`, the
+structure of the "grammar" makes it easy for all these tools to work well
+together.
+
+### Final Polish
+
+We are almost done, but every figure needs a bit of final polish. Firstly, 
+we should add a title, using the `ggtitle` function. (`R` has a built-in
+`title` function but that won't help us here)
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    stat_poly_line(se=FALSE, 
+                   color="black") +
+    stat_poly_eq() + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw() + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Species") + 
+    theme(legend.position="bottom") + 
+    facet_wrap(~species) + 
+    ggtitle("Correlation of Flipper Length and Body Mass across Penguin Species")
+```
+
+In good academic practice, we should always add a footnote citing the source
+of our data. The [`palmerpenguins` site](https://allisonhorst.github.io/palmerpenguins/) has appropriate source
+information: 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    stat_poly_line(se=FALSE, 
+                   color="black") +
+    stat_poly_eq() + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw() + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Species") + 
+    theme(legend.position="bottom") + 
+    facet_wrap(~species) + 
+    ggtitle("Correlation of Flipper Length and Body Mass across Penguin Species") + 
+    labs(caption="Data provided by Dr. K. Gorman and the Palmer Station, Antarctica LTER")
+```
+
+At this point, the bottom of our figure looks a bit crowded. To clear out
+some space, let's remove the legend from the bottom, since it simply repeats
+the facet labels: 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    stat_poly_line(se=FALSE, 
+                   color="black") +
+    stat_poly_eq() + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw() + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Species") + 
+    theme(legend.position="bottom") + 
+    facet_wrap(~species) + 
+    ggtitle("Correlation of Flipper Length and Body Mass across Penguin Species") + 
+    labs(caption="Data provided by Dr. K. Gorman and the Palmer Station, Antarctica LTER") + 
+    guides(color="none")
+```
+
+Cleaner and no loss of information. In designing good _scientific_ graphics,
+the concept of a "ink-to-information" ratio is useful: if you can remove
+some ink without removing any (relevant) information, you should generally
+do so. This makes it easier for the reader to identify the _important_
+elements of the plot. 
+
+To make our point even clearer, it is sometimes useful to add a short 
+"summary" to a plot like this: 
+
+```{r}
+ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    stat_poly_line(se=FALSE, 
+                   color="black") +
+    stat_poly_eq() + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    theme_bw() + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Species") + 
+    theme(legend.position="bottom") + 
+    facet_wrap(~species) + 
+    ggtitle("Correlation of Flipper Length and Body Mass across Penguin Species", 
+            subtitle="Flipper Length and Body Mass are positively correlated across species\nGentoo penguins exhibit the strongest relationship at 70% correlation") + 
+    labs(caption="Data provided by Dr. K. Gorman and the Palmer Station, Antarctica LTER")
+```
+
+This is not always a good idea - it requires "hard-coding" the insights
+for your reader and takes up some space. In scientific writing, I generally
+prefer to put this sort of summary in a figure caption, while I tend
+to "say the point" verbally if the figure is destined for a presentation. 
+
+Personally, I only use this sort of "here is the point" text if I expect
+a figure to "escape beyond" my presentation and need it to stand fully on
+its own. 
+
+### Conclusions
+
+`ggplot2` provides an exceptionally powerful and flexible set of tools for
+creating statistical visualizations. We will explore it in more depth in 
+class. For now, review the examples above and make sure you see how each
+plot is created "piecewise" from its various components. 
+
+
+To see more about what `ggplot2` can do, check out the [R Graphics
+Gallery](https://r-graph-gallery.com/ggplot2-package.html). If you want to 
+see the specifics of each `ggplot2` function, check out the [package reference
+page](https://ggplot2.tidyverse.org/reference/). To go further with `ggplot2`,
+you should also explore its [extension
+gallery](https://exts.ggplot2.tidyverse.org/gallery/). 
+
+[^1]: I once had a boss who refused to use the terms $x$ and $y$ axis unless
+quantities called $x$ and $y$ were actually being plotted. Being Cantabrigian, 
+he insisted I use the terms abscissa and ordinate. I will not inflict such
+pedantry in this course. 
