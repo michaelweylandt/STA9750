@@ -432,6 +432,10 @@ Michael Weylandt
 <li>MP#04: Retirement Forecasting</li>
 </ul>
 </section>
+<section id="course-project" class="slide level2">
+<h2>Course Project</h2>
+<p>Proposal feedback <em>soon</em> (need to do 2 more before releasing)</p>
+</section>
 <section id="pre-assignments" class="slide level2">
 <h2>Pre-Assignments</h2>
 <p>Brightspace - Wednesdays at 11:45</p>
@@ -711,98 +715,117 @@ Michael Weylandt
 
 </div>
 <img data-src="slides07_files/figure-revealjs/unnamed-chunk-10-1.png" width="960" class="r-stretch"></section>
+<section id="faq-how-to-hard-code-colors" class="slide level2">
+<h2>FAQ: How to “hard-code” colors</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb11-2"><a></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> <span class="fu">rnorm</span>(<span class="dv">5</span>), </span>
+<span id="cb11-3"><a></a>                   <span class="at">y =</span> <span class="fu">rnorm</span>(<span class="dv">5</span>), </span>
+<span id="cb11-4"><a></a>                   <span class="at">group =</span> <span class="fu">c</span>(<span class="st">"a"</span>, <span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"b"</span>, <span class="st">"b"</span>))</span>
+<span id="cb11-5"><a></a></span>
+<span id="cb11-6"><a></a>data <span class="sc">|&gt;</span> </span>
+<span id="cb11-7"><a></a>    <span class="fu">group_by</span>(group) <span class="sc">|&gt;</span></span>
+<span id="cb11-8"><a></a>    <span class="fu">mutate</span>(<span class="at">n_count =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb11-9"><a></a>    <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb11-10"><a></a>    <span class="fu">mutate</span>(<span class="at">color =</span> <span class="fu">ifelse</span>(n_count <span class="sc">==</span> <span class="fu">max</span>(n_count), <span class="st">"red"</span>, <span class="st">"black"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb11-11"><a></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>y, <span class="at">shape=</span>group, <span class="at">color=</span>color)) <span class="sc">+</span> </span>
+<span id="cb11-12"><a></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb11-13"><a></a>    <span class="fu">scale_color_identity</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-11-1.png" width="960" class="r-stretch"></section>
 <section id="faq-how-to-customize-themes" class="slide level2">
 <h2>FAQ: How to Customize Themes</h2>
 <p>Built-in themes + <code>ggthemes</code> package:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a><span class="fu">library</span>(ggplot2); <span class="fu">library</span>(ggthemes); </span>
-<span id="cb11-2"><a></a><span class="fu">library</span>(palmerpenguins); <span class="fu">library</span>(ggpmisc)</span>
-<span id="cb11-3"><a></a>p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(penguins, </span>
-<span id="cb11-4"><a></a>       <span class="fu">aes</span>(<span class="at">x=</span>flipper_length_mm, </span>
-<span id="cb11-5"><a></a>           <span class="at">y=</span>body_mass_g, </span>
-<span id="cb11-6"><a></a>           <span class="at">color=</span>species)) <span class="sc">+</span> </span>
-<span id="cb11-7"><a></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb11-8"><a></a>    <span class="fu">stat_poly_line</span>(<span class="at">se=</span><span class="cn">FALSE</span>, </span>
-<span id="cb11-9"><a></a>                   <span class="at">color=</span><span class="st">"black"</span>) <span class="sc">+</span></span>
-<span id="cb11-10"><a></a>    <span class="fu">stat_poly_eq</span>() <span class="sc">+</span> </span>
-<span id="cb11-11"><a></a>    <span class="fu">xlab</span>(<span class="st">"Flipper Length (mm)"</span>) <span class="sc">+</span> </span>
-<span id="cb11-12"><a></a>    <span class="fu">ylab</span>(<span class="st">"Body Mass (g)"</span>) <span class="sc">+</span> </span>
-<span id="cb11-13"><a></a>    <span class="fu">scale_color_brewer</span>(<span class="at">type=</span><span class="st">"qual"</span>, </span>
-<span id="cb11-14"><a></a>                       <span class="at">palette=</span><span class="dv">2</span>, </span>
-<span id="cb11-15"><a></a>                       <span class="at">name=</span><span class="st">"Species"</span>) <span class="sc">+</span> </span>
-<span id="cb11-16"><a></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span>species)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a><span class="fu">library</span>(ggplot2); <span class="fu">library</span>(ggthemes); </span>
+<span id="cb12-2"><a></a><span class="fu">library</span>(palmerpenguins); <span class="fu">library</span>(ggpmisc)</span>
+<span id="cb12-3"><a></a>p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(penguins, </span>
+<span id="cb12-4"><a></a>       <span class="fu">aes</span>(<span class="at">x=</span>flipper_length_mm, </span>
+<span id="cb12-5"><a></a>           <span class="at">y=</span>body_mass_g, </span>
+<span id="cb12-6"><a></a>           <span class="at">color=</span>species)) <span class="sc">+</span> </span>
+<span id="cb12-7"><a></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb12-8"><a></a>    <span class="fu">stat_poly_line</span>(<span class="at">se=</span><span class="cn">FALSE</span>, </span>
+<span id="cb12-9"><a></a>                   <span class="at">color=</span><span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb12-10"><a></a>    <span class="fu">stat_poly_eq</span>() <span class="sc">+</span> </span>
+<span id="cb12-11"><a></a>    <span class="fu">xlab</span>(<span class="st">"Flipper Length (mm)"</span>) <span class="sc">+</span> </span>
+<span id="cb12-12"><a></a>    <span class="fu">ylab</span>(<span class="st">"Body Mass (g)"</span>) <span class="sc">+</span> </span>
+<span id="cb12-13"><a></a>    <span class="fu">scale_color_brewer</span>(<span class="at">type=</span><span class="st">"qual"</span>, </span>
+<span id="cb12-14"><a></a>                       <span class="at">palette=</span><span class="dv">2</span>, </span>
+<span id="cb12-15"><a></a>                       <span class="at">name=</span><span class="st">"Species"</span>) <span class="sc">+</span> </span>
+<span id="cb12-16"><a></a>    <span class="fu">facet_wrap</span>(<span class="sc">~</span>species)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="faq-themes" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p>Default theme (<code>ggplot2::theme_grey()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-12-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-13-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-1" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p>Black and White theme (<code>ggplot2::theme_bw()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-13-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-14-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-2" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p>Minimal theme (<code>ggplot2::theme_minimal()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-14-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-15-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-3" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p>Light theme (<code>ggplot2::theme_light()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-15-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-16-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-4" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p>Dark theme (<code>ggplot2::theme_dark()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-16-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-17-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-5" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p>Excel theme (<code>ggthemes::theme_excel()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-17-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-18-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-6" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p>Google Docs theme (<code>ggthemes::theme_gdocs()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-18-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-19-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-7" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p><em>The Economist</em> theme (<code>ggthemes::theme_economist()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-19-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-20-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-8" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p><em>The Economist</em> theme (<code>ggthemes::theme_economist()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-20-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-21-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-9" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p><em>Solarized</em> theme (<code>ggthemes::theme_solarized()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-21-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-22-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-10" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p><em>Solarized2</em> theme (<code>ggthemes::theme_solarized_2()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-22-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-23-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-11" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p>Stata theme (<code>ggthemes::theme_stata()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-23-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-24-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-12" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p>Tufte theme (<code>ggthemes::theme_tufte()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-24-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-25-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-13" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p><em>Wall Street Journal</em> theme (<code>ggthemes::theme_wsj()</code>):</p>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-25-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-26-1.png" width="960" class="r-stretch"></section>
 <section id="faq-themes-14" class="slide level2">
 <h2>FAQ: Themes</h2>
 <p>Many more online:</p>
@@ -814,26 +837,26 @@ Michael Weylandt
 <h2>FAQ: Order of Layers</h2>
 <p>Order of layers <em>technically</em> matters, but the effect is small</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(penguins, <span class="fu">aes</span>(<span class="at">x=</span>bill_length_mm, <span class="at">y=</span>flipper_length_mm)) <span class="sc">+</span></span>
-<span id="cb12-2"><a></a>        <span class="fu">geom_point</span>(<span class="at">color=</span><span class="st">"black"</span>) <span class="sc">+</span> </span>
-<span id="cb12-3"><a></a>        <span class="fu">geom_smooth</span>(<span class="at">color=</span><span class="st">"blue"</span>, <span class="at">method=</span><span class="st">"lm"</span>) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Line on points"</span>)</span>
-<span id="cb12-4"><a></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(penguins, <span class="fu">aes</span>(<span class="at">x=</span>bill_length_mm, <span class="at">y=</span>flipper_length_mm)) <span class="sc">+</span></span>
-<span id="cb12-5"><a></a>        <span class="fu">geom_smooth</span>(<span class="at">color=</span><span class="st">"blue"</span>, <span class="at">method=</span><span class="st">"lm"</span>) <span class="sc">+</span> </span>
-<span id="cb12-6"><a></a>        <span class="fu">geom_point</span>(<span class="at">color=</span><span class="st">"black"</span>) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Points on line"</span>)</span>
-<span id="cb12-7"><a></a>p1 <span class="sc">+</span> p2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(penguins, <span class="fu">aes</span>(<span class="at">x=</span>bill_length_mm, <span class="at">y=</span>flipper_length_mm)) <span class="sc">+</span></span>
+<span id="cb13-2"><a></a>        <span class="fu">geom_point</span>(<span class="at">color=</span><span class="st">"black"</span>) <span class="sc">+</span> </span>
+<span id="cb13-3"><a></a>        <span class="fu">geom_smooth</span>(<span class="at">color=</span><span class="st">"blue"</span>, <span class="at">method=</span><span class="st">"lm"</span>) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Line on points"</span>)</span>
+<span id="cb13-4"><a></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(penguins, <span class="fu">aes</span>(<span class="at">x=</span>bill_length_mm, <span class="at">y=</span>flipper_length_mm)) <span class="sc">+</span></span>
+<span id="cb13-5"><a></a>        <span class="fu">geom_smooth</span>(<span class="at">color=</span><span class="st">"blue"</span>, <span class="at">method=</span><span class="st">"lm"</span>) <span class="sc">+</span> </span>
+<span id="cb13-6"><a></a>        <span class="fu">geom_point</span>(<span class="at">color=</span><span class="st">"black"</span>) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Points on line"</span>)</span>
+<span id="cb13-7"><a></a>p1 <span class="sc">+</span> p2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-26-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-27-1.png" width="960" class="r-stretch"></section>
 <section id="faq-order-of-layers-1" class="slide level2">
 <h2>FAQ: Order of layers</h2>
 <p>Order matters more with theme. Adding a <code>theme_*()</code> will override any <code>theme()</code> customization you did:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a>p1 <span class="ot">&lt;-</span> p <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"bottom"</span>)</span>
-<span id="cb13-2"><a></a>p2 <span class="ot">&lt;-</span> p <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"bottom"</span>) <span class="sc">+</span> <span class="fu">theme_bw</span>() </span>
-<span id="cb13-3"><a></a>p1 <span class="sc">+</span> p2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a></a>p1 <span class="ot">&lt;-</span> p <span class="sc">+</span> <span class="fu">theme_bw</span>() <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"bottom"</span>)</span>
+<span id="cb14-2"><a></a>p2 <span class="ot">&lt;-</span> p <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"bottom"</span>) <span class="sc">+</span> <span class="fu">theme_bw</span>() </span>
+<span id="cb14-3"><a></a>p1 <span class="sc">+</span> p2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-27-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-28-1.png" width="960" class="r-stretch"></section>
 <section id="faq-stat_poly_lineeq-vs-geom_smooth" class="slide level2">
 <h2>FAQ: <code>stat_poly_{line,eq}</code> vs <code>geom_smooth</code></h2>
 <p>By default <code>geom_smooth</code> fits a <em>generalized additive model</em> (GAM)</p>
@@ -845,12 +868,12 @@ Michael Weylandt
 <section id="faq-titles-and-captions" class="slide level2">
 <h2>FAQ: Titles and Captions</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
-<span id="cb14-2"><a></a>    <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Title"</span>, <span class="at">subtitle=</span><span class="st">"Subtitle"</span>, <span class="at">caption=</span><span class="st">"Caption"</span>,</span>
-<span id="cb14-3"><a></a>         <span class="at">tag=</span><span class="st">"Tag"</span>, <span class="at">alt=</span><span class="st">"Alt-Text"</span>, <span class="at">alt_insight=</span><span class="st">"Alt-Insight"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb15-2"><a></a>    <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Title"</span>, <span class="at">subtitle=</span><span class="st">"Subtitle"</span>, <span class="at">caption=</span><span class="st">"Caption"</span>,</span>
+<span id="cb15-3"><a></a>         <span class="at">tag=</span><span class="st">"Tag"</span>, <span class="at">alt=</span><span class="st">"Alt-Text"</span>, <span class="at">alt_insight=</span><span class="st">"Alt-Insight"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-28-1.png" width="960" class="r-stretch"><p><code>+ggtitle("text")</code> is just shorthand for <code>+labs(title="text")</code></p>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-29-1.png" width="960" class="r-stretch"><p><code>+ggtitle("text")</code> is just shorthand for <code>+labs(title="text")</code></p>
 </section>
 <section id="faq-relative-importance-of-aesthetics" class="slide level2">
 <h2>FAQ: Relative Importance of Aesthetics</h2>
@@ -874,11 +897,11 @@ Michael Weylandt
 <section id="faq-simpsons-paradox" class="slide level2">
 <h2>FAQ: Simpson’s Paradox</h2>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-30-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-31-1.png" width="960" class="r-stretch"></section>
 <section id="faq-simpsons-paradox-1" class="slide level2">
 <h2>FAQ: Simpson’s Paradox</h2>
 
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-31-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-32-1.png" width="960" class="r-stretch"></section>
 <section id="faq-twin-axes-plots" class="slide level2">
 <h2>FAQ: Twin Axes Plots</h2>
 <blockquote>
@@ -892,36 +915,36 @@ Michael Weylandt
 <h2>FAQ: Embedding images in <code>ggplot</code></h2>
 <p>See the <code>ggimage</code> or <code>ggflags</code> package for images as “points”:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a><span class="co">#devtools::install_github("jimjam-slam/ggflags"); </span></span>
-<span id="cb15-2"><a></a><span class="fu">library</span>(ggflags)</span>
-<span id="cb15-3"><a></a>d <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x=</span><span class="fu">rnorm</span>(<span class="dv">50</span>), <span class="at">y=</span><span class="fu">rnorm</span>(<span class="dv">50</span>), </span>
-<span id="cb15-4"><a></a>                <span class="at">country=</span><span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"ar"</span>,<span class="st">"fr"</span>, <span class="st">"nz"</span>, <span class="st">"gb"</span>, <span class="st">"es"</span>, <span class="st">"ca"</span>), <span class="dv">50</span>, <span class="cn">TRUE</span>), </span>
-<span id="cb15-5"><a></a>                <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb15-6"><a></a><span class="fu">ggplot</span>(d, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>y, <span class="at">country=</span>country, <span class="at">size=</span>x)) <span class="sc">+</span> </span>
-<span id="cb15-7"><a></a>  <span class="fu">geom_flag</span>() <span class="sc">+</span> </span>
-<span id="cb15-8"><a></a>  <span class="fu">scale_country</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a></a><span class="co">#devtools::install_github("jimjam-slam/ggflags"); </span></span>
+<span id="cb16-2"><a></a><span class="fu">library</span>(ggflags)</span>
+<span id="cb16-3"><a></a>d <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x=</span><span class="fu">rnorm</span>(<span class="dv">50</span>), <span class="at">y=</span><span class="fu">rnorm</span>(<span class="dv">50</span>), </span>
+<span id="cb16-4"><a></a>                <span class="at">country=</span><span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"ar"</span>,<span class="st">"fr"</span>, <span class="st">"nz"</span>, <span class="st">"gb"</span>, <span class="st">"es"</span>, <span class="st">"ca"</span>), <span class="dv">50</span>, <span class="cn">TRUE</span>), </span>
+<span id="cb16-5"><a></a>                <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb16-6"><a></a><span class="fu">ggplot</span>(d, <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>y, <span class="at">country=</span>country, <span class="at">size=</span>x)) <span class="sc">+</span> </span>
+<span id="cb16-7"><a></a>  <span class="fu">geom_flag</span>() <span class="sc">+</span> </span>
+<span id="cb16-8"><a></a>  <span class="fu">scale_country</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-32-1.png" width="960" class="r-stretch"></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-33-1.png" width="960" class="r-stretch"></section>
 <section id="faq-embedding-images" class="slide level2">
 <h2>FAQ: Embedding Images</h2>
 <p>See <code>cowplot::draw_image()</code> for image background:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a></a><span class="fu">library</span>(cowplot)</span>
-<span id="cb16-2"><a></a>p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(iris, <span class="fu">aes</span>(<span class="at">x =</span> Sepal.Length, <span class="at">fill =</span> Species)) <span class="sc">+</span></span>
-<span id="cb16-3"><a></a>  <span class="fu">geom_density</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb16-4"><a></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.05</span>))) <span class="sc">+</span></span>
-<span id="cb16-5"><a></a>  <span class="fu">theme_half_open</span>(<span class="dv">12</span>)</span>
-<span id="cb16-6"><a></a></span>
-<span id="cb16-7"><a></a>logo_file <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">"extdata"</span>, <span class="st">"logo.png"</span>, <span class="at">package =</span> <span class="st">"cowplot"</span>)</span>
-<span id="cb16-8"><a></a><span class="fu">ggdraw</span>() <span class="sc">+</span></span>
-<span id="cb16-9"><a></a>  <span class="fu">draw_image</span>(</span>
-<span id="cb16-10"><a></a>    logo_file, <span class="at">scale =</span> .<span class="dv">7</span></span>
-<span id="cb16-11"><a></a>  ) <span class="sc">+</span></span>
-<span id="cb16-12"><a></a>  <span class="fu">draw_plot</span>(p)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb17-2"><a></a>p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(iris, <span class="fu">aes</span>(<span class="at">x =</span> Sepal.Length, <span class="at">fill =</span> Species)) <span class="sc">+</span></span>
+<span id="cb17-3"><a></a>  <span class="fu">geom_density</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb17-4"><a></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">mult =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.05</span>))) <span class="sc">+</span></span>
+<span id="cb17-5"><a></a>  <span class="fu">theme_half_open</span>(<span class="dv">12</span>)</span>
+<span id="cb17-6"><a></a></span>
+<span id="cb17-7"><a></a>logo_file <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">"extdata"</span>, <span class="st">"logo.png"</span>, <span class="at">package =</span> <span class="st">"cowplot"</span>)</span>
+<span id="cb17-8"><a></a><span class="fu">ggdraw</span>() <span class="sc">+</span></span>
+<span id="cb17-9"><a></a>  <span class="fu">draw_image</span>(</span>
+<span id="cb17-10"><a></a>    logo_file, <span class="at">scale =</span> .<span class="dv">7</span></span>
+<span id="cb17-11"><a></a>  ) <span class="sc">+</span></span>
+<span id="cb17-12"><a></a>  <span class="fu">draw_plot</span>(p)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="slides07_files/figure-revealjs/unnamed-chunk-33-1.png" width="960" class="r-stretch"></section></section>
+<img data-src="slides07_files/figure-revealjs/unnamed-chunk-34-1.png" width="960" class="r-stretch"></section></section>
 <section>
 <section id="today" class="title-slide slide level1 center">
 <h1>Today</h1>

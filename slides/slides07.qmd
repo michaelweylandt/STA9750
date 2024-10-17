@@ -33,6 +33,10 @@ Tentative Topics
 -   MP#03: Political Analysis
 -   MP#04: Retirement Forecasting
 
+## Course Project
+
+Proposal feedback *soon* (need to do 2 more before releasing)
+
 ## Pre-Assignments
 
 Brightspace - Wednesdays at 11:45
@@ -260,6 +264,25 @@ ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) +
     geom_point() + theme_bw() + 
     scale_color_fermenter(type="div") # Binned + Diverging
 ```
+
+## FAQ: How to "hard-code" colors
+
+```{r echo=TRUE}
+library(dplyr)
+data <- data.frame(x = rnorm(5), 
+                   y = rnorm(5), 
+                   group = c("a", "a", "b", "b", "b"))
+
+data |> 
+    group_by(group) |>
+    mutate(n_count = n()) |>
+    ungroup() |>
+    mutate(color = ifelse(n_count == max(n_count), "red", "black")) |>
+    ggplot(aes(x=x, y=y, shape=group, color=color)) + 
+    geom_point() + 
+    scale_color_identity()
+```
+
 
 ## FAQ: How to Customize Themes
 
