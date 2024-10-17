@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>lab07 – STA 9750</title>
+<title>STA/OPR 9750 Week 7 In-Class Activity: More Thoughts on Plots – STA 9750</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -67,6 +101,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -126,19 +189,162 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#exercise-1-basic-ggplot2-15-minutes" id="toc-exercise-1-basic-ggplot2-15-minutes" class="nav-link active" data-scroll-target="#exercise-1-basic-ggplot2-15-minutes">Exercise 1: Basic <code>ggplot2</code> (15 minutes)</a></li>
+  <li><a href="#exercise-2-trend-analysis-with-ggplot2-30-minutes" id="toc-exercise-2-trend-analysis-with-ggplot2-30-minutes" class="nav-link" data-scroll-target="#exercise-2-trend-analysis-with-ggplot2-30-minutes">Exercise 2: Trend Analysis with <code>ggplot2</code> (30 minutes)</a></li>
+  <li><a href="#exercise-3-animated-graphics-1-hour" id="toc-exercise-3-animated-graphics-1-hour" class="nav-link" data-scroll-target="#exercise-3-animated-graphics-1-hour">Exercise 3: Animated Graphics (1 hour)</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab07.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab07.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">STA/OPR 9750 Week 7 In-Class Activity: More Thoughts on Plots</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
 
 
+</header>
 
-</main> <!-- /main -->
+
+<p>Update Slides: <a href="./slides/slides07.html">Slides 07</a></p>
+<p>This week, we’re going to break into project groups and do three <code>ggplot2</code> exercises of increasing difficulty. As you work through these with your teammates, be sure to reflect on what plots and what tools you will need to best present your mini-project and course project findings.</p>
+<section id="exercise-1-basic-ggplot2-15-minutes" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-1-basic-ggplot2-15-minutes">Exercise 1: Basic <code>ggplot2</code> (15 minutes)</h2>
+<p>In this exercise, you will create <code>ggplot2</code> graphics to analyze the <code>diamonds</code> data from the <code>ggplot2</code> package. This data contains pricing and measurements for 50,000 diamonds sold in the US. (Note that these prices are rather out of date.) Before beginning this exercise, you might want to read about the <a href="https://www.tiffany.com/engagement/the-tiffany-guide-to-diamonds/">“4 C’s of Diamonds”</a> commonly used to measure quality.</p>
+<ol type="1">
+<li><p>Make a scatter plot of price vs carat and facet it by cut.</p></li>
+<li><p>Use <code>geom_smooth</code> to see how the price-carat relationship changes by color.</p></li>
+<li><p>Create a <a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html">frequency polygon</a> plot of price, broken out by different diamond cuts.</p></li>
+<li><p>Create a scatter plot of color by clarity. Why is this plot not useful?</p>
+<ul>
+<li><em>Stretch Goal</em>: Make a better plot to visualize this relationship using the <code>ggmosaic</code> package.</li>
+</ul></li>
+</ol>
+</section>
+<section id="exercise-2-trend-analysis-with-ggplot2-30-minutes" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-2-trend-analysis-with-ggplot2-30-minutes">Exercise 2: Trend Analysis with <code>ggplot2</code> (30 minutes)</h2>
+<p>The <a href="https://www.esd.ornl.gov/iab/iab2-15.htm">Carbon Dioxide Information and Analysis Center</a> studies the effect of carbon dioxide on global and local temperature trends. A key tool in their analysis is the temperature “anomaly”. An anomaly is the difference between observed temperature (in a world with anthropogenic atmospheric CO2) and ‘natural’ temperature (from a world without anthropogenic gases). Note that these anomalies require significant analysis to compute and are not “simple observational” data.</p>
+<p>Politicians have adopted the tools of temperature anomaly to set national and international emissions targets, <em>e.g.</em>, the <a href="https://en.wikipedia.org/wiki/2_degree_climate_target">2 Degree Target</a>. Note that 2 degrees is calculated as a <em>global</em> average: in practice, some regions will experience a much larger change in temperature, while others may experience a smaller change or even a negative change.</p>
+<p>The <a href="https://www.cvxgrp.org/CVXR/"><code>CVXR</code></a> package includes the <code>cdiac</code> dataset, capturing CDIAC’s estimated global temperature anomalies from 1850 to 2015. In this question, you will explore these estimated anomalies. Note that you may need to install the <code>CVXR</code> package before beginning this question.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"CVXR"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(CVXR)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(cdiac)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(cdiac)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 166
+Columns: 14
+$ year   &lt;int&gt; 1850, 1851, 1852, 1853, 1854, 1855, 1856, 1857, 1858, 1859, 186…
+$ jan    &lt;dbl&gt; -0.702, -0.303, -0.308, -0.177, -0.360, -0.176, -0.119, -0.512,…
+$ feb    &lt;dbl&gt; -0.284, -0.362, -0.477, -0.330, -0.280, -0.400, -0.373, -0.344,…
+$ mar    &lt;dbl&gt; -0.732, -0.485, -0.505, -0.318, -0.284, -0.303, -0.513, -0.434,…
+$ apr    &lt;dbl&gt; -0.570, -0.445, -0.559, -0.352, -0.349, -0.217, -0.371, -0.646,…
+$ may    &lt;dbl&gt; -0.325, -0.302, -0.209, -0.268, -0.230, -0.336, -0.119, -0.567,…
+$ jun    &lt;dbl&gt; -0.213, -0.189, -0.038, -0.179, -0.215, -0.160, -0.288, -0.310,…
+$ jul    &lt;dbl&gt; -0.128, -0.215, -0.016, -0.059, -0.228, -0.268, -0.297, -0.544,…
+$ aug    &lt;dbl&gt; -0.233, -0.153, -0.195, -0.148, -0.163, -0.159, -0.305, -0.327,…
+$ sep    &lt;dbl&gt; -0.444, -0.108, -0.125, -0.409, -0.115, -0.339, -0.459, -0.393,…
+$ oct    &lt;dbl&gt; -0.452, -0.063, -0.216, -0.359, -0.188, -0.211, -0.384, -0.467,…
+$ nov    &lt;dbl&gt; -0.190, -0.030, -0.187, -0.256, -0.369, -0.212, -0.608, -0.665,…
+$ dec    &lt;dbl&gt; -0.268, -0.067, 0.083, -0.444, -0.232, -0.510, -0.440, -0.356, …
+$ annual &lt;dbl&gt; -0.375, -0.223, -0.224, -0.271, -0.246, -0.271, -0.352, -0.460,…</code></pre>
+</div>
+</div>
+<ol type="1">
+<li>Plot the estimated annual global mean temperature (GMT) anomaly from 1850 to 2015.</li>
+</ol>
+<ul>
+<li>Use <code>scale_x_date</code> to improve the <span class="math inline">\(x\)</span>-axis</li>
+</ul>
+<ol start="2" type="1">
+<li>Plot the GMT anomaly for each month on the same plot (as different lines).</li>
+</ol>
+<ul>
+<li>Before starting this, you may need to use the <code>pivot_</code> functionality to get this data in the right shape. Recall that <code>ggplot2</code> expects “data point” per row.</li>
+</ul>
+<ol start="3" type="1">
+<li>Plot the monthly GMT anomaly series as one long line (with a point for each month).</li>
+<li>Now focus only on July: plot the July GMT anomaly series. Use the <code>runmed()</code><br>
+function to add a second series to the plot giving the median July GMT anomaly of the previous 5 years. Is there evidence of an increasing warming trend?</li>
+<li>For each year, identify the warmest month (as measured by GMT anomaly); create a histogram showing the probability a given month was the hottest (largest anomaly) in its year.<br>
+</li>
+</ol>
+<ul>
+<li>Make sure your <span class="math inline">\(x\)</span>-axis is in reasonable (chronological) order - not alphabetical.</li>
+<li>You will need to use <code>dplyr</code> tools to find the warmest month in a given year.</li>
+</ul>
+</section>
+<section id="exercise-3-animated-graphics-1-hour" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-3-animated-graphics-1-hour">Exercise 3: Animated Graphics (1 hour)</h2>
+<p>In this question, you will use the <code>gganimate</code> extension to <code>ggplot2</code> to create animated graphics. We will use the famous <code>gapminder</code> data set from the <code>gapminder</code> package. Install the <code>gganimate</code>, <code>gapminder</code>, <code>gifski</code>, and <code>av</code> packages before attempting attempting this problem.</p>
+<ol type="1">
+<li>For background, watch <a href="https://www.youtube.com/watch?v=jbkSRLYSojo">Hans Rosling’s talk on human prosperity.</a></li>
+<li>Create a scatter plot of the relationship between GDP and Life Expectancy in the year 1952.</li>
+</ol>
+<ul>
+<li>Color points by continent and use the size aesthetic to represent population.</li>
+<li>You might want to put quantities on a log-scale.</li>
+</ul>
+<ol start="3" type="1">
+<li>There is an outlier country in this data with very high GDP.</li>
+</ol>
+<ul>
+<li>What is it?</li>
+<li>Identify and remove it.</li>
+</ul>
+<ol start="4" type="1">
+<li>Using the <code>transition_time</code> function, make this an animated plot showing how this data changes over time.</li>
+<li>Using the theme machinery, labels, <em>etc.</em> make this a “publication ready” plot.</li>
+</ol>
+<ul>
+<li>Note that you can use <code>{frame_time}</code> in the title to get a dynamically changing year.</li>
+</ul>
+<ol start="6" type="1">
+<li>Use the <code>country_colors</code> data from the <code>gapminder</code> plot to color the points using Dr.&nbsp;Rosling’s perferred color scheme.</li>
+</ol>
+<ul>
+<li>This is a different color scale than <code>ggplot2</code> uses by default, so you will need to override the <code>scale_color_*</code> functionality.</li>
+<li>The help page for <code>?country_colors</code> will be helpful here.</li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lab07_files/figure-html/unnamed-chunk-3-1.gif" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p><code>CVXR</code> is actually an incredible piece of software and super-useful for developing and implementing statistical and machine learning techniques. We, sadly, will not explore it in this course.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -564,4 +770,4 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab07.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab07.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab07.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab07.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
