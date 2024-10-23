@@ -15,7 +15,13 @@ DATES <- readr::read_csv("../key_dates.csv") |>
 ```
 
 ```{r echo=FALSE}
-mp <-  DATES |> filter(element == "Mini-Projects", item == 2)
+library(glue)
+mp_id <- 2
+mp <-  DATES |> filter(element == "Mini-Projects", 
+                       item == mp_id)
+mp_file <- list(qmd=glue("`mp{mp_id}.qmd`"), 
+                html=glue("`mp{mp_id}.html`"),
+                html_long=glue("`docs/mp{mp_id}.html`"))
 ```
 
 ### Due Dates
@@ -92,9 +98,9 @@ released under a fairly permissive usage license. Take advantage of it!
 
 ### Submission Instructions
 
-After completing the analysis, write up your findings, *showing all of your code*, using a dynamic `quarto` document and post it to your course repository. The `qmd` file should be named `mp02.qmd` so the rendered document can be found at `docs/mp02.html` in the student's repository and served at the URL:
+After completing the analysis, write up your findings, *showing all of your code*, using a dynamic `quarto` document and post it to your course repository. The `qmd` file should be named `{r} I(mp_file$qmd)` so the rendered document can be found at `{r} I(mp_file$html_long)` in the student's repository and served at the URL:
 
-> `https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp01.html`
+> `https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp02.html`
 
 Once you confirm this website works (substituting `<GITHUB_ID>` for the actual
 GitHub username provided to the professor in [MP#00](./mini00.html) of course),
