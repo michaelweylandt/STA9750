@@ -1,0 +1,293 @@
+---
+title: "{{< var course.short >}} Week 9 Pre Assignment: Flat-File Data Ingest"
+---
+
+We now turn to the next "unit" of this course - acquiring data and preparing
+it for further analysis. In what follows, our goal will be go get data to a 
+"tidy" format suitable for use with `tidyverse` tools like `dplyr` and `ggplot2`.
+Unfortunately, this problem becomes a rather difficult one. While every "tidy"
+data set shares certain characteristics, non-tidy data, by definition, won't. 
+Still - we are analysts and data scientists - so we soldier on and begin
+to work with the nasty and difficult data the real world often presents us with. 
+
+We are spending two weeks on this topics of "getting data into `R`". Roughly, 
+this will break into two sections: 
+
+1) Given a file or a web service designed to share data, 
+   how do I get it into `R`? 
+2) Given a plain text website, how do I get the text into `R`? 
+
+In this pre-assignment, we're focusing on the first part of the first section:
+reading data from a file into `R`. This will be relatively fast - we've already
+done some of it this semester - but it's an essential skill set. 
+
+## What is a File?
+
+Before we work on getting data from files into `R`, it's worth taking a moment
+to review what a file actually _is_. Modern technology often tries to hide the
+"true nature" of things behind ever increasing stacks of accounts and cloud
+services, but we're going back to basics. 
+
+**A file is a long series of bits, with a well-defined beginning and end.**
+
+That's it - files aren't required to have extensions, formats, or anything else.
+Computers associated each file with a name, organized into a _file system_, but
+this all lives outside the file. 
+
+That general definition - lots of bits - is not particularly helpful for sharing
+of content and data, so files are conventionally shared with _formats_. A set of
+rules that tell programs how to interpret the bits of a file. Essentially,
+a _file format_ is a _social convention_ that exists "around" the file, enabling
+us to work with it productively and easily. 
+
+A huge number of file formats exist - images, movies, text documents, financial
+transaction records, data bases - and you thankfully do not need to know them
+all. We can generally divide these into two buckets: 
+
+- Plain text formats. These are formats which are designed to be easily readable
+  across a wide range of tools. This flexibility makes plain text formats 
+  particularly popular among tech-types, as users are not forced into using a
+  piece of (typically expensive) software.[^1]
+  
+  Most of the files we have seen in this course are _plain-text_: `qmd` files,
+  `csv` files, `R` files, *etc.* We have edited them primarily in `RStudio`, 
+  but you could just as easily access them in tools like VS Code, Eclipse,
+  Jupyter, or even rather primitive tools like Notepad.
+  
+- Binary formats. These are typically specialized formats used to encode
+  complex data formats. Image formats, a common example of binary formats,
+  are necessarily more complex than anything we could represent in text. 
+  Because of this complexity, binary formats tend to require specialized
+  software to read and edit. For popular formats, suitable software can 
+  be found on almost any machine: *e.g.*, almost any computer you will use
+  comes with some PDF-reading software pre-installed, even if you later choose
+  to upgrade it to a more advanced tool. 
+  
+Some files blend these two elements, *e.g.*, an HTML page with a mix of
+plain text and an embedded image, but it's still a useful distinction. 
+
+Given all that, how do our computers actually know what to do with a file? We
+open and close files all day and rarely have to tell our computers what software
+to use or how to read the file. 
+
+There are two general conventions, one more popular in Unix-type systems (MacOS
+and Linux) and one more popular on Windows-like machines. 
+
+Most file formats - and especially most binary formats - begin with a "magic
+string" that clearly states what format is used to encode the file. By reading
+this, the operating system can tell what type of file format is used and 
+call the appropriate software. For instance, PDF files must start with the
+string  `%PDF - 1.4`. When your computer reads this, it knows it has a
+found a PDF and calls the appropriate software.
+
+This type of convention is powerful, though it sometimes struggles with very
+rare formats if the destination machine has never been programmed to handle
+that type of file. It has the advantage that the magic string is _inside_ the
+file. If the file is transferred without corruption, it's impossible to 
+"misplace" the file format information. 
+
+The other convention used to identify file formats is the _extension_. A
+file extension is a set of a few letters following a period at the end of
+the file name. We often adopt these extensions into our everyday discourse, 
+*e.g.*, a "PDF" file or a "GIF". It is important to note that the _extension_
+is not part of the file and that it is a second piece of information _in
+addition_ to the file contents. As such, this is a second place where 
+things can be corrupted and mistakes can be made. This isn't a huge problem - 
+despite our best efforts, computers are pretty reliable - but it is something
+to be aware of.  Importantly, we can change the _extension_ without ever editing
+the file itself; this is a double-edged sword. 
+
+In an attempt to be more user-friendly, certain operating systems - especially
+Microsoft Windows - are quite dogmatic about the use of file extensions,
+sometimes even going so far as to "hide" the extension from the user. If you've
+ever seen a file with a name like "doc.html.html", it's almost always because
+a user tried to add or change an extension, but Windows hid the "true" extension
+away from them. (If you're on a Windows machine, I recommend setting Windows
+to always show the extensions to avoid this type of mistake.)
+
+Extension-based formatting is popular and, when it works well, can be quite
+efficient, but it's worth re-emphasizing: *the truth is in the bits*, not 
+the name. Pragmatically, the true test of whether a file is in a format is
+whether software designed to read that format can handle it. 
+
+## So What? 
+
+At this point, you should probably be asking yourself why any of this matters. 
+The key is to understand that a _format_ is just a set of rules for
+_interpreting_ the bits of a file. To read a file into `R`, we only then need
+to find a function that knows how to map that format into `R`. 
+
+People love `R`, and many such "reader" functions exist. We have already seen
+
+- `readr::read_csv`
+- `sf::read_sf`
+
+several times in this course. But there are _many_ others. The `readr` package
+provides functions for reading standard "plain-text" formats, including: 
+
+- `readr::read_csv` ("comma separated values")
+- `readr::read_tsv` ("tab separated values")
+- `readr::read_delim` (read files with an arbitrary delimiter, *e.g.*, semi-colon separated values)
+- `readr::read_fwf` (read files where columns have a fixed width)
+
+Some of these functions are quite advanced, and can even automatically download
+and decompress files from web services, if you pass it a URL instead of a
+(local) file name.[^2]
+
+The `haven` package provides tools for reading data formats generated by
+other statistical software: 
+
+- `haven::read_stata`
+- `haven::read_spss`
+- `haven::read_sas`
+
+In general, if you are reading a not-entirely bespoke file format into `R`,
+there is almost always a function for doing so. If you come across a format
+for your course project that you are struggling to read, ask the course staff. 
+
+## Reading in Action
+
+We have already read many files in this course, and when all goes well, 
+the process is quite seamless: 
+
+```{r}
+library(readr)
+cars <- read_csv("https://github.com/tidyverse/readr/raw/main/inst/extdata/mtcars.csv")
+
+```
+
+If the data provider produces well-formatted files, you usually do not
+require any more thought than identifying the right `read` function (possibly
+from a package which you need to install and load as well) and finding the
+file path. Unfortunately, data providers are rarely as perfect as we might hope.
+
+Con-Ed, NYC's electric utility, provides electric usage data in 15-minute
+intervals. My usage data for 2024-10-24 looks something like this: 
+
+```{r echo=FALSE}
+cat(readLines("mw_coned_20241024.csv")[1:20], sep="\n")
+```
+
+It's clear that this file is "csv-ish", but is not a standard CSV file. ConEd
+includes a "header" of questionable utility. While we could edit this file
+by hand to only include the "data parts", we can also adjust our file reading
+code. 
+
+The default `read.csv` function in `R` fails on this file: 
+
+```{r error=TRUE}
+read.csv("mw_coned_20241024.csv")
+```
+
+This message is a bit opaque, but it's essentially saying that there 
+are more columns in the middle of the file (where the data "should" be) than
+there are names in the first (blank) line of the file. 
+
+The improved `read_csv` function from the `readr` package tries harder and
+seems to succeed, but it also fails: 
+
+```{r}
+library(readr)
+read_csv("mw_coned_20241024.csv")
+```
+
+If you look at this closely, it thinks we only have a _two column_ file. 
+But the data clearly has several more columns than that. 
+
+The warning message here is helpful: it encourages us to use the `problems()`
+function to get more information on possible issues: 
+
+```{r}
+library(readr)
+con_ed <- read_csv("mw_coned_20241024.csv")
+problems(con_ed)
+```
+
+We see here that `R` expected only two columns, based on the top section of
+the file, but every row of "substance" beyond the ConEd-special header actually
+has six columns. Note that `R` is giving us a `warning` here - it could
+conceivably continue, here by smashing together the extra columns - so it does
+so. This type of warning is not uncommon in reading malformatted data. It is
+your responsibility as an analyst to investigate the warnings and see if they
+are true signs of trouble or false positives. A particularly common warning,
+which you have already encountered in this course, is when data sets use a
+non-standard way to encode `NA` values. 
+
+In this case, there's actually an easy fix - we just want to skip those
+first rows for the header:  
+
+```{r}
+library(readr)
+con_ed <- read_csv("mw_coned_20241024.csv", skip = 6)
+```
+
+We see lots of useful information in this read out. Our data has
+
+- 34 rows
+- 6 columns
+- Comma delimited fields
+- The columns types are: 
+  - Character (1)
+  - Double / Numeric (1)
+  - Logical (1)
+  - Date (1)
+  - Time (2)
+  
+Here the logical column (`NOTES`) is a bit of a red herring; it's all empty
+for this file, so `R` interprets as the simplest data type that fits, 
+
+From here, I'm going to turn off printing of the data import message to keep
+this file readable, but you should always at least quickly eyeball them when
+importing a new data set. 
+
+At this point, we're ready to proceed with tidying up our data. 
+The `USAGE (kWh)` column is clearly the most important to us, but `R` doesn't
+like column names with spaces and punctuation, so let's go ahead and manually
+rename it: 
+
+```{r warning=FALSE, message=FALSE}
+library(readr); library(dplyr)
+con_ed <- read_csv("mw_coned_20241024.csv", skip = 6) |>
+    rename(usage = `USAGE (kWh)`)
+```
+
+Recall that we have to use double back ticks to surround "weird" names. We 
+can also drop the unused `NOTES` column and clean up the start and end time
+columns as well. 
+
+```{r warning=FALSE, message=FALSE}
+library(readr); library(dplyr)
+con_ed <- read_csv("mw_coned_20241024.csv", skip = 6) |>
+    rename(usage = `USAGE (kWh)`, 
+           start_time = `START TIME`,
+           end_time = `END TIME`) |>
+    select(-NOTES)
+```
+
+We now have nice tidy data that we can use to make a plot: 
+
+```{r warning=FALSE, message=FALSE}
+library(readr); library(dplyr); library(ggplot2)
+read_csv("mw_coned_20241024.csv", skip = 6) |>
+    rename(usage = `USAGE (kWh)`, 
+           start_time = `START TIME`,
+           end_time = `END TIME`) |>
+    select(-NOTES) |>
+    ggplot(aes(x=start_time, y=usage)) + 
+    geom_line()
+```
+
+Can you see i) when my phone finished charting overnight; and ii) when I 
+started to make breakfast on my electric stovetop? 
+
+::: {.callout-tip title="ConEd Practice"}
+
+If you have your own ConEd account, download [your Energy Usage
+data file](https://www.coned.com/en/accounts-billing/my-account/energy-use) 
+by hand and import it into `R`. Can you find patterns of your daily life
+in this data? 
+
+:::
+
+After finishing this document, complete the Weekly Pre-Assignment Quiz
+on Brightspace.
