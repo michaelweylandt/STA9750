@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>pa09 – STA 9750</title>
+<title>STA/OPR 9750 Week 9 Pre Assignment: Flat-File Data Ingest – STA 9750</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -126,17 +160,302 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#what-is-a-file" id="toc-what-is-a-file" class="nav-link active" data-scroll-target="#what-is-a-file">What is a File?</a></li>
+  <li><a href="#so-what" id="toc-so-what" class="nav-link" data-scroll-target="#so-what">So What?</a></li>
+  <li><a href="#reading-in-action" id="toc-reading-in-action" class="nav-link" data-scroll-target="#reading-in-action">Reading in Action</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/preassigns/pa09.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/preassigns/pa09.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">STA/OPR 9750 Week 9 Pre Assignment: Flat-File Data Ingest</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
 
 
+</header>
+
+
+<p>We now turn to the next “unit” of this course - acquiring data and preparing it for further analysis. In what follows, our goal will be go get data to a “tidy” format suitable for use with <code>tidyverse</code> tools like <code>dplyr</code> and <code>ggplot2</code>. Unfortunately, this problem becomes a rather difficult one. While every “tidy” data set shares certain characteristics, non-tidy data, by definition, won’t. Still - we are analysts and data scientists - so we soldier on and begin to work with the nasty and difficult data the real world often presents us with.</p>
+<p>We are spending two weeks on this topics of “getting data into <code>R</code>”. Roughly, this will break into two sections:</p>
+<ol type="1">
+<li>Given a file or a web service designed to share data, how do I get it into <code>R</code>?</li>
+<li>Given a plain text website, how do I get the text into <code>R</code>?</li>
+</ol>
+<p>In this pre-assignment, we’re focusing on the first part of the first section: reading data from a file into <code>R</code>. This will be relatively fast - we’ve already done some of it this semester - but it’s an essential skill set.</p>
+<section id="what-is-a-file" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-a-file">What is a File?</h2>
+<p>Before we work on getting data from files into <code>R</code>, it’s worth taking a moment to review what a file actually <em>is</em>. Modern technology often tries to hide the “true nature” of things behind ever increasing stacks of accounts and cloud services, but we’re going back to basics.</p>
+<p><strong>A file is a long series of bits, with a well-defined beginning and end.</strong></p>
+<p>That’s it - files aren’t required to have extensions, formats, or anything else. Computers associated each file with a name, organized into a <em>file system</em>, but this all lives outside the file.</p>
+<p>That general definition - lots of bits - is not particularly helpful for sharing of content and data, so files are conventionally shared with <em>formats</em>. A set of rules that tell programs how to interpret the bits of a file. Essentially, a <em>file format</em> is a <em>social convention</em> that exists “around” the file, enabling us to work with it productively and easily.</p>
+<p>A huge number of file formats exist - images, movies, text documents, financial transaction records, data bases - and you thankfully do not need to know them all. We can generally divide these into two buckets:</p>
+<ul>
+<li><p>Plain text formats. These are formats which are designed to be easily readable across a wide range of tools. This flexibility makes plain text formats particularly popular among tech-types, as users are not forced into using a piece of (typically expensive) software.[^1]</p>
+<p>Most of the files we have seen in this course are <em>plain-text</em>: <code>qmd</code> files, <code>csv</code> files, <code>R</code> files, <em>etc.</em> We have edited them primarily in <code>RStudio</code>, but you could just as easily access them in tools like VS Code, Eclipse, Jupyter, or even rather primitive tools like Notepad.</p></li>
+<li><p>Binary formats. These are typically specialized formats used to encode complex data formats. Image formats, a common example of binary formats, are necessarily more complex than anything we could represent in text. Because of this complexity, binary formats tend to require specialized software to read and edit. For popular formats, suitable software can be found on almost any machine: <em>e.g.</em>, almost any computer you will use comes with some PDF-reading software pre-installed, even if you later choose to upgrade it to a more advanced tool.</p></li>
+</ul>
+<p>Some files blend these two elements, <em>e.g.</em>, an HTML page with a mix of plain text and an embedded image, but it’s still a useful distinction.</p>
+<p>Given all that, how do our computers actually know what to do with a file? We open and close files all day and rarely have to tell our computers what software to use or how to read the file.</p>
+<p>There are two general conventions, one more popular in Unix-type systems (MacOS and Linux) and one more popular on Windows-like machines.</p>
+<p>Most file formats - and especially most binary formats - begin with a “magic string” that clearly states what format is used to encode the file. By reading this, the operating system can tell what type of file format is used and call the appropriate software. For instance, PDF files must start with the string <code>%PDF - 1.4</code>. When your computer reads this, it knows it has a found a PDF and calls the appropriate software.</p>
+<p>This type of convention is powerful, though it sometimes struggles with very rare formats if the destination machine has never been programmed to handle that type of file. It has the advantage that the magic string is <em>inside</em> the file. If the file is transferred without corruption, it’s impossible to “misplace” the file format information.</p>
+<p>The other convention used to identify file formats is the <em>extension</em>. A file extension is a set of a few letters following a period at the end of the file name. We often adopt these extensions into our everyday discourse, <em>e.g.</em>, a “PDF” file or a “GIF”. It is important to note that the <em>extension</em> is not part of the file and that it is a second piece of information <em>in addition</em> to the file contents. As such, this is a second place where things can be corrupted and mistakes can be made. This isn’t a huge problem - despite our best efforts, computers are pretty reliable - but it is something to be aware of. Importantly, we can change the <em>extension</em> without ever editing the file itself; this is a double-edged sword.</p>
+<p>In an attempt to be more user-friendly, certain operating systems - especially Microsoft Windows - are quite dogmatic about the use of file extensions, sometimes even going so far as to “hide” the extension from the user. If you’ve ever seen a file with a name like “doc.html.html”, it’s almost always because a user tried to add or change an extension, but Windows hid the “true” extension away from them. (If you’re on a Windows machine, I recommend setting Windows to always show the extensions to avoid this type of mistake.)</p>
+<p>Extension-based formatting is popular and, when it works well, can be quite efficient, but it’s worth re-emphasizing: <em>the truth is in the bits</em>, not the name. Pragmatically, the true test of whether a file is in a format is whether software designed to read that format can handle it.</p>
+</section>
+<section id="so-what" class="level2">
+<h2 class="anchored" data-anchor-id="so-what">So What?</h2>
+<p>At this point, you should probably be asking yourself why any of this matters. The key is to understand that a <em>format</em> is just a set of rules for <em>interpreting</em> the bits of a file. To read a file into <code>R</code>, we only then need to find a function that knows how to map that format into <code>R</code>.</p>
+<p>People love <code>R</code>, and many such “reader” functions exist. We have already seen</p>
+<ul>
+<li><code>readr::read_csv</code></li>
+<li><code>sf::read_sf</code></li>
+</ul>
+<p>several times in this course. But there are <em>many</em> others. The <code>readr</code> package provides functions for reading standard “plain-text” formats, including:</p>
+<ul>
+<li><code>readr::read_csv</code> (“comma separated values”)</li>
+<li><code>readr::read_tsv</code> (“tab separated values”)</li>
+<li><code>readr::read_delim</code> (read files with an arbitrary delimiter, <em>e.g.</em>, semi-colon separated values)</li>
+<li><code>readr::read_fwf</code> (read files where columns have a fixed width)</li>
+</ul>
+<p>Some of these functions are quite advanced, and can even automatically download and decompress files from web services, if you pass it a URL instead of a (local) file name.[^2]</p>
+<p>The <code>haven</code> package provides tools for reading data formats generated by other statistical software:</p>
+<ul>
+<li><code>haven::read_stata</code></li>
+<li><code>haven::read_spss</code></li>
+<li><code>haven::read_sas</code></li>
+</ul>
+<p>In general, if you are reading a not-entirely bespoke file format into <code>R</code>, there is almost always a function for doing so. If you come across a format for your course project that you are struggling to read, ask the course staff.</p>
+</section>
+<section id="reading-in-action" class="level2">
+<h2 class="anchored" data-anchor-id="reading-in-action">Reading in Action</h2>
+<p>We have already read many files in this course, and when all goes well, the process is quite seamless:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>cars <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"https://github.com/tidyverse/readr/raw/main/inst/extdata/mtcars.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 32 Columns: 11
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+dbl (11): mpg, cyl, disp, hp, drat, wt, qsec, vs, am, gear, carb
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+<p>If the data provider produces well-formatted files, you usually do not require any more thought than identifying the right <code>read</code> function (possibly from a package which you need to install and load as well) and finding the file path. Unfortunately, data providers are rarely as perfect as we might hope.</p>
+<p>Con-Ed, NYC’s electric utility, provides electric usage data in 15-minute intervals. My usage data for 2024-10-24 looks something like this:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Name,MICHAEL WEYLANDT
+Address,ADDRESS REDACTED
+Account Number,ACCOUNT NUMBER REDACTED
+Service,Service 1
+
+TYPE,DATE,START TIME,END TIME,USAGE (kWh),NOTES
+Electric usage,2024-10-24,00:00,00:14,0.08,
+Electric usage,2024-10-24,00:15,00:29,0.08,
+Electric usage,2024-10-24,00:30,00:44,0.08,
+Electric usage,2024-10-24,00:45,00:59,0.08,
+Electric usage,2024-10-24,01:00,01:14,0.09,
+Electric usage,2024-10-24,01:15,01:29,0.08,
+Electric usage,2024-10-24,01:30,01:44,0.08,
+Electric usage,2024-10-24,01:45,01:59,0.1,
+Electric usage,2024-10-24,02:00,02:14,0.11,
+Electric usage,2024-10-24,02:15,02:29,0.11,
+Electric usage,2024-10-24,02:30,02:44,0.1,
+Electric usage,2024-10-24,02:45,02:59,0.08,
+Electric usage,2024-10-24,03:00,03:14,0.08,</code></pre>
+</div>
+</div>
+<p>It’s clear that this file is “csv-ish”, but is not a standard CSV file. ConEd includes a “header” of questionable utility. While we could edit this file by hand to only include the “data parts”, we can also adjust our file reading code.</p>
+<p>The default <code>read.csv</code> function in <code>R</code> fails on this file:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">read.csv</span>(<span class="st">"mw_coned_20241024.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in read.table(file = file, header = header, sep = sep, quote = quote, : more columns than column names</code></pre>
+</div>
+</div>
+<p>This message is a bit opaque, but it’s essentially saying that there are more columns in the middle of the file (where the data “should” be) than there are names in the first (blank) line of the file.</p>
+<p>The improved <code>read_csv</code> function from the <code>readr</code> package tries harder and seems to succeed, but it also fails:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">read_csv</span>(<span class="st">"mw_coned_20241024.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: One or more parsing issues, call `problems()` on your data frame for details,
+e.g.:
+  dat &lt;- vroom(...)
+  problems(dat)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 38 Columns: 2
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (2): Name, MICHAEL WEYLANDT
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 38 × 2
+   Name           `MICHAEL WEYLANDT`                        
+   &lt;chr&gt;          &lt;chr&gt;                                     
+ 1 Address        ADDRESS REDACTED                          
+ 2 Account Number ACCOUNT NUMBER REDACTED                   
+ 3 Service        Service 1                                 
+ 4 TYPE           DATE,START TIME,END TIME,USAGE (kWh),NOTES
+ 5 Electric usage 2024-10-24,00:00,00:14,0.08,              
+ 6 Electric usage 2024-10-24,00:15,00:29,0.08,              
+ 7 Electric usage 2024-10-24,00:30,00:44,0.08,              
+ 8 Electric usage 2024-10-24,00:45,00:59,0.08,              
+ 9 Electric usage 2024-10-24,01:00,01:14,0.09,              
+10 Electric usage 2024-10-24,01:15,01:29,0.08,              
+# ℹ 28 more rows</code></pre>
+</div>
+</div>
+<p>If you look at this closely, it thinks we only have a <em>two column</em> file. But the data clearly has several more columns than that.</p>
+<p>The warning message here is helpful: it encourages us to use the <code>problems()</code> function to get more information on possible issues:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>con_ed <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"mw_coned_20241024.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: One or more parsing issues, call `problems()` on your data frame for details,
+e.g.:
+  dat &lt;- vroom(...)
+  problems(dat)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 38 Columns: 2
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (2): Name, MICHAEL WEYLANDT
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">problems</span>(con_ed)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 35 × 5
+     row   col expected  actual    file                                         
+   &lt;int&gt; &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;                                        
+ 1     5     6 2 columns 6 columns /Users/weylandt/sta9750/preassigns/mw_coned_…
+ 2     6     6 2 columns 6 columns /Users/weylandt/sta9750/preassigns/mw_coned_…
+ 3     7     6 2 columns 6 columns /Users/weylandt/sta9750/preassigns/mw_coned_…
+ 4     8     6 2 columns 6 columns /Users/weylandt/sta9750/preassigns/mw_coned_…
+ 5     9     6 2 columns 6 columns /Users/weylandt/sta9750/preassigns/mw_coned_…
+ 6    10     6 2 columns 6 columns /Users/weylandt/sta9750/preassigns/mw_coned_…
+ 7    11     6 2 columns 6 columns /Users/weylandt/sta9750/preassigns/mw_coned_…
+ 8    12     6 2 columns 6 columns /Users/weylandt/sta9750/preassigns/mw_coned_…
+ 9    13     6 2 columns 6 columns /Users/weylandt/sta9750/preassigns/mw_coned_…
+10    14     6 2 columns 6 columns /Users/weylandt/sta9750/preassigns/mw_coned_…
+# ℹ 25 more rows</code></pre>
+</div>
+</div>
+<p>We see here that <code>R</code> expected only two columns, based on the top section of the file, but every row of “substance” beyond the ConEd-special header actually has six columns. Note that <code>R</code> is giving us a <code>warning</code> here - it could conceivably continue, here by smashing together the extra columns - so it does so. This type of warning is not uncommon in reading malformatted data. It is your responsibility as an analyst to investigate the warnings and see if they are true signs of trouble or false positives. A particularly common warning, which you have already encountered in this course, is when data sets use a non-standard way to encode <code>NA</code> values.</p>
+<p>In this case, there’s actually an easy fix - we just want to skip those first rows for the header:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>con_ed <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"mw_coned_20241024.csv"</span>, <span class="at">skip =</span> <span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 34 Columns: 6
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (1): TYPE
+dbl  (1): USAGE (kWh)
+lgl  (1): NOTES
+date (1): DATE
+time (2): START TIME, END TIME
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+<p>We see lots of useful information in this read out. Our data has</p>
+<ul>
+<li>34 rows</li>
+<li>6 columns</li>
+<li>Comma delimited fields</li>
+<li>The columns types are:
+<ul>
+<li>Character (1)</li>
+<li>Double / Numeric (1)</li>
+<li>Logical (1)</li>
+<li>Date (1)</li>
+<li>Time (2)</li>
+</ul></li>
+</ul>
+<p>Here the logical column (<code>NOTES</code>) is a bit of a red herring; it’s all empty for this file, so <code>R</code> interprets as the simplest data type that fits,</p>
+<p>From here, I’m going to turn off printing of the data import message to keep this file readable, but you should always at least quickly eyeball them when importing a new data set.</p>
+<p>At this point, we’re ready to proceed with tidying up our data. The <code>USAGE (kWh)</code> column is clearly the most important to us, but <code>R</code> doesn’t like column names with spaces and punctuation, so let’s go ahead and manually rename it:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr); <span class="fu">library</span>(dplyr)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>con_ed <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"mw_coned_20241024.csv"</span>, <span class="at">skip =</span> <span class="dv">6</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">usage =</span> <span class="st">`</span><span class="at">USAGE (kWh)</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Recall that we have to use double back ticks to surround “weird” names. We can also drop the unused <code>NOTES</code> column and clean up the start and end time columns as well.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr); <span class="fu">library</span>(dplyr)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>con_ed <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"mw_coned_20241024.csv"</span>, <span class="at">skip =</span> <span class="dv">6</span>) <span class="sc">|&gt;</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">usage =</span> <span class="st">`</span><span class="at">USAGE (kWh)</span><span class="st">`</span>, </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">start_time =</span> <span class="st">`</span><span class="at">START TIME</span><span class="st">`</span>,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">end_time =</span> <span class="st">`</span><span class="at">END TIME</span><span class="st">`</span>) <span class="sc">|&gt;</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>NOTES)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We now have nice tidy data that we can use to make a plot:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr); <span class="fu">library</span>(dplyr); <span class="fu">library</span>(ggplot2)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">read_csv</span>(<span class="st">"mw_coned_20241024.csv"</span>, <span class="at">skip =</span> <span class="dv">6</span>) <span class="sc">|&gt;</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">usage =</span> <span class="st">`</span><span class="at">USAGE (kWh)</span><span class="st">`</span>, </span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">start_time =</span> <span class="st">`</span><span class="at">START TIME</span><span class="st">`</span>,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>           <span class="at">end_time =</span> <span class="st">`</span><span class="at">END TIME</span><span class="st">`</span>) <span class="sc">|&gt;</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>NOTES) <span class="sc">|&gt;</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>start_time, <span class="at">y=</span>usage)) <span class="sc">+</span> </span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="pa09_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Can you see i) when my phone finished charting overnight; and ii) when I started to make breakfast on my electric stovetop?</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="ConEd Practice">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+ConEd Practice
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you have your own ConEd account, download <a href="https://www.coned.com/en/accounts-billing/my-account/energy-use">your Energy Usage data file</a> by hand and import it into <code>R</code>. Can you find patterns of your daily life in this data?</p>
+</div>
+</div>
+<p>After finishing this document, complete the Weekly Pre-Assignment Quiz on Brightspace.</p>
+
+
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -564,4 +883,4 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/preassigns/pa09.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/preassigns/pa09.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/preassigns/pa09.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/preassigns/pa09.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
