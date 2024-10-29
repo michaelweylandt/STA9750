@@ -237,9 +237,9 @@ shapefiles for **C**ongressional **D**istricts for each year.[^6]
 [^6]: The other shapefiles in this FTP archive may be useful for your
 final projects.
 
-::: {.callout-tip title="Task 2: Download Congressional Shapefiles 1976-2012"}
+::: {.callout-tip title="Task 2: Download Congressional Shapefiles 2014-2022"}
 Download congressional shapefiles from the US Census Bureau for all US
-Congresses from 2014 to 2024.
+Congresses from 2014 to 2022.
 
 Your download code should:
 
@@ -313,10 +313,28 @@ nyc_sf <- read_sf(fname_shp)
 nyc_sf
 ```
 
+::: {.callout-important collapse="true" title="Zipfile Download Corruption"}
+
+At least one student reported difficulty running the above code on a Windows
+machine. The default download method (`method="internal"`) uses Windows' built-in
+download code, which seems to randomly corrupt certain `zip` files. Adding
+`method="curl"` to the `download.file` call seems to have helped. 
+
+This may not work for all of you as it likely depends on the specific security
+software settings on each machine, but it may help resolve mysterious errors.
+
+:::
+
 ::: {.callout-tip title="Task 4: Automate Zip File Extraction"}
 Adapt the code after the `##-` symbol above into a *function* 
 `read_shp_from_zip()` which takes in a file name, pulls out the `.shp` 
 file contained there in, and reads it into `R` using `read_sf()`.
+
+*Note: If your platform supports it, you can also use a combination of
+`unzip(..., list=TRUE)` and `unzip(..., file=...)` to extract only one
+file out of the `zip` directory instead of unpacking the whole file. 
+This is a bit more efficient, but not necessary here as all files involved
+are pretty small.*
 :::
 
 The result of this is a particular sort of data frame. The most important
