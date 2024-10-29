@@ -465,17 +465,17 @@ Task 1: Download Congressional Shapefiles 1976-2012
 <p>Note that the shape files are distributed as <code>zip</code> folders, containing several files in a directory structure. We will be interested in the <code>shp</code> files within each <code>zip</code>.</p>
 </section><section id="data-iii-congressional-boundary-files-2014-to-present" class="level3"><h3 class="anchored" data-anchor-id="data-iii-congressional-boundary-files-2014-to-present">Data III: Congressional Boundary Files 2014 to Present</h3>
 <p>To get district boundaries for more recent congressional elections, we can turn to the US Census Bureau. Unfortunately, these data - while authoritative and highly detailed - are not in quite the same format as our previous congressional boundary files. We can review the US Census Bureau shapefiles <a href="https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html">online</a>. To download them automatically, I recommend exploring the <code>FTP Archive</code> link near the bottom of the page. In Census-jargon, the <code>CD</code> directory will have shapefiles for <strong>C</strong>ongressional <strong>D</strong>istricts for each year.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
-<div class="callout callout-style-default callout-tip callout-titled" title="Task 2: Download Congressional Shapefiles 1976-2012">
+<div class="callout callout-style-default callout-tip callout-titled" title="Task 2: Download Congressional Shapefiles 2014-2022">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Task 2: Download Congressional Shapefiles 1976-2012
+Task 2: Download Congressional Shapefiles 2014-2022
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Download congressional shapefiles from the US Census Bureau for all US Congresses from 2014 to 2024.</p>
+<p>Download congressional shapefiles from the US Census Bureau for all US Congresses from 2014 to 2022.</p>
 <p>Your download code should:</p>
 <ol type="1">
 <li>Be fully automated (no “hand-downloading”);</li>
@@ -545,6 +545,23 @@ Geodetic CRS:  WGS84(DD)
 5         4 Queens        3041418004.    888197. (((-73.82645 40.59053, -73.826…</code></pre>
 </div>
 </div>
+<div class="callout callout-style-default callout-important callout-titled" title="Zipfile Download Corruption">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Zipfile Download Corruption
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>At least one student reported difficulty running the above code on a Windows machine. The default download method (<code>method="internal"</code>) uses Windows’ built-in download code, which seems to randomly corrupt certain <code>zip</code> files. Adding <code>method="curl"</code> to the <code>download.file</code> call seems to have helped.</p>
+<p>This may not work for all of you as it likely depends on the specific security software settings on each machine, but it may help resolve mysterious errors.</p>
+</div>
+</div>
+</div>
 <div class="callout callout-style-default callout-tip callout-titled" title="Task 4: Automate Zip File Extraction">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -556,6 +573,7 @@ Task 4: Automate Zip File Extraction
 </div>
 <div class="callout-body-container callout-body">
 <p>Adapt the code after the <code>##-</code> symbol above into a <em>function</em> <code>read_shp_from_zip()</code> which takes in a file name, pulls out the <code>.shp</code> file contained there in, and reads it into <code>R</code> using <code><a href="https://r-spatial.github.io/sf/reference/st_read.html">read_sf()</a></code>.</p>
+<p><em>Note: If your platform supports it, you can also use a combination of <code>unzip(..., list=TRUE)</code> and <code>unzip(..., file=...)</code> to extract only one file out of the <code>zip</code> directory instead of unpacking the whole file. This is a bit more efficient, but not necessary here as all files involved are pretty small.</em></p>
 </div>
 </div>
 <p>The result of this is a particular sort of data frame. The most important column for us is the <code>geometry</code> column which is of type <code>MULTIPOLYGON</code>. This is, essentially, a list of GPS coordinates which outline a spatial region. Here, each row corresponds to a Borough of NYC. We can pass the <code>geometry</code> column to <code>ggplot2</code> to make a map:</p>
