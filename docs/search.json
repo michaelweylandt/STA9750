@@ -1411,7 +1411,7 @@
     "href": "labs.html",
     "title": "STA/OPR 9750 - In-Class Labs",
     "section": "",
-    "text": "Most weeks, the Thursday ‘lecture’ for STA/OPR 9750 will be dedicated to an in-class “lab”. These ungraded labs are an opportunity to see how the concepts introduced in that week’s pre-assignment are used in practice.\nLabs:\n\nLab #01: Rev your Engines! Setting-Up R and RStudio\nLab #02: Getting Down with Markdown\nLab #03: R, These are your first steps…\nLab #04: Single Table Verbs, Group-Aware Filtering\nLab #05: Let us Join our Tables Together\nLab #07: More Thoughts on Plots\nLab #08: Advanced Plotting - Chloropleths and Cartograms\nLab #09: TBA\nLab #11: TBA\nLab #12: TBA\nLab #13: TBA"
+    "text": "Most weeks, the Thursday ‘lecture’ for STA/OPR 9750 will be dedicated to an in-class “lab”. These ungraded labs are an opportunity to see how the concepts introduced in that week’s pre-assignment are used in practice.\nLabs:\n\nLab #01: Rev your Engines! Setting-Up R and RStudio\nLab #02: Getting Down with Markdown\nLab #03: R, These are your first steps…\nLab #04: Single Table Verbs, Group-Aware Filtering\nLab #05: Let us Join our Tables Together\nLab #07: More Thoughts on Plots\nLab #08: Advanced Plotting - Chloropleths and Cartograms\nLab #09: Data Import in R\nLab #11: TBA\nLab #12: TBA\nLab #13: TBA"
   },
   {
     "objectID": "index.html",
@@ -1817,7 +1817,7 @@
     "href": "miniprojects/mini03.html#set-up-and-initial-exploration",
     "title": "STA/OPR 9750 Mini-Project #03: Do Proportional Electoral College Allocations Yield a More Representative Presidency?",
     "section": "Set-Up and Initial Exploration",
-    "text": "Set-Up and Initial Exploration\nData I: US House Election Votes from 1976 to 2022\nThe MIT Election Data Science Lab collects votes from all biennial congressional races in all 50 states here. Download this data as a CSV file using your web browser. Note that you will need to provide your contact info and agree to cite this data set in your final report.4 Make sure to include this citation!\nAdditionally, download statewide presidential vote counts from 1976 to 2022 here. As before, it will likely be easiest to download this data by hand using your web browser.\nData II: Congressional Boundary Files 1976 to 2012\nJeffrey B. Lewis, Brandon DeVine, Lincoln Pritcher, and Kenneth C. Martis have created shapefiles for all US congressional districts from 1789 to 2012; they generously make these available here.\n\n\n\n\n\n\nTask 1: Download Congressional Shapefiles 1976-2012\n\n\n\nDownload congressional shapefiles from Lewis et al. for all US Congresses5 from 1976 to 2012.\nYour download code should:\n\nBe fully automated (no “hand-downloading”);\nDownload files with a systematic and interpretable naming convention\nOnly download files as needed out of courtesy for the data provider’s web sever. That is, if you already have a copy of the file, do not re-download it repeatedly.\n\nAs with the other Mini-Projects, make sure you do not store these data files in git. It will be sufficient to include the qmd file with the download code.\n\n\nNote that the shape files are distributed as zip folders, containing several files in a directory structure. We will be interested in the shp files within each zip.\nData III: Congressional Boundary Files 2014 to Present\nTo get district boundaries for more recent congressional elections, we can turn to the US Census Bureau. Unfortunately, these data - while authoritative and highly detailed - are not in quite the same format as our previous congressional boundary files. We can review the US Census Bureau shapefiles online. To download them automatically, I recommend exploring the FTP Archive link near the bottom of the page. In Census-jargon, the CD directory will have shapefiles for Congressional Districts for each year.6\n\n\n\n\n\n\nTask 2: Download Congressional Shapefiles 2014-2022\n\n\n\nDownload congressional shapefiles from the US Census Bureau for all US Congresses from 2014 to 2022.\nYour download code should:\n\nBe fully automated (no “hand-downloading”);\nDownload files with a systematic and interpretable naming convention\nOnly download files as needed out of courtesy for the data provider’s web sever. That is, if you already have a copy of the file, do not re-download it repeatedly.\n\nAs with the other Mini-Projects, make sure you do not store these data files in git. It will be sufficient to include the qmd file with the download code.\n\n\nInitial Exploration of Vote Count Data\n\n\n\n\n\n\nTask 3: Exploration of Vote Count Data\n\n\n\nAnswer the following using the vote count data files from the MIT Election Data Science Lab. You may answer each with a table or plot as you feel is appropriate.\n\nWhich states have gained and lost the most seats in the US House of Representatives between 1976 and 2022?\n\nNew York State has a unique “fusion” voting system where one candidate can appear on multiple “lines” on the ballot and their vote counts are totaled. For instance, in 2022, Jerrold Nadler appeared on both the Democrat and Working Families party lines for NYS’ 12th Congressional District. He received 200,890 votes total (184,872 as a Democrat and 16,018 as WFP), easily defeating Michael Zumbluskas, who received 44,173 votes across three party lines (Republican, Conservative, and Parent).\nAre there any elections in our data where the election would have had a different outcome if the “fusion” system was not used and candidates only received the votes their received from their “major party line” (Democrat or Republican) and not their total number of votes across all lines?\n\n\nDo presidential candidates tend to run ahead of or run behind congressional candidates in the same state? That is, does a Democratic candidate for president tend to get more votes in a given state than all Democratic congressional candidates in the same state?\nDoes this trend differ over time? Does it differ across states or across parties? Are any presidents particularly more or less popular than their co-partisans?\n\n\n\n\nImporting and Plotting Shape File Data\nAs mentioned above, the shape files you downloaded above are distributed in zip archives, with several files. We only need the shp file within each archive. In this section, we’ll practice extracting the shp file, reading it, and using it to create a plot. The key library we need is the sf (“simple features”) library. It provides the read_sf() function which we can use to read it into R. I download how this works below:\n\nlibrary(ggplot2)\nlibrary(sf)\n\nif(!file.exists(\"nyc_borough_boundaries.zip\")){\n    download.file(\"https://data.cityofnewyork.us/api/geospatial/tqmj-j8zm?method=export&format=Shapefile\", \n              destfile=\"nyc_borough_boundaries.zip\")\n}\n\n##-\ntd &lt;- tempdir(); \nzip_contents &lt;- unzip(\"nyc_borough_boundaries.zip\", \n                      exdir = td)\n    \nfname_shp &lt;- zip_contents[grepl(\"shp$\", zip_contents)]\nnyc_sf &lt;- read_sf(fname_shp)\nnyc_sf\n\nSimple feature collection with 5 features and 4 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: -74.25559 ymin: 40.49613 xmax: -73.70001 ymax: 40.91553\nGeodetic CRS:  WGS84(DD)\n# A tibble: 5 × 5\n  boro_code boro_name      shape_area shape_leng                        geometry\n      &lt;dbl&gt; &lt;chr&gt;               &lt;dbl&gt;      &lt;dbl&gt;              &lt;MULTIPOLYGON [°]&gt;\n1         3 Brooklyn      1934142776.    728147. (((-73.86327 40.58388, -73.863…\n2         5 Staten Island 1623618684.    325910. (((-74.05051 40.56642, -74.050…\n3         1 Manhattan      636646082.    360038. (((-74.01093 40.68449, -74.011…\n4         2 Bronx         1187174772.    463181. (((-73.89681 40.79581, -73.896…\n5         4 Queens        3041418004.    888197. (((-73.82645 40.59053, -73.826…\n\n\n\n\n\n\n\n\nZipfile Download Corruption\n\n\n\n\n\nAt least one student reported difficulty running the above code on a Windows machine. The default download method (method=\"internal\") uses Windows’ built-in download code, which seems to randomly corrupt certain zip files. Adding method=\"curl\" to the download.file call seems to have helped.\nThis may not work for all of you as it likely depends on the specific security software settings on each machine, but it may help resolve mysterious errors.\n\n\n\n\n\n\n\n\n\nTask 4: Automate Zip File Extraction\n\n\n\nAdapt the code after the ##- symbol above into a function read_shp_from_zip() which takes in a file name, pulls out the .shp file contained there in, and reads it into R using read_sf().\nNote: If your platform supports it, you can also use a combination of unzip(..., list=TRUE) and unzip(..., file=...) to extract only one file out of the zip directory instead of unpacking the whole file. This is a bit more efficient, but not necessary here as all files involved are pretty small.\n\n\nThe result of this is a particular sort of data frame. The most important column for us is the geometry column which is of type MULTIPOLYGON. This is, essentially, a list of GPS coordinates which outline a spatial region. Here, each row corresponds to a Borough of NYC. We can pass the geometry column to ggplot2 to make a map:\n\nggplot(nyc_sf, \n       aes(geometry=geometry)) + \n    geom_sf()\n\n\n\n\n\n\n\nHere, we use the sf geom to get the shape outlines. The sf geom plays well with the fill aesthetic.\n\nggplot(nyc_sf, \n       aes(geometry=geometry, \n           fill = shape_area)) + \n    geom_sf()\n\n\n\n\n\n\n\nThis type of plot is called a Chloropleth Map and it is commonly used to depict election results.\n\n\n\n\n\n\nTask 5: Chloropleth Visualization of 2000 Electoral College Results\n\n\n\nUsing the data you downloaded earlier, create a chloropleth visualization of the 2000 electoral college results, coloring each state by the party that won the most votes in that state. Your result should look something like this:\n\nTaken from Wikipedia\nIt is not required, but to make the very best plot, you may want to look up:\n\nHow to “inset” Alaska and Hawaii instead of plotitng their true map locations.\nHow to add labels to a chloropleth in ggplot2\n\nHow to label the small states in the North-East\n\nbut these steps are not required as they are a bit advanced.\n\n\n\n\n\n\n\n\nTask 6: Advanced Chloropleth Visualization of Electoral College Results\n\n\n\nModify your previous code to make either an animated version showing election results over time.\n\n\nThe following example may be useful for you:\n\n## Animated Chloropleth using gganimate\n\n## Add some time \"structure\" to our data for \n## demonstration purposes only\nnyc_sf_repeats &lt;- bind_rows(\n    nyc_sf |&gt; mutate(value = rnorm(5), \n                     frame = 1), \n    nyc_sf |&gt; mutate(value = rnorm(5), \n                     frame = 2), \n    nyc_sf |&gt; mutate(value = rnorm(5), \n                     frame = 3), \n    nyc_sf |&gt; mutate(value = rnorm(5), \n                     frame = 4), \n    nyc_sf |&gt; mutate(value = rnorm(5), \n                     frame = 5))\n\nlibrary(gganimate)\nggplot(nyc_sf_repeats, \n       aes(geometry=geometry, \n           fill = value)) + \n    geom_sf() + \n    transition_time(frame)\n\n\n\n\n\n\n\nNow that we have finished exploring our data and building some tools for plots, we are ready to dig into our main question."
+    "text": "Set-Up and Initial Exploration\nData I: US House Election Votes from 1976 to 2022\nThe MIT Election Data Science Lab collects votes from all biennial congressional races in all 50 states here. Download this data as a CSV file using your web browser. Note that you will need to provide your contact info and agree to cite this data set in your final report.4 Make sure to include this citation!\nAdditionally, download statewide presidential vote counts from 1976 to 2022 here. As before, it will likely be easiest to download this data by hand using your web browser.\nData II: Congressional Boundary Files 1976 to 2012\nJeffrey B. Lewis, Brandon DeVine, Lincoln Pritcher, and Kenneth C. Martis have created shapefiles for all US congressional districts from 1789 to 2012; they generously make these available here.\n\n\n\n\n\n\nTask 1: Download Congressional Shapefiles 1976-2012\n\n\n\nDownload congressional shapefiles from Lewis et al. for all US Congresses5 from 1976 to 2012.\nYour download code should:\n\nBe fully automated (no “hand-downloading”);\nDownload files with a systematic and interpretable naming convention\nOnly download files as needed out of courtesy for the data provider’s web sever. That is, if you already have a copy of the file, do not re-download it repeatedly.\n\nAs with the other Mini-Projects, make sure you do not store these data files in git. It will be sufficient to include the qmd file with the download code.\n\n\nNote that the shape files are distributed as zip folders, containing several files in a directory structure. We will be interested in the shp files within each zip.\nData III: Congressional Boundary Files 2014 to Present\nTo get district boundaries for more recent congressional elections, we can turn to the US Census Bureau. Unfortunately, these data - while authoritative and highly detailed - are not in quite the same format as our previous congressional boundary files. We can review the US Census Bureau shapefiles online. To download them automatically, I recommend exploring the FTP Archive link near the bottom of the page. In Census-jargon, the CD directory will have shapefiles for Congressional Districts for each year.6\n\n\n\n\n\n\nTask 2: Download Congressional Shapefiles 2014-2022\n\n\n\nDownload congressional shapefiles from the US Census Bureau for all US Congresses from 2014 to 2022.\nYour download code should:\n\nBe fully automated (no “hand-downloading”);\nDownload files with a systematic and interpretable naming convention\nOnly download files as needed out of courtesy for the data provider’s web sever. That is, if you already have a copy of the file, do not re-download it repeatedly.\n\nAs with the other Mini-Projects, make sure you do not store these data files in git. It will be sufficient to include the qmd file with the download code.\n\n\nInitial Exploration of Vote Count Data\n\n\n\n\n\n\nTask 3: Exploration of Vote Count Data\n\n\n\nAnswer the following using the vote count data files from the MIT Election Data Science Lab. You may answer each with a table or plot as you feel is appropriate.\n\nWhich states have gained and lost the most seats in the US House of Representatives between 1976 and 2022?\n\nNew York State has a unique “fusion” voting system where one candidate can appear on multiple “lines” on the ballot and their vote counts are totaled. For instance, in 2022, Jerrold Nadler appeared on both the Democrat and Working Families party lines for NYS’ 12th Congressional District. He received 200,890 votes total (184,872 as a Democrat and 16,018 as WFP), easily defeating Michael Zumbluskas, who received 44,173 votes across three party lines (Republican, Conservative, and Parent).\nAre there any elections in our data where the election would have had a different outcome if the “fusion” system was not used and candidates only received the votes their received from their “major party line” (Democrat or Republican) and not their total number of votes across all lines?\n\n\nDo presidential candidates tend to run ahead of or run behind congressional candidates in the same state? That is, does a Democratic candidate for president tend to get more votes in a given state than all Democratic congressional candidates in the same state?\nDoes this trend differ over time? Does it differ across states or across parties? Are any presidents particularly more or less popular than their co-partisans?\n\n\n\n\nImporting and Plotting Shape File Data\nAs mentioned above, the shape files you downloaded above are distributed in zip archives, with several files. We only need the shp file within each archive. In this section, we’ll practice extracting the shp file, reading it, and using it to create a plot. The key library we need is the sf (“simple features”) library. It provides the read_sf() function which we can use to read it into R. I download how this works below:\n\nlibrary(ggplot2)\nlibrary(sf)\n\nif(!file.exists(\"nyc_borough_boundaries.zip\")){\n    download.file(\"https://data.cityofnewyork.us/api/geospatial/tqmj-j8zm?method=export&format=Shapefile\", \n              destfile=\"nyc_borough_boundaries.zip\")\n}\n\n##-\ntd &lt;- tempdir(); \nzip_contents &lt;- unzip(\"nyc_borough_boundaries.zip\", \n                      exdir = td)\n    \nfname_shp &lt;- zip_contents[grepl(\"shp$\", zip_contents)]\nnyc_sf &lt;- read_sf(fname_shp)\nnyc_sf\n\nSimple feature collection with 5 features and 4 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: -74.25559 ymin: 40.49613 xmax: -73.70001 ymax: 40.91553\nGeodetic CRS:  WGS84(DD)\n# A tibble: 5 × 5\n  boro_code boro_name      shape_area shape_leng                        geometry\n      &lt;dbl&gt; &lt;chr&gt;               &lt;dbl&gt;      &lt;dbl&gt;              &lt;MULTIPOLYGON [°]&gt;\n1         3 Brooklyn      1934142776.    728147. (((-73.86327 40.58388, -73.863…\n2         5 Staten Island 1623618684.    325910. (((-74.05051 40.56642, -74.050…\n3         1 Manhattan      636646082.    360038. (((-74.01093 40.68449, -74.011…\n4         2 Bronx         1187174772.    463181. (((-73.89681 40.79581, -73.896…\n5         4 Queens        3041418004.    888197. (((-73.82645 40.59053, -73.826…\n\n\n\n\n\n\n\n\nZipfile Download Corruption\n\n\n\n\n\nAt least one student reported difficulty running the above code on a Windows machine. The default download method (method=\"internal\") uses Windows’ built-in download code, which seems to randomly corrupt certain zip files. Adding method=\"curl\" to the download.file call seems to have helped.\nThis may not work for all of you as it likely depends on the specific security software settings on each machine, but it may help resolve mysterious errors.\n\n\n\n\n\n\n\n\n\nTask 4: Automate Zip File Extraction\n\n\n\nAdapt the code after the ##- symbol above into a function read_shp_from_zip() which takes in a file name, pulls out the .shp file contained there in, and reads it into R using read_sf().\nNote: If your platform supports it, you can also use a combination of unzip(..., list=TRUE) and unzip(..., file=...) to extract only one file out of the zip directory instead of unpacking the whole file. This is a bit more efficient, but not necessary here as all files involved are pretty small.\n\n\nThe result of this is a particular sort of data frame. The most important column for us is the geometry column which is of type MULTIPOLYGON. This is, essentially, a list of GPS coordinates which outline a spatial region. Here, each row corresponds to a Borough of NYC. We can pass the geometry column to ggplot2 to make a map:\n\nggplot(nyc_sf, \n       aes(geometry=geometry)) + \n    geom_sf()\n\n\n\n\n\n\n\nHere, we use the sf geom to get the shape outlines. The sf geom plays well with the fill aesthetic.\n\nggplot(nyc_sf, \n       aes(geometry=geometry, \n           fill = shape_area)) + \n    geom_sf()\n\n\n\n\n\n\n\nThis type of plot is called a Chloropleth Map and it is commonly used to depict election results.\n\n\n\n\n\n\nTask 5: Chloropleth Visualization of the 2000 Presidential Election Electoral College Results\n\n\n\nUsing the data you downloaded earlier, create a chloropleth visualization of the electoral college results for the 2000 presidential election (Bush vs. Gore), coloring each state by the party that won the most votes in that state. Your result should look something like this:\n\nTaken from Wikipedia\nIt is not required, but to make the very best plot, you may want to look up:\n\nHow to “inset” Alaska and Hawaii instead of plotitng their true map locations.\nHow to add labels to a chloropleth in ggplot2\n\nHow to label the small states in the North-East\n\nbut these steps are not required as they are a bit advanced.\n\n\n\n\n\n\n\n\nTask 6: Advanced Chloropleth Visualization of Electoral College Results\n\n\n\nModify your previous code to make either an animated version showing election results over time.\n\n\nThe following example may be useful for you:\n\n## Animated Chloropleth using gganimate\n\n## Add some time \"structure\" to our data for \n## demonstration purposes only\nnyc_sf_repeats &lt;- bind_rows(\n    nyc_sf |&gt; mutate(value = rnorm(5), \n                     frame = 1), \n    nyc_sf |&gt; mutate(value = rnorm(5), \n                     frame = 2), \n    nyc_sf |&gt; mutate(value = rnorm(5), \n                     frame = 3), \n    nyc_sf |&gt; mutate(value = rnorm(5), \n                     frame = 4), \n    nyc_sf |&gt; mutate(value = rnorm(5), \n                     frame = 5))\n\nlibrary(gganimate)\nggplot(nyc_sf_repeats, \n       aes(geometry=geometry, \n           fill = value)) + \n    geom_sf() + \n    transition_time(frame)\n\n\n\n\n\n\n\nNow that we have finished exploring our data and building some tools for plots, we are ready to dig into our main question."
   },
   {
     "objectID": "miniprojects/mini03.html#comparing-the-effects-of-ecv-allocation-rules",
@@ -2140,5 +2140,299 @@
     "title": "STA/OPR 9750 Week 9 Pre Assignment: Data Ingest",
     "section": "Footnotes",
     "text": "Footnotes\n\n\nAs we will discuss in two weeks, there’s a bit of work to interpret bits and bytes as letters and numbers, but this interpretation is very standardized and typically quite seamless.↩︎\nMost of the readr functions can handle URLs and compressed files, but seem to fail with a compressed file at a URL. I’m not sure why this limitation exists.↩︎"
+  },
+  {
+    "objectID": "slides/slides09.html#mini-project-02",
+    "href": "slides/slides09.html#mini-project-02",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "STA/OPR 9750 Mini-Project #02",
+    "text": "STA/OPR 9750 Mini-Project #02\nThank you for peer feedback! I had a lot of fun reading these."
+  },
+  {
+    "objectID": "slides/slides09.html#mini-project-03",
+    "href": "slides/slides09.html#mini-project-03",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "STA/OPR 9750 Mini-Project #03",
+    "text": "STA/OPR 9750 Mini-Project #03\nNow online\nDue November 13th\n\nGitHub post (used for peer feedback) AND Brightspace\nThree Weeks: don’t wait until the very end\nShould be less demanding than MP #01 and MP#02\n\nLots of little files. No big files!\nMaps and election retrodiction\n\n\n\nPay attention to the rubric"
+  },
+  {
+    "objectID": "slides/slides09.html#course-project",
+    "href": "slides/slides09.html#course-project",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "STA/OPR 9750 Course Project",
+    "text": "STA/OPR 9750 Course Project\nProposal feedback sent by email this afternoon. Please contact if not received.\nNext Week: Mid-Term Check-In Presentations\n\n6 minutes\nLocking in on specific questions\nEngagement with existing literature"
+  },
+  {
+    "objectID": "slides/slides09.html#upcoming-mini-projects",
+    "href": "slides/slides09.html#upcoming-mini-projects",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Upcoming Mini-Projects",
+    "text": "Upcoming Mini-Projects\nTentative Topics\n\nMP#04: Something financial\n\nAny requests?"
+  },
+  {
+    "objectID": "slides/slides09.html#pre-assignments",
+    "href": "slides/slides09.html#pre-assignments",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Pre-Assignments",
+    "text": "Pre-Assignments\nBrightspace - Wednesdays at 11:45\n\nReading, typically on course website\nBrightspace auto-grades\n\nI have to manually change to completion grading\n\n\nNext pre-assignment is November 13th\n\nThank you for FAQs and (honest) team feedback. Keep it coming!"
+  },
+  {
+    "objectID": "slides/slides09.html#course-support",
+    "href": "slides/slides09.html#course-support",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Course Support",
+    "text": "Course Support\n\nSynchronous\n\nOffice Hours 4x / week\n\nMW Office Hours on Monday + Thursday\nCR Tuesday + Friday\nNo OH during Thanksgiving break\n\n\nAsynchronous\n\nPiazza (\\(38\\) minute average response time)\n\n\nChange: MW Thursday Zoom OH will be 4:00pm to 5:00pm"
+  },
+  {
+    "objectID": "slides/slides09.html#upcoming-week",
+    "href": "slides/slides09.html#upcoming-week",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Upcoming Week",
+    "text": "Upcoming Week\n\nMid-Project Check-Ins"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-ggplot2---aes",
+    "href": "slides/slides09.html#faq-ggplot2---aes",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: ggplot2 - aes()",
+    "text": "FAQ: ggplot2 - aes()\nWhat is the aes function - stands between data and geom_\n\nEach geom_ takes a fixed set of “coordinates”\nEach data set has its own column names\naes ties these together\n\n\nlibrary(ggplot2); library(patchwork)\np1 &lt;- ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width)) + geom_point()\np2 &lt;- ggplot(iris, aes(y=Sepal.Length, x=Sepal.Width)) + geom_point()\np1 + p2"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-ggplot2---why-do-pie-charts-have-a-bad-reputation",
+    "href": "slides/slides09.html#faq-ggplot2---why-do-pie-charts-have-a-bad-reputation",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: ggplot2 - Why do Pie Charts have a bad reputation?",
+    "text": "FAQ: ggplot2 - Why do Pie Charts have a bad reputation?\n\nUse of area and angle over length: less accurate perception\nDepends on fill to convey category - limited categories\n\n\nBut honestly - “insider smugness” and hate of Excel"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-ggplot2---plot-type-choice",
+    "href": "slides/slides09.html#faq-ggplot2---plot-type-choice",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: ggplot2 - Plot Type Choice",
+    "text": "FAQ: ggplot2 - Plot Type Choice\nFor me:\n\nExploratory mode:\n\nSimple: line, scatter, bar, frequency\n\nPublication mode:\n\nVery context specific"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-ggplot2---font-sizing",
+    "href": "slides/slides09.html#faq-ggplot2---font-sizing",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: ggplot2 - Font Sizing",
+    "text": "FAQ: ggplot2 - Font Sizing\nTheme machinery!\n\nggplot(iris, aes(x=Sepal.Length, y=Sepal.Width)) + \n    geom_point() + theme(axis.text = element_text(size=24))"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-ggplot2---overplotting-scatterblobs",
+    "href": "slides/slides09.html#faq-ggplot2---overplotting-scatterblobs",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: ggplot2 - Overplotting / ScatterBlobs",
+    "text": "FAQ: ggplot2 - Overplotting / ScatterBlobs\nStudent asked about “scatterblobs” - typo(?) but I love it!\n\n\nDensity based plotting: hexbins, histograms, rugplots\nData reduction: summarization or sub-sampling"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-ggplot2---optimizing-performance",
+    "href": "slides/slides09.html#faq-ggplot2---optimizing-performance",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: ggplot2 - Optimizing Performance",
+    "text": "FAQ: ggplot2 - Optimizing Performance\nActive project of ggplot2 team - not much you can do\nPractical advice: plot less (see previous slide)"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-ggplot2---beyond-scatter-and-line",
+    "href": "slides/slides09.html#faq-ggplot2---beyond-scatter-and-line",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: ggplot2 - Beyond Scatter and Line",
+    "text": "FAQ: ggplot2 - Beyond Scatter and Line\nSome favorite semi-advanced plot types:\n\nViolin plots: combination of boxplot and histogram\nRidgelines\nBeeswarms\n\nDeep rabbit hole"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-ggplot2---geospatial-visualizations",
+    "href": "slides/slides09.html#faq-ggplot2---geospatial-visualizations",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: ggplot2 - Geospatial Visualizations",
+    "text": "FAQ: ggplot2 - Geospatial Visualizations\nThat’s our goal for today!"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-ggplot2---high-dimensional-data",
+    "href": "slides/slides09.html#faq-ggplot2---high-dimensional-data",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: ggplot2 - High-Dimensional Data",
+    "text": "FAQ: ggplot2 - High-Dimensional Data\nHigh-dimensional data: measure many variables per observation (“wide”)\nHigh-dimensional data is hard to visualize\n\nApproaches:\n\nPair plots for “moderate” HDD\nPCA (or similar dimension reduction. Take 9890!)"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-ggplot2---creating-a-custom-theme",
+    "href": "slides/slides09.html#faq-ggplot2---creating-a-custom-theme",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: ggplot2 - Creating a Custom Theme",
+    "text": "FAQ: ggplot2 - Creating a Custom Theme\n\nmy_theme &lt;- theme_bw() + theme(panel.background = element_rect(fill = 'lightblue'))\nggplot(iris, aes(x=Sepal.Length, y = Sepal.Width)) + geom_point() + my_theme\n\n\nAdvanced:\n\ntheme_set() - change ggplot2 defaults\n.Rprofile - set code to run every time you start R"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-ggplot2---when-not-to-use",
+    "href": "slides/slides09.html#faq-ggplot2---when-not-to-use",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: ggplot2 - When Not to Use",
+    "text": "FAQ: ggplot2 - When Not to Use\nggplot2 is designed to make good statistical graphics. Sub-par for:\n\nAdvanced interactivity\nReally big data\nHardcore customization / “infographics”"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-git-wtf",
+    "href": "slides/slides09.html#faq-git-wtf",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: git WTF",
+    "text": "FAQ: git WTF\nReference: Happy Git with R"
+  },
+  {
+    "objectID": "slides/slides09.html#warm-up",
+    "href": "slides/slides09.html#warm-up",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Warm-Up",
+    "text": "Warm-Up\nFrom FiveThirtyEight"
+  },
+  {
+    "objectID": "slides/slides09.html#warm-up-1",
+    "href": "slides/slides09.html#warm-up-1",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Warm-Up",
+    "text": "Warm-Up\nData can be found at https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv\nRead into R (readr::read_csv) and make 3 plots:\n\nDo people like more sugary candy?\nDo people like more expensive candy?\nOpen-Ended"
+  },
+  {
+    "objectID": "slides/slides09.html#diving-deeper-with-ggplot2",
+    "href": "slides/slides09.html#diving-deeper-with-ggplot2",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Diving Deeper with ggplot2",
+    "text": "Diving Deeper with ggplot2\nToday: maps!\nInstall the sf package: Simple Features for Spatial Data\nExercise: Lab #08"
+  },
+  {
+    "objectID": "slides/slides09.html#breakout-rooms",
+    "href": "slides/slides09.html#breakout-rooms",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Breakout Rooms",
+    "text": "Breakout Rooms\n\n\n\nRoom\nTeam\n\nRoom\nTeam\n\n\n\n\n1\nRat Pack\n\n6\nCa$h VZ\n\n\n2\nSubway Surfers\n\n7\nListing Legends\n\n\n3\nChart Toppers\n\n8\nTDSSG\n\n\n4\nMetro Mindset\n\n9\nBroker T’s\n\n\n5\nApple Watch\n\n10\nEVengers"
+  },
+  {
+    "objectID": "slides/slides09.html#faq-file-import",
+    "href": "slides/slides09.html#faq-file-import",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "FAQ: File Import",
+    "text": "FAQ: File Import\nNo FAQs today. (New topic - data import)"
+  },
+  {
+    "objectID": "slides/slides09.html#getting-data-into-r",
+    "href": "slides/slides09.html#getting-data-into-r",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Getting Data into R",
+    "text": "Getting Data into R\nTwo topics:\n\nHow internet data transfer actually works\nHow to handle non-rectangular data formats\n\n🎃End a bit early for Halloween🎃"
+  },
+  {
+    "objectID": "slides/slides09.html#urls",
+    "href": "slides/slides09.html#urls",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "URLs",
+    "text": "URLs\nFrom abstrax.io"
+  },
+  {
+    "objectID": "slides/slides09.html#data-transfer",
+    "href": "slides/slides09.html#data-transfer",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Data Transfer",
+    "text": "Data Transfer\n\nHTTP"
+  },
+  {
+    "objectID": "slides/slides09.html#json",
+    "href": "slides/slides09.html#json",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "JSON",
+    "text": "JSON\nJSON:\n\nShort for JavaScript Object Notation\nPopular plain-text representation for hierarchical data.\nCloser to Python objects (dicts of dicts of dicts) than R data.frames\nWidely used for Application Programming Interfaces (APIs)"
+  },
+  {
+    "objectID": "slides/slides09.html#json-1",
+    "href": "slides/slides09.html#json-1",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "JSON",
+    "text": "JSON\nExample:\n{\n    \"data\": {\n        \"id\": 27992,\n        \"title\": \"A Sunday on La Grande Jatte — 1884\",\n        \"image_id\": \"1adf2696-8489-499b-cad2-821d7fde4b33\"\n    },\n    \"config\": {\n        \"iiif_url\": \"https://www.artic.edu/iiif/2\",\n    }\n}"
+  },
+  {
+    "objectID": "slides/slides09.html#json-2",
+    "href": "slides/slides09.html#json-2",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "JSON",
+    "text": "JSON\nRead JSON in R with jsonlite package (alternatives exist)\n\nlibrary(jsonlite)\n# A JSON array of primitives\njson &lt;- '[\"Mario\", \"Peach\", null, \"Bowser\"]'\n\n# Simplifies into an atomic vector\nfromJSON(json)\n\n[1] \"Mario\"  \"Peach\"  NA       \"Bowser\""
+  },
+  {
+    "objectID": "slides/slides09.html#json-3",
+    "href": "slides/slides09.html#json-3",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "JSON",
+    "text": "JSON\n\njson &lt;-\n'[\n  {\"Name\" : \"Mario\", \"Age\" : 32, \"Occupation\" : \"Plumber\"}, \n  {\"Name\" : \"Peach\", \"Age\" : 21, \"Occupation\" : \"Princess\"},\n  {},\n  {\"Name\" : \"Bowser\", \"Occupation\" : \"Koopa\"}\n]'\nmydf &lt;- fromJSON(json)\nmydf\n\n    Name Age Occupation\n1  Mario  32    Plumber\n2  Peach  21   Princess\n3   &lt;NA&gt;  NA       &lt;NA&gt;\n4 Bowser  NA      Koopa"
+  },
+  {
+    "objectID": "slides/slides09.html#json-4",
+    "href": "slides/slides09.html#json-4",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "JSON",
+    "text": "JSON\n\nfromJSON(\"http://worldtimeapi.org/api/timezone/America/New_York\")[1:5]\n\n$utc_offset\n[1] \"-04:00\"\n\n$timezone\n[1] \"America/New_York\"\n\n$day_of_week\n[1] 4\n\n$day_of_year\n[1] 305\n\n$datetime\n[1] \"2024-10-31T17:57:16.489043-04:00\"\n\n\nCompare to browser access"
+  },
+  {
+    "objectID": "slides/slides09.html#data-transfer-http",
+    "href": "slides/slides09.html#data-transfer-http",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Data Transfer: HTTP",
+    "text": "Data Transfer: HTTP\nHTTP\n\nHyperText Transfer Protocol\nMost common (but not only) internet protocol\nAlso ftp, smtp, ssh, …\n\n“Low-level” mechanism of internet transfer\n\nMany R packages add a friendly UX\nhttr2 for low-level work (today)"
+  },
+  {
+    "objectID": "slides/slides09.html#http",
+    "href": "slides/slides09.html#http",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "HTTP",
+    "text": "HTTP\n\nHTTP has two stages:\n\n\n\nRequest\n\nURL (Host + Path)\nMethod (VERB)\nHeaders\nContent\nCookies\n\n\n\n\n\nResponse\n\nStatus Code\nHeaders\nContent\n\n\n\n\nModern (easy) APIs put most of the behavior in the URL"
+  },
+  {
+    "objectID": "slides/slides09.html#http-in-the-browser",
+    "href": "slides/slides09.html#http-in-the-browser",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "HTTP in the Browser",
+    "text": "HTTP in the Browser\nIn Firefox: Right-Click + Inspect\nIn Chrome: Right-Click + Developer Tools"
+  },
+  {
+    "objectID": "slides/slides09.html#http-with-httr2",
+    "href": "slides/slides09.html#http-with-httr2",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "HTTP with httr2",
+    "text": "HTTP with httr2\nhttr2 (pronounced “hitter-2”) is low-level manipulation of HTTP.\n\nlibrary(httr2)\nrequest(example_url())\n\nPretty simple so far:\n\nexample_url() starts a tiny local web host\n127.0.0.1 is localhost\n\nLive Demo Time"
+  },
+  {
+    "objectID": "slides/slides09.html#httr2",
+    "href": "slides/slides09.html#httr2",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "httr2",
+    "text": "httr2\nBuild a request:\n\nreq_method\nreq_body_*\nreq_cookies_set\nreq_auth_basic / req_oauth\n\nBehaviors:\n\nreq_cache\nreq_timeout"
+  },
+  {
+    "objectID": "slides/slides09.html#data-transfer-download.file",
+    "href": "slides/slides09.html#data-transfer-download.file",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Data Transfer: download.file",
+    "text": "Data Transfer: download.file\n\nargs(download.file)\n\nfunction (url, destfile, method, quiet = FALSE, mode = \"w\", cacheOK = TRUE, \n    extra = getOption(\"download.file.extra\"), headers = NULL, \n    ...) \nNULL\n\n\nBasic file download capabilities:\n\nurl: source\ndestfile: where on your computer to store it\nmethod: what software to use in the background to download"
+  },
+  {
+    "objectID": "slides/slides09.html#httr2-requests",
+    "href": "slides/slides09.html#httr2-requests",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "httr2 Requests",
+    "text": "httr2 Requests\nBuild a request:\n\nreq_method\nreq_body_*\nreq_cookies_set\nreq_auth_basic / req_oauth\n\nBehaviors:\n\nreq_cache\nreq_timeout\n\nExecution:\n\nreq_perform"
+  },
+  {
+    "objectID": "slides/slides09.html#httr2-responses",
+    "href": "slides/slides09.html#httr2-responses",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "httr2 Responses",
+    "text": "httr2 Responses\nRequest status\n\nresp_status / resp_status_desc\n\nContent: - resp_header* - resp_body_*"
+  },
+  {
+    "objectID": "slides/slides09.html#exercise",
+    "href": "slides/slides09.html#exercise",
+    "title": "STA/OPR 9750 - Week 9",
+    "section": "Exercise",
+    "text": "Exercise\nArt Institute of Chicago API"
+  },
+  {
+    "objectID": "labs/lab09.html",
+    "href": "labs/lab09.html",
+    "title": "STA/OPR 9750 Week 8 In-Class Activity: Data Import",
+    "section": "",
+    "text": "Week 9 Slides"
   }
 ]
