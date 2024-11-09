@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>pa11 – STA 9750</title>
+<title>STA/OPR 9750 Week 11 Pre Assignment: Intro to HTML – STA 9750</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -132,13 +132,91 @@ ul.task-list li input[type="checkbox"] {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">STA/OPR 9750 Week 11 Pre Assignment: Intro to HTML</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Our next topic is scraping data from web pages, that is data stored in HTML. Recall our “hierarchy” of data storage preferences:</p>
+<ul>
+<li>Relational Databases</li>
+<li>Flat Files</li>
+<li>Hierarchical Plain Text</li>
+<li>“Reasonably Formatted” Spreadsheets</li>
+<li>Served via API</li>
+<li>“Unreasonable” Spreadsheets</li>
+<li>Served via HTML</li>
+<li>PDF</li>
+</ul>
+<p>As the course has progressed, we have seen or worked with data in many of these formats. This week, we move to the most difficult data source of this course: HTML.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>HTML, short for <em>HyperText Markup Language</em>, is the <em>lingua franca</em> of the web. The <em>vast</em> majority of websites you visit or interact with are written using HTML. As such, HTML is <em>ubiquitous</em> in modern life. HTML is flexible, relatively easy to write by hand or programmatically, compressible, and has near universal built-in support on modern operating systems.</p>
+<p>Unfortunately, this ubiquity comes with a cost: because HTML is so universal, web browsers have been designed to “try their best” to read and render even improper HTML.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> In response, web professionals and amateurs have released ever worse HTML upon the world, continuing a vicious cycle. Modern programming practice has moved away from hand-written HTML in favor of tools like Markdown and Quarto, which allow “correct” HTML to be generated automatically. While this is a welcome trend, you will almost certainly still encounter malformatted HTML in your career, as nothing - however flawed - truly leaves the internet.</p>
+<p>But, for now, we begin with relatively well-formatted HTML.</p>
+<p>Right-click in your browser and view the source code of this page - what you’re seeing is HTML. HTML consists of a hierarchically nested set of elements that look something like this:</p>
+<pre><code>&lt;p format="emph"&gt;This is some text.&lt;/p&gt;</code></pre>
+<p>There are three key pieces of this structure:</p>
+<ul>
+<li><p>The start tag <code>&lt;p&gt;</code> and matching end tag <code>&lt;/p&gt;</code>. Here, <code>p</code> is the <em>type</em> of tag, short for “paragraph” and used to specify a block of paragraph text.</p>
+<p>Occasionally, the end tag <code>&lt;/p&gt;</code> can be omitted for tags which have no internal content, such as <code>&lt;br&gt;</code> denoting a break between paragraphs, but the end tag should typically be included.</p></li>
+<li><p>The <em>contents</em> of the element, between the start and end tags. Here “This is some text” is the contents of the <code>p</code> element.</p></li>
+<li><p>A set of attributes, included in the start tag. These are essentially endlessly flexible “meta-data” of the form <code>key="value"</code>. The most common use of these attributes is to control formatting, as in our example above, which indicates that the paragraph should be emphasized, perhaps by bold or italics, but the meaning is not fixed by HTML alone.</p></li>
+</ul>
+<p>The power and flexibility of HTML comes from the fact that the <em>contents</em> of one element can include one or more additional elements. For instance, you might encounter an element like</p>
+<pre><code>&lt;p format="emph"&gt;This semester, I am teaching &lt;a href="https://michael-weylandt.com/STA9750"&gt;Introduction to R&lt;/a&gt; at &lt;a
+href="https://baruch.cuny.edu"&gt;Baruch College&lt;/a&gt;.&lt;/p&gt;</code></pre>
+<p>which might render as:</p>
+<blockquote class="blockquote">
+<p><strong>This semester, I am teaching <a href="https://michael-weylandt.com/STA9750">Introduction to R</a> at <a href="https://baruch.cuny.edu">Baruch College</a>.</strong></p>
+</blockquote>
+<p>Here the <code>a</code> tag is used to create hyperlinks, with the target specified by the <code>href</code> attribute. There are many more “standard” HTML tags in addition to those websites might define for their own use. For comprehensive documentation, see the <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element">Mozilla Developer Network (MDN) Documentation</a>.</p>
+<p>When extracting data from a website, we will typically want to select <em>all</em> the elements of a certain tag or with a certain attribute: <em>e.g.</em>, all cells of a table or all bolded paragraph headers. We can do so efficiently using “CSS Selectors”.</p>
+<p>CSS Selectors are a special language used to select multiple elements at once: the basic elements are as follows:</p>
+<ul>
+<li><code>el</code>: Select all elements delimited by an <code>el</code> tag.</li>
+<li><code>.cls</code>: Selects all elements with a <code>class="cls"</code> tag.</li>
+<li><code>[attr]</code>: Selects all elements with an <code>attr</code> attribute</li>
+<li><code>[attr="val"]</code>: Selects all elements with an <code>attr</code> attribute equal to <code>"val"</code></li>
+<li><code>el1 el2</code>: Select all <code>el2</code> elements that are within an <code>el1</code> element.</li>
+</ul>
+<p>We will use these to tell <code>R</code> what elements to import from a web page. A well constructed selector statement can usually highlight exactly the data we hope to extract.</p>
+<p>For now, however, you will practice using CSS Selectors from within your browser.</p>
+<p>Right click the the following link and add its to your bookmarks. Whenever you’re on a website, you can click that bookmark to open the CSS SelectorGadget.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<blockquote class="blockquote">
+<p><a href="javascript:(function(){var%20s=document.createElement('div');s.innerHTML='Loading...';s.style.color='black';s.style.padding='20px';s.style.position='fixed';s.style.zIndex='9999';s.style.fontSize='3.0em';s.style.border='2px%20solid%20black';s.style.right='40px';s.style.top='40px';s.setAttribute('class','selector_gadget_loading');s.style.background='white';document.body.appendChild(s);s=document.createElement('script');s.setAttribute('type','text/javascript');s.setAttribute('src','https://dv0akt2986vzh.cloudfront.net/unstable/lib/selectorgadget.js');document.body.appendChild(s);})();">SelectorGadget</a>.</p>
+</blockquote>
+<p>Upon clicking, you will see a toolbar at the bottom of the page. If you type a CSS selector statement into that toolbar, it will highlight all elements on the page that match that selector. For now try a simple <code>a</code> and hit enter: you should see all links on the page highlighted. You can also try more advanced CSS selectors: <code>li a</code> will select all links (<code>a</code>) within list items (<code>li</code>) of the navigation bar at the top of the page.</p>
+<p>You can also use SelectorGadget to <em>create</em> CSS Selectors. If you click several items that you want to select, SelectorGadget will attempt to create a suitable selector command. (You might need to <code>Clear</code> the input area before trying this.) For instance, try clicking a link in this text and seeing what SelectorGadget automatically selects for you. In this case, SelectorGadget comes up with <code>a</code> for all links on the page. If we want to exclude the links in the navigation bar, we can click them again, marking them in red and SelectorGadget will attempt to exclude them. Here, it creates a CSS selector that selects only links within the main body of the page. For our purposes, two clicks are enough, but you could extend this further. SelectorGadget isn’t perfect, but it’s often a very good starting guess.</p>
+<p>Open the <a href="https://rvest.tidyverse.org/articles/starwars.html"><code>rvest</code> Star Wars example page</a> in a new tab and use SelectorGadget to select the 7 movie names in the main section. We want only the movie names and not the text below them. We also don’t want the clickable links in the sidebar. We will use this selector as our first example in class.</p>
+<p>Next, open the <a href="https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions">Wikipedia page listing all CUNY Colleges</a> and confirm that the <code>tbody</code> selector selects the entirety of the main table. Note that if you use SelectorGadget here, you might get something like <code>.jquery-tablesorter</code>. For reasons we will discuss in class, this won’t work in <code>R</code>.</p>
+<p>Finally, open the <a href="https://en.wikipedia.org/wiki/Baruch_College">Baruch College</a> Wikipage and create a selector for just the GPS coordinates in the top right corner of the page. You should try to select just the coordinates themselves and not the text “Coordinates” preceding them.</p>
+<p>As you explore this, it’s worth noting that Wikipedia is actually a rather complicated web-page. If you want to practice on simpler websites, I recommend starting <a href="https://www.scrapethissite.com/pages/simple">here</a>.</p>
+<p>After finishing this document, complete the Weekly Pre-Assignment Quiz on Brightspace.</p>
 
 
 
 
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
 
-
-</main> <!-- /main -->
+<ol>
+<li id="fn1"><p>We won’t cover reading data from PDFs in this course.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>If you are of a certain age, you will remember an era when websites would work in one browser and not others. Proper HTML should work in all browsers, but each browser had its own way of handling malformatted HTML. Developers were, in essence, requiring users to use a piece of software that would automatically correct their mistakes. These were dark times…<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>All credit to Andrew Cantino at <a href="https://selectorgadget.com/">https://selectorgadget.com/</a>. Use here inspired by the [<code>rvest</code> documentation]<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
