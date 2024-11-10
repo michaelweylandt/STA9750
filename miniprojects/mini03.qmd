@@ -390,8 +390,34 @@ but these steps are not required as they are a bit advanced.
 :::
 
 ::: {.callout-tip title="Task 6: Advanced Chloropleth Visualization of Electoral College Results"}
-Modify your previous code to make either an  *animated* version
-showing election results over time.
+Modify your previous code to make either an  ~~*animated*~~ faceted
+version showing election results over time.
+:::
+
+::: {.callout-note title="Some Subtleties of Working with Complex Shapefiles"  collapse="true"}
+
+There are some subtle issues you might need to be aware of when working with
+multiple complex shapefiles: 
+
+1) `bind_rows` will struggle to combine shape files if they are not using
+   the same [Coordinate Reference  System
+   (CRS)](https://pygis.io/docs/d_understand_crs_codes.html). You might
+   want to use `st_transform` to set all CRS to be the same. CRS 4326, 
+   *a.k.a.* [WGS 84](https://en.wikipedia.org/wiki/World_Geodetic_System)
+   is a good choice. 
+2) Plotting complex shapefiles may be slow due to the intricate coastlines
+   and lots of fiddly line segments on state borders. You may want to use
+   `st_simplify` to make smoother (and more quickly plotted) edge sets. 
+   I found `st_simplify(dTolerance=0.01)` to work decently well, but you 
+   may find different values work better. 
+   
+   For technical reasons, you may need to set `sf_use_s2(FALSE)` before
+   using `st_simplify`. 
+3) Joining two `sf` objects is tricky. If you don't need `geometry` from both
+   tables, it is easier to remove the `geometry` column from one and then
+   apply the `as_data_frame` function to simplify its structure. This will
+   allow regular (non-spatial) joins to be used. 
+   
 :::
 
 The following example may be useful for you:
@@ -491,9 +517,9 @@ likelihood and political leanings is an important one
 for campaign strategists and actively debated by
 academics.
 
-## Extra Credit Opportunity
+## Extra Credit Opportunities
 
-::: {.callout-note title="Extra Credit Opportunity"}
+::: {.callout-note title="Extra Credit Opportunity (Up to 5 points)"}
 
 For extra credit, extend your analysis to 2024
 electoral results. You will have to find a reliable
@@ -503,6 +529,21 @@ to do between the election and the date this
 mini-project is due.
 
 :::
+
+
+::: {.callout-note title="Extra Credit Opportunity (Up to 8 points)"}
+
+For extra credit, create an *animated* plot instead of a 
+*facet* plot in Task 6. 
+
+This is hard, due to what might be a bug a  in `gganimate`'s treatment
+of changing numbers of `sf` geometries. If you want to pursue this path, 
+I recommend downloading the *state* shapefiles from TIGER (the Census page)[^7]
+and using it instead of the congressional district shape files. Unlike the 
+congressional district files, the state boundaries should be unchanging over time.
+:::
+
+[^7]: *E.g.*, [https://www2.census.gov/geo/tiger/TIGER2018/STATE/](https://www2.census.gov/geo/tiger/TIGER2018/STATE/)
 
 ------------------------------------------------------------------------
 

@@ -198,7 +198,7 @@ window.Quarto = {
   </ul>
 </li>
   <li><a href="#comparing-the-effects-of-ecv-allocation-rules" id="toc-comparing-the-effects-of-ecv-allocation-rules" class="nav-link" data-scroll-target="#comparing-the-effects-of-ecv-allocation-rules">Comparing the Effects of ECV Allocation Rules</a></li>
-  <li><a href="#extra-credit-opportunity" id="toc-extra-credit-opportunity" class="nav-link" data-scroll-target="#extra-credit-opportunity">Extra Credit Opportunity</a></li>
+  <li><a href="#extra-credit-opportunities" id="toc-extra-credit-opportunities" class="nav-link" data-scroll-target="#extra-credit-opportunities">Extra Credit Opportunities</a></li>
   </ul><div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/miniprojects/mini03.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/miniprojects/mini03.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
@@ -636,7 +636,31 @@ Task 6: Advanced Chloropleth Visualization of Electoral College Results
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Modify your previous code to make either an <em>animated</em> version showing election results over time.</p>
+<p>Modify your previous code to make either an <del><em>animated</em></del> faceted version showing election results over time.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="Some Subtleties of Working with Complex Shapefiles">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Some Subtleties of Working with Complex Shapefiles
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>There are some subtle issues you might need to be aware of when working with multiple complex shapefiles:</p>
+<ol type="1">
+<li><p><code>bind_rows</code> will struggle to combine shape files if they are not using the same <a href="https://pygis.io/docs/d_understand_crs_codes.html">Coordinate Reference System (CRS)</a>. You might want to use <code>st_transform</code> to set all CRS to be the same. CRS 4326, <em>a.k.a.</em> <a href="https://en.wikipedia.org/wiki/World_Geodetic_System">WGS 84</a> is a good choice.</p></li>
+<li>
+<p>Plotting complex shapefiles may be slow due to the intricate coastlines and lots of fiddly line segments on state borders. You may want to use <code>st_simplify</code> to make smoother (and more quickly plotted) edge sets. I found <code>st_simplify(dTolerance=0.01)</code> to work decently well, but you may find different values work better.</p>
+<p>For technical reasons, you may need to set <code>sf_use_s2(FALSE)</code> before using <code>st_simplify</code>.</p>
+</li>
+<li><p>Joining two <code>sf</code> objects is tricky. If you don’t need <code>geometry</code> from both tables, it is easier to remove the <code>geometry</code> column from one and then apply the <code>as_data_frame</code> function to simplify its structure. This will allow regular (non-spatial) joins to be used.</p></li>
+</ol>
+</div>
 </div>
 </div>
 <p>The following example may be useful for you:</p>
@@ -698,18 +722,32 @@ Task 7: Evaluating Fairness of ECV Allocation Schemes
 </div>
 </div>
 <p>Throughout all of this, note that we are not varying the <span class="math inline">\(R+2\)</span> ECV allocation scheme specified by the constitution. Our concern here is only what individual states can do to address “fairness” in presidential elections. If we allow the possibility of constitutional amendment, the possibilities are endless. The <span class="math inline">\(R+2\)</span> rule has several interesting effects; some are well-known, such as the Senate’s equal treatment of small and large states, while others are less well-known, including the fact that congressional representation is based on population, not counts of voters.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
-</section><section id="extra-credit-opportunity" class="level2"><h2 class="anchored" data-anchor-id="extra-credit-opportunity">Extra Credit Opportunity</h2>
-<div class="callout callout-style-default callout-note callout-titled" title="Extra Credit Opportunity">
+</section><section id="extra-credit-opportunities" class="level2"><h2 class="anchored" data-anchor-id="extra-credit-opportunities">Extra Credit Opportunities</h2>
+<div class="callout callout-style-default callout-note callout-titled" title="Extra Credit Opportunity (Up to 5 points)">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Extra Credit Opportunity
+Extra Credit Opportunity (Up to 5 points)
 </div>
 </div>
 <div class="callout-body-container callout-body">
 <p>For extra credit, extend your analysis to 2024 electoral results. You will have to find a reliable source of 2024 state- or district-wide vote counts. If the 2024 election is close, this may not be easy to do between the election and the date this mini-project is due.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="Extra Credit Opportunity (Up to 8 points)">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Extra Credit Opportunity (Up to 8 points)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For extra credit, create an <em>animated</em> plot instead of a <em>facet</em> plot in Task 6.</p>
+<p>This is hard, due to what might be a bug a in <code>gganimate</code>’s treatment of changing numbers of <code>sf</code> geometries. If you want to pursue this path, I recommend downloading the <em>state</em> shapefiles from TIGER (the Census page)<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a> and using it instead of the congressional district shape files. Unlike the congressional district files, the state boundaries should be unchanging over time.</p>
 </div>
 </div>
 <hr>
@@ -726,6 +764,7 @@ Extra Credit Opportunity
 <li id="fn6"><p>The other shapefiles in this FTP archive may be useful for your final projects.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn7"><p>The District of Columbia is <em>very</em> Democratic.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn8"><p>This latter effect is admittedly quite small if we assume political affiliation is unrelated to probability of voting. The relationship between voting likelihood and political leanings is an important one for campaign strategists and actively debated by academics.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p><em>E.g.</em>, <a href="https://www2.census.gov/geo/tiger/TIGER2018/STATE/">https://www2.census.gov/geo/tiger/TIGER2018/STATE/</a><a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></div></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
