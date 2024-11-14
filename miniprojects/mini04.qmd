@@ -148,17 +148,23 @@ At CUNY, the TRS is administered as follows:
    since salaries tend to increase monotonically over time, this is a major
    win for TRS participants.) 
    
-   If $N$ is the number of years served, the retirement benefit is: 
+   If $N$ is the number of years served, the annual retirement benefit is: 
    
-   - $ 1.67\% * \text{FAS} * N$ if $N \leq 20$
-   - $ 1.75\% * \text{FAS} * N$ if $N = 20$
-   - $ (35\% + 2\% * N) * \text{FAS}$ if $N \geq 20$[^3]
+   - $1.67\% * \text{FAS} * N$ if $N \leq 20$
+   - $1.75\% * \text{FAS} * N$ if $N = 20$
+   - $(35\% + 2\% * N) * \text{FAS}$ if $N \geq 20$[^3]
+   
+   In each case, the benefit is paid out equally over 12 months.
    
 3. The benefit is increased annually by 50\% of the CPI, rounded _up_ to
    the nearest tenth of a percent: *e.g.*, a CPI of 2.9\% gives an inflation
    adjustment of 1.5\%. The benefit is capped _below_ at 1\% and _above_ at 3\%,
    so a CPI of 10\% leads to a 3\% inflation adjustment while a CPI of 0\% leads
    to a 1\% inflation adjustment. 
+   
+   The inflation adjustement is effective each September and the CPI used is
+   the aggregate monthly CPI of the previous 12 months; so the September 2024
+   adjustment depends on the CPI from September 2023 to August 2024.
    
 [^3]: If a TRS participant retires before the age of 63, their benefit is
 reduced, but you can ignore this wrinkle.
@@ -188,7 +194,7 @@ unwithdrawn funds continue to experience market returns.
 The funds available in a ORP account depend strongly on the investments chosen.
 For this analysis, you can assume that the ORP participants invest in a 
 [Fidelity Freedom Fund](https://www.fidelity.com/mutual-funds/fidelity-fund-portfolios/freedom-funds) 
-with the following asset allocation:[^4]
+with the following asset allocation:[^6]
 
 - Age 25 to Age 49: 
   - 54\% US Equities
@@ -227,7 +233,7 @@ The employer contribution is fixed at:
 You may assume that the contributions are immediately invested according to 
 the asset allocations above. 
 
-[^4] This is simplified from the actual rates used by Fidelity, but it's close
+[^6] This is simplified from the actual rates used by Fidelity, but it's close
 to accurate. 
 
 ### The Power of Compound Interest
@@ -292,7 +298,7 @@ subscription. For this mini-project, the free tier of AlphaVantage will suffice.
 Create your AlphaVantage free API key at
 [https://www.alphavantage.co/support/#api-key](https://www.alphavantage.co/support/#api-key). 
 
-**Do Not Include This Key in Your Submission**. It is your personal account and
+**Do Not Include This Key in Your Submission**.[^0] It is your personal account and
 linked to whatever email you use to create your account. 
 
 I recommend creating a new file on your computer and storing your key there.
@@ -305,6 +311,11 @@ in your `git` history.
 
 Documentation for the AlphaVantage API can be found at
 [https://www.alphavantage.co/documentation/](https://www.alphavantage.co/documentation/).
+
+[^0]: If you accidentally include this file in your Git history, see 
+[these instructions](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository#using-git-filter-repo) 
+for discussion of how to remove it. These are dangerous and advanced `git` 
+"power tools", so it will be far easier to use `.gitignore` defensively rather
 
 :::
 
@@ -328,12 +339,14 @@ Documentation for the FRED API is available at [https://fred.stlouisfed.org/docs
 
 :::
   
-::: {.callout-important title="Don't R Packages To Access Data Sources"}
+::: {.callout-important title="Don't Use Specialized R Packages To Access Data Sources"}
 
 For this project, you **may not** use any `R` packages that wrap AlphaVantage
 or FRED. A learning objective of this mini-project is accessing data via an API, 
 and you won't practice that skill if you simply use a package like `quantmod`
 or `alphavantager`.
+
+You should interact with the APIs directly using `httr2` or equivalent packages.
 
 :::
 
@@ -796,7 +809,7 @@ The "first month of retirement" dollar value is interesting, but it arguably
 undersells a key strength of the TRS. The TRS _guarantees_ income for life, while
 the ORP can be exhausted if the employee lives a very long time in retirement.
 
-::: {.callout-tip title="Task 7: Fixed-Rate Analysis"}
+::: {.callout-tip title="Task 6: Fixed-Rate Analysis"}
 
 Modify your simulation from the previous section to project an employee's pension
 benefit (TRS) or withdrawal amount (ORP) from retirement until death. (You will
@@ -822,7 +835,7 @@ Now that you have implemented both the "while working" contributions and returns
 (ORP) only as well as the "while retired" benefits of both plans, we are finally
 ready to implement our Monte Carlo assessment. 
 
-::: {.callout-tip title="Task 8: Monte Carlo Analysis"}
+::: {.callout-tip title="Task 7: Monte Carlo Analysis"}
 
 Using your historical data, generate several (at least 200) "bootstrap histories"
 suitable for a Monte Carlo analysis. Use bootstrap sampling, *i.e.* sampling
@@ -846,7 +859,7 @@ as appropriate.
 
 ## Deliverable: Data-Driven Decision Recommendation
 
-Finally, write up your findings from Task 8 in the form of a "data-driven
+Finally, write up your findings from Task 7 in the form of a "data-driven
 recommendation" to a potential CUNY employee. Here, you are playing the role of
 a financial advisor, so be sure to consider the employee's current age and 
 starting salary, expected lifetime, and risk tolerance. Be sure to suitably
