@@ -286,21 +286,28 @@ window.Quarto = {
 </li>
 <li>
 <p>The retirement benefit is calculated based on the <em>Final Average Salary</em> of the employee: following 2024 law changes, the FAS is computed based on the final <em>three</em> years salary. (Previously, FAS was computed based on 5 years: since salaries tend to increase monotonically over time, this is a major win for TRS participants.)</p>
-<p>If <span class="math inline">\(N\)</span> is the number of years served, the retirement benefit is:</p>
+<p>If <span class="math inline">\(N\)</span> is the number of years served, the annual retirement benefit is:</p>
 <ul>
-<li>$ 1.67% * * N$ if <span class="math inline">\(N \leq 20\)</span>
+<li>
+<span class="math inline">\(1.67\% * \text{FAS} * N\)</span> if <span class="math inline">\(N \leq 20\)</span>
 </li>
-<li>$ 1.75% * * N$ if <span class="math inline">\(N = 20\)</span>
+<li>
+<span class="math inline">\(1.75\% * \text{FAS} * N\)</span> if <span class="math inline">\(N = 20\)</span>
 </li>
-<li>$ (35% + 2% * N) * $ if <span class="math inline">\(N \geq 20\)</span><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>
+<li>
+<span class="math inline">\((35\% + 2\% * N) * \text{FAS}\)</span> if <span class="math inline">\(N \geq 20\)</span><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>
 </li>
 </ul>
+<p>In each case, the benefit is paid out equally over 12 months.</p>
 </li>
-<li><p>The benefit is increased annually by 50% of the CPI, rounded <em>up</em> to the nearest tenth of a percent: <em>e.g.</em>, a CPI of 2.9% gives an inflation adjustment of 1.5%. The benefit is capped <em>below</em> at 1% and <em>above</em> at 3%, so a CPI of 10% leads to a 3% inflation adjustment while a CPI of 0% leads to a 1% inflation adjustment.</p></li>
+<li>
+<p>The benefit is increased annually by 50% of the CPI, rounded <em>up</em> to the nearest tenth of a percent: <em>e.g.</em>, a CPI of 2.9% gives an inflation adjustment of 1.5%. The benefit is capped <em>below</em> at 1% and <em>above</em> at 3%, so a CPI of 10% leads to a 3% inflation adjustment while a CPI of 0% leads to a 1% inflation adjustment.</p>
+<p>The inflation adjustement is effective each September and the CPI used is the aggregate monthly CPI of the previous 12 months; so the September 2024 adjustment depends on the CPI from September 2023 to August 2024.</p>
+</li>
 </ol></section><section id="optional-retirement-plan" class="level4"><h4 class="anchored" data-anchor-id="optional-retirement-plan">Optional Retirement Plan</h4>
 <p>The ORP plan is more similar to a 401(k) plan offered by a private employer. The employee and the employer both make contributions to a retirement account which is then invested in the employee’s choice of mutual funds. Those investments grow “tax-free” until the employee begins to withdraw them upon retirement. If the employee does not use up the funds, they are passed down to that employee’s spouse, children, or other heirs; if the employee uses the funds too quickly and zeros out the account balance, no additional retirement funds are available. Though the employee hopefully still has Social Security retirement benefits and other savings to cover living expenses. This type of plan is called a <em>defined-contribution</em> plan as only the contributions to the retirement account are fixed by contract: the final balance depends on market factors outside of the employee’s control.</p>
 <p>At retirement, the employee has access to those funds and can choose to withdraw them at any rate desired. A general rule of thumb is withdrawing 4% of the value per year, <em>e.g.</em>, this <a href="https://www.schwab.com/learn/story/beyond-4-rule-how-much-can-you-spend-retirement">Schwab discussion</a>; you can assume a constant withdrawal rate in your analysis. Note that unwithdrawn funds continue to experience market returns.</p>
-<p>The funds available in a ORP account depend strongly on the investments chosen. For this analysis, you can assume that the ORP participants invest in a <a href="https://www.fidelity.com/mutual-funds/fidelity-fund-portfolios/freedom-funds">Fidelity Freedom Fund</a> with the following asset allocation:<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>The funds available in a ORP account depend strongly on the investments chosen. For this analysis, you can assume that the ORP participants invest in a <a href="https://www.fidelity.com/mutual-funds/fidelity-fund-portfolios/freedom-funds">Fidelity Freedom Fund</a> with the following asset allocation:[^6]</p>
 <ul>
 <li>Age 25 to Age 49:
 <ul>
@@ -346,7 +353,7 @@ window.Quarto = {
 <li>10% for all years thereafter.</li>
 </ul>
 <p>You may assume that the contributions are immediately invested according to the asset allocations above.</p>
-<p><a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> This is simplified from the actual rates used by Fidelity, but it’s close to accurate.</p>
+<p>[^6] This is simplified from the actual rates used by Fidelity, but it’s close to accurate.</p>
 </section></section><section id="the-power-of-compound-interest" class="level3"><h3 class="anchored" data-anchor-id="the-power-of-compound-interest">The Power of Compound Interest</h3>
 <p>Retirement in the US would scarcely be possible without the magic of <em>compounded growth</em>. When you invest early, the money you put in your retirement savings grows, as do the earning you make along the way. This creates a <em>virtuous cycle</em>, resembling exponential growth, making it possible to retire with (hopefully far) more money than you originally put in the account.</p>
 <p>Compound interest works as follows: let <span class="math inline">\(X_t\)</span> be the amount of money in the account at the start of month <span class="math inline">\(t\)</span>, let <span class="math inline">\(C_t\)</span> be the contributions during month <span class="math inline">\(t\)</span>, and let <span class="math inline">\(r_t\)</span> be the fund return during month <span class="math inline">\(t\)</span>. We then have the <em>recurrence</em> relation:</p>
@@ -371,7 +378,7 @@ X_{t+3} &amp;= X_{t}(1+r_t)(1+r_{t+2})(1+r_{t+3}) + C_t(1+r_{t+1})(1+r_{t+2}) + 
 <span>    <span class="fu">summarize</span><span class="op">(</span>future_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">C</span> <span class="op">*</span> <span class="va">net_total_return</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  future_value
-1     2619.395</code></pre>
+1     2545.144</code></pre>
 </div>
 </div>
 <p>(It is a good exercise to try to understand the calculation above.)</p>
@@ -396,7 +403,7 @@ Task 1 - Register for AlphaVantage API Key
 </div>
 <div class="callout-body-container callout-body">
 <p>Create your AlphaVantage free API key at <a href="https://www.alphavantage.co/support/#api-key">https://www.alphavantage.co/support/#api-key</a>.</p>
-<p><strong>Do Not Include This Key in Your Submission</strong>. It is your personal account and linked to whatever email you use to create your account.</p>
+<p><strong>Do Not Include This Key in Your Submission</strong>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> It is your personal account and linked to whatever email you use to create your account.</p>
 <p>I recommend creating a new file on your computer and storing your key there. You can read it into <code>R</code> using the <code>readLines</code> function and use it as needed. Just make sure not to print it.</p>
 <p>Once you store your AlphaVantage key in a plain text file, make sure to add that file to your <code>.gitignore</code> to make sure you don’t accidentally include it in your <code>git</code> history.</p>
 <p>Documentation for the AlphaVantage API can be found at <a href="https://www.alphavantage.co/documentation/">https://www.alphavantage.co/documentation/</a>.</p>
@@ -419,17 +426,18 @@ Task 2 - Register for FRED API Key
 <p>Documentation for the FRED API is available at <a href="https://fred.stlouisfed.org/docs/api/fred/">https://fred.stlouisfed.org/docs/api/fred/</a>.</p>
 </div>
 </div>
-<div class="callout callout-style-default callout-important callout-titled" title="Don't R Packages To Access Data Sources">
+<div class="callout callout-style-default callout-important callout-titled" title="Don't Use Specialized R Packages To Access Data Sources">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Don’t R Packages To Access Data Sources
+Don’t Use Specialized R Packages To Access Data Sources
 </div>
 </div>
 <div class="callout-body-container callout-body">
 <p>For this project, you <strong>may not</strong> use any <code>R</code> packages that wrap AlphaVantage or FRED. A learning objective of this mini-project is accessing data via an API, and you won’t practice that skill if you simply use a package like <code>quantmod</code> or <code>alphavantager</code>.</p>
+<p>You should interact with the APIs directly using <code>httr2</code> or equivalent packages.</p>
 </div>
 </div>
 <p>You will need to download data from FRED and/or AlphaVantage to complete this assignment.</p>
@@ -511,7 +519,7 @@ Don’t R Packages To Access Data Sources
 </ol>
 <p>The name “Monte Carlo” is a reference to the <a href="https://en.wikipedia.org/wiki/Monte_Carlo_Casino">famous casino of the same name</a> in Monaco. While it is hard to evaluate odds of success in complex games of chance, by playing the game many times over and collecting results, it is straightforward to accurately compute the house edge. In the (computational) Monte Carlo approach, we replace the roulette wheel with a computer’s random number generator, but the same principles apply.</p>
 <section id="bootstrapping-complex-data" class="level4"><h4 class="anchored" data-anchor-id="bootstrapping-complex-data">Bootstrapping Complex Data</h4>
-<p>In the example above, we had IID scalar data so a simple call to <code>sample(replace=TRUE)</code> was sufficient to implement a proper bootstrap. When dealing with multivariate data, <em>e.g.</em> <span class="math inline">\((x, y)\)</span> pairs in a regression model, we need to “jointly” resample pairs or else we will break the underlying correlation.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> Thankfully, <code>dplyr</code> provides us with a <code>slice_sample</code> function which can be used to do esentially the same thing.</p>
+<p>In the example above, we had IID scalar data so a simple call to <code>sample(replace=TRUE)</code> was sufficient to implement a proper bootstrap. When dealing with multivariate data, <em>e.g.</em> <span class="math inline">\((x, y)\)</span> pairs in a regression model, we need to “jointly” resample pairs or else we will break the underlying correlation.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> Thankfully, <code>dplyr</code> provides us with a <code>slice_sample</code> function which can be used to do esentially the same thing.</p>
 <p>For example, suppose we are interested in assessing the uncertainty associated with the <em>Kendall correlation</em> of two variables. This is a rather non-linear function of the data and classical tools like Fisher’s transform for standard (Pearson) correlation can’t be easily applied. Bootstrapping works perfectly well without much additional effort, as we show below.</p>
 <p>We generate <span class="math inline">\((x, y)\)</span> pairs with a visible, but not precisely linear, relationship.</p>
 <div class="cell">
@@ -564,7 +572,7 @@ Don’t R Packages To Access Data Sources
 </div>
 </div>
 <p>Again - really close! And we don’t need to know anything about the joint distribution of <span class="math inline">\((x, y)\)</span> to apply the bootstrap.</p>
-<p>You will need to use this “row-resampling” bootstrap to maintain the underlying economic relationships between the various investment returns and macroeconomic quantities you consider in this exercise.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a></p>
+<p>You will need to use this “row-resampling” bootstrap to maintain the underlying economic relationships between the various investment returns and macroeconomic quantities you consider in this exercise.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
 </section></section></section><section id="mini-project-objectives" class="level2"><h2 class="anchored" data-anchor-id="mini-project-objectives">Mini-Project Objectives</h2>
 <p>In this project, you will use historical economic data and a bootstrap resampling strategy to see the distribution of retirement outcomes under different (resampled) economic histories. You will collect relevant economic data including:</p>
 <ul>
@@ -753,7 +761,7 @@ https://&lt;GITHUB_USERNAME&gt;.github.io/STA9750-2024-FALL/mp04.html</code></pr
 <li>US Equity Market total returns</li>
 <li>International Equity Market total returns</li>
 <li>Bond market total returns</li>
-<li>Short-term debt returns<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>
+<li>Short-term debt returns<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>
 </li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled" title="Task 3: Data Acquisition">
@@ -808,13 +816,13 @@ Task 5: Historical Comparison
 </div>
 </section><section id="long-term-average-analysis" class="level3"><h3 class="anchored" data-anchor-id="long-term-average-analysis">Long-Term Average Analysis</h3>
 <p>The “first month of retirement” dollar value is interesting, but it arguably undersells a key strength of the TRS. The TRS <em>guarantees</em> income for life, while the ORP can be exhausted if the employee lives a very long time in retirement.</p>
-<div class="callout callout-style-default callout-tip callout-titled" title="Task 7: Fixed-Rate Analysis">
+<div class="callout callout-style-default callout-tip callout-titled" title="Task 6: Fixed-Rate Analysis">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Task 7: Fixed-Rate Analysis
+Task 6: Fixed-Rate Analysis
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -830,13 +838,13 @@ Task 7: Fixed-Rate Analysis
 </div>
 </section><section id="bootstrap-monte-carlo-comparison" class="level3"><h3 class="anchored" data-anchor-id="bootstrap-monte-carlo-comparison">Bootstrap (Monte Carlo) Comparison</h3>
 <p>Now that you have implemented both the “while working” contributions and returns (ORP) only as well as the “while retired” benefits of both plans, we are finally ready to implement our Monte Carlo assessment.</p>
-<div class="callout callout-style-default callout-tip callout-titled" title="Task 8: Monte Carlo Analysis">
+<div class="callout callout-style-default callout-tip callout-titled" title="Task 7: Monte Carlo Analysis">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Task 8: Monte Carlo Analysis
+Task 7: Monte Carlo Analysis
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -851,7 +859,7 @@ Task 8: Monte Carlo Analysis
 </div>
 </div>
 </section></section><section id="deliverable-data-driven-decision-recommendation" class="level2"><h2 class="anchored" data-anchor-id="deliverable-data-driven-decision-recommendation">Deliverable: Data-Driven Decision Recommendation</h2>
-<p>Finally, write up your findings from Task 8 in the form of a “data-driven recommendation” to a potential CUNY employee. Here, you are playing the role of a financial advisor, so be sure to consider the employee’s current age and starting salary, expected lifetime, and risk tolerance. Be sure to suitably convey the uncertainty of your predictions and the limitations of the bootstrap-history approach used here.<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a> As you write this, think of what issues would matter most to you if you were making this decision and address them accordingly.</p>
+<p>Finally, write up your findings from Task 7 in the form of a “data-driven recommendation” to a potential CUNY employee. Here, you are playing the role of a financial advisor, so be sure to consider the employee’s current age and starting salary, expected lifetime, and risk tolerance. Be sure to suitably convey the uncertainty of your predictions and the limitations of the bootstrap-history approach used here.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a> As you write this, think of what issues would matter most to you if you were making this decision and address them accordingly.</p>
 </section><section id="extra-credit-opportunities" class="level2"><h2 class="anchored" data-anchor-id="extra-credit-opportunities">Extra Credit Opportunities</h2>
 <p>For extra credit, you may make an <em>interactive</em> version of your report, allowing your client to alter the parameters of your simulation and see how the predictions change.</p>
 <section id="challenge-level-basic-up-to-5-points-extra-credit" class="level3"><h3 class="anchored" data-anchor-id="challenge-level-basic-up-to-5-points-extra-credit">Challenge Level: Basic (Up to 5 points Extra Credit)</h3>
@@ -873,12 +881,11 @@ Task 8: Monte Carlo Analysis
 <li id="fn1"><p>While I don’t imagine many of you will have this exact decision to make, these forecasting and analysis strategies are readily applied to a variety of personal financial planning decisions you might face in future careers.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>CUNY employees have additional voluntary retirement savings plans, but these are non-exclusive and participation is voluntary, so we omit them from this analysis.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>If a TRS participant retires before the age of 63, their benefit is reduced, but you can ignore this wrinkle.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>“Breaking” the correlation is not necessarily a bad thing. This essentially underlies the concept of <em>permutation</em> testing, but it’s not what we’re aiming to do here.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>If you accidentally include this file in your Git history, see <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository#using-git-filter-repo">these instructions</a> for discussion of how to remove it. These are dangerous and advanced <code>git</code> “power tools”, so it will be far easier to use <code>.gitignore</code> defensively rather<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn5"><p>“Breaking” the correlation is not necessarily a bad thing. This essentially underlies the concept of <em>permutation</em> testing, but it’s not what we’re aiming to do here.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>“Breaking” the correlation is not necessarily a bad thing. This essentially underlies the concept of <em>permutation</em> testing, but it’s not what we’re aiming to do here.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn7"><p>Clearly, the bootstrap as we have described here looses any temporal structure in the data. The so-called <a href="https://en.wikipedia.org/wiki/Bootstrapping_(statistics)#Block_bootstrap">block bootstrap</a> can be used to bootstrap in a way that (approximately) respects temporal dependence, but you don’t need to implement this advanced variant in this project.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>For short-term debt, it may be easiest to pick a key short-term benchmark, <em>e.g.</em>, the 2-year US Treasury yield. The world of “short-term debt” is rather wide and varied.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>As the SEC requires all advisors to disclaim: Past Performance is No Guarantee of Future Results.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Clearly, the bootstrap as we have described here looses any temporal structure in the data. The so-called <a href="https://en.wikipedia.org/wiki/Bootstrapping_(statistics)#Block_bootstrap">block bootstrap</a> can be used to bootstrap in a way that (approximately) respects temporal dependence, but you don’t need to implement this advanced variant in this project.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>For short-term debt, it may be easiest to pick a key short-term benchmark, <em>e.g.</em>, the 2-year US Treasury yield. The world of “short-term debt” is rather wide and varied.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>As the SEC requires all advisors to disclaim: Past Performance is No Guarantee of Future Results.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></div></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
