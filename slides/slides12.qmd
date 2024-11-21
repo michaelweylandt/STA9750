@@ -1,0 +1,357 @@
+---
+title: "{{< var course.short >}} - Week 12"
+author: "Michael Weylandt"
+format: revealjs
+echo: true
+---
+
+## {{< var course.short >}} Mini-Project #04
+
+[MP#04 online now](https://michael-weylandt.com/STA9750/miniprojects/mini04.html)
+
+- Due **2024-12-04** ($\approx$ 3 weeks - 2 remaining)
+- Topic: financial modeling
+  - Comparison of two retirement plans
+  - Historical data + Monte Carlo ("bootstrapping") 
+- Format: 
+  - *Decision Analytics* - Play the role of financial advisor
+  - GitHub post **AND Brightspace submission**
+  
+## Week 12 Pre-Assignment 
+
+Due at midnight tonight - take a moment to do it now 
+if you haven't already!
+
+# Going Forward
+
+## Pre-Assignments
+
+Brightspace - Wednesdays at 11:45
+
+-   Reading, typically on course website
+-   Brightspace auto-grades
+    -   I have to manually change to completion grading
+
+Next (and final!) pre-assignment is **December 4th**
+
+. . .
+
+Thank you for FAQs and (honest) team feedback. Keep it coming!
+
+## Next Semester Topics
+
+- NYC Open Data
+- Sports (Baseball?)
+- Spotify / Music
+- Healthcare / Pharmaceutical (might be tricky...)
+- Video Games
+- Quant Finance / Time Series?
+- Baruch Demographics
+- Job Market
+- Real Estate
+
+## Grading
+
+Returned: 
+
+- MP#02 grade
+- MP#02 meta-review grade
+- Videos now on Vocat
+
+We owe you: 
+
+- Mid-Term Check-In Feedback
+
+## Grading - *Ex Post* Adjustments
+
+FYI: At the end of the course, I curve individual peer grades. 
+
+*Example:* If grader $X$ is on average, 5 points lower, I re-center all their grades, raising the gradees by an average of 1.25. 
+
+Try to be consistent over the semester so I can calibrate this correctly. 
+
+## GitHub Notifications
+
+Make sure you check GitHub notifications, via email or at
+[https://github.com/notifications](https://github.com/notifications)
+to make sure you get all peer feedback assignments. 
+
+- I tag you *in other folks' repo* when you are **supposed to review**
+
+- People tagged *in your repo* are **evaluating you**
+
+## Course Support
+
+- Synchronous
+  - Office Hours 4x / week
+    - MW Office Hours on **Monday** + **Thursday**
+    - CR **Tuesday** + **Friday**
+    - No OH during Thanksgiving break
+- Asynchronous
+  - Piazza ($38$ minute average response time)
+  
+**Change**: MW Thursday Zoom OH now **4:00pm** to **5:00pm**
+
+## Upcoming
+
+Nov 27 - Thanksgiving Holiday (No Class on Nov 28)
+
+- Check-In Peer Feedback (Vocat)
+
+## Comments
+
+Bad - Trivial:
+
+```{r}
+#| eval: false
+# Set x to 3
+x <- 3
+```
+
+Bad - Opaque: 
+
+```{r}
+#| eval: false
+# Follow instructions
+x <- 3
+```
+
+Bad - Redundant / Explaining Code
+```{r}
+#| eval: false
+# Fit a model
+mod <- model(x, y)
+
+# Build a query
+query_build() |> query_add() |> query_formulate()
+```
+
+## Comments
+
+Good - Purpose ("Business Logic"):
+
+```{r}
+#| eval: false
+# Regulation XX.YY requires us to apply a risk multiplier to output
+# As of 2024-11-01, CFO says risk multiplier is 3
+# Cf. Email to risk group, subject "New Risk Multiplier"
+RISK_MULTIPLIER <- 3
+```
+
+Good - Higher Level Structure (Example from [`googledrive` package](https://github.com/tidyverse/googledrive/blob/main/R/utils-io.R#L18)): 
+
+```{r}
+#| eval: false
+# https://github.com/gaborcsardi/rencfaq#with-base-r
+write_utf8 <- function(text, path = NULL) {
+  # sometimes we use writeLines() basically to print something for a snapshot
+  if (is.null(path)) {
+    return(base::writeLines(text))
+  }
+
+  # step 1: ensure our text is utf8 encoded
+  utf8 <- enc2utf8(text)
+  upath <- enc2utf8(path)
+
+  # step 2: create a connection with 'native' encoding
+  # this signals to R that translation before writing
+  # to the connection should be skipped
+  con <- file(upath, open = "w+", encoding = "native.enc")
+  withr::defer(close(con))
+
+  # step 3: write to the connection with 'useBytes = TRUE',
+  # telling R to skip translation to the native encoding
+  base::writeLines(utf8, con = con, useBytes = TRUE)
+}
+```
+
+## Comments
+
+More Advice on [StackOverflow](https://stackoverflow.blog/2021/12/23/best-practices-for-writing-code-comments/)
+
+# Pre-Assignment #12 FAQs
+
+## FAQ: Unicode Resources
+
+- Unicode Tables: [unicodeplus.com/](https://unicodeplus.com)
+- Taco Emoji [History](https://www.huffpost.com/entry/taco-bell-emoji-petition_n_6416798)
+- Taco Emoji [Controversy](https://www.vice.com/en/article/the-brief-history-of-the-taco-emoji-now-has-a-happy-ending/)
+
+## FAQ: Regular Expression Tools
+
+- Testing Regular Expressions Interactively: [regex101.com/](https://regex101.com/)
+- Alternative [regexr.com/](https://regexr.com/)
+- Automated Regular Expression Builder: [regex-generator](https://regex-generator.olafneumann.org) 
+- AI Regexp Builder: [hregexgo.com/](https://www.regexgo.com/)
+
+
+## FAQ: Substrings and String Splitting
+
+```{r}
+fruits <- c("apples and oranges and pears and bananas", 
+            "pineapples and mangos and guavas")
+
+stringr::str_split(fruits, " and ")
+```
+
+```{r}
+stringr::str_split_fixed(fruits, "and", n=2)
+```
+
+## Sub-Strings / Splitting
+
+```{r}
+x <- "Baruch College, CUNY"
+stringr::str_sub(x, end=6) # Includes endpoints
+```
+
+```{r}
+stringr::str_sub(x, start=-4) # Count from end
+```
+
+```{r}
+x <- c("Baruch College, CUNY", "Brooklyn College, CUNY")
+stringr::str_sub(x, end=-7) # Drop last _6_
+```
+
+## FAQ: Start and End Anchors
+
+> When to use the `^` and `$` anchors? 
+
+Start and end of a _line_. 
+
+- Very useful for _structured_ text (computer log outputs)
+- In data analysis, a bit less useful
+  - Applied to output of `str_split`
+
+## FAQ: Exclusion + Detection
+
+```{r}
+x <- c("10 blue fish", "three wet goats")
+stringr::str_detect(x, "[^0123456789]")
+```
+
+`str_detect` has a `negate` option:
+
+```{r}
+stringr::str_detect(x, "[0-9]", negate=TRUE)
+```
+
+
+## FAQ: `str_detect` vs `str_match` vs `str_extract`
+
+- `str_detect` is there a 'fit'?
+- `str_extract` extract the _whole_ 'fit'
+- `str_match` extract specific groups
+
+```{r}
+x <- "Baruch College, CUNY is a wonderful place to work!"
+stringr::str_detect(x, "(.*), CUNY")
+stringr::str_extract(x, "(.*), CUNY")
+stringr::str_match(x, "(.*), CUNY")
+```
+
+## FAQ: Subset Selection + Indexing
+
+`str_match(group=)` is useful for complex data extraction. 
+
+```{r}
+x <- c("Michael Weylandt teaches STA9750", "KRR teaches STA9891")
+pattern <- c("(.*) teaches (.*)")
+stringr::str_extract(x, pattern, group=1)
+stringr::str_extract(x, pattern, group=2)
+```
+(Not sure what negatives do here...)
+
+Also allows named groups: 
+
+```{r}
+x <- c("Michael Weylandt teaches STA9750 on Thursday", "KRR teaches STA9891 on Wednesday")
+pattern <- c("(?<instructor>.*) teaches (?<course>.*) on (?<weekday>.*)")
+stringr::str_match(x, pattern) |> as.data.frame()
+```
+
+## FAQ: Homoglyphs
+
+```{r}
+x <- c("Η", "H")
+tolower(x)
+```
+
+Why?
+
+. . . 
+
+```{r}
+uni_info <- Vectorize(function(x) Unicode::u_char_name(utf8ToInt(x)), "x")
+uni_info(x)
+```
+
+. . . 
+
+Particularly nasty with dashes - lean on `[[:punct::]]` where possible.
+
+```{r}
+x <- c("Em Dash —", "En Dash –", "Hyphen ‐")
+stringr::str_remove(x, "[[:punct:]]") # Works
+stringr::str_remove(x, "-")  # Keyboard minus = Fail
+```
+
+## FAQ: `?` Symbol (Quantifiers)
+
+Quantifiers (multiple matches): 
+
+- `.{a, b}`: anywhere from `a` to `b` copies (inclusive)
+- `.{, b}`: no more than `b` copies
+- `.{a,}`: at least `a` copies
+- `.?`: zero-or-one, same as `.{0,1}`
+- `.*`: zero-or-more, same as `.{0,}`
+- `.+`: one-or-more, same as `{1,}`
+
+## FAQ: `stringr` vs `grep` / `grepl`
+
+Ultimately the same functionality, but `stringr` has a more consistent interface. 
+
+Conversion table [online](https://stringr.tidyverse.org/articles/from-base.html)
+
+## FAQ: Working Columnwise
+
+All `stringr` functions work well in `dplyr` pipelines ("vectorized"): 
+
+```{r}
+library(dplyr); library(stringr)
+df <- data.frame(lower_letters = letters)
+df |> mutate(upper_letters = str_to_upper(lower_letters))
+```
+
+## FAQ: How to Convert to UTF-8
+
+If you know the source encoding: 
+
+```{r}
+#| eval: false
+inconv(STRING, from="latin1", to="UTF-8")
+```
+
+If you don't know the source, .... 
+
+# Today
+
+## Agenda
+
+- Unicode Discussion
+- Regex Discussion
+- Regex Exercises
+- Completion of Cocktail Exercise
+- *Time Permitting*: More Scraping
+- *Time Permitting*: Statistical Inference
+
+## Breakout Rooms
+
+| Order| Team           |  | Order| Team            |
+|------|----------------|--|------|-----------------|
+| 1    | Rat Pack       |  | 6    | Ca\$h VZ        |
+| 2    | Subway Surfers |  | 7    | Listing Legends |
+| 3    | Chart Toppers  |  | 8    | TDSSG           |
+| 4    | Metro Mindset  |  | 9    | Broker T's      |
+| 5    | Apple Watch    |  | 10   | EVengers        |
