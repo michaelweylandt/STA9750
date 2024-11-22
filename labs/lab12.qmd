@@ -32,7 +32,7 @@ str_extract_all(todo, ______, simplify=TRUE)
 ::: {.solution exercise="plural_nouns"}
 
 ```{webr}
-#| exercise: ex_quant
+#| exercise: plural_nouns
 #| solution: true
 library(stringr)
 todo <- "Yesterday, I needed to buy four cups of flour, a piece of Parmesan cheese, two gallons of ice cream, and a six-pack of bottled (non-alcoholic) beers."
@@ -41,7 +41,7 @@ str_extract_all(todo, " [A-Za-z]+s[. ]", simplify=TRUE)
 :::
 
 ```{webr}
-#| exercise: ex_quant
+#| exercise: plural_nouns
 #| check: true
 library(stringr)
 gradethis::grade_this_code()
@@ -221,35 +221,41 @@ a well-formated "wide" set of recipies.
 ```{r}
 #| eval: false
 get_number_part <- function(x){
-  library(dplyr)
-  library(stringr)
-  x |>
-  str_replace_all("[A-Za-z,]", "") |>
-    str_trim() |>
-    case_match(
-      "1" ~ 1, 
-      "2" ~ 2,
-      "2½" ~ 2.5,
-      "1½" ~ 1.5,
-      "½" ~ 0.5, 
-      "¾" ~ 0.75,
-      "1¾" ~ 1.75,
-      "¼" ~ 0.25,
-      "1¼" ~ 1.25,
-      "3" ~ 3,
-      "4" ~ 4
-    )
+    library(dplyr)
+    library(stringr)
+    x |>
+        str_replace_all("[A-Za-z,']", "") |>
+        str_trim() |>
+        case_match(
+            "1" ~ 1, 
+            "2" ~ 2,
+            "2½" ~ 2.5,
+            "1½" ~ 1.5,
+            "½" ~ 0.5, 
+            "¾" ~ 0.75,
+            "1¾" ~ 1.75,
+            "¼" ~ 0.25,
+            "1¼" ~ 1.25,
+            "3" ~ 3,
+            "4" ~ 4, 
+            "5" ~ 5, 
+            "6" ~ 6, 
+            "7" ~ 7, 
+            "8" ~ 8
+        )
 }
 
 get_cocktail_unit <- function(x){
-  library(dplyr)
-  library(stringr)
+    library(dplyr)
+    library(stringr)
     case_when(
-      str_detect(x, "oz") ~ "oz",
-      str_detect(x, "dash") ~ "dash",
-      str_detect(x, "drop") ~ "drop",
-      str_detect(x, "dash") ~ "dash", 
-      str_detect(x, " t ") ~ "t"
+        str_detect(x, "oz") ~ "oz",
+        str_detect(x, "dash") ~ "dash",
+        str_detect(x, "drop") ~ "drop",
+        str_detect(x, " t ") ~ "t", 
+        str_detect(x, "chunk") ~ "chunk",
+        str_detect(x, "leaves") ~ "leaves",
+        str_detect(x, " cm ") ~ "cm"
     )
 }
 ```
@@ -272,7 +278,52 @@ get_cocktail_unit <- function(x){
    
    Which `pivot` operation do you want to use here? How should the empty cells
    be treated?
+   
+::: {.callout-note title="Solution" collapse="true"}
 
+```{r}
+#| eval: false
+
+get_ingredient_name <- function(x){
+    str_remove_all(x, "[0-9¼½¾]|( oz )|( dashes )|( dash )|( drops )|( drop )|( t )|( chunks )|( chunk )|( leaves )|( leaf )|( cm )")
+}
+
+RECIPES_LONG |>
+    # Remove duplicates from import process
+    # When we import each ingredient page, we get duplicates
+    # as drinks are listed on multiple ingredient pages.
+    distinct() |>
+    mutate(title  = str_trim(title), 
+           amount = get_number_part(ingredient), 
+           unit  = get_cocktail_unit(ingredient), 
+           ingredient = get_ingredient_name(ingredient)) |>
+    # For some ingredients, e.g. a lemon twist, the implied
+    # but unstated quantity is 1
+    mutate(amount = case_when(
+        is.na(amount) ~ 1, 
+        TRUE ~ amount), 
+        ingredient = str_to_title(ingredient)) |>
+    rename(Cocktail = title, 
+           Amount = amount, 
+           Unit = unit, 
+           Ingredient = ingredient) |>
+    mutate(Ingredient = case_when(
+        is.na(Unit) ~ Ingredient, # Handle unit-less ingredients
+        TRUE ~ paste0(Ingredient, " (", Unit, ")"))) |>
+    # Spanish Coffee lists orange liqueur twice, so let's 
+    # add up repeated ingredients before pivoting.
+    # (I think this is the only one)
+    group_by(Cocktail, Ingredient) |>
+    summarize(Amount = sum(Amount)) |>
+    ungroup() |>
+    pivot_wider(id_cols = Cocktail, 
+                names_from = Ingredient, 
+                values_from = Amount, 
+                values_fill = 0) |>
+    select("Cocktail", sort(tidyselect::peek_vars()))
+```
+
+:::
 ## Scraping Practice II: Quotes
 
 Next, let's analyze the website [https://quotes.toscrape.com](https://quotes.toscrape.com),
