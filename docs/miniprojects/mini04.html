@@ -378,7 +378,7 @@ X_{t+3} &amp;= X_{t}(1+r_t)(1+r_{t+2})(1+r_{t+3}) + C_t(1+r_{t+1})(1+r_{t+2}) + 
 <span>    <span class="fu">summarize</span><span class="op">(</span>future_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">C</span> <span class="op">*</span> <span class="va">net_total_return</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  future_value
-1     2532.232</code></pre>
+1     2562.367</code></pre>
 </div>
 </div>
 <p>(It is a good exercise to try to understand the calculation above.)</p>
@@ -441,6 +441,26 @@ Don’t Use Specialized R Packages To Access Data Sources
 </div>
 </div>
 <p>You will need to download data from FRED and/or AlphaVantage to complete this assignment.</p>
+<div class="callout callout-style-default callout-warning callout-titled" title="Setting the `function` parameter in the AlphaVantage API">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Setting the <code>function</code> parameter in the AlphaVantage API
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For AlphaVantage, you will need to set a <code>function</code> value in the query string. To do this in <code>httr2</code>, you will need code something like</p>
+<div class="cell">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">req</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="va">ALPHAVANTAGE_URL</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query</a></span><span class="op">(</span>`function` <span class="op">=</span> <span class="va">VALUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here, because <code>function</code> is a keyword (reserved word) in <code>R</code>, we have to surround it with backquotes if we want to use it as the literal word instead of using it to create a function.</p>
+</div>
+</div>
 </section><section id="bootstrap-resampling" class="level3"><h3 class="anchored" data-anchor-id="bootstrap-resampling">Bootstrap Resampling</h3>
 <p>To complete this project, you will use a <em>boostrap</em> resampling strategy. The details of how bootstrap sampling can be applied to this type of financial analysis are given in more detail below. Here, we simply review the basic principles of the bootstrap.</p>
 <p>Classically, statistics proceeds by assuming some sort of <em>parametric</em> model for the population from which we have samples. Parametric models describe a family of not-dissimilar distributions, indexed by a small number of parameters; <em>e.g.</em>, the two parameters of the normal distribution, mean and variance. While this leads to quite elegant mathematical theory, it is unclear how useful this theory is in practice: we rarely <em>know</em> with certainty that a particular parametric family is an accurate model for a phenomenon of interest. Asymptotic results like the Central Limit Theorem give us some sense that we don’t need to know the true distribution family exactly to get accurate answers, but the era of computers gives us an alternate approach.</p>
@@ -466,18 +486,18 @@ Don’t Use Specialized R Packages To Access Data Sources
 <p>Let’s put this into practice: suppose we have <span class="math inline">\(250\)</span> samples from an unknown distribution and we want to estimate the median of the distribution using the sample median. Computing the variance of the sample median is rather tricky, but asymptotically it approaches <span class="math inline">\(1/(4n f_X(m_X)^2)\)</span> where <span class="math inline">\(m_X\)</span> is the true median. This formula is essentially useless however if we don’t assume a parametric model for <span class="math inline">\(f_X\)</span>, so we instead resort to bootstrapping.</p>
 <p>To demonstrate this, let’s suppose <span class="math inline">\(X\)</span> comes from a <em>non-central <span class="math inline">\(\chi^2\)</span> distribution</em> with <span class="math inline">\(\pi\)</span> degrees of freedom and non-centrality parameter <span class="math inline">\(e^2\)</span>. (This is a very weird distribution!)</p>
 <div class="cell">
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></span>
 <span><span class="va">DATA</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">rchisq</a></span><span class="op">(</span><span class="fl">250</span>, df<span class="op">=</span><span class="va">pi</span>, ncp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">SAMPLE_MEDIAN</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">DATA</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The median of this distribution is <a href="https://en.wikipedia.org/wiki/Noncentral_chi-squared_distribution">too complex for Wikipedia</a>, but we can compute it empirically using a <em>very large</em> sample:</p>
 <div class="cell">
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">TRUE_MEDIAN</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">rchisq</a></span><span class="op">(</span><span class="fl">5e7</span>, df<span class="op">=</span><span class="va">pi</span>, ncp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">TRUE_MEDIAN</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">rchisq</a></span><span class="op">(</span><span class="fl">5e7</span>, df<span class="op">=</span><span class="va">pi</span>, ncp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>So our sample median (10.74) is a bit off from the true median (9.58) but not catastrophically so. How can we estimate the variance? By bootstrapping!</p>
 <p>We can implement a bootstrap in <code>dplyr</code> as follows:</p>
 <div class="cell">
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">B</span> <span class="op">&lt;-</span> <span class="fl">500</span> <span class="co"># Number of boostrap samples to create</span></span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">B</span> <span class="op">&lt;-</span> <span class="fl">500</span> <span class="co"># Number of boostrap samples to create</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">DATA</span><span class="op">)</span> <span class="co"># Original data size</span></span>
 <span></span>
 <span><span class="fu">expand_grid</span><span class="op">(</span>B <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="va">B</span>, </span>
@@ -489,23 +509,23 @@ Don’t Use Specialized R Packages To Access Data Sources
 <span>    <span class="fu">summarize</span><span class="op">(</span>var_f <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="va">f_boot</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">pull</span><span class="op">(</span><span class="va">var_f</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.1970951</code></pre>
+<pre><code>[1] 0.1911888</code></pre>
 </div>
 </div>
 <p>We can compare this to the CLT-asymptotic variance:</p>
 <div class="cell">
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fl">1</span><span class="op">/</span><span class="op">(</span><span class="fl">4</span> <span class="op">*</span> <span class="va">n</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">dchisq</a></span><span class="op">(</span><span class="va">TRUE_MEDIAN</span>, df<span class="op">=</span><span class="va">pi</span>, ncp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fl">1</span><span class="op">/</span><span class="op">(</span><span class="fl">4</span> <span class="op">*</span> <span class="va">n</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">dchisq</a></span><span class="op">(</span><span class="va">TRUE_MEDIAN</span>, df<span class="op">=</span><span class="va">pi</span>, ncp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.21209</code></pre>
+<pre><code>[1] 0.2121155</code></pre>
 </div>
 </div>
 <p>And, since we’re in simulation land, we also have the true variance:</p>
 <div class="cell">
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="fl">10000</span>, <span class="op">{</span></span>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="fl">10000</span>, <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">rchisq</a></span><span class="op">(</span><span class="fl">250</span>, df<span class="op">=</span><span class="va">pi</span>, ncp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.2100952</code></pre>
+<pre><code>[1] 0.2082013</code></pre>
 </div>
 </div>
 <p>The bootstrap variance is a little bit too high, but it’s surprisingly good! And we didn’t have to know anything about the true distribution of the data! I’d call that a win.</p>
@@ -523,26 +543,26 @@ Don’t Use Specialized R Packages To Access Data Sources
 <p>For example, suppose we are interested in assessing the uncertainty associated with the <em>Kendall correlation</em> of two variables. This is a rather non-linear function of the data and classical tools like Fisher’s transform for standard (Pearson) correlation can’t be easily applied. Bootstrapping works perfectly well without much additional effort, as we show below.</p>
 <p>We generate <span class="math inline">\((x, y)\)</span> pairs with a visible, but not precisely linear, relationship.</p>
 <div class="cell">
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">rchisq</a></span><span class="op">(</span><span class="fl">100</span>, df<span class="op">=</span><span class="fl">3</span>, ncp<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">rchisq</a></span><span class="op">(</span><span class="fl">100</span>, df<span class="op">=</span><span class="fl">3</span>, ncp<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">sin</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">x</span><span class="op">)</span> <span class="op">+</span> <span class="fl">15</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="mini04_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="mini04_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>The Kendall correlation is easily computed:</p>
 <div class="cell">
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, method<span class="op">=</span><span class="st">"kendall"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, method<span class="op">=</span><span class="st">"kendall"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.820202</code></pre>
+<pre><code>[1] 0.7927273</code></pre>
 </div>
 </div>
 <p>To put a confidence interval on this, we can use a bootstrap with <span class="math inline">\(B=400\)</span> replicates:</p>
 <div class="cell">
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">n_samp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span><span class="va">n_boot</span> <span class="op">&lt;-</span> <span class="fl">400</span></span>
 <span></span>
@@ -557,18 +577,18 @@ Don’t Use Specialized R Packages To Access Data Sources
 <pre><code># A tibble: 1 × 1
   `var(kendall_cor)`
                &lt;dbl&gt;
-1            0.00113</code></pre>
+1            0.00181</code></pre>
 </div>
 </div>
 <p>We can again compare this to the “true” sampling variance since we have access to the data-generating model.</p>
 <div class="cell">
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="fl">5000</span>, <span class="op">{</span></span>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="fl">5000</span>, <span class="op">{</span></span>
 <span>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">rchisq</a></span><span class="op">(</span><span class="fl">100</span>, df<span class="op">=</span><span class="fl">3</span>, ncp<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
 <span>    <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">sin</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">x</span><span class="op">)</span> <span class="op">+</span> <span class="fl">15</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, method<span class="op">=</span><span class="st">"kendall"</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.001457306</code></pre>
+<pre><code>[1] 0.001408479</code></pre>
 </div>
 </div>
 <p>Again - really close! And we don’t need to know anything about the joint distribution of <span class="math inline">\((x, y)\)</span> to apply the bootstrap.</p>
