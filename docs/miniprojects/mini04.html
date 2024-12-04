@@ -295,7 +295,7 @@ window.Quarto = {
 <span class="math inline">\(1.75\% * \text{FAS} * N\)</span> if <span class="math inline">\(N = 20\)</span>
 </li>
 <li>
-<span class="math inline">\((35\% + 2\% * N) * \text{FAS}\)</span> if <span class="math inline">\(N \geq 20\)</span><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>
+<span class="math inline">\((35\% + 2\% * (N - 20)) * \text{FAS}\)</span> if <span class="math inline">\(N \geq 20\)</span><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a><a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>
 </li>
 </ul>
 <p>In each case, the benefit is paid out equally over 12 months.</p>
@@ -307,7 +307,7 @@ window.Quarto = {
 </ol></section><section id="optional-retirement-plan" class="level4"><h4 class="anchored" data-anchor-id="optional-retirement-plan">Optional Retirement Plan</h4>
 <p>The ORP plan is more similar to a 401(k) plan offered by a private employer. The employee and the employer both make contributions to a retirement account which is then invested in the employee’s choice of mutual funds. Those investments grow “tax-free” until the employee begins to withdraw them upon retirement. If the employee does not use up the funds, they are passed down to that employee’s spouse, children, or other heirs; if the employee uses the funds too quickly and zeros out the account balance, no additional retirement funds are available. Though the employee hopefully still has Social Security retirement benefits and other savings to cover living expenses. This type of plan is called a <em>defined-contribution</em> plan as only the contributions to the retirement account are fixed by contract: the final balance depends on market factors outside of the employee’s control.</p>
 <p>At retirement, the employee has access to those funds and can choose to withdraw them at any rate desired. A general rule of thumb is withdrawing 4% of the value per year, <em>e.g.</em>, this <a href="https://www.schwab.com/learn/story/beyond-4-rule-how-much-can-you-spend-retirement">Schwab discussion</a>; you can assume a constant withdrawal rate in your analysis. Note that unwithdrawn funds continue to experience market returns.</p>
-<p>The funds available in a ORP account depend strongly on the investments chosen. For this analysis, you can assume that the ORP participants invest in a <a href="https://www.fidelity.com/mutual-funds/fidelity-fund-portfolios/freedom-funds">Fidelity Freedom Fund</a> with the following asset allocation:<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>The funds available in a ORP account depend strongly on the investments chosen. For this analysis, you can assume that the ORP participants invest in a <a href="https://www.fidelity.com/mutual-funds/fidelity-fund-portfolios/freedom-funds">Fidelity Freedom Fund</a> with the following asset allocation:<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
 <ul>
 <li>Age 25 to Age 49:
 <ul>
@@ -352,7 +352,7 @@ window.Quarto = {
 <li>8% for the first seven years of employment at CUNY.</li>
 <li>10% for all years thereafter.</li>
 </ul>
-<p>For example, if an employee made $52,267 in their first year at CUNY<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>, the total annual contributions to their ORP account would be:</p>
+<p>For example, if an employee made $52,267 in their first year at CUNY<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>, the total annual contributions to their ORP account would be:</p>
 <ul>
 <li>
 <strong>Employer:</strong> 8% of salary = 0.08 * $52,267 = $4,181.36</li>
@@ -397,7 +397,7 @@ X_{t+3} &amp;= X_{t}(1+r_t)(1+r_{t+2})(1+r_{t+3}) + C_t(1+r_{t+1})(1+r_{t+2}) + 
 <span>    <span class="fu">summarize</span><span class="op">(</span>future_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">C</span> <span class="op">*</span> <span class="va">net_total_return</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  future_value
-1     2652.214</code></pre>
+1     2451.822</code></pre>
 </div>
 </div>
 <p>(It is a good exercise to try to understand the calculation above.)</p>
@@ -422,7 +422,7 @@ Task 1 - Register for AlphaVantage API Key
 </div>
 <div class="callout-body-container callout-body">
 <p>Create your AlphaVantage free API key at <a href="https://www.alphavantage.co/support/#api-key">https://www.alphavantage.co/support/#api-key</a>.</p>
-<p><strong>Do Not Include This Key in Your Submission</strong>.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> It is your personal account and linked to whatever email you use to create your account.</p>
+<p><strong>Do Not Include This Key in Your Submission</strong>.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> It is your personal account and linked to whatever email you use to create your account.</p>
 <p>I recommend creating a new file on your computer and storing your key there. You can read it into <code>R</code> using the <code>readLines</code> function and use it as needed. Just make sure not to print it.</p>
 <p>Once you store your AlphaVantage key in a plain text file, make sure to add that file to your <code>.gitignore</code> to make sure you don’t accidentally include it in your <code>git</code> history.</p>
 <p>Documentation for the AlphaVantage API can be found at <a href="https://www.alphavantage.co/documentation/">https://www.alphavantage.co/documentation/</a>.</p>
@@ -558,7 +558,7 @@ Setting the <code>function</code> parameter in the AlphaVantage API
 </ol>
 <p>The name “Monte Carlo” is a reference to the <a href="https://en.wikipedia.org/wiki/Monte_Carlo_Casino">famous casino of the same name</a> in Monaco. While it is hard to evaluate odds of success in complex games of chance, by playing the game many times over and collecting results, it is straightforward to accurately compute the house edge. In the (computational) Monte Carlo approach, we replace the roulette wheel with a computer’s random number generator, but the same principles apply.</p>
 <section id="bootstrapping-complex-data" class="level4"><h4 class="anchored" data-anchor-id="bootstrapping-complex-data">Bootstrapping Complex Data</h4>
-<p>In the example above, we had IID scalar data so a simple call to <code>sample(replace=TRUE)</code> was sufficient to implement a proper bootstrap. When dealing with multivariate data, <em>e.g.</em> <span class="math inline">\((x, y)\)</span> pairs in a regression model, we need to “jointly” resample pairs or else we will break the underlying correlation.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> Thankfully, <code>dplyr</code> provides us with a <code>slice_sample</code> function which can be used to do esentially the same thing.</p>
+<p>In the example above, we had IID scalar data so a simple call to <code>sample(replace=TRUE)</code> was sufficient to implement a proper bootstrap. When dealing with multivariate data, <em>e.g.</em> <span class="math inline">\((x, y)\)</span> pairs in a regression model, we need to “jointly” resample pairs or else we will break the underlying correlation.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a> Thankfully, <code>dplyr</code> provides us with a <code>slice_sample</code> function which can be used to do esentially the same thing.</p>
 <p>For example, suppose we are interested in assessing the uncertainty associated with the <em>Kendall correlation</em> of two variables. This is a rather non-linear function of the data and classical tools like Fisher’s transform for standard (Pearson) correlation can’t be easily applied. Bootstrapping works perfectly well without much additional effort, as we show below.</p>
 <p>We generate <span class="math inline">\((x, y)\)</span> pairs with a visible, but not precisely linear, relationship.</p>
 <div class="cell">
@@ -611,7 +611,7 @@ Setting the <code>function</code> parameter in the AlphaVantage API
 </div>
 </div>
 <p>Again - really close! And we don’t need to know anything about the joint distribution of <span class="math inline">\((x, y)\)</span> to apply the bootstrap.</p>
-<p>You will need to use this “row-resampling” bootstrap to maintain the underlying economic relationships between the various investment returns and macroeconomic quantities you consider in this exercise.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
+<p>You will need to use this “row-resampling” bootstrap to maintain the underlying economic relationships between the various investment returns and macroeconomic quantities you consider in this exercise.<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a></p>
 </section></section></section><section id="mini-project-objectives" class="level2"><h2 class="anchored" data-anchor-id="mini-project-objectives">Mini-Project Objectives</h2>
 <p>In this project, you will use historical economic data and a bootstrap resampling strategy to see the distribution of retirement outcomes under different (resampled) economic histories. You will collect relevant economic data including:</p>
 <ul>
@@ -800,7 +800,7 @@ https://&lt;GITHUB_USERNAME&gt;.github.io/STA9750-2024-FALL/mp04.html</code></pr
 <li>US Equity Market total returns</li>
 <li>International Equity Market total returns</li>
 <li>Bond market total returns</li>
-<li>Short-term debt returns<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a>
+<li>Short-term debt returns<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a>
 </li>
 </ul>
 <div class="callout callout-style-default callout-tip callout-titled" title="Task 3: Data Acquisition">
@@ -898,7 +898,7 @@ Task 7: Monte Carlo Analysis
 </div>
 </div>
 </section></section><section id="deliverable-data-driven-decision-recommendation" class="level2"><h2 class="anchored" data-anchor-id="deliverable-data-driven-decision-recommendation">Deliverable: Data-Driven Decision Recommendation</h2>
-<p>Finally, write up your findings from Task 7 in the form of a “data-driven recommendation” to a potential CUNY employee. Here, you are playing the role of a financial advisor, so be sure to consider the employee’s current age and starting salary, expected lifetime, and risk tolerance. Be sure to suitably convey the uncertainty of your predictions and the limitations of the bootstrap-history approach used here.<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a> As you write this, think of what issues would matter most to you if you were making this decision and address them accordingly.</p>
+<p>Finally, write up your findings from Task 7 in the form of a “data-driven recommendation” to a potential CUNY employee. Here, you are playing the role of a financial advisor, so be sure to consider the employee’s current age and starting salary, expected lifetime, and risk tolerance. Be sure to suitably convey the uncertainty of your predictions and the limitations of the bootstrap-history approach used here.<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a> As you write this, think of what issues would matter most to you if you were making this decision and address them accordingly.</p>
 </section><section id="extra-credit-opportunities" class="level2"><h2 class="anchored" data-anchor-id="extra-credit-opportunities">Extra Credit Opportunities</h2>
 <p>For extra credit, you may make an <em>interactive</em> version of your report, allowing your client to alter the parameters of your simulation and see how the predictions change.</p>
 <section id="challenge-level-basic-up-to-5-points-extra-credit" class="level3"><h3 class="anchored" data-anchor-id="challenge-level-basic-up-to-5-points-extra-credit">Challenge Level: Basic (Up to 5 points Extra Credit)</h3>
@@ -920,13 +920,14 @@ Task 7: Monte Carlo Analysis
 <li id="fn1"><p>While I don’t imagine many of you will have this exact decision to make, these forecasting and analysis strategies are readily applied to a variety of personal financial planning decisions you might face in future careers.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>CUNY employees have additional voluntary retirement savings plans, but these are non-exclusive and participation is voluntary, so we omit them from this analysis.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>If a TRS participant retires before the age of 63, their benefit is reduced, but you can ignore this wrinkle.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>This is simplified from the actual rates used by Fidelity, but it’s close to accurate.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>Current starting <a href="https://psc-cuny.org/content/salary-schedules-full-time-faculty-and-research-series/">salary for an Assisant Professor</a><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>If you accidentally include this file in your Git history, see <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository#using-git-filter-repo">these instructions</a> for discussion of how to remove it. These are dangerous and advanced <code>git</code> “power tools”, so it will be far easier to use <code>.gitignore</code> defensively rather<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn7"><p>“Breaking” the correlation is not necessarily a bad thing. This essentially underlies the concept of <em>permutation</em> testing, but it’s not what we’re aiming to do here.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>Clearly, the bootstrap as we have described here looses any temporal structure in the data. The so-called <a href="https://en.wikipedia.org/wiki/Bootstrapping_(statistics)#Block_bootstrap">block bootstrap</a> can be used to bootstrap in a way that (approximately) respects temporal dependence, but you don’t need to implement this advanced variant in this project.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>For short-term debt, it may be easiest to pick a key short-term benchmark, <em>e.g.</em>, the 2-year US Treasury yield. The world of “short-term debt” is rather wide and varied.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>As the SEC requires all advisors to disclaim: Past Performance is No Guarantee of Future Results.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>The original version of this assignment incorrectly had <span class="math inline">\(N\)</span> instead of <span class="math inline">\(N-20\)</span> for the 2% term in the 30+ year service calculation. Students using the incorrect formula won’t be penalized.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>This is simplified from the actual rates used by Fidelity, but it’s close to accurate.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Current starting <a href="https://psc-cuny.org/content/salary-schedules-full-time-faculty-and-research-series/">salary for an Assisant Professor</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>If you accidentally include this file in your Git history, see <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository#using-git-filter-repo">these instructions</a> for discussion of how to remove it. These are dangerous and advanced <code>git</code> “power tools”, so it will be far easier to use <code>.gitignore</code> defensively rather<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>“Breaking” the correlation is not necessarily a bad thing. This essentially underlies the concept of <em>permutation</em> testing, but it’s not what we’re aiming to do here.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>Clearly, the bootstrap as we have described here looses any temporal structure in the data. The so-called <a href="https://en.wikipedia.org/wiki/Bootstrapping_(statistics)#Block_bootstrap">block bootstrap</a> can be used to bootstrap in a way that (approximately) respects temporal dependence, but you don’t need to implement this advanced variant in this project.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>For short-term debt, it may be easiest to pick a key short-term benchmark, <em>e.g.</em>, the 2-year US Treasury yield. The world of “short-term debt” is rather wide and varied.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>As the SEC requires all advisors to disclaim: Past Performance is No Guarantee of Future Results.<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></div></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
