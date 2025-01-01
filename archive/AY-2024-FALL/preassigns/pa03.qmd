@@ -1,0 +1,534 @@
+---
+title: "{{< var course.short >}} Week 3 Pre Assignment: Calculator Work with R"
+format: live-html
+engine: knitr
+execute:
+  freeze: true # Done with AY-2024-FALL offering
+---
+
+{{< include ./_extensions/r-wasm/live/_knitr.qmd >}}
+{{< include ./_extensions/r-wasm/live/_gradethis.qmd >}}
+
+
+```{r echo=FALSE, message=FALSE}
+library(tidyverse)
+NUMBER <- 3
+due_date_str <- read_csv("../key_dates.csv") |> 
+    filter(`Course Element` == "Pre-Assignments", 
+           `Item Number` == NUMBER, 
+           str_detect(Details, "Due")) |> 
+    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
+    pull(dt) |>
+    format("%Y-%m-%d (%A) at %I:%M%P")
+```
+
+**Due Date**: `{r} due_date_str`
+
+**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
+
+It is now time for us to start programming in `R` properly.
+In this week's pre-assignment, we're going to focus on three
+basic elements of programming in `R`:
+
+1. 'Calculator Math'
+2. Function Calls
+3. Vectorized Semantics
+
+Before we get into these however, let's introduce the feedback
+mechanism used throughout this pre-assignment. Throughout this
+page, you will encounter blocks like the below: 
+
+```{webr}
+#| caption: Sample Exercise
+#| exercise: ex_1
+# Put 5 in the blank
+3 + 4 + ______
+```
+
+::: {.solution exercise="ex_1"}
+
+#### Solution
+
+The blank should be filled with `5`
+```{webr}
+#| exercise: ex_1
+#| solution: true
+3 + 4 + 5
+```
+
+:::
+
+```{webr}
+#| exercise: ex_1
+#| check: true
+gradethis::grade_this_code()
+```
+
+Wait for the exercise to fully load (the blue dot next to 
+`Run Code` will disappear) and then try giving correct
+and incorrect solutions.
+
+1. Replace the blank (underscores) with the number `5` and hit `Run Code` to check your solution. If all goes well, you'll see a happy message. 
+
+2. Now, replace the `5` with another number, *e.g.*, 12. 
+Hit `Run Code` again and see what the response you get. 
+
+These little code-blocks throughout this pre-assignment will
+be used to give similar feedback. You can always hit 
+`Show Solution` to get the correct answer. The feedback
+engine is a bit overly picky at times, so if your answer is
+substantially similar to the official solution, I wouldn't 
+worry too much. 
+
+You will see the `R` output sometimes has a `[1]` before it. Don't worry about that until you get to the section on vectorized semantics below. 
+
+Blocks that aren't listed as "Exercise" are interactive 
+snippets. Feel free to adjust the code to check your
+understanding. 
+
+## Calculator Math with `R`
+
+Let's start by using `R` as a calculator. `R` implements all
+the basic operations of arithmetic: 
+
+- `a + b`: (binary) addition $a + b$
+- `a - b`: (binary) subtraction $a - b$
+- `*`: (binary) multiplication $ab$
+- `/`: (binary) division $a/b$
+- `-b`: (unary) negation $-b$
+
+You can type integers and decimals in the usual manner: 
+
+```{webr}
+1 + 2 + 3
+```
+
+
+Compute $5! = 5 * 4 * 3 * 2 * 1$ using `R`: 
+
+```{webr}
+#| caption: Factorial Exercise
+#| exercise: ex_2
+# Compute Five Factorial
+5 * 4 * ______ * 2 * ______
+```
+
+::: {.solution exercise="ex_2"}
+
+#### Solution
+
+The blanks should be filled with `3` and `1`
+```{webr}
+#| exercise: ex_2
+#| solution: true
+5 * 4 * 3 * 2 * 1
+```
+
+:::
+
+```{webr}
+#| exercise: ex_2
+#| check: true
+gradethis::grade_this_code()
+```
+
+Exponentials (powers) can be implemented with either a double star `**` or a carrot `^`: 
+
+```{webr}
+3^2 - 2**3
+```
+
+I tend to prefer the carrot `^` as its one fewer character.
+
+In general, `R` respects the standard "PEMDAS" order of operations: 
+
+- Parentheses
+- Exponentiation
+- Multiplication and Division
+- Addition and Subtraction
+
+So we can compute $3 * (2 + 1)$ as: 
+
+```{webr}
+3 * (2 + 1)
+```
+
+### Exercises
+
+Compute the following algebraic expressions using `R`:
+
+1. $$3 * 2^2$$
+
+```{webr}
+#| caption: Arithmetic Exercise 1
+#| exercise: ex_3
+_______
+```
+
+::: {.solution exercise="ex_3"}
+
+#### Solution
+
+```{webr}
+#| exercise: ex_3
+#| solution: true
+3 * 2^2
+```
+
+:::
+
+```{webr}
+#| exercise: ex_3
+#| check: true
+gradethis::grade_this_code()
+```
+
+2. $$(3 * 2)^2$$
+
+
+```{webr}
+#| caption: Arithmetic Exercise 2
+#| exercise: ex_4
+_______
+```
+
+::: {.solution exercise="ex_4"}
+
+#### Solution
+
+```{webr}
+#| exercise: ex_4
+#| solution: true
+(3 * 2)^2
+```
+
+:::
+
+```{webr}
+#| exercise: ex_4
+#| check: true
+gradethis::grade_this_code()
+```
+
+
+3. $$3 + 2 - 1 + 4$$
+
+```{webr}
+#| caption: Arithmetic Exercise 3
+#| exercise: ex_5
+_______
+```
+
+::: {.solution exercise="ex_5"}
+
+#### Solution
+
+```{webr}
+#| exercise: ex_5
+#| solution: true
+3 + 2 - 1 + 4
+```
+
+:::
+
+```{webr}
+#| exercise: ex_5
+#| check: true
+gradethis::grade_this_code()
+```
+
+
+4. $$3 + 2 - (1 + 4)$$
+
+```{webr}
+#| caption: Arithmetic Exercise 4
+#| exercise: ex_6
+_______
+```
+
+::: {.solution exercise="ex_6"}
+
+#### Solution
+
+```{webr}
+#| exercise: ex_6
+#| solution: true
+3 + 2 - (1 + 4)
+```
+
+:::
+
+```{webr}
+#| exercise: ex_6
+#| check: true
+gradethis::grade_this_code()
+```
+
+#### Execution in `RStudio`
+
+Now, redo these exercises in the `RStudio` Console. At each step, type the relevant code next to the `>` prompt and hit enter to execute the command. 
+
+`R` has _greedy_ execution. When you hit enter, `R` tries
+its best to execute the whole line of code. If you enter
+an incomplete line of code, *e.g.*, `3 + `, `R` will change the `>` prompt to a `+` prompt, indicating there is more to be done. 
+
+Compare
+
+```{webr}
+3 - 
+    4
+```
+
+with 
+
+```{webr}
+3
+-4
+```
+
+In the first example, `3-` is not a complete mathematical
+statement, so `R` knew there _had_ to be more code and
+continued to await input.  In the second, `3` is a perfectly
+valid (if very simple) mathematical command on its own, so 
+`R` simply executes it as is. 
+
+Continuation prompts from dangling math are quite rare, but
+you will often find yourself in this scenario if you
+let parentheses become mismatched. If you are ever stuck
+and can't figure out how to appease `R`, simply type
+`Cntrl-C` to "interrupt" the command and get back
+to the standard prompt. 
+
+## Function Calls
+
+`R` comes built in with a quite robust mathematical library. 
+You can in general call a function like this: 
+
+```{webr}
+cos(pi)
+```
+
+(`R` also comes with the mathematical constant $\pi$ pre-loaded.)
+
+In general a function call is a "name" immediately followed
+by parentheses. If a function takes input or _arguments_, the
+input is located between the parentheses, separated by commas. 
+
+So above, `cos(pi)` implements the math $\cos(\pi)$.
+
+Useful built-in functions are: 
+
+- `sin` - in radians
+- `cos` - in radians
+- `exp` - base $e$ exponential
+- `log` - by default this is the _natural_ logarithm ($\ln$)
+- `sqrt`
+- `abs` - absolute value
+- `factorial` - $n! = n * (n - 1) * (n - 2) * \dots * 3 * 2 * 1$
+
+Use the built-in functions to compute $5!$: 
+
+```{webr}
+#| caption: Built-in Factorial Exercise 
+#| exercise: ex_7
+______(5)
+```
+
+::: {.solution exercise="ex_7"}
+
+#### Solution
+
+```{webr}
+#| exercise: ex_7
+#| solution: true
+factorial(5)
+```
+
+:::
+
+```{webr}
+#| exercise: ex_7
+#| check: true
+gradethis::grade_this_code()
+```
+
+#### Exercises 
+
+Using these built-in functions, compute the following arithmetic expressions: 
+
+1. $$\cos^2(\pi / 4)$$
+
+```{webr}
+#| caption: Arithmetic Exercise 5
+#| exercise: ex_8
+_______
+```
+
+::: {.solution exercise="ex_8"}
+
+#### Solution
+
+```{webr}
+#| exercise: ex_8
+#| solution: true
+cos(pi/4)^2
+```
+
+:::
+
+```{webr}
+#| exercise: ex_8
+#| check: true
+gradethis::grade_this_code()
+```
+
+2. $$e^{\log(\pi) + 3}$$
+
+```{webr}
+#| caption: Arithmetic Exercise 6
+#| exercise: ex_9
+_______
+```
+
+::: {.solution exercise="ex_9"}
+
+#### Solution
+
+```{webr}
+#| exercise: ex_9
+#| solution: true
+exp(log(pi) + 3)
+```
+
+:::
+
+```{webr}
+#| exercise: ex_9
+#| check: true
+gradethis::grade_this_code()
+```
+
+## Vectorized Semantics
+
+A distinguishing feature of `R` is its _vectorized_
+semantics. By default, `R` wants to operate on _collections_
+of data - not individual values (scalars). You've seen some
+evidence of this already. Whenever you run a bit of math, `R`
+puts `[1]` at the front of the output. This is `R` helping
+you count the number of elements in the solution; it's been
+pretty trivial so far, as all our calculations have returned
+a single number. But this is about to change!
+
+The easiest vectors to create in `R` are sequences: *e.g.*,
+the list of numbers from `1` to `10`: 
+
+```{webr}
+1:10
+```
+
+Here, our output is a _vector_ of 10 elements. `R` still tells us where the vector starts (at the first element) 
+but nothing else. Change this code to create the first 100 
+elements and read `R`'s output. Do you understand the output?
+
+When `R` starts a new line of output, it tells you where
+you are in the vector. In `RStudio`, type `letters` to see
+the built-in vector of letters; this is a nice example of
+how the position information can be helpful in sorting
+through printed output. 
+
+By default, `R` operates on vectors elementwise: 
+
+```{webr}
+sqrt(1:9)
+```
+
+Here the `sqrt` function is applied to each element separately. 
+
+When two vectors are combined, the operation also works
+elementwise: 
+
+```{webr}
+1:3 + 4:6
+```
+
+(Note that the sequence operator (`:`) has higher precedence
+than most arithmetic so this does "what you'd expect.")
+
+Things get weird if the two vectors are of different lenghts: 
+```{webr}
+3 + 1:5
+```
+
+Under the hood, `R` "recycles" `3` to be a vector of length 5 and then operators elementwise. That is, `R` computes
+
+- 3 + 1
+- 3 + 2
+- 3 + 3
+- 3 + 4
+- 3 + 5
+
+and combines the results. 
+
+This in general gives useful results, but the results can 
+be quite alarming if combining vectors of unaligned size: 
+
+```{webr}
+1:5 * 2:4
+```
+
+Thankfully, `R` gives a warning that something weird
+happened. (This might seem annoying, but warnings are
+_great_! They help you find likely errors before anything
+too bad happens. Most experienced programmers wish `R` 
+had more built-in warnings.)
+
+It's worth distinguishing _warnings_ from _errors_. Errors
+occur when `R` absolutely cannot and will not execute your
+command: 
+
+```{webr}
+3 + letters
+```
+
+In this case, it is impossible to add the number 3 to a letter, so `R` throws an error. 
+
+Warnings are hints of possible problems, but do not prevent
+execution. When dealing with external software and packages, 
+you will often get warnings about old versions of software. 
+These are encouraging you to update, but unless you see
+an error, things probably worked out ok. 
+
+Some of `R`'s built-in functions can be used to "summarize"
+a vector down to a single scalar (or, more precisely, a 
+length 1 vector). These include `sum`, `max`, `min`, and
+`mean`. For example, we can compute the sum of the first
+100 numbers as follows: 
+
+```{webr}
+sum(1:100)
+```
+
+Apocryphally, a young C.F. Gauss did this calculation in 
+his head to the great surprise of his school teacher. We
+might not have Gauss's skills at arithmetic, but we can
+do quite a lot with `R`. 
+
+For example, the famous "Bessel problem" of mathematics
+is to compute 
+
+$$ \sum_{n=1}^{\infty} \frac{1}{n^2} = 1 + \frac{1}{2^2} + \frac{1}{3^2} + \dots$$
+
+Euler showed, somewhat remarkably, that the answer is 
+$\pi^2 / 6$.  We won't repeat Euler's analysis here, but
+let's confirm it using `R`. 
+
+```{webr}
+pi^2 / 6
+sum(1/(1:10000)^2)
+```
+
+Pretty good alignment! 
+
+Do you understand everything that happened here? If so, 
+you're ready for next week's class. Go ahead and fill
+out this week's Brightspace quiz.

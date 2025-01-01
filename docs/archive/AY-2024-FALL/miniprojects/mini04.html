@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.56">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>STA/OPR 9750 Mini-Project #04: Monte Carlo-Informed Selection of CUNY Retirement Plans – STA 9750</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+</head>
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="navbar navbar-expand-lg " data-bs-theme="dark"><div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./../index.html">
+    <span class="navbar-title">STA 9750</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+<li class="nav-item">
+    <a class="nav-link" href="./.././syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./.././preassignments.html"> 
+<span class="menu-text">Pre-Assignments</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./.././labs.html"> 
+<span class="menu-text">Labs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./.././miniprojects.html"> 
+<span class="menu-text">Mini Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./.././project.html"> 
+<span class="menu-text">Course Project</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./.././resources.html"> 
+<span class="menu-text">Additional Resources</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./.././objectives.html"> 
+<span class="menu-text">Learning Objectives</span></a>
+  </li>  
+</ul>
+</div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">On this page</h2>
+   
+  <ul>
+<li><a href="#due-dates" id="toc-due-dates" class="nav-link active" data-scroll-target="#due-dates">Due Dates</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li>
+<a href="#background" id="toc-background" class="nav-link" data-scroll-target="#background">Background</a>
+  <ul class="collapse">
+<li><a href="#cuny-retirement-plans" id="toc-cuny-retirement-plans" class="nav-link" data-scroll-target="#cuny-retirement-plans">CUNY Retirement Plans</a></li>
+  <li><a href="#the-power-of-compound-interest" id="toc-the-power-of-compound-interest" class="nav-link" data-scroll-target="#the-power-of-compound-interest">The Power of Compound Interest</a></li>
+  <li><a href="#data-sources---alphavantage-fred" id="toc-data-sources---alphavantage-fred" class="nav-link" data-scroll-target="#data-sources---alphavantage-fred">Data Sources - AlphaVantage &amp; FRED</a></li>
+  <li><a href="#bootstrap-resampling" id="toc-bootstrap-resampling" class="nav-link" data-scroll-target="#bootstrap-resampling">Bootstrap Resampling</a></li>
+  </ul>
+</li>
+  <li><a href="#mini-project-objectives" id="toc-mini-project-objectives" class="nav-link" data-scroll-target="#mini-project-objectives">Mini-Project Objectives</a></li>
+  <li>
+<a href="#student-responsbilities" id="toc-student-responsbilities" class="nav-link" data-scroll-target="#student-responsbilities">Student Responsbilities</a>
+  <ul class="collapse">
+<li><a href="#rubric" id="toc-rubric" class="nav-link" data-scroll-target="#rubric">Rubric</a></li>
+  <li><a href="#submission-instructions" id="toc-submission-instructions" class="nav-link" data-scroll-target="#submission-instructions">Submission Instructions</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#set-up-and-exploration" id="toc-set-up-and-exploration" class="nav-link" data-scroll-target="#set-up-and-exploration">Set-Up and Exploration</a>
+  <ul class="collapse">
+<li><a href="#data-acquisition" id="toc-data-acquisition" class="nav-link" data-scroll-target="#data-acquisition">Data Acquisition</a></li>
+  <li><a href="#investigation-and-visualization-of-input-data" id="toc-investigation-and-visualization-of-input-data" class="nav-link" data-scroll-target="#investigation-and-visualization-of-input-data">Investigation and Visualization of Input Data</a></li>
+  <li><a href="#historical-comparison-of-trs-and-orp" id="toc-historical-comparison-of-trs-and-orp" class="nav-link" data-scroll-target="#historical-comparison-of-trs-and-orp">Historical Comparison of TRS and ORP</a></li>
+  <li><a href="#long-term-average-analysis" id="toc-long-term-average-analysis" class="nav-link" data-scroll-target="#long-term-average-analysis">Long-Term Average Analysis</a></li>
+  <li><a href="#bootstrap-monte-carlo-comparison" id="toc-bootstrap-monte-carlo-comparison" class="nav-link" data-scroll-target="#bootstrap-monte-carlo-comparison">Bootstrap (Monte Carlo) Comparison</a></li>
+  </ul>
+</li>
+  <li><a href="#deliverable-data-driven-decision-recommendation" id="toc-deliverable-data-driven-decision-recommendation" class="nav-link" data-scroll-target="#deliverable-data-driven-decision-recommendation">Deliverable: Data-Driven Decision Recommendation</a></li>
+  <li>
+<a href="#extra-credit-opportunities" id="toc-extra-credit-opportunities" class="nav-link" data-scroll-target="#extra-credit-opportunities">Extra Credit Opportunities</a>
+  <ul class="collapse">
+<li><a href="#challenge-level-basic-up-to-5-points-extra-credit" id="toc-challenge-level-basic-up-to-5-points-extra-credit" class="nav-link" data-scroll-target="#challenge-level-basic-up-to-5-points-extra-credit">Challenge Level: Basic (Up to 5 points Extra Credit)</a></li>
+  <li><a href="#challenge-level-moderate-up-to-10-points-extra-credit" id="toc-challenge-level-moderate-up-to-10-points-extra-credit" class="nav-link" data-scroll-target="#challenge-level-moderate-up-to-10-points-extra-credit">Challenge Level: Moderate (Up to 10 points Extra Credit)</a></li>
+  <li><a href="#challenge-level-advanced-up-to-20-points-extra-credit" id="toc-challenge-level-advanced-up-to-20-points-extra-credit" class="nav-link" data-scroll-target="#challenge-level-advanced-up-to-20-points-extra-credit">Challenge Level: Advanced (Up to 20 points Extra Credit)</a></li>
+  </ul>
+</li>
+  </ul><div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/archive/AY-2024-FALL/miniprojects/mini04.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/archive/AY-2024-FALL/miniprojects/mini04.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<h1 class="title">STA/OPR 9750 Mini-Project #04: Monte Carlo-Informed Selection of CUNY Retirement Plans</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header><p><span class="math display">\[\newcommand{\P}{\mathbb{P}} \newcommand{\E}{\mathbb{E}}\]</span></p>
+<section id="due-dates" class="level3"><h3 class="anchored" data-anchor-id="due-dates">Due Dates</h3>
+<ul>
+<li>Released to Students: 2024-11-14</li>
+<li><strong>Initial Submission: 2024-12-04 11:45pm ET on GitHub and Brightspace</strong></li>
+<li>
+<strong>Peer Feedback:</strong>
+<ul>
+<li>Peer Feedback Assigned: 2024-12-05 on GitHub</li>
+<li><strong>Peer Feedback Due: 2024-12-11 11:45pm ET on GitHub</strong></li>
+</ul>
+</li>
+</ul>
+<hr></section><section id="introduction" class="level2"><h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Welcome to Mini-Project #04! In this project, you will use <code>R</code> to make an important personal financial decision. New faculty hired at CUNY have 30 days to choose one of <a href="https://www.cuny.edu/wp-content/uploads/sites/4/page-assets/about/administration/offices/hr/benefits/Benefits-Guide-Retirement-Plans-Final-HEO-and-ECP.pdf">two retirement plans</a>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> This is an important and early choice faculty have to make, as it is essentially permanent and cannot be changed. Financial forecasting is quite difficult and it is far from clear which plan is the better long-term choice. In this mini-project, you will use historical financial data and a bootstrap inference strategy to estimate the probability that one plan is better than the other.</p>
+<p>In this project, you will:</p>
+<ul>
+<li>Use a password-protected API to acquire financial data</li>
+<li>Use resampling inference to estimate complex probability distributions</li>
+<li>See how the optimal financial decision varies as a function of market returns</li>
+<li>Investigate how demographic and actuarial assumptions, as well as individual risk-tolerances, change the optimal decision.</li>
+</ul>
+<p>As always, there isn’t a single “<em>right</em>” answer to the questions posed herein. The optimal retirement plan will depend on your starting salary, your projections of future salary growth, your current age and expected age of retirement, stock market returns, inflation, <em>etc.</em></p>
+<p>Also note that this mini-project is intended to be the least difficult of the course; Note that, compared to previous projects, the scope of this project is relatively smaller: in light of this, and the more advanced skills you have spent the past 3 months developing, this mini-project should be the least difficult of the course. At this point in the course, you should be spending the majority of your out-of-class hours on your <a href="../project.html">Course Project</a>.</p>
+<p>This mini-project completes our whirlwind tour of several different forms of data-driven writing:</p>
+<ul>
+<li>Data Analysis Report (<a href="./mini01.html">MP#01</a>)</li>
+<li>Data-Based Support for “Sales Pitch” (<a href="./mini02.html">MP#02</a>)</li>
+<li>Data-Based Evaluation of Third-Party Assertion (“Fact Check”) (<a href="./mini03.html">MP#03</a>)</li>
+<li>Data-Driven Decision Support (this project)</li>
+</ul>
+<p>There are, of course, other ways that data can be used to generate and communicate insights, but hopefully this “hit parade” has exposed you to many of the ways that you can use data to evaluate complex qualitative and quantitative claims outside of a binary classroom “correct/incorrect” structure. The tools of quantitative analysis and communication you have developed in this course can be used in essentially infinite contexts– we have only scratched the surface–and I’m excited to see what you do in the remainder of this course, in your remaining time at Baruch, and in your future careers.</p>
+<p>Please note that you have the option of creating an <em>interactive</em> <code>shiny</code> retirement forecasting tool as extra credit, but this is not required. See details below.</p>
+</section><section id="background" class="level2"><h2 class="anchored" data-anchor-id="background">Background</h2>
+<p><strong>Please Note: Nothing in this document constitutes an official NYS, NYC, or CUNY statement about the retirement plans. This document omits several subtleties in the interest of pedagogical simplicity. If you are a potential or new CUNY employee who has stumbled across this document, please speak to your personal financial advisor, your Human Resources department, or your union representative for up-to-date and accurate retirement benefit information.</strong></p>
+<section id="cuny-retirement-plans" class="level3"><h3 class="anchored" data-anchor-id="cuny-retirement-plans">CUNY Retirement Plans</h3>
+<p>CUNY offers two retirement plans, the traditional defined-benefit Teachers Retirement System (TRS) plan and the newer defined-contribution Optional Retirement Plan (ORP).<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>For this project, you may ignore the effect of taxes as both plans offer pre-tax retirement savings, so whichever plan has the greater (nominal, pre-tax) income will also yield the greater (post-tax) take-home amount.</p>
+<section id="teachers-retirement-system" class="level4"><h4 class="anchored" data-anchor-id="teachers-retirement-system">Teachers Retirement System</h4>
+<p>The TRS plan is a traditional pension plan: after retirement, the employer (CUNY) continues to pay employees a fraction of their salary until death. This type of plan is called a “defined-benefit” because the retirement pay (the benefit) is fixed <em>a priori</em> and the employer takes the market risk. If the market underperforms expectations, CUNY has to “pony up” and make up the gap; if the market overperforms expectations, CUNY pockets the excess balance.</p>
+<p>At CUNY, the TRS is administered as follows:</p>
+<ol type="1">
+<li>
+<p>Employees pay a fixed percentage of their paycheck into the pension fund. For CUNY employees joining after March 31, 2012–which you may assume for this project–the so-called “Tier VI” contribution rates are based on the employee’s annual salary and increase as follows:</p>
+<ul>
+<li>$45,000 or less: 3%</li>
+<li>$45,001 to $55,000: 3.5%</li>
+<li>$55,001 to $75,000: 4.5%</li>
+<li>$75,001 to $100,000: 5.75%</li>
+<li>$100,001 or more: 6%</li>
+</ul>
+</li>
+<li>
+<p>The retirement benefit is calculated based on the <em>Final Average Salary</em> of the employee: following 2024 law changes, the FAS is computed based on the final <em>three</em> years salary. (Previously, FAS was computed based on 5 years: since salaries tend to increase monotonically over time, this is a major win for TRS participants.)</p>
+<p>If <span class="math inline">\(N\)</span> is the number of years served, the annual retirement benefit is:</p>
+<ul>
+<li>
+<span class="math inline">\(1.67\% * \text{FAS} * N\)</span> if <span class="math inline">\(N \leq 20\)</span>
+</li>
+<li>
+<span class="math inline">\(1.75\% * \text{FAS} * N\)</span> if <span class="math inline">\(N = 20\)</span>
+</li>
+<li>
+<span class="math inline">\((35\% + 2\% * (N - 20)) * \text{FAS}\)</span> if <span class="math inline">\(N \geq 20\)</span><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a><a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>
+</li>
+</ul>
+<p>In each case, the benefit is paid out equally over 12 months.</p>
+</li>
+<li>
+<p>The benefit is increased annually by 50% of the CPI, rounded <em>up</em> to the nearest tenth of a percent: <em>e.g.</em>, a CPI of 2.9% gives an inflation adjustment of 1.5%. The benefit is capped <em>below</em> at 1% and <em>above</em> at 3%, so a CPI of 10% leads to a 3% inflation adjustment while a CPI of 0% leads to a 1% inflation adjustment.</p>
+<p>The inflation adjustement is effective each September and the CPI used is the aggregate monthly CPI of the previous 12 months; so the September 2024 adjustment depends on the CPI from September 2023 to August 2024.</p>
+</li>
+</ol></section><section id="optional-retirement-plan" class="level4"><h4 class="anchored" data-anchor-id="optional-retirement-plan">Optional Retirement Plan</h4>
+<p>The ORP plan is more similar to a 401(k) plan offered by a private employer. The employee and the employer both make contributions to a retirement account which is then invested in the employee’s choice of mutual funds. Those investments grow “tax-free” until the employee begins to withdraw them upon retirement. If the employee does not use up the funds, they are passed down to that employee’s spouse, children, or other heirs; if the employee uses the funds too quickly and zeros out the account balance, no additional retirement funds are available. Though the employee hopefully still has Social Security retirement benefits and other savings to cover living expenses. This type of plan is called a <em>defined-contribution</em> plan as only the contributions to the retirement account are fixed by contract: the final balance depends on market factors outside of the employee’s control.</p>
+<p>At retirement, the employee has access to those funds and can choose to withdraw them at any rate desired. A general rule of thumb is withdrawing 4% of the value per year, <em>e.g.</em>, this <a href="https://www.schwab.com/learn/story/beyond-4-rule-how-much-can-you-spend-retirement">Schwab discussion</a>; you can assume a constant withdrawal rate in your analysis. Note that unwithdrawn funds continue to experience market returns.</p>
+<p>The funds available in a ORP account depend strongly on the investments chosen. For this analysis, you can assume that the ORP participants invest in a <a href="https://www.fidelity.com/mutual-funds/fidelity-fund-portfolios/freedom-funds">Fidelity Freedom Fund</a> with the following asset allocation:<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+<ul>
+<li>Age 25 to Age 49:
+<ul>
+<li>54% US Equities</li>
+<li>36% International Equities</li>
+<li>10% Bonds</li>
+</ul>
+</li>
+<li>Age 50 to Age 59:
+<ul>
+<li>47% US Equities</li>
+<li>32% International Equities</li>
+<li>21% Bonds</li>
+</ul>
+</li>
+<li>Age 60 to Age 74:
+<ul>
+<li>34% US Equities</li>
+<li>23% International Equities</li>
+<li>43% Bonds</li>
+</ul>
+</li>
+<li>Age 75 or older:
+<ul>
+<li>19% US Equities</li>
+<li>13% International Equities</li>
+<li>62% Bonds</li>
+<li>6% Short-Term Debt</li>
+</ul>
+</li>
+</ul>
+<p>Under the ORP, both the employee and the employer make monthly contributions to the employee’s ORP account. These contributions are calculated as a percentage of the employee’s annual salary. Specifically, the employee contributes at the same rate as the TRS:</p>
+<ul>
+<li>$45,000 or less: 3%</li>
+<li>$45,001 to $55,000: 3.5%</li>
+<li>$55,001 to $75,000: 4.5%</li>
+<li>$75,001 to $100,000: 5.75%</li>
+<li>$100,001 or more: 6%</li>
+</ul>
+<p>The employer contribution is fixed at:</p>
+<ul>
+<li>8% for the first seven years of employment at CUNY.</li>
+<li>10% for all years thereafter.</li>
+</ul>
+<p>For example, if an employee made $52,267 in their first year at CUNY<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>, the total annual contributions to their ORP account would be:</p>
+<ul>
+<li>
+<strong>Employer:</strong> 8% of salary = 0.08 * $52,267 = $4,181.36</li>
+<li>
+<strong>Employee:</strong> 3.5% of salary = 0.035 * $52,267 = $1,829.35</li>
+<li>
+<strong>Total:</strong> 11.5% of $52,267 = 4181.36 + 1829.35 = $6010.71</li>
+</ul>
+<p>because their salary puts them in the 3.5% Contribution Range. On a monthly basis, this works out to a contribution of about $500.89 per month.</p>
+<p>Later in their career, if they have been at CUNY for 8 years and just been promoted to (Associate) Professor with a base salary of $67,784, the total annual contributions to their ORP account are now:</p>
+<ul>
+<li>
+<strong>Employer:</strong> 10% of salary = 0.10 * $67,784 = $6,778.40</li>
+<li>
+<strong>Employee:</strong> 4.5% of salary = 0.045 * $67,784 = $3050.28</li>
+<li>
+<strong>Total:</strong> 14.5% of salary = 0.145 * $67,784 = 6778.40 + 3050.28 = $9,828.68</li>
+</ul>
+<p>Here, the employee now has a higher employer contribution rate because they have been at CUNY more than 7 years and has a higher employee contribution rate because the salary has increased with a promotion. On a monthly basis, this works out to a total contribution of about $819.06 per month.</p>
+<p>You may assume that the contributions are immediately invested according to the asset allocations above.</p>
+</section></section><section id="the-power-of-compound-interest" class="level3"><h3 class="anchored" data-anchor-id="the-power-of-compound-interest">The Power of Compound Interest</h3>
+<p>Retirement in the US would scarcely be possible without the magic of <em>compounded growth</em>. When you invest early, the money you put in your retirement savings grows, as do the earning you make along the way. This creates a <em>virtuous cycle</em>, resembling exponential growth, making it possible to retire with (hopefully far) more money than you originally put in the account.</p>
+<p>Compound interest works as follows: let <span class="math inline">\(X_t\)</span> be the amount of money in the account at the start of month <span class="math inline">\(t\)</span>, let <span class="math inline">\(C_t\)</span> be the contributions during month <span class="math inline">\(t\)</span>, and let <span class="math inline">\(r_t\)</span> be the fund return during month <span class="math inline">\(t\)</span>. We then have the <em>recurrence</em> relation:</p>
+<p><span class="math display">\[X_{t+1} = X_t(1+r_t) + C_t\]</span></p>
+<p>Repeating this, we get:</p>
+<p><span class="math display">\[\begin{align*}
+X_{t+2} &amp;= X_{t+1}(1+r_{t+1}) + C_{t+1} \\
+        &amp;= X_{t}(1+r_t)(1+r_{t+1}) + C_t(1+r_{t+1}) + C_{t+1} \\
+X_{t+3} &amp;= X_{t}(1+r_t)(1+r_{t+2})(1+r_{t+3}) + C_t(1+r_{t+1})(1+r_{t+2}) + C_{t+1}(1+r_{t+2}) + C_{t+2}
+\end{align*}\]</span></p>
+<p>and so on. In <code>R</code>, you might calculate two years of compounded growth as follows:</p>
+<div class="cell">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">RETIREMENT</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span></span>
+<span>    r <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">24</span>, mean<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span> <span class="op">/</span> <span class="fl">100</span>, <span class="co"># Monthly returns</span></span>
+<span>    C <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">24</span><span class="op">)</span>,            <span class="co"># Monthly savings: 100 per month</span></span>
+<span>    period <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">24</span>                <span class="co"># Period ID (# of months)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">RETIREMENT</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">mutate</span><span class="op">(</span>net_total_return <span class="op">=</span> <span class="fu">order_by</span><span class="op">(</span><span class="fu">desc</span><span class="op">(</span><span class="va">period</span><span class="op">)</span>, </span>
+<span>                                       <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumprod</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="fu">lead</span><span class="op">(</span><span class="va">r</span>, default<span class="op">=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">summarize</span><span class="op">(</span>future_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">C</span> <span class="op">*</span> <span class="va">net_total_return</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  future_value
+1     2520.644</code></pre>
+</div>
+</div>
+<p>(It is a good exercise to try to understand the calculation above.)</p>
+<p>Here, we combine a series of monthly returns, column <code>r</code>, with periodic contributions, column <code>C</code>, to find the final future value of the account. Because the returns have a small positive mean (0.5% per month, equivalent to about 6.2% annual), the final value of the account is likely more than the total contributions.</p>
+</section><section id="data-sources---alphavantage-fred" class="level3"><h3 class="anchored" data-anchor-id="data-sources---alphavantage-fred">Data Sources - AlphaVantage &amp; FRED</h3>
+<p>For this project, we will use data from two economic and financial data sources:</p>
+<ul>
+<li>
+<a href="https://www.alphavantage.co/">AlphaVantage</a>: a commercial stock market data provider</li>
+<li>
+<a href="https://fred.stlouisfed.org/">FRED</a>: the Federal Reserve Economic Data repository maintained by the Federal Reserve Bank of St.&nbsp;Louis</li>
+</ul>
+<p>FRED is free to access, but AlphaVantage is a commercial service requiring subscription. For this mini-project, the free tier of AlphaVantage will suffice.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Task 1 - Register for AlphaVantage API Key">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Task 1 - Register for AlphaVantage API Key
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Create your AlphaVantage free API key at <a href="https://www.alphavantage.co/support/#api-key">https://www.alphavantage.co/support/#api-key</a>.</p>
+<p><strong>Do Not Include This Key in Your Submission</strong>.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> It is your personal account and linked to whatever email you use to create your account.</p>
+<p>I recommend creating a new file on your computer and storing your key there. You can read it into <code>R</code> using the <code>readLines</code> function and use it as needed. Just make sure not to print it.</p>
+<p>Once you store your AlphaVantage key in a plain text file, make sure to add that file to your <code>.gitignore</code> to make sure you don’t accidentally include it in your <code>git</code> history.</p>
+<p>Documentation for the AlphaVantage API can be found at <a href="https://www.alphavantage.co/documentation/">https://www.alphavantage.co/documentation/</a>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="Task 2 - Register for FRED API Key">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Task 2 - Register for FRED API Key
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Create your FRED free API key at <a href="https://fredaccount.stlouisfed.org/login/secure/">https://fredaccount.stlouisfed.org/login/secure/</a>.</p>
+<p><strong>Do Not Include This Key in Your Submission</strong>. It is your personal account and linked to whatever email you use to create your account.</p>
+<p>I recommend creating a new file on your computer and storing your key there. You can read it into <code>R</code> using the <code>readLines</code> function and use it as needed. Just make sure not to print it.</p>
+<p>Once you store your FRED key in a plain text file, make sure to add that file to your <code>.gitignore</code> to make sure you don’t accidentally include it in your <code>git</code> history.</p>
+<p>Documentation for the FRED API is available at <a href="https://fred.stlouisfed.org/docs/api/fred/">https://fred.stlouisfed.org/docs/api/fred/</a>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important callout-titled" title="Don't Use Specialized R Packages To Access Data Sources">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Don’t Use Specialized R Packages To Access Data Sources
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For this project, you <strong>may not</strong> use any <code>R</code> packages that wrap AlphaVantage or FRED. A learning objective of this mini-project is accessing data via an API, and you won’t practice that skill if you simply use a package like <code>quantmod</code> or <code>alphavantager</code>.</p>
+<p>You should interact with the APIs directly using <code>httr2</code> or equivalent packages.</p>
+</div>
+</div>
+<p>You will need to download data from FRED and/or AlphaVantage to complete this assignment.</p>
+<div class="callout callout-style-default callout-warning callout-titled" title="Setting the `function` parameter in the AlphaVantage API">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Setting the <code>function</code> parameter in the AlphaVantage API
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For AlphaVantage, you will need to set a <code>function</code> value in the query string. To do this in <code>httr2</code>, you will need code something like</p>
+<div class="cell">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">req</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="va">ALPHAVANTAGE_URL</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query</a></span><span class="op">(</span>`function` <span class="op">=</span> <span class="va">VALUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here, because <code>function</code> is a keyword (reserved word) in <code>R</code>, we have to surround it with backquotes if we want to use it as the literal word instead of using it to create a function.</p>
+</div>
+</div>
+</section><section id="bootstrap-resampling" class="level3"><h3 class="anchored" data-anchor-id="bootstrap-resampling">Bootstrap Resampling</h3>
+<p>To complete this project, you will use a <em>boostrap</em> resampling strategy. The details of how bootstrap sampling can be applied to this type of financial analysis are given in more detail below. Here, we simply review the basic principles of the bootstrap.</p>
+<p>Classically, statistics proceeds by assuming some sort of <em>parametric</em> model for the population from which we have samples. Parametric models describe a family of not-dissimilar distributions, indexed by a small number of parameters; <em>e.g.</em>, the two parameters of the normal distribution, mean and variance. While this leads to quite elegant mathematical theory, it is unclear how useful this theory is in practice: we rarely <em>know</em> with certainty that a particular parametric family is an accurate model for a phenomenon of interest. Asymptotic results like the Central Limit Theorem give us some sense that we don’t need to know the true distribution family exactly to get accurate answers, but the era of computers gives us an alternate approach.</p>
+<p>If we have a large sample size, the empirical CDF of our data is guaranteed to converge to the true CDF of the population. Since essentially all quantities of interest can be computed using the CDF, this guarantees that, with enough data, we can compute any quantity of interest using the empirical CDF only and get an accurate answer. The <em>bootstrap</em> principle, and the associated broader field of resampling inference, uses this concept to compute variances of complex statistical procedures without using parametric models.</p>
+<p>Formally, let our data come from some distribution <span class="math inline">\(\P\)</span> and let <span class="math inline">\(\P_n\)</span> be the <em>empirical (sample) distribution</em>. The core statistical theorems tell us that <span class="math inline">\(\P_n \to \P\)</span> in various ways:</p>
+<ul>
+<li>Law of Large Numbers: <span class="math inline">\(\E_{\P_n}[f(X)] \to \E_{\P}[f(X)]\)</span>
+</li>
+<li>Glivenko-Cantelli: <span class="math inline">\(\sup |\P_n(X \leq x) - \P(X \leq x)| \to 0\)</span>
+</li>
+</ul>
+<p>Bootstrap sampling relies on a similar principle:</p>
+<p><span class="math display">\[ \text{Var}_{\P_n}[f(X_1, \dots, X_n)] \to \text{Var}_{\P}[f(X_1, \dots, X_n)]\]</span></p>
+<p>Here, <span class="math inline">\(\text{Var}_{\P}[f(X_1, \dots, X_n)]\)</span> is the sampling variance of the estimator <span class="math inline">\(f\)</span> under the true distribution, and <span class="math inline">\(\text{Var}_{\P_n}[f(X_1, \dots, X_n)]\)</span> is the variance of that same estimator under the sample distribution. What exactly does this last claim mean? Essentially, if we repeat <span class="math inline">\(f\)</span> on our sample data many times, the variance will approximate the “true” sampling variance.</p>
+<p>But if we simply repeat <span class="math inline">\(f\)</span> on the same data, we get the same answer each time - so where is the variance? This is where the magic of the <em>bootstrap</em> comes in. Instead of using the sample data <em>as is</em>, we <em>resample</em> it in the following manner.</p>
+<ul>
+<li>Given data <span class="math inline">\(\mathcal{D} = \{x_1, \dots, x_n\}\)</span>, create a new sample <span class="math inline">\(\mathcal{D}^\#_1 = \{x^\#_1, x^\#_2, \dots, x^\#_n\}\)</span> by drawing from the original data <em>with replacement</em>. (If you draw <em>without replacement</em>, you just get back the original data in full every time, possibly permuted.) This new sample <span class="math inline">\(\mathcal{D}^\#_1\)</span> is the same size as <span class="math inline">\(\mathcal{D}\)</span>, so we can apply <span class="math inline">\(f\)</span> to it unchanged. <span class="math inline">\(\mathcal{D}^\#_1\)</span> is called a <em>boostrap</em> sample.</li>
+<li>Compute <span class="math inline">\(f\)</span> on the <em>bootstrap</em> sample to get <span class="math inline">\(f^\#_1\)</span>.</li>
+<li>Repeat this process many times to get bootstrap samples of <span class="math inline">\(f\)</span>: <span class="math inline">\(f^\#_1, \dots, f^\#_B\)</span> for some large <span class="math inline">\(B\)</span> (typically around 200-500).</li>
+<li>The variance of <span class="math inline">\(f^\#_1, \dots, f^\#_B\)</span> is an approximation of the sampling variance of <span class="math inline">\(f\)</span> under the data-generating process.</li>
+</ul>
+<p>This is all a bit heady, but the key point to keep in mind is this: as we get more data, our sample is a good estimate of the true distribution, so variance from resampling our data from our sample approximates variance from resampling our sample from the population.</p>
+<p>Let’s put this into practice: suppose we have <span class="math inline">\(250\)</span> samples from an unknown distribution and we want to estimate the median of the distribution using the sample median. Computing the variance of the sample median is rather tricky, but asymptotically it approaches <span class="math inline">\(1/(4n f_X(m_X)^2)\)</span> where <span class="math inline">\(m_X\)</span> is the true median. This formula is essentially useless however if we don’t assume a parametric model for <span class="math inline">\(f_X\)</span>, so we instead resort to bootstrapping.</p>
+<p>To demonstrate this, let’s suppose <span class="math inline">\(X\)</span> comes from a <em>non-central <span class="math inline">\(\chi^2\)</span> distribution</em> with <span class="math inline">\(\pi\)</span> degrees of freedom and non-centrality parameter <span class="math inline">\(e^2\)</span>. (This is a very weird distribution!)</p>
+<div class="cell">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></span>
+<span><span class="va">DATA</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">rchisq</a></span><span class="op">(</span><span class="fl">250</span>, df<span class="op">=</span><span class="va">pi</span>, ncp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">SAMPLE_MEDIAN</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">DATA</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The median of this distribution is <a href="https://en.wikipedia.org/wiki/Noncentral_chi-squared_distribution">too complex for Wikipedia</a>, but we can compute it empirically using a <em>very large</em> sample:</p>
+<div class="cell">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">TRUE_MEDIAN</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">rchisq</a></span><span class="op">(</span><span class="fl">5e7</span>, df<span class="op">=</span><span class="va">pi</span>, ncp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>So our sample median (10.74) is a bit off from the true median (9.58) but not catastrophically so. How can we estimate the variance? By bootstrapping!</p>
+<p>We can implement a bootstrap in <code>dplyr</code> as follows:</p>
+<div class="cell">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">B</span> <span class="op">&lt;-</span> <span class="fl">500</span> <span class="co"># Number of boostrap samples to create</span></span>
+<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">DATA</span><span class="op">)</span> <span class="co"># Original data size</span></span>
+<span></span>
+<span><span class="fu">expand_grid</span><span class="op">(</span>B <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="va">B</span>, </span>
+<span>            n <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="va">n</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="co"># Notice here we sample _with replacement_ from DATA</span></span>
+<span>    <span class="fu">mutate</span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">DATA</span>, <span class="fu">n</span><span class="op">(</span><span class="op">)</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">group_by</span><span class="op">(</span><span class="va">B</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">summarize</span><span class="op">(</span>f_boot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">summarize</span><span class="op">(</span>var_f <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="va">f_boot</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">pull</span><span class="op">(</span><span class="va">var_f</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.1911888</code></pre>
+</div>
+</div>
+<p>We can compare this to the CLT-asymptotic variance:</p>
+<div class="cell">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fl">1</span><span class="op">/</span><span class="op">(</span><span class="fl">4</span> <span class="op">*</span> <span class="va">n</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">dchisq</a></span><span class="op">(</span><span class="va">TRUE_MEDIAN</span>, df<span class="op">=</span><span class="va">pi</span>, ncp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.2121155</code></pre>
+</div>
+</div>
+<p>And, since we’re in simulation land, we also have the true variance:</p>
+<div class="cell">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="fl">10000</span>, <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">rchisq</a></span><span class="op">(</span><span class="fl">250</span>, df<span class="op">=</span><span class="va">pi</span>, ncp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.2082013</code></pre>
+</div>
+</div>
+<p>The bootstrap variance is a little bit too high, but it’s surprisingly good! And we didn’t have to know anything about the true distribution of the data! I’d call that a win.</p>
+<p>In general, we can estimate the variability of any function of data this way: i) create bootstrap samples by <em>resampling</em> the original data with replacement, ii) apply the function of interest to each of the bootstrap samples, and iii) take the bootstrap variance as an approximation to the “true” variance.</p>
+<p>This strategy is particularly useful for this project, as we don’t want to make any modeling assumptions on the returns of the stock market (a famously hard problem!) other than assuming the future looks something like the past.</p>
+<p>Bootstrapping is one form of a general computational paradigm known as <em>Monte Carlo</em>, wherein computers are given randomized inputs and told to evaluate complex functions on those inputs. The various randomized outputs are then analyzed to give insight into the behavior of the complex function. Monte Carlo methods are popular because:</p>
+<ol type="1">
+<li>Computers are cheap, but thinking is hard.</li>
+<li>They can treat the function of interest in a “black box” manner, making them suitable for use with complex computer simulation models.</li>
+<li>They do not require the use of statistical asymptotics or, when performed with resampling, any distributional assumptions at all.</li>
+</ol>
+<p>The name “Monte Carlo” is a reference to the <a href="https://en.wikipedia.org/wiki/Monte_Carlo_Casino">famous casino of the same name</a> in Monaco. While it is hard to evaluate odds of success in complex games of chance, by playing the game many times over and collecting results, it is straightforward to accurately compute the house edge. In the (computational) Monte Carlo approach, we replace the roulette wheel with a computer’s random number generator, but the same principles apply.</p>
+<section id="bootstrapping-complex-data" class="level4"><h4 class="anchored" data-anchor-id="bootstrapping-complex-data">Bootstrapping Complex Data</h4>
+<p>In the example above, we had IID scalar data so a simple call to <code>sample(replace=TRUE)</code> was sufficient to implement a proper bootstrap. When dealing with multivariate data, <em>e.g.</em> <span class="math inline">\((x, y)\)</span> pairs in a regression model, we need to “jointly” resample pairs or else we will break the underlying correlation.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a> Thankfully, <code>dplyr</code> provides us with a <code>slice_sample</code> function which can be used to do esentially the same thing.</p>
+<p>For example, suppose we are interested in assessing the uncertainty associated with the <em>Kendall correlation</em> of two variables. This is a rather non-linear function of the data and classical tools like Fisher’s transform for standard (Pearson) correlation can’t be easily applied. Bootstrapping works perfectly well without much additional effort, as we show below.</p>
+<p>We generate <span class="math inline">\((x, y)\)</span> pairs with a visible, but not precisely linear, relationship.</p>
+<div class="cell">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">rchisq</a></span><span class="op">(</span><span class="fl">100</span>, df<span class="op">=</span><span class="fl">3</span>, ncp<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">sin</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">x</span><span class="op">)</span> <span class="op">+</span> <span class="fl">15</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="mini04_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The Kendall correlation is easily computed:</p>
+<div class="cell">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, method<span class="op">=</span><span class="st">"kendall"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.7927273</code></pre>
+</div>
+</div>
+<p>To put a confidence interval on this, we can use a bootstrap with <span class="math inline">\(B=400\)</span> replicates:</p>
+<div class="cell">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">n_samp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="va">n_boot</span> <span class="op">&lt;-</span> <span class="fl">400</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">slice_sample</span><span class="op">(</span>n <span class="op">=</span> <span class="va">n_samp</span> <span class="op">*</span> <span class="va">n_boot</span>, </span>
+<span>                 replace<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">mutate</span><span class="op">(</span>resample_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_boot</span>, times<span class="op">=</span><span class="va">n_samp</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">group_by</span><span class="op">(</span><span class="va">resample_id</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">summarize</span><span class="op">(</span>kendall_cor <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, method<span class="op">=</span><span class="st">"kendall"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">summarize</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="va">kendall_cor</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 1
+  `var(kendall_cor)`
+               &lt;dbl&gt;
+1            0.00181</code></pre>
+</div>
+</div>
+<p>We can again compare this to the “true” sampling variance since we have access to the data-generating model.</p>
+<div class="cell">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="fl">5000</span>, <span class="op">{</span></span>
+<span>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">rchisq</a></span><span class="op">(</span><span class="fl">100</span>, df<span class="op">=</span><span class="fl">3</span>, ncp<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
+<span>    <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">sin</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">x</span><span class="op">)</span> <span class="op">+</span> <span class="fl">15</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, method<span class="op">=</span><span class="st">"kendall"</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.001408479</code></pre>
+</div>
+</div>
+<p>Again - really close! And we don’t need to know anything about the joint distribution of <span class="math inline">\((x, y)\)</span> to apply the bootstrap.</p>
+<p>You will need to use this “row-resampling” bootstrap to maintain the underlying economic relationships between the various investment returns and macroeconomic quantities you consider in this exercise.<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a></p>
+</section></section></section><section id="mini-project-objectives" class="level2"><h2 class="anchored" data-anchor-id="mini-project-objectives">Mini-Project Objectives</h2>
+<p>In this project, you will use historical economic data and a bootstrap resampling strategy to see the distribution of retirement outcomes under different (resampled) economic histories. You will collect relevant economic data including:</p>
+<ul>
+<li>Rate of Inflation</li>
+<li>Rate of Wage Growth</li>
+<li>US Equity Market Returns</li>
+<li>International Equity Market Returns</li>
+<li>Bond Returns</li>
+<li>Short Term Debt Returns</li>
+</ul>
+<p>You will resample these to create artificial histories and apply the TRS and ORP rules to each strategy to determine i) how much wealth you have going into retirement; ii) your probability of running out of funds before death; and iii) the amount of funds (if any) you leave to your heirs.</p>
+<p>The optimal strategy may depend on various parameters including: i) your age when you start saving; ii) your age when you retire; iii) the age at which you shuffle off this mortal coil; and iv) your starting salary.</p>
+<p>You may select values that seem appropriate to you for each of these or, if you are feeling ambitious, you can perform a <em>sensitivity analysis</em> to see how robust your final decision is to changes in each of these inputs.</p>
+<p>After you simulate various “Monte Carlo” histories to assess the relative performance of the TRS and ORP retirement plans, you will make a <em>data-driven decision recommendation</em> to a potential CUNY employee. (In essence, you will play the role of a financial advisor.) Your final report should include a plan recommendation, as well as some notion of confidence or certainty associated with your recommendation.</p>
+</section><section id="student-responsbilities" class="level2"><h2 class="anchored" data-anchor-id="student-responsbilities">Student Responsbilities</h2>
+<p>Recall our basic analytic workflow and table of student responsibilities:</p>
+<ul>
+<li>Data Ingest and Cleaning: Given a single data source, read it into <code>R</code> and transform it to a reasonably useful standardized format.</li>
+<li>Data Combination and Alignment: Combine multiple data sources to enable insights not possible from a single source.</li>
+<li>Descriptive Statistical Analysis: Take a data table and compute informative summary statistics from both the entire population and relevant subgroups</li>
+<li>Data Visualization: Generate insightful data visualizations to spur insights not attainable from point statistics</li>
+<li>Inferential Statistical Analysis and Modeling: Develop relevant predictive models and statistical analyses to generate insights about the <em>underlying population</em> and not simply the data at hand.</li>
+</ul>
+<table class="table-hover caption-top table">
+<caption>Students’ Responsibilities in Mini-Project Analyses</caption>
+<colgroup>
+<col style="width: 18%">
+<col style="width: 17%">
+<col style="width: 22%">
+<col style="width: 27%">
+<col style="width: 12%">
+</colgroup>
+<thead><tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">Ingest and Cleaning</th>
+<th style="text-align: center;">Combination and Alignment</th>
+<th style="text-align: center;">Descriptive Statistical Analysis</th>
+<th style="text-align: center;">Visualization</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><strong>Mini-Project #01</strong></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>✓</strong></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><strong>Mini-Project #02</strong></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>✓</strong></td>
+<td style="text-align: center;"><strong>✓</strong></td>
+<td style="text-align: center;"><strong>½</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><strong>Mini-Project #03</strong></td>
+<td style="text-align: center;"><strong>½</strong></td>
+<td style="text-align: center;"><strong>✓</strong></td>
+<td style="text-align: center;"><strong>✓</strong></td>
+<td style="text-align: center;"><strong>✓</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><strong>Mini-Project #04</strong></td>
+<td style="text-align: center;"><strong>✓</strong></td>
+<td style="text-align: center;"><strong>✓</strong></td>
+<td style="text-align: center;"><strong>✓</strong></td>
+<td style="text-align: center;"><strong>✓</strong></td>
+</tr>
+</tbody>
+</table>
+<p>In this mini-project, you are in charge of the whole pipeline, from deciding which data to use, to finding the data on AlphaVantage and/or FRED, to downloading it into <code>R</code>, to performing the resampled history analyses, to implementing the TRS and ORP savings rules, and to finally interpreting the results. The rubric below evaluates your work on all aspects of this project.</p>
+<section id="rubric" class="level3"><h3 class="anchored" data-anchor-id="rubric">Rubric</h3>
+<p>STA/OPR 9750 Mini-Projects are evaluated using <em>peer grading</em> with <em>meta-review</em> by the course GTAs. Specifically, variants of the following rubric will be used for the mini-projects:</p>
+<table class="caption-top table">
+<caption>Mini-Project Grading Rubric</caption>
+<colgroup>
+<col style="width: 2%">
+<col style="width: 22%">
+<col style="width: 19%">
+<col style="width: 12%">
+<col style="width: 18%">
+<col style="width: 12%">
+<col style="width: 11%">
+</colgroup>
+<thead><tr class="header">
+<th>Course Element</th>
+<th>Excellent (9-10)</th>
+<th>Great (7-8)</th>
+<th>Good (5-6)</th>
+<th>Adequate (3-4)</th>
+<th>Needs Improvement (1-2)</th>
+<th>Extra Credit</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Written Communication</td>
+<td>Report is well-written and flows naturally. Motivation for key steps is clearly explained to reader without excessive detail. Key findings are highlighted and appropriately given context.</td>
+<td>Report has no grammatical or writing issues. Writing is accessible and flows naturally. Key findings are highlighted, but lack suitable motivation and context.</td>
+<td>Report has no grammatical or writing issues. Key findings are present but insufficiently highlighted.</td>
+<td>Writing is intelligible, but has some grammatical errors. Key findings are obscured.</td>
+<td>Report exhibits significant weakness in written communication. Key points are difficult to discern.</td>
+<td>Report includes extra context beyond instructor provided information.</td>
+</tr>
+<tr class="even">
+<td>Project Skeleton</td>
+<td>Code completes all instructor-provided tasks correctly. Responses to open-ended tasks are particularly insightful and creative.</td>
+<td>Code completes all instructor-provided tasks satisfactorially.</td>
+<td>Response to one instructor provided task is skipped, incorrect, or otherwise incomplete.</td>
+<td>Responses to two instructor provided tasks are skipped, incorrect, or otherwise incomplete.</td>
+<td>Response to three or ore instructor provided tasks are skipped, incorrect, or otherwise incomplete.</td>
+<td>Report exhibits particularly creative insights drawn from thorough student-initiated analyses.</td>
+</tr>
+<tr class="odd">
+<td>Formatting &amp; Display</td>
+<td>
+<p>Tables and figures are full ‘publication-quality’.</p>
+<p>Report includes at least one animated visualization designed to effectively communicate findings.</p>
+</td>
+<td>
+<p>Tables have well-formatted column names, suitable numbers of digits, and attractive presentation.</p>
+<p>Figures are ‘publication-quality’, with suitable axis labels, well-chosen structure, attractive color schemes, titles, subtitles, and captions, <em>etc.</em></p>
+</td>
+<td>
+<p>Tables are well-formatted, but still have room for improvement.</p>
+<p>Figures are above ‘exploratory-quality’, but do not reach full ‘publication-quality’.</p>
+</td>
+<td>
+<p>Tables lack significant ‘polish’ and need improvement in substance (filtering and down-selecting of presented data) or style.</p>
+<p>Figures are suitable to support claims made, but are ‘exploratory-quality’, reflecting minimal effort to customize and ‘polish’ beyond <code>ggplot2</code> defaults.</p>
+</td>
+<td>
+<p>Unfiltered ‘data dump’ instead of curated table.</p>
+<p>Baseline figures that do not fully support claims made.</p>
+</td>
+<td>Report includes interactive (not just animated) visual elements.</td>
+</tr>
+<tr class="even">
+<td>Code Quality</td>
+<td>
+<p>Code is (near) flawless.</p>
+<p>Code passes all <code>styler</code> and <code>lintr</code> type analyses without issue.</p>
+</td>
+<td>Comments give context of the analysis, not simply defining functions used in a particular line.</td>
+<td>Code has well-chosen variable names and basic comments.</td>
+<td>Code executes properly, but is difficult to read.</td>
+<td>Code fails to execute properly.</td>
+<td>Code takes advantage of advanced <code>Quarto</code> features to improve presentation of results.</td>
+</tr>
+<tr class="odd">
+<td>Data Preparation</td>
+<td>Data import is fully-automated and efficient, taking care to only download from web-sources if not available locally.</td>
+<td>Data is imported and prepared effectively, in an automated fashion with minimal hard-coding of URLs and file paths.</td>
+<td>Data is imported and prepared effectively, though source and destination file names are hard-coded.</td>
+<td>Data is imported in a manner likely to have errors.</td>
+<td>Data is hard-coded and not imported from an external source.</td>
+<td>Report uses additional data sources in a way that creates novel insights.</td>
+</tr>
+</tbody>
+</table>
+<p>Note that this rubric is designed with copious opportunities for extra credit if students go <em>above and beyond</em> the instructor-provided scaffolding. Students pursuing careers in data analytics are strongly encouraged to go beyond the strict ambit of the mini-projects to i) further refine their skills; ii) learn additional techniques that can be used in the final course project; and iii) develop a more impressive professional portfolio.</p>
+<p>Because students are encouraged to use STA/OPR 9750 mini-projects as the basis for a professional portfolio, the basic skeleton of each project will be released under a fairly permissive usage license. Take advantage of it!</p>
+</section><section id="submission-instructions" class="level3"><h3 class="anchored" data-anchor-id="submission-instructions">Submission Instructions</h3>
+<p>After completing the analysis, write up your findings, <em>showing all of your code</em>, using a dynamic <code>quarto</code> document and post it to your course repository. The <code>qmd</code> file should be named <code>mp04.qmd</code> so the rendered document can be found at <code>docs/mp04.html</code> in the student’s repository and served at the URL:</p>
+<blockquote class="blockquote">
+<p><code>https://&lt;GITHUB_ID&gt;.github.io/STA9750-2024-FALL/mp04.html</code></p>
+</blockquote>
+<p>Once you confirm this website works (substituting <code>&lt;GITHUB_ID&gt;</code> for the actual GitHub username provided to the professor in <a href="./mini00.html">MP#00</a> of course), open a new issue at</p>
+<blockquote class="blockquote">
+<p><code>https://github.com/&lt;GITHUB_USERNAME&gt;/STA9750-2024-FALL/issues/new</code> .</p>
+</blockquote>
+<p>Title the issue <code>STA/OPR 9750 &lt;GITHUB_USERNAME&gt; MiniProject #03</code> and fill in the following text for the issue:</p>
+<pre><code>Hi @michaelweylandt!
+
+
+https://&lt;GITHUB_USERNAME&gt;.github.io/STA9750-2024-FALL/mp04.html</code></pre>
+<p>Once the submission deadline passes, the instructor will tag classmates for peer feedback in this issue thread.</p>
+<p><em>Additionally</em>, a PDF export of this report should be submitted on Brightspace. To create a PDF from the uploaded report, simply use your browser’s ‘Print to PDF’ functionality.</p>
+<p><strong>NB</strong>: The analysis outline below specifies key <em>tasks</em> you need to perform within your write up. Your peer evaluators will check that you complete these. You are encouraged to do extra analysis, but the bolded <strong>Tasks</strong> are <em>mandatory</em>.</p>
+<p><strong>NB</strong>: Your final submission should look like a <em>report</em>, not simply a list of facts answering questions. Add introductions, conclusions, and your own commentary. You should be practicing both raw <em>coding</em> skills and written <em>communication</em> in all mini-projects. There is little value in data points stated without context or motivation.</p>
+</section></section><section id="set-up-and-exploration" class="level2"><h2 class="anchored" data-anchor-id="set-up-and-exploration">Set-Up and Exploration</h2>
+<section id="data-acquisition" class="level3"><h3 class="anchored" data-anchor-id="data-acquisition">Data Acquisition</h3>
+<p>To begin your Monte Carlo analysis, you will need historical data covering (at a minimum) the following:</p>
+<ul>
+<li>Wage growth</li>
+<li>Inflation</li>
+<li>US Equity Market total returns</li>
+<li>International Equity Market total returns</li>
+<li>Bond market total returns</li>
+<li>Short-term debt returns<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a>
+</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Task 3: Data Acquisition">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Task 3: Data Acquisition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Identify and download historical data series for each of the above inputs to your Monte Carlo analysis. If necessary, “downsample” each series to a monthly frequency and join them together in a <code>data.frame</code>.</p>
+<p>You must use at least one data series from <code>AlphaVantage</code> and one from <code>FRED</code>. You must use the APIs of each service to access this data and, as noted above, you need to use the “raw” API, relying only on the <code>httr2</code> package (or similar) and not wrapper packages like <code>quantmod</code> or <code>alphavantager</code>.</p>
+</div>
+</div>
+<p>Note that, for each of these quantities, there are many possibly-relevant data series: <em>e.g.</em>, for inflation, you might compare CPI, core CPI, PCE, both nationally and, if available, in the NY metro area. You may select any series you feel best captures these for a potential CUNY employee. For the market returns, it may be easiest to identify a suitable index ETF and compute its (dividend-adjusted) returns as a proxy for market returns.</p>
+<p>In any historically-based financial projection, there is a trade-off between having enough history to capture sufficient market cycles and having only relevant data in your training set. I’d recommend using around 15-20 years of data for this project.</p>
+</section><section id="investigation-and-visualization-of-input-data" class="level3"><h3 class="anchored" data-anchor-id="investigation-and-visualization-of-input-data">Investigation and Visualization of Input Data</h3>
+<div class="callout callout-style-default callout-tip callout-titled" title="Task 4: Initial Analysis">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Task 4: Initial Analysis
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>After you have acquired your input data, perform some basic exploratory data analysis to identify key properties of your data. You may choose to measure the correlation among factors, long-term averages, variances, <em>etc.</em> Your analysis should include at least one table and one figure.</p>
+<p>As part of your analysis, be sure to compute the long-run monthly average value of each series. You will use these in a later task.</p>
+</div>
+</div>
+</section><section id="historical-comparison-of-trs-and-orp" class="level3"><h3 class="anchored" data-anchor-id="historical-comparison-of-trs-and-orp">Historical Comparison of TRS and ORP</h3>
+<div class="callout callout-style-default callout-tip callout-titled" title="Task 5: Historical Comparison">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Task 5: Historical Comparison
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Now that you have acquired data, implement the TRS and ORP formulas above and compare the value of each of them for the first month of retirement. To do this, you may assume that your hypothetical employee:</p>
+<ul>
+<li>Joined CUNY in the first month of the historical data</li>
+<li>Retired from CUNY at the end of the final month of data</li>
+</ul>
+<p>You will need to select a starting salary for your employee. Use historical data for wage growth and inflation and assume that the TRS and ORP parameters did not change over time. (That is, the employee contribution “brackets” are not inflation adjusted; the employee will have to make larger contributions as income rises over the span of a 20+ year career.)</p>
+</div>
+</div>
+</section><section id="long-term-average-analysis" class="level3"><h3 class="anchored" data-anchor-id="long-term-average-analysis">Long-Term Average Analysis</h3>
+<p>The “first month of retirement” dollar value is interesting, but it arguably undersells a key strength of the TRS. The TRS <em>guarantees</em> income for life, while the ORP can be exhausted if the employee lives a very long time in retirement.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Task 6: Fixed-Rate Analysis">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Task 6: Fixed-Rate Analysis
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Modify your simulation from the previous section to project an employee’s pension benefit (TRS) or withdrawal amount (ORP) from retirement until death. (You will need to select an estimated death age.) In order to implement cost-of-living-adjustments (TRS) and future market returns (ORP), you can use the long-run averages you computed previously. This “fixed rate” assumption is rather limiting, but we will address it below.</p>
+<p>As you compare the plans, be sure to consider:</p>
+<ul>
+<li>Whether the employee runs out of funds before death and/or has funds to leave to heirs (ORP only)</li>
+<li>Average monthly income (TRS vs ORP)</li>
+<li>Maximum and minimum gap in monthly income between TRS and ORP</li>
+</ul>
+<p>As noted above, you can ignore the effect of taxes throughout this analysis.</p>
+</div>
+</div>
+</section><section id="bootstrap-monte-carlo-comparison" class="level3"><h3 class="anchored" data-anchor-id="bootstrap-monte-carlo-comparison">Bootstrap (Monte Carlo) Comparison</h3>
+<p>Now that you have implemented both the “while working” contributions and returns (ORP) only as well as the “while retired” benefits of both plans, we are finally ready to implement our Monte Carlo assessment.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="Task 7: Monte Carlo Analysis">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Task 7: Monte Carlo Analysis
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Using your historical data, generate several (at least 200) “bootstrap histories” suitable for a Monte Carlo analysis. Use bootstrap sampling, <em>i.e.</em> sampling with replacement, to generate values for both the “while working” and “while retired” periods of the model; you do not need to assume constant long-term average values for the retirement predictions any more.</p>
+<p>Apply your calculations from the previous two tasks to each of your simulated bootstrap histories. Compare the <em>distribution</em> of TRS and ORP benefits that these histories generate. You may want to ask questions like the following:</p>
+<ol type="1">
+<li>What is the probability that an ORP employee exhausts their savings before death?</li>
+<li>What is the probability that an ORP employee has a higher monthly income in retirement than a TRS employee?</li>
+<li>Is the 4% withdrawal rate actually a good idea or would you recommend a different withdrawal rate?</li>
+</ol>
+<p>Report your findings to these or other questions of interest in tables or figures, as appropriate.</p>
+</div>
+</div>
+</section></section><section id="deliverable-data-driven-decision-recommendation" class="level2"><h2 class="anchored" data-anchor-id="deliverable-data-driven-decision-recommendation">Deliverable: Data-Driven Decision Recommendation</h2>
+<p>Finally, write up your findings from Task 7 in the form of a “data-driven recommendation” to a potential CUNY employee. Here, you are playing the role of a financial advisor, so be sure to consider the employee’s current age and starting salary, expected lifetime, and risk tolerance. Be sure to suitably convey the uncertainty of your predictions and the limitations of the bootstrap-history approach used here.<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a> As you write this, think of what issues would matter most to you if you were making this decision and address them accordingly.</p>
+</section><section id="extra-credit-opportunities" class="level2"><h2 class="anchored" data-anchor-id="extra-credit-opportunities">Extra Credit Opportunities</h2>
+<p>For extra credit, you may make an <em>interactive</em> version of your report, allowing your client to alter the parameters of your simulation and see how the predictions change.</p>
+<section id="challenge-level-basic-up-to-5-points-extra-credit" class="level3"><h3 class="anchored" data-anchor-id="challenge-level-basic-up-to-5-points-extra-credit">Challenge Level: Basic (Up to 5 points Extra Credit)</h3>
+<p>Perform a “sensitivity analysis” by re-running your previous analysis under various different input parameters (starting salary, retirement age, death age, <em>etc.</em>) Then use some sort of interactive functionality to allow the reader to see how the results change.</p>
+<p>The <a href="https://cran.r-project.org/web/packages/manipulateWidget/vignettes/manipulateWidgets.html"><code>manipulateWidgets</code></a> package may be useful here, but any sort of in-browser interactive display will suffice.</p>
+<p>Note that, in this model, all the simulations are run by <code>Quarto</code> at <code>Render</code> time and the interactivity only controls which simulations are displayed.</p>
+</section><section id="challenge-level-moderate-up-to-10-points-extra-credit" class="level3"><h3 class="anchored" data-anchor-id="challenge-level-moderate-up-to-10-points-extra-credit">Challenge Level: Moderate (Up to 10 points Extra Credit)</h3>
+<p>Use the <a href="https://shiny.posit.co/r/gallery/"><code>shiny</code> package</a> to implement a reactive dashboard. <code>shiny</code> requires use of a server to perform calculations. The website <a href="https://www.shinyapps.io/"><code>shinyapps.io</code></a> provides a free platform to host the “backend” of your <code>shiny</code> dashboard. <a href="https://shiny.posit.co/r/gallery/application-layout/retirement-simulation/">This example</a> may prove useful, but note that the analysis required for this project (historical resampling) is a bit more advanced than the parametric model used there.</p>
+<p>Under the <code>shiny</code> model, a back-end server is running (and re-running) simulations in real-time in response to user input.</p>
+</section><section id="challenge-level-advanced-up-to-20-points-extra-credit" class="level3"><h3 class="anchored" data-anchor-id="challenge-level-advanced-up-to-20-points-extra-credit">Challenge Level: Advanced (Up to 20 points Extra Credit)</h3>
+<p>Use the <a href="https://posit-dev.github.io/r-shinylive/"><code>r-shinylive</code></a> framework to create a fully dynamic in-browser simulation dashboard. This in-development technology allows users to modify and re-run all simulations <em>in their browser</em>, providing the highest level of flexibility. You can allow users to vary their starting salary, retirement age, choice of data series, number of Monte Carlo histories, dates of historical data used for resampling, <em>etc.</em></p>
+<p>Note that <code>r-shinylive</code> is a new technology and one that remains under active development. The instructor will not be able to provide support and assistance debugging it.</p>
+<hr>
+<p>This work ©2024 by <a href="https://michael-weylandt.com">Michael Weylandt</a> is licensed under a <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en">Creative Commons BY-NC-SA 4.0</a> license. <img src="http://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png" class="img-fluid" style="width:10.0%"></p>
+
+
+</section></section><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+<ol>
+<li id="fn1"><p>While I don’t imagine many of you will have this exact decision to make, these forecasting and analysis strategies are readily applied to a variety of personal financial planning decisions you might face in future careers.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>CUNY employees have additional voluntary retirement savings plans, but these are non-exclusive and participation is voluntary, so we omit them from this analysis.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>If a TRS participant retires before the age of 63, their benefit is reduced, but you can ignore this wrinkle.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>The original version of this assignment incorrectly had <span class="math inline">\(N\)</span> instead of <span class="math inline">\(N-20\)</span> for the 2% term in the 30+ year service calculation. Students using the incorrect formula won’t be penalized.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>This is simplified from the actual rates used by Fidelity, but it’s close to accurate.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Current starting <a href="https://psc-cuny.org/content/salary-schedules-full-time-faculty-and-research-series/">salary for an Assisant Professor</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>If you accidentally include this file in your Git history, see <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository#using-git-filter-repo">these instructions</a> for discussion of how to remove it. These are dangerous and advanced <code>git</code> “power tools”, so it will be far easier to use <code>.gitignore</code> defensively rather<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>“Breaking” the correlation is not necessarily a bad thing. This essentially underlies the concept of <em>permutation</em> testing, but it’s not what we’re aiming to do here.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>Clearly, the bootstrap as we have described here looses any temporal structure in the data. The so-called <a href="https://en.wikipedia.org/wiki/Bootstrapping_(statistics)#Block_bootstrap">block bootstrap</a> can be used to bootstrap in a way that (approximately) respects temporal dependence, but you don’t need to implement this advanced variant in this project.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>For short-term debt, it may be easiest to pick a key short-term benchmark, <em>e.g.</em>, the 2-year US Treasury yield. The world of “short-term debt” is rather wide and varied.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>As the SEC requires all advisors to disclaim: Past Performance is No Guarantee of Future Results.<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol></section></div></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/michael-weylandt\.com\/STA9750\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/archive/AY-2024-FALL/miniprojects/mini04.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/archive/AY-2024-FALL/miniprojects/mini04.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

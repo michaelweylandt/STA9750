@@ -1,0 +1,387 @@
+---
+title: "{{< var course.short >}} - Week 13"
+author: "Michael Weylandt"
+format: revealjs
+echo: true
+execute:
+  freeze: true # Done with AY-2024-FALL offering
+---
+
+## {{< var course.short >}} Mini-Project #04
+
+- Congratulations! Done with Mini-Projects!
+
+- Peer reviews to be assigned by EoW
+
+## Week 13 Pre-Assignment
+
+Due at midnight tonight - take a moment to do it 
+now if you haven't already!
+
+- Reflection on course: 
+  - How far have you come?
+  - What have you learned? 
+  - What was helpful? What was unhelpful? 
+  
+Done with pre-assignments!
+
+This is *in addition* to the Baruch central course assesments. 
+
+## Week 13 Pre-Assignment
+
+Used to improve future course offerings. This semester:
+
+- Added a second round of project feedback
+  - Help students "scope" projects suitably
+- More _applied analytics_ than _programming exercises_ in HW
+  - Other programming resources already online; 
+  - Many students have prior experience (Python, SQL)
+  - More interest in *Analytics* than Software Engineering
+- Added GitHub and Portfolio Construction
+  - Give students *evidence of skills* to share with employers
+
+## Grading
+
+Returned:
+
+- Mid-Term Check-In Feedback
+
+We owe you:
+
+- MP#03 Grades in Brightspace
+
+## Upcoming
+
+December 12 - Last Day of Class!
+
+- Final Project *Presentations*
+
+Review [the Rubric](https://michael-weylandt.com/STA9750/project.html#final-presentations)!
+
+*Non-Technical* Presentation - Think of yourself as a "consultant" asked by a client to investigate a topic.
+
+## Final Project Presentations
+
+Example Presentation Structure: 
+
+- Motivation
+- How your work relates to other previous work
+- Overarching Question
+- Discussion of Data
+  - Where? How good is it? Weaknesses / Limitations?
+- Specific Questions
+  - How do they support overarching question?
+  - What did you do? What did you find?
+  
+## Final Project Presentations
+
+Example Presentation Structure (continued): 
+
+- Integration of Findings
+- Major Conclusions
+  - How do _quantitative_ specific findings 
+    provide _qualitative_ insights?
+  - What can you see be combining specific questions 
+    that you can't see from a single specific question?
+  - Including Limitations of Current Study
+- Potential Future Work 
+
+## Final Project Reports
+
+Group **and** Individual Reports 
+
+- Submitted via GitHub **and** Brightspace
+
+Deadline extended to the day of the 'final' 
+
+. . . 
+
+Registrar's office has not released Final Exam schedule ... *grumble, grumble*
+
+**Tentatively**: December 19th
+
+- Will confirm when exam schedule released
+
+
+**No late work accepted** (I have to submit grades!)
+
+## Peer Assessment
+
+On Brightspace, I have opened an additional quiz for *peer evaluation* 
+of your teammates. 
+
+- 8 questions: scale of 1 (bad) to 3 (great)
+
+Please submit a copy for *each* of your teammates. 
+
+- Brightspace set to allow multiple submissions.
+- Due on same day as reports
+
+. . .
+
+If you don't submit these, **you** will receive a 0 for 
+your peer evaluations
+
+**No late work accepted** (I have to submit grades!)
+
+## Final Project Grading
+
+Rubric is set _high_ to give me flexibility to reward teams
+that take on big challenges
+
+Hard rubric => Grades are curved generously 
+
+. . . 
+
+Multiple paths to success 
+
+If your problem is "easy" on an element (data import
+in particular), that's great! Don't spend the effort 
+over-complicating things. Effort is better spent elsewhere
+
+# Today
+
+## Agenda
+
+- Predictive Modeling with `tidymodels`
+
+Adapted from (Case Study)[https://www.tidymodels.org/start/case-study/]
+
+## Breakout Rooms
+
+| Order | Team           |     | Order | Team            |
+|-------|----------------|-----|-------|-----------------|
+| 1     | Rat Pack       |     | 6     | Ca\$h VZ        |
+| 2     | Subway Surfers |     | 7     | Listing Legends |
+| 3     | Chart Toppers  |     | 8     | TDSSG           |
+| 4     | Metro Mindset  |     | 9     | Broker T's      |
+| 5     | Apple Watch    |     | 10    | EVengers        |
+
+## `tidymodels`
+
+Strength of `R`: 
+ 
+- Thousands of authors contributing packages to CRAN
+
+. . . 
+
+Weakness of `R`: 
+
+- Thousands of authors contributing *slightly incompatible* packages to CRAN
+
+. . . 
+
+No two modeling packages have _exactly_ the same API. Makes 
+changing between interfaces cumbersome
+
+## `tidymodels`
+
+`tidymodels` attemps to provide a _uniform_ interface
+to a wide variety of _predictive_ Machine Learning tools
+
+Advantages: 
+
+- Easy to swap out different algorithms to find the best
+
+Disadvantages: 
+
+- Harder to take advantage of the strengths of each approach
+
+. . . 
+
+I have dedicated my academic life to the differences in these
+methods, but 99% of the time, "black-box" prediction is good
+enough. In STA 9890, we get into the weeds - not here.
+
+## ML vs Statistical Pipelines
+
+Statistics / Data Science: 
+
+- Find the model that _fits_ the data best
+- Model should capture all important data features
+- _Interpretability_ 
+- History: Grounded in lab sciences where experiments are
+  expensive and data is limited 
+  
+## ML vs Statistical Pipelines
+
+Machine Learning: 
+
+- Find the model that _predicts_ the data best
+- No "perfect" model - just the best one we've found so far
+- Black-box techniques are great, _if effective_
+- History: Silicon Valley "at scale"
+
+Validation based on _of-of-sample_ or _test_ predictions
+
+## Validating Predictive Power
+
+How to check whether a model _predicts_ well?
+
+. . . 
+
+Need more data! But where to get more data? 
+
+- Actually get more data (hard, expensive, slow)
+- Split data into parts - test/training split
+- Cross-Validation
+- Resampling
+
+. . . 
+
+Today, we'll primarily use a combination: **Test/Train** split & **Cross-Validation**!
+
+## Cross-Validation
+
+![](https://scikit-learn.org/1.5/_images/grid_search_cross_validation.png)
+
+Cross-Validation is done on the *estimator*, not the fitted algorithm
+
+## `tidymodels`
+
+`tidymodels` workflow: 
+
+- Initial Split
+- Pre-Process
+- Fit (*many*) models
+- Select best
+- Refit
+- Test Set Assessment
+
+`tidymodels` is _very_ punny, so a bit hard to tell which step is which...
+
+## Initial Split
+
+```{r}
+#| eval: false
+# Stratified sampling to ensure balance
+splits      <- initial_split(hotels, 
+                             strata = children)
+
+hotel_train <- training(splits)
+hotel_test  <- testing(splits)
+```
+
+## Pre-Process
+
+```{r}
+#| eval: false
+holidays <- c("AllSouls", "AshWednesday", "ChristmasEve", "Easter", 
+              "ChristmasDay", "GoodFriday", "NewYearsDay", "PalmSunday")
+
+recipe <- 
+  recipe(children ~ ., data = hotel_other) |> 
+  step_date(arrival_date) |> 
+  step_holiday(arrival_date, holidays = holidays) |> 
+  step_rm(arrival_date) |> 
+  step_dummy(all_nominal_predictors()) |> 
+  step_zv(all_predictors()) |> 
+  step_normalize(all_predictors())
+```
+
+## Fit Models
+
+```{r}
+#| eval: false
+lr_model <- 
+  logistic_reg(penalty = tune(), mixture = 1) |> 
+  set_engine("glmnet")
+```
+
+## Select Best
+
+Find a _grid_ of parameters 
+
+```{r}
+#| eval: false
+lr_reg_grid <- data.frame(penalty = 10^seq(-4, -1, length.out = 30))
+```
+
+Perform CV splits: 
+
+```{r}
+#| eval: false
+lr_folds <- vfold_cv(hotel_train, v = 5)
+```
+
+## Select Best
+
+Define a *workflow*: 
+
+```{r}
+#| eval: false
+lr_workflow <-  
+  workflow() |> 
+  add_model(lr_mod) |> 
+  add_recipe(lr_recipe)
+```
+
+Fit workflow to a grid of parameters: 
+
+```{r}
+#| eval: false
+lr_results <- 
+  lr_workflow |> 
+  tune_grid(grid = lr_reg_grid,
+            control = control_grid(save_pred = TRUE),
+            resamples = lr_folds,
+            metrics = metric_set(roc_auc))
+```
+
+## Select Best
+
+Visual examination
+
+```{r}
+#| eval: false
+lr_results |> 
+  collect_metrics() |> 
+  ggplot(aes(x = penalty, y = mean)) + 
+  geom_point() + 
+  geom_line() + 
+  ylab("Area under the ROC Curve") +
+  scale_x_log10(labels = scales::label_number())
+```
+
+## Select Best
+
+```{r}
+#| eval: false
+lr_results |> show_best()
+lr_best <- lr_results |> select_best()
+
+lr_best_fit <- lr_results |> fit_best()
+```
+
+## Refit
+
+```{r}
+#| eval: false
+lr_best_fit <- lr_results |> fit_best()
+```
+
+## Test Set Assessment
+
+```{r}
+#| eval: false
+predict(lr_best_fit, hotel_test)
+```
+
+## Exercise
+
+Work through the _random forest_ components of [https://www.tidymodels.org/start/case-study](https://www.tidymodels.org/start/case-study)
+
+You'll need to work through the data import elements as well
+
+## Other `tidymodels` tools
+
+- Model Stacking
+- Probabilistic Predictions
+- Uncertainty Bounds (Conformal Inference)
+- Multilevel (Mixed-Effect) Models
+- Fairness Audits
+
+## More Reading
+
+[https://www.tidymodels.org/start/](https://www.tidymodels.org/start/)
+
