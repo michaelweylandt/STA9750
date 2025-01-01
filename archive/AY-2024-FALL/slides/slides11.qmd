@@ -1,0 +1,267 @@
+---
+title: "{{< var course.short >}} - Week 11"
+author: "Michael Weylandt"
+format: revealjs
+echo: true
+execute:
+  freeze: true # Done with AY-2024-FALL offering
+---
+
+## {{< var course.short >}} Mini-Project #03
+
+I spot-checked several results  - look fantastic!
+
+- Fewer `git` questions - folks getting the hang of things!
+- Peer feedback assigned via GitHub
+  - You give comments on _other students'_ repos
+  - Due in 1 week
+
+Pay attention to [the rubric](../miniprojects/mini03.html#rubric)
+
+
+## {{< var course.short >}} Mini-Project #04
+
+[MP#04 released **today**](https://michael-weylandt.com/STA9750/miniprojects/mini04.html)
+
+- Due **2024-12-04** ($\approx$ 3 weeks)
+- Topic: financial modeling
+  - Comparison of two retirement plans
+  - Historical data + Monte Carlo ("bootstrapping") 
+- Format: 
+  - *Decision Analytics* - Play the role of financial advisor
+  - GitHub post AND Brightspace submission
+  
+## Week 11 Pre-Assignment 
+
+Due at midnight tonight - take a moment to do it now 
+if you haven't already!
+
+# Going Forward
+
+
+## Pre-Assignments
+
+Brightspace - Wednesdays at 11:45
+
+-   Reading, typically on course website
+-   Brightspace auto-grades
+    -   I have to manually change to completion grading
+
+Next pre-assignment is **November 20th**
+
+. . .
+
+Thank you for FAQs and (honest) team feedback. Keep it coming!
+
+## Grading
+
+We owe you: 
+
+- MP#02 final average (Need to upload to BS)
+- MP#02 peer meta-review (Need to upload to BS)
+- Posting videos to Vocat (Need to do video splitting)
+- Mid-Term Check-In Feedback
+
+## Course Support
+
+- Synchronous
+  - Office Hours 4x / week
+    - MW Office Hours on **Monday** + **Thursday**
+    - CR **Tuesday** + **Friday**
+    - No OH during Thanksgiving break
+- Asynchronous
+  - Piazza ($38$ minute average response time)
+  
+**Change**: MW Thursday Zoom OH now **4:00pm** to **5:00pm**
+
+## Upcoming
+
+Nov 20: 
+
+- MP#03 Peer Feedback
+- Pre Assignment
+
+Nov 27 - Thanksgiving Holiday (No Class on Nov 28)
+
+- Check-In Peer Feedback (Vocat)
+
+
+# Pre-Assignment #09 FAQs
+
+## FAQ: HTML vs CSS
+
+> What is the difference between HTML and CSS?
+
+HTML is _substance_; CSS is _style_ 
+
+Distinction can be a bit blurry \& CSS can live "inside" HTML
+
+[Example](view-source:https://michael-weylandt.com/STA9750/miniprojects/mini04.html)
+
+## FAQ: `a` in SelectorGadget
+
+> Why does [SelectorGadget] display "a" in the selector when selecting a web link?
+
+`a` is for anchor. 
+
+Confusingly, anchors are both links and destinations.
+
+Anchors can reference: 
+
+- Another page (`http://URL`)
+- A particular part of another page (`http://URL#place`)
+- A particular part of the same page (`#place`)
+
+Quarto supports [cross-linking](https://quarto.org/docs/authoring/cross-references.html) with anchors
+
+## FAQ: SelectorGadget - Multiple Clicks
+
+> Why does SelectorGadget go "unique" when I click multiple 
+  elements of interest?
+  
+Can't find a common structure: 
+
+- Typically a problem within lists or common element types
+
+## FAQ: Selectors - Nesting
+
+> How to avoid unwanted elements such as headers or 
+  sidebars, focusing only on the main content I need?
+  
+Nest your selectors! 
+
+`thing1 thing2` will select only `thing2`s inside a `thing1`
+
+[StarWars page](https://rvest.tidyverse.org/articles/starwars.html)
+
+. . .
+
+Try `main h2`
+
+## FAQ: Relationship to Markdown
+
+> Is [HTML] similar to Markdown ?
+
+Markdown is an easier way to write (a subset of) HTML
+
+Name is a bad joke: Markup (`M` in `HTML`) vs Markdown
+
+HTML can (theoretically) do more, but painful to write by hand
+
+## FAQ: Messy HTML
+
+> How can we target data with CSS Selectors in messy HTML?
+
+Pain and suffering - depends how messy. 
+
+Worst case: a little bit of HTML selection + text processing (next week)
+
+# Peer Advice
+
+## Selected Peer Advice: 
+
+- More effort into writing, motivation, and formatting (several)
+- Be sure to push image files in addition to `qmd`
+- Code-folding!
+- Learning style for more experienced peers
+- More charts
+- `setNames` to improve table formatting. (MW: I prefer `rename` YMMV)
+- Table of contents
+- Be selective in outputs
+
+## My Advice
+
+- Most effort $\neq$ most important 
+- Reader _knows less_ and _cares less_ than you think
+- Summary / Abstract goes a long way
+- Cross-linking useful
+
+- Use suggested file names
+
+- "What have you tried?"
+- Help me help you
+
+- Print less
+
+# Today
+
+## Agenda
+
+- Review of HTML / CSS Structure
+- Pre-Assignment Examples
+  - Star Wars
+  - CUNY Table
+  - Baruch GPS
+- Exercise
+  - CUNY Map
+  - Cocktails (Part 1)
+  
+## HTML Review
+
+- HTML Structure
+- CSS Selectors (SelectorGadget)
+- Introduction `rvest`
+
+## Pre-Assignment Exercises
+
+- [Star Wars](https://rvest.tidyverse.org/articles/starwars.html)
+
+. . . 
+
+`main h2`
+
+. . . 
+
+- [CUNY Table](https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions)
+
+. . . 
+
+`table` or `tbody`
+
+. . . 
+
+- [Baruch GPS](https://en.wikipedia.org/wiki/Baruch_College)
+
+. . . 
+
+`.geo`
+
+## Exercise 1: CUNY Map
+
+Recall [Lab 1](../labs/lab01.html). Goal: extend map to all CUNYs
+
+Steps: 
+
+1. Read CUNY table and extract links
+2. Follow links and pull coordinates
+   - To read `geo` class, use this: 
+```{r}
+#| eval: false
+COORDS <- html_element(".geo") |> html_text() |> str_split_1(";")
+LAT <- as.numeric(COORDS[1])
+LON <- as.numeric(COORDS[2])
+```
+3. Adapt Lab 1 `leaflet` to show all locations
+
+## Breakout Rooms
+
+| Order| Team           |  | Order| Team            |
+|------|----------------|--|------|-----------------|
+| 1    | Rat Pack       |  | 6    | Ca\$h VZ        |
+| 2    | Subway Surfers |  | 7    | Listing Legends |
+| 3    | Chart Toppers  |  | 8    | TDSSG           |
+| 4    | Metro Mindset  |  | 9    | Broker T's      |
+| 5    | Apple Watch    |  | 10   | EVengers        |
+
+## Exercise 2: Cocktails
+
+Goal: create a cocktail _data frame_ from [Hadley's Recipies](https://cocktails.hadley.nz/)
+
+Today: 
+- How to find them all? 
+- How to extract individual recepies? 
+- How to pull items from each recipie? 
+
+Next time: 
+- How to convert text to numeric values + column info
+- Data wrangling

@@ -1,0 +1,49 @@
+---
+title: "{{< var course.short >}} Week 11 In-Class Activity: HTML Import"
+engine: knitr
+execute:
+  freeze: true # Done with AY-2024-FALL offering
+---
+
+[Week 11 Slides](../slides/slides11.html)
+
+::: {.callout-tip title="CUNY Mapping Code" collapse="true"}
+
+```{r}
+library(rvest)
+library(tidyverse)
+library(leaflet)
+
+CUNYs <- read_html("https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions") |> 
+    html_element("tbody") |>
+    html_elements("tr td:nth-child(2)") |>
+    html_elements("a")
+
+CUNYs <- data.frame(name = CUNYs |> html_text(),
+                    link = CUNYs |> html_attr("href")
+)
+
+get_cuny_gps <- function(url){
+    COORDS <- read_html(url) |> html_element(".geo") |> html_text() |> str_split_1(";")
+    LAT <- as.numeric(COORDS[1])
+    LON <- as.numeric(COORDS[2])
+    list(LAT=LAT, LON=LON)
+}
+
+CUNYs <- CUNYs |> 
+    mutate(link = paste0("https://en.wikipedia.org/", link)) |>
+    rowwise() |>
+    mutate(gps = list(get_cuny_gps(link))) |>
+    unnest_wider(gps)
+
+MAP <- leaflet() |> 
+    addTiles() |>
+    addMarkers(CUNYs$LON, 
+               CUNYs$LAT, 
+               popup=CUNYs$name, 
+              options = popupOptions(closeOnClick=FALSE))
+
+MAP
+```
+
+:::

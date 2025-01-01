@@ -1,0 +1,233 @@
+---
+title: "{{< var course.short >}} Week 8 In-Class Activity: Advanced `ggplot2`"
+engine: knitr
+execute:
+  freeze: true # Done with AY-2024-FALL offering
+---
+
+[Week 8 Slides](../slides/slides08.html)
+
+## Spatial Visualization with `ggplot2`
+
+Today, we're going to dive deeper into `ggplot2`, with a focus on
+visualizing spatial data. Spatial data can be [quite
+complex](https://postgis.net/), but we can get pretty far with the 
+**simple features** (`sf`) paradigm. Also, if we focus on relatively small
+regions, we can avoid the complexities that come from Earth not being
+planar. 
+
+{{< video https://www.youtube.com/watch?v=vVX-PrBRtTY >}}
+
+Key to this approach is a _shapefile_. A _shapefile_, conventionally stored
+with a `shp` extension, gives precise coordinates outlining spatial regions. 
+By plotting a polygon with those points at its boundaries, we can visualize
+spatial regions. 
+
+The `sf` package includes a `shp` file for the counties of North Carolina: 
+
+```{r}
+library(sf)
+nc <- read_sf(system.file("shape/nc.shp", package="sf"))
+
+nc
+```
+
+We represent this data in "tidy" format, with each row being a county. The
+"magic" is in the `geometry` column: 
+
+```{r}
+library(dplyr)
+nc |> select(NAME, AREA, PERIMETER, geometry)
+```
+
+The `geometry` column is of type `MULTIPOLYGON`, essentially a list of GPS
+coordinates. 
+
+In this course, we'll mainly just use these for plotting, though it is
+possible to do quite sophisticated analyses here. 
+
+`ggplot2`'s `geom_sf` makes it easy to visualize spatial data. It has 
+one required aesthetic, fittingly named `geometry`: 
+
+```{r}
+library(ggplot2)
+ggplot(nc, aes(geometry = geometry)) + geom_sf()
+```
+
+Note that `ggplot2` is doing some work behind the scenes to keep the
+aspect ratio reasonable and not "stretching" North Carolina north-south. 
+
+This is nice enough, if we like maps for maps' sake, but we can do more. The
+`BIR74` is the number of children born in that county between July 1, 1974
+and June 30, 1978. We can use that to set the _fills_ for each county. 
+
+```{r}
+library(ggplot2)
+ggplot(nc, aes(geometry = geometry, 
+               fill = BIR74)) + geom_sf()
+```
+
+This type of plot is called a **chloropleth** plot, coming from the Greek
+for "area-multitude". It is commonly used to visualize _areal_ geospatial
+data - that is quantities associated with spatial regions - as opposed to
+point data. 
+
+Building a chloropleth plot is not too hard, if you have an appropriate
+shape file. Thankfully, governments are in the business of knowing _exactly_
+what the boundaries of their territories are and providing shape files.
+Typically, these shape files are distributed in a "zip" format, with other
+geodata files that we won't use in this course.[^3]
+
+::: {.callout-note title="Adding Points on Chloropleths" collapse=true}
+
+We can add the [City of
+Charlotte](https://en.wikipedia.org/wiki/Charlotte,_North_Carolina),
+the largest city of North Carolina on this map: 
+
+```{r}
+charlotte <- data.frame(
+    x = -80 - 50/60 - 35/60^2, # West = negative
+    y = +35 + 13/60 + 38/60^2  # North = positive
+)
+
+ggplot() + 
+    geom_sf(data=nc, 
+            aes(geometry = geometry, 
+                fill = BIR74)) + 
+    geom_point(data=charlotte, 
+               aes(x=x, y=y),
+               color="red4")
+```
+
+Note that I pass _different_ data sets and `aes` mappings to each layer
+here, so I do them inside the individual `geom_`s instead of in the global
+`ggplot()` call. 
+
+:::
+
+## Exercises 1 - Geospatial Visualizations
+
+1. Download the [*New York City Council
+   Districts (Clipped to Shoreline)*](https://www.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page)
+   shapefiles. Unzip the download and read the shape file, `nycc.shp`, using the `sf::read_sf` function. 
+   
+   Use `ggplot2::geom_sf` to create a basic map of NYC's city council
+   districts.  This should just be a plot of the outlines of each
+   district (recognizable as NYC, but otherwise showing no data).
+2. Using the [`nyc_demos.csv`](./nyc_demos.csv) data file, 
+   create a *chloropleth* map of NYC, where the color variable
+   represents the 2010 under 5-year-old population of each district. 
+   
+   Note that you will need to use some `dplyr` `*_join` functions
+   to combine the shape data with the demographic data before passing
+   it to `ggplot2`.[^1] Which parts of NYC have the fewest young children?
+   Does this seem right?
+3. Under the "one person one vote" principle, the number of adult
+   residents in each council district should be roughly equal. Create a
+   chloropleth plot showing how many more/fewer adult residents each
+   district has than the average district. Are any districts
+   (significantly) over/under-represented on the NY city council?
+   
+   To do this, you will need to first 1) determine the number of voting age
+   residents in each district; 2) compute the average number of voting age
+   residents per district; 3) see how each district compares to the average
+   (above/below and by how much).
+4. Create a *facet plot* where each facet is a chloropleth 
+   indicating the *percentage* of residents in each district identifying 
+   as a member of each census-designated racial categories.[^2] Note that
+   the `nyc_demos.csv` file contains *total counts* by race, so you will
+   need to normalize by overall population to get percentages. 
+
+   To get the data into suitable form for plotting, you will need to
+   *pivot* the data into a longer format using the `pivot_longer`
+   function from the `tidyr` package.
+5. Create a visualization to compare the ratio of rental vs owner-owned
+   housing per district with the age demographics of this district. What
+   do you find? Is this what you would have expected?
+   
+## Limitations and Extensions of Chloropleths
+
+Chloropleth plots are rightly popular but they have a major limitation: 
+humans are not uniformly distributed across space! Smaller regions may
+have higher populations (*cf* Connecticut vs Montana) and administrative
+regions are not the same size. Because human perception is naturally drawn
+to larger regions, we often need to adjust the color schemes used to 
+compensate for area effects. This process can be powerful, but it is a bit
+difficult to get right. 
+
+For instance, let's see what happens if we create a chloropleth of the
+`SID74` data, the number of children who die of SIDS during our sample
+period in North Carolina: 
+
+```{r}
+ggplot(nc, aes(geometry = geometry, fill = SID74)) + 
+    geom_sf()
+```
+
+Here, Mecklenberg County (middle, bottom) sticks out because it has a large
+population, not because SIDS was particularly more common in that county. 
+We can modify our plot to show the SIDS rate, rather than raw counts: 
+
+```{r}
+nc |>
+    mutate(sids_rate_74 = SID74 / BIR74) |>
+    ggplot(aes(geometry = geometry, 
+               fill = sids_rate_74)) + 
+    geom_sf()
+```
+
+We see less variation here, but there is still some. Note that this type
+of data -- rate estimation from rare counts -- can be somewhat tricky to analyze, but that's not the primary focus of this class so we'll leave it
+here. 
+
+This plot still isn't perfect however: [Sampson county](https://en.wikipedia.org/wiki/Sampson_County%2C_North_Carolina)
+is the largest county in NC, but it has a relatively small population. That
+means that the largest area - and hence the place our eyes will most
+immediately look - is assigned to a relatively unimportant county.
+Relatedly, [Anson County](https://en.wikipedia.org/wiki/Anson_County%2C_North_Carolina) is a small population county, but it appears to be a "hot-spot".
+This could be true, but it is more likely a noise-effect resulting from a
+small population.
+
+To address these issues, we can use a _cartogram_ which will "adjust" 
+the map so that area maps to a relevant quantity. This is quite complex
+mathematically, but the `cartogram` package handles it reasonably transparently for us: 
+
+```{r}
+library(cartogram)
+nc |> 
+    mutate(sids_rate_74 = SID74 / BIR74) |>
+    st_transform(26916) |> 
+    cartogram_cont(weight="BIR74") |> 
+    ggplot(aes(geometry=geometry, 
+               fill = sids_rate_74)) + 
+    geom_sf()
+```
+
+Here the `st_transform` function species _what projection_ to equilibrate
+area in. I'm not an expert on this, but the internet seems to suggest 26916
+is not a bad default.
+
+Looking at this plot, we see that counties are now adjusted to population, 
+or really birth count and Anson county - while still high - is clearly
+down-weighted in accordance with its population. 
+
+## Exercises 2 - Cartograms of NYC
+
+1. Modify your plot of NYC to adjust city council districts by area. 
+
+2. Next, modify your analysis to use the Dorling cartogram
+   (`cartogram_dorling`) which gives a more regular cartogram representation.
+   
+   
+
+[^1]: If you get an error reading "`stat_sf()` requires the following
+missing aesthetics: geometry", make sure you include `geometry=geometry`
+in your `aes`   (5 points)
+
+[^2]: These are `c("White Hispanic", "Black Hispanic", "Asian and Pacific Islander Nonhispanic", "Other Nonhispanic", "Two or More Races Nonhispanic", "Hispanic Origin")`. Note that the census has changed these over time and the categories for the 2020 and 2030 censuses will be different.
+
+[^3]: In [MP#03](../miniprojects/mini03.html), you will learn 
+how to extract the `shp` file from a `zip` archive automatically, 
+but for now you can do so "by hand" by opening the zip file as
+if it were a regular file. 
+    

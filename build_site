@@ -75,6 +75,36 @@ if(!quarto::quarto_binary_sitrep()){
     stop("Something is wrong with your quarto installation.")
 }
 quarto::quarto_render(".")
+
+# Process navbar in archive folders
+cat("Adapting Archive Navbars")
+ARCHIVE_HTML_FILES <- list.files("docs/archive/",
+                                 recursive = TRUE,
+                                 pattern="*html",
+                                 full.names=TRUE)
+
+library(rvest)
+for(fname in ARCHIVE_HTML_FILES){
+    html_old <- readLines(fname)
+    html_links_old <- rvest::read_html(fname) |>
+        html_element(".navbar") |>
+        html_elements("a") |>
+        html_attr("href")
+
+    html_new <- html_old
+
+    for(html_link_old in html_links_old){
+        html_link_new <- str_replace_all(html_link_old,
+                                         fixed("../../"),
+                                         "./")
+        html_new <- str_replace_all(html_new,
+                                    html_link_old,
+                                    html_link_new)
+    }
+
+    writeLines(html_new, fname)
+}
+
 system("git add docs/*")
 
 

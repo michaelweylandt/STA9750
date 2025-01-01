@@ -1,0 +1,252 @@
+---
+title: "{{< var course.short >}} - Week 5 Update"
+author: "Michael Weylandt"
+format: revealjs
+execute:
+  freeze: true # Done with AY-2024-FALL offering
+---
+
+## {{< var course.short >}} Mini-Project #01
+
+Submission due _yesterday_ at 11:45pm
+
+- $\approx 90\%$ submitted on time
+- **Submit early and submit often**
+  - Less "last minute" tech support going forward
+- Use Piazza and use your peers
+
+*Very impressed* by Detailed Analyses, Code Folding and Callout Blocks, Fancy `gt` Tables, Graphics
+
+## {{< var course.short >}} Mini-Project #01 - Peer Feedback
+
+Peer feedback assigned on GitHub this morning
+
+- $\approx 4$ feedbacks each 
+- Take this seriously: around 20\% of this assignment is "meta-review"
+- Goal: _rigorous_ _constructive_ critique
+
+. . .
+
+Submissions may not map perfectly to rubric - use your best judgement
+
+. . .
+
+Learn from this! What can you adapt for MP#02? 
+
+## {{< var course.short >}} Mini-Project #02
+
+[MP#02 released](../miniprojcts/mini02.html) - Hollywood Movies
+
+. . .
+
+**Due October 23rd**
+
+- GitHub post (used for peer feedback) AND Brightspace
+- One Month: don't wait until the very end
+
+. . .
+
+Pay attention to [the rubric](../miniprojects/mini02.html#rubric)
+
+-   Writing and presentation are about 50% of your grade
+-   Evaluated on *rigor* and *thoughtfulness*, not necessarily correctness
+
+## Upcoming Mini-Projects
+
+Tentative Topics
+
+-   MP#03: Political Analysis
+-   MP#04: Retirement Forecasting
+
+## Pre-Assignments
+
+Brightspace - Wednesdays at 11:45
+
+- Reading, typically on course website
+- Brightspace auto-grades
+  - I have to manually change to completion grading
+
+Next pre-assignment is **October 16th**
+
+## Course Project
+
+6 teams already formed!
+
+- Breakout rooms in teams
+    -  Team/Room 1: GZ + VF + EY + AG + TD
+    -  Team/Room 2: YZ + HM + TN + NG
+    -  Team/Room 3: SK + HA + DS
+    -  Team/Room 4: AC + EL + CL + WP
+    -  Team/Room 5: CC + AO + HS + MT + DM
+    -  Team/Room 6: SK + CM + MK + JV (pending confirmation)
+- All team commitments due via email **2024-10-02**
+
+## Course Support
+
+- Synchronous
+  - Office Hours 4x / week
+- Asynchronous
+  - Piazza (<40 minute average response time)
+
+## Upcoming Week
+
+Next Wednesday at 11:45pm:
+
+-  MP#01 peer feedback due
+-  Team membership due
+
+No class on October 3rd
+
+## October 10 - Project Proposal Presentations
+
+[Official Description](https://michael-weylandt.com/STA9750/project.html#project-proposal-presentations)
+
+- **6 minute presentation**
+- Key topics: 
+  - _Animating Question_
+  - _Team Roster_
+- Also discuss: Possible specific questions, data sources, analytical plan, anticipated challenges
+
+Peer feedback mechanism TBD
+
+# Pre-Assignment #05 FAQs
+
+## FAQ: Subqueries
+
+> [W]ill we be learning how to perform joins within a subquery?
+
+You don't need subqueries in `R` since it's an imperative language. 
+Just create a new variable to represent the result of the subquery
+and use that in the next command. 
+
+```
+SELECT first_name, last_name
+FROM collectors
+WHERE id IN (
+    SELECT collector_id
+    FROM sales
+);
+```
+
+```
+collector_ids <- sales |> pull(collector_id)
+collectors |> filter(id %in% collector_ids) |> select(first_name, last_name)
+```
+
+## FAQ: Data Integrity
+
+> [H]ow can we ensure that the information [resulting from a join]
+> is accurate and not repeated? 
+
+1. If you have a true unique ID, you're usually safe
+2. Pay attention to all warnings
+3. Manually examine the result of any joins
+
+## FAQ: Performance on Large Data Sets
+
+> Will joining large data sets [...] affect performance?
+
+Somewhat - larger data sets are always slower. 
+
+Bigger danger is "bad joins" creating huge data automatically. 
+
+Note that `R` is less "smart" than `SQL`, so won't optimize
+execution order for you automatically.
+
+## FAQ: What is the Role of `pivot_wider`?
+
+> Is [`pivot_wider`] just for formatting? 
+
+```{r, eval=TRUE, echo=TRUE}
+library(dplyr); library(tidyr); library(palmerpenguins)
+penguins |> drop_na() |> 
+    group_by(sex, species) |> 
+    summarize(weight = mean(body_mass_g)) |>
+    pivot_wider(id_cols=species, 
+                names_from=sex,
+                values_from=weight) |>
+    mutate(gender_diff = male - female)
+```
+
+## FAQ: `dplyr` joins vs `SQL` joins
+
+> What is the difference between `dplyr` and `SQL` joins?
+
+Not too much - biggest difference is no `INDEX` or `FOREIGN KEY`
+in `R` so less guarantees of data integrity.
+
+## FAQ: When to use `anti_join`?
+
+Rare: looking for _unmatched_ rows. 
+- Useful to find data integrity issues or 'implicit' missingness. 
+- I use an `anti_join` to find students who haven't submitted an assignment.
+
+`semi_join` appears in MP #02.
+
+## FAQ: `many-to-many` Warning
+
+Tricky to address, but fortunately pretty rare. 
+
+- `SQL` explicitly forbids many-to-many
+- Usually a sign that a "key" isn't really unique
+  - Check for duplicates in `x` and `y` tables
+  - Can occur with "fancy" joins (rolling, inequality)
+- Add additional join variables to break "duplication"
+
+## FAQ: How to Check Efficiency? 
+
+No automatic way. Some rules of thumb: 
+
+- Don't create large tables just to filter down
+  - filter before join when possible
+- `full_outer` join is a bit dangerous
+- `cross_join` is _rarely_ the right answer
+
+## FAQ: `tidyr` vs `dplyr`
+
+> Is `tidyr` more efficient than `dplyr`? 
+
+Nope - different packages from the same developers. 
+
+Designed to work together elegantly. 
+
+## FAQ: Rare Joins
+
+> Please explain what `cross_join`, filter joins, and `nest_join` are?
+
+- `cross_join`: dangerous. 
+  - Creates "all pairs" of rows. Useful for 'design' problems 
+- filter joins (`anti_`, `semi_`): 
+  - Hunting down quietly missing data.
+  - Filtering to sub-samples (see MP#02)
+- `nest_join`: beyond this course. 
+  - `left_join` with extra structure to output.
+
+## FAQ: How to Pick a Join
+
+> How do I decide which type of join is most approriate for a given analysis? 
+
+Topic of today's work.
+
+## Other Tips
+
+1. Disable `RStudio`'s visual Quarto editor. It's more trouble than it's worth.
+   To stop it from opening by default, add `editor: source` in the header
+   of your `qmd` files.
+   
+2. `Quarto` depends on file structure for organizing content. The main
+   directory (`{{< var course.repo >}}`) should hold all of your input
+   files. You should never directly put anything in the `docs/` folder.
+   That's where generated output should live. 
+   
+3. When I leave `<GITHUB_NAME>` or similar in instructions, put in _your_
+   GitHub ID. (And make sure to remove the `<` and `>` symbols)
+   
+
+# Today
+
+## Diving Deeper with `dplyr` - Joins and Pivots
+
+Data Set: [`nycflights13`](https://nycflights13.tidyverse.org/)
+
+Exercise: [Lab #05](../labs/lab05.html)
