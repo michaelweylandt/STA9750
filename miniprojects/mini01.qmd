@@ -1,8 +1,9 @@
 ---
-title: "{{< var course.short >}} Mini-Project #01: Fiscal Characteristics of Major US Public Transit Systems"
+title: "{{< var course.short >}} Mini-Project #{{< meta mp_num >}}: TBD"
 format:
   html:
     code-link: true
+mp_num: "01"
 ---
 
 ```{r echo=FALSE, message=FALSE}
@@ -14,8 +15,14 @@ DATES <- readr::read_csv("../key_dates.csv") |>
                           TRUE ~ paste(Date, Time)))
 ```
 
-```{r echo=FALSE}
-mp <-  DATES |> filter(element == "Mini-Projects", item == 1)
+```{r echo=FALSE, warning=FALSE}
+library(glue)
+mp_id <- 1
+mp <-  DATES |> filter(element == "Mini-Projects", 
+                       item == mp_id)
+mp_file <- list(qmd=glue("`mp{sprintf('%02g', mp_id)}.qmd`"), 
+                html=glue("`mp{sprintf('%02g', mp_id)}.html`"),
+                html_long=glue("`docs/mp{sprintf('%02g', mp_id)}.html`"))
 ```
 
 ### Due Dates
@@ -86,23 +93,28 @@ released under a fairly permissive usage license. Take advantage of it!
 
 ### Submission Instructions
 
-After completing the analysis, write up your findings, *showing all of your code*, using a dynamic `quarto` document and post it to your course repository. The `qmd` file should be named `mp01.qmd` so the rendered document can be found at `docs/mp01.html` in the student's repository and served at the URL:
+After completing the analysis, write up your findings, *showing all of
+your code*, using a dynamic `quarto` document and post it to your course
+repository. The `qmd` file should be named `{r} I(mp_file$qmd)` so the
+rendered document can be found at `{r} I(mp_file$html_long)` in the student's
+repository and served at the URL:[^sub]
 
-> `https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp01.html`
+> `https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp{{< meta mp_num >}}.html`
 
 Once you confirm this website works (substituting `<GITHUB_ID>` for the actual GitHub username provided to the professor in [MP#00](./mini00.html) of course), open a new issue at
 
-> `https://github.com/<GITHUB_USERNAME>/{{< var course.repo >}}/issues/new` .
+> `https://github.com/<GITHUB_ID>/{{< var course.repo >}}/issues/new` .
 
-Title the issue `{{< var course.short >}} <GITHUB_USERNAME> MiniProject #01` and fill in the following text for the issue:
+Title the issue `{{< var course.short >}} <GITHUB_ID> MiniProject #{{< meta mp_num >}}` and fill in the following text for the issue:
 
 ```         
 Hi @michaelweylandt!
 
-I've uploaded my work for MiniProject #01 - check it out!
+I've uploaded my work for MiniProject #{{< meta mp_num >}} - check it out!
 
-https://<GITHUB_USERNAME>.github.io/{{< var course.repo >}}/mp01.html
+https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp{{< meta mp_num >}}.html
 ```
+
 
 Once the submission deadline passes, the instructor will tag classmates for peer feedback in this issue thread.
 
@@ -112,260 +124,12 @@ Once the submission deadline passes, the instructor will tag classmates for peer
 
 **NB**: Your final submission should look like a *report*, not simply a list of facts answering questions. Add introductions, conclusions, and your own commentary. You should be practicing both raw *coding* skills and written *communication* in all mini-projects. There is little value in data points stated without context or motivation.
 
-## Mini-Project #01: Fiscal Characteristics of Major US Public Transit Systems
+[^sub]: Throughout this section, replace `<GITHUB_ID>` with your GitHub ID from
+[Mini-Project #00](./mini00.html), making sure to remove the angle brackets. Note
+that the automated course infrastructure will be looking for precise formatting,
+so follow these instructions closely. 
 
-For MP#01, we are taking inspiration from the popular [CityNerd](https://www.youtube.com/@CityNerd) YouTube channel. In particular, we're taking this presentation on farebox recovery, *i.e.* the fraction of revenues raised from fares instead of taxes, as our starting point:
-
-<iframe style="display: block; margin: auto" width="560" height="315" src="https://www.youtube.com/embed/Wl7cprP_6KM?si=zvN4zF-CWJ7Ttawf" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-
-</iframe>
-
-We will use data from the [National Transit Database](https://www.transit.dot.gov/ntd) as our primary source. In particular, since we want to analyze farebox revenues, total number of trips, total number of vehicle miles traveled, and total revenues and expenses by source, we will need to analyze several different tables:
-
--   The [2022 Fare Revenue](https://www.transit.dot.gov/ntd/data-product/2022-annual-database-fare-revenues) table
--   The latest [Monthly Ridership](https://www.transit.dot.gov/ntd/data-product/monthly-module-adjusted-data-release) tables
--   The [2022 Operating Expenses](https://www.transit.dot.gov/ntd/data-product/2022-operating-expenses) reports
-
-Because this data is reported on a lag, we will use the 2022 version of all reports. Our data may have some post-pandemic irregularities, but that's ok. We aren't looking to make any long-term forecasts in this project.
-
-The following code will download, clean, and join the tables. You don't need to edit it in this project, but you may want to bookmark it as a useful example for later projects where you are responsible for downloading and cleaning the data.
-
-```{r, echo=TRUE, message=FALSE}
-if(!require("tidyverse")) install.packages("tidyverse")
-
-# Let's start with Fare Revenue
-library(tidyverse)
-if(!file.exists("2022_fare_revenue.xlsx")){
-    # This should work _in theory_ but in practice it's still a bit finicky
-    # If it doesn't work for you, download this file 'by hand' in your
-    # browser and save it as "2022_fare_revenue.xlsx" in your project
-    # directory.
-    download.file("http://www.transit.dot.gov/sites/fta.dot.gov/files/2024-04/2022%20Fare%20Revenue.xlsx", 
-                  destfile="2022_fare_revenue.xlsx", 
-                  quiet=FALSE, 
-                  method="wget")
-}
-FARES <- readxl::read_xlsx("2022_fare_revenue.xlsx") |>
-    select(-`State/Parent NTD ID`, 
-           -`Reporter Type`,
-           -`Reporting Module`,
-           -`TOS`,
-           -`Passenger Paid Fares`,
-           -`Organization Paid Fares`) |>
-    filter(`Expense Type` == "Funds Earned During Period") |>
-    select(-`Expense Type`) |>
-    group_by(`NTD ID`,       # Sum over different `TOS` for the same `Mode`
-             `Agency Name`,  # These are direct operated and sub-contracted 
-             `Mode`) |>      # of the same transit modality
-                             # Not a big effect in most munis (significant DO
-                             # tends to get rid of sub-contractors), but we'll sum
-                             # to unify different passenger experiences
-    summarize(`Total Fares` = sum(`Total Fares`)) |>
-    ungroup()
-
-# Next, expenses
-if(!file.exists("2022_expenses.csv")){
-    # This should work _in theory_ but in practice it's still a bit finicky
-    # If it doesn't work for you, download this file 'by hand' in your
-    # browser and save it as "2022_expenses.csv" in your project
-    # directory.
-    download.file("https://data.transportation.gov/api/views/dkxx-zjd6/rows.csv?date=20231102&accessType=DOWNLOAD&bom=true&format=true", 
-                  destfile="2022_expenses.csv", 
-                  quiet=FALSE, 
-                  method="wget")
-}
-EXPENSES <- readr::read_csv("2022_expenses.csv") |>
-    select(`NTD ID`, 
-           `Agency`,
-           `Total`, 
-           `Mode`) |>
-    mutate(`NTD ID` = as.integer(`NTD ID`)) |>
-    rename(Expenses = Total) |>
-    group_by(`NTD ID`, `Mode`) |>
-    summarize(Expenses = sum(Expenses)) |>
-    ungroup()
-
-FINANCIALS <- inner_join(FARES, EXPENSES, join_by(`NTD ID`, `Mode`))
-```
-
-Finally, let's extract monthly transit numbers:
-
-```{r, echo=TRUE, message=FALSE}
-# Monthly Transit Numbers
-library(tidyverse)
-if(!file.exists("ridership.xlsx")){
-    # This should work _in theory_ but in practice it's still a bit finicky
-    # If it doesn't work for you, download this file 'by hand' in your
-    # browser and save it as "ridership.xlsx" in your project
-    # directory.
-    download.file("https://www.transit.dot.gov/sites/fta.dot.gov/files/2024-09/July%202024%20Complete%20Monthly%20Ridership%20%28with%20adjustments%20and%20estimates%29_240903.xlsx", 
-                  destfile="ridership.xlsx", 
-                  quiet=FALSE, 
-                  method="wget")
-}
-TRIPS <- readxl::read_xlsx("ridership.xlsx", sheet="UPT") |>
-            filter(`Mode/Type of Service Status` == "Active") |>
-            select(-`Legacy NTD ID`, 
-                   -`Reporter Type`, 
-                   -`Mode/Type of Service Status`, 
-                   -`UACE CD`, 
-                   -`TOS`) |>
-            pivot_longer(-c(`NTD ID`:`3 Mode`), 
-                            names_to="month", 
-                            values_to="UPT") |>
-            drop_na() |>
-            mutate(month=my(month)) # Parse _m_onth _y_ear date specs
-MILES <- readxl::read_xlsx("ridership.xlsx", sheet="VRM") |>
-            filter(`Mode/Type of Service Status` == "Active") |>
-            select(-`Legacy NTD ID`, 
-                   -`Reporter Type`, 
-                   -`Mode/Type of Service Status`, 
-                   -`UACE CD`, 
-                   -`TOS`) |>
-            pivot_longer(-c(`NTD ID`:`3 Mode`), 
-                            names_to="month", 
-                            values_to="VRM") |>
-            drop_na() |>
-            group_by(`NTD ID`, `Agency`, `UZA Name`, 
-                     `Mode`, `3 Mode`, month) |>
-            summarize(VRM = sum(VRM)) |>
-            ungroup() |>
-            mutate(month=my(month)) # Parse _m_onth _y_ear date specs
-
-USAGE <- inner_join(TRIPS, MILES) |>
-    mutate(`NTD ID` = as.integer(`NTD ID`))
-```
-
-This creates a table as follows:
-
-```{r message=FALSE}
-if(!require("DT")) install.packages("DT")
-library(DT)
-
-sample_n(USAGE, 1000) |> 
-    mutate(month=as.character(month)) |> 
-    DT::datatable()
-```
-
-*Instructor's Note: You might want to explore the functions of the `DT` package to create more attractive tables. Even more advanced is the `gt` package.*
-
-This is useful, but not exactly what we want. Here, the `UPT` column refers to *Unlinked Passenger Trips*, which is a measure of rides (controlling for connections and transfers), and `VRM` refers to *Vehicle Revenue Miles*, roughly how far the transit provider travelled in total. Some of the other column names are less helpful, so let's rename them using the `rename` function.
-
-::: callout-tip
-#### Task 1 - Creating Syntatic Names
-
-Rename a column: `UZA Name` to `metro_area`.
-:::
-
-Because they have no spaces in them, these names will be easier to manipulate in code. Recall that non-syntactic names (names with spaces, punctuation, or strange characters) have to be quoted in backticks or quotes (depending on the context), while most `tidyverse` functions take syntactic names without quotes.
-
-The `Mode` column is also helpful, but it uses a set of codes that aren't interpretable. To make life easier for ourselves, let's use a `case_when` statement to transform this into something we can make sense of.
-
-::: callout-tip
-#### Task 2: Recoding the `Mode` column
-
-First, find the unique `Mode` codes in our data using the `distinct` function. Next, examine the NTD website and find the interpretations of these codes. Complete the following snippet to recode the `Mode` column.
-
-```{r, eval=FALSE}
-## This code needs to be modified
-USAGE <- USAGE |>
-    mutate(Mode=case_when(
-        Mode == "HR" ~ "Heavy Rail", 
-        ...
-        ...
-        TRUE ~ "Unknown"))
-```
-:::
-
-Now that your data is clean, you may want to create an attractive summary table of your cleaned up `USAGE` table using the following snippet:
-
-```{r, eval=FALSE}
-if(!require("DT")) install.packages("DT")
-library(DT)
-
-sample_n(USAGE, 1000) |> 
-    mutate(month=as.character(month)) |> 
-    DT::datatable()
-```
-
-To make your table cleaner, you might want to modify this code to unselect the `NTD ID` and `3 Mode` columns and/or rename the `UPT` and `VRM` columns.
-
-*Note: The use of `sample_n` here is just to make a sufficiently small sample to view it in a table. For your actual analysis, you should use the entire data set.*
-
-::: callout-tip
-### Task 3: Answering Instructor Specified Questions with `dplyr`
-
-Using functions we have studied in class, including `filter`, `group_by`, `summarize`, `arrange`, answer the following questions in your analysis:
-
-1.  What transit agency had the most total VRM in our data set?
-
-2.  What transit mode had the most total VRM in our data set?
-
-3.  How many trips were taken on the NYC Subway (Heavy Rail) in May 2024?
-
-4.  ~~What mode of transport had the *longest average trip* in May 2024?~~
-
-    *Note: This question can't be answered with vehicle* miles. To get average passenger trip length, we need *passenger* miles.
-
-5.  How much did NYC subway ridership fall between April 2019 and April 2020?
-:::
-
-::: callout-tip
-#### Task 4: Explore and Analyze
-
-Find three more interesting transit facts in this data other than those above.
-:::
-
-We are now ready to combine these usage statistics with the revenue and expenses data. Because our fare data is for 2022 total, we need to convert our usage table to 2022 summary info.
-
-::: callout-tip
-#### Task 5: Table Summarization
-
-Create a new table from `USAGE` that has annual total (sum) `UPT` and `VRM` for 2022. This will require use of the `group_by`, `summarize`, and `filter` functions. You will also want to use the `year` function, to extract a year from the `month` column.
-
-The resulting table should have the following columns:
-
--   `NTD ID`
--   `Agency`
--   `metro_area`
--   `Mode`
--   `UPT`
--   `VRM`
-
-Make sure to `ungroup` your table after creating it.
-
-Name this table `USAGE_2022_ANNUAL`.
-:::
-
-Once you have created this new table, you can merge it to the `FINANCIALS` data as follows:
-
-```{r, eval=FALSE}
-USAGE_AND_FINANCIALS <- left_join(USAGE_2022_ANNUAL, 
-           FINANCIALS, 
-           join_by(`NTD ID`, Mode)) |>
-    drop_na()
-```
-
-Note that the name fields differ between the ridership and financials tables, so it's a good thing we had the unique identifier `NTD ID` to rely on.
-
-We are now finally ready to our original question about farebox recovery.
-
-::: callout-tip
-#### Task 6: Farebox Recovery Among Major Systems
-
-Using the `USAGE_AND_FINANCIALS` table, answer the following questions:
-
-1.  Which transit system (agency and mode) had the most UPT in 2022?
-2.  Which transit system (agency and mode) had the highest *farebox recovery*, defined as the highest ratio of Total Fares to Expenses?
-3.  Which transit system (agency and mode) has the lowest expenses per UPT?
-4.  Which transit system (agency and mode) has the highest total fares per UPT?
-5.  Which transit system (agency and mode) has the lowest expenses per VRM?
-6.  Which transit system (agency and mode) has the highest total fares per VRM?
-
-You may wish to restrict your answer to major transit systems, which you can define as those with 400,000 UPT per annum.
-:::
-
-Based on all of this, what do you believe to be the most efficient transit system in the country? (Your answer may differ depending on which form of 'efficiency' you care most about)
+## Mini-Project #{{< meta mp_num >}}: TBD
 
 ------------------------------------------------------------------------
 
