@@ -52,7 +52,7 @@ mp_submission_create <- function(N, github_id){
          req_url_query(title=title, 
                        body=body) 
   
-  browseURL(r$URL)
+  browseURL(r$url)
 }
 ```
 
@@ -270,5 +270,23 @@ mp_feedback_verify <- function(N, github_id, peer_id){
   
   invisible(TRUE)
   
+}
+```
+
+### Count Words
+
+The following script can be used to count words on a Quarto-generated web page. 
+
+```{r}
+#| label: count_words
+count_words <- function(url){
+    library(rvest); library(stringi)
+    # Note that this includes code inside an inline block, but omits
+    # full-sized code blocks
+    read_html(url) |>
+        html_elements("main p") |>
+        html_text() |>
+        stri_count_words() |>
+        sum()
 }
 ```

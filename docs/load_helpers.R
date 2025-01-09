@@ -29,7 +29,7 @@ mp_submission_create <- function(N, github_id){
          req_url_query(title=title, 
                        body=body) 
   
-  browseURL(r$URL)
+  browseURL(r$url)
 }
 
 mp_submission_verify <- function(N, github_id){
@@ -134,4 +134,107 @@ mp_submission_verify <- function(N, github_id){
   
   cat("Congratulations! Your mini-project appears to have been submitted correctly!\n")
   invisible(TRUE)
+}
+
+mp_feedback_verify <- function(N, github_id, peer_id){
+  library(rvest)
+  library(glue)
+  library(tidyverse)
+  library(httr2)
+  library(gh)
+    
+  if(missing(N)){
+    N <- menu(title="Which Mini-Project's Peer Feedback would you like to check was properly submitted on GitHub?", 
+              choices=c(0, 1, 2, 3, 4))
+  }
+  
+  if(missing(github_id)){
+    github_id <- readline("What is your GitHub ID? ")
+  }
+
+  if(missing(peer_id)){
+    peer_id <- readline("What is your Peer's GitHub ID? ")
+  }
+ 
+  template_url <- "https://michael-weylandt.com/STA9750/miniprojects.html"
+  
+  template_text <- read_html(template_url) |> 
+    html_element("#peer-feedback-template") |> 
+    html_text() |>
+    str_trim() |>
+    str_replace_all("NN", "(.*)") |>
+    str_replace_all("TEXT TEXT TEXT", "(.*)")
+  
+  title <- glue("{course_short} {github_id} MiniProject #0{N}")
+
+  issues <- gh("/repos/{owner}/{repo}/issues?state=all", 
+               owner=peer_id, 
+               repo=course_repo)
+  
+  issue_names <- vapply(issues, function(x) str_squish(x$title), "")
+  
+  name_match <- which(issue_names == title)
+  
+  if(length(name_match) != 0){
+      cat("I could not find an issue with the title:\n", 
+          "    ", sQuote(title),"\n",
+          "I'm afraid I can't verify whether the peer feedback was submitted properly.\n")
+          stop("PEER FEEDBACK NOT VERIFIED.")
+  } 
+  
+  issue <- issues[[name_match]]
+  
+  issue_url <- issue$html_url
+  issue_comment_url <- issue$comment_url
+  
+  comments <- gh(issue_comment_url)
+  
+  commenters <- vapply(comments, function(x) x$user$login, "")
+  
+  comment_num <- which(commenters == github_id)
+  
+  if(length(comment_num) != 1){
+    cat("I cannot identify your comment on the issue at", 
+       sQuote(issue_url), ". Please verify that this is the correct link.\n")
+       
+    if(length(comment_num) == 0){
+      cat("You do not appear to have commented on this issue.")
+    } else {
+      cat("You have left multiple comments on this issue.",
+          "Please consolidate your feedback")
+    }
+    stop("PEER FEEDBACK NOT VERIFIED.")
+  }
+  
+  comment_body <- comment$body
+  
+  cat("I have found your comment, with the following text:")
+  
+  cat(comment_body)
+  
+  comment_body  <- comment_body |> str_squish()
+  template_text <- template_text |> str_squish()
+  
+  matches <- str_match_all(comment_body, template_text)[[1]][-1]
+  
+  if(anyNA(matches)){
+    cat("I couldn't match the template to your comment. Please modify and try again.")
+    stop("PEER FEEDBACK NOT VERIFIED.")
+  }
+  
+  cat(glue("Congratulations! Your peer feedback on {peer_id}'s MP #0{N} appears properly formatted. Thank you for your contributions to {course_short}"))
+  
+  invisible(TRUE)
+  
+}
+
+count_words <- function(url){
+    library(rvest); library(stringi)
+    # Note that this includes code inside an inline block, but omits
+    # full-sized code blocks
+    read_html(url) |>
+        html_elements("main p") |>
+        html_text() |>
+        stri_count_words() |>
+        sum()
 }
