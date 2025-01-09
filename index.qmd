@@ -30,11 +30,20 @@ There are quite a few moving parts to this course, so this [key dates file](./ke
 or the list of upcoming course activities below may be useful:
 
 ```{r echo=FALSE, message=FALSE}
+#| echo: false
+#| message: false
+#| warning: false
+library(yaml)
+library(glue)
+variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+course_repo  <- variables$course$repo
+course_short <- variables$course$short
+
 readr::read_csv("key_dates.csv") |> 
     dplyr::arrange(Date) |> 
     DT::datatable(options=list(searching=FALSE,
                                paging=TRUE),
-                  caption="Upcoming Important Dates for STA/OPR 9750")
+                  caption=glue("Upcoming Important Dates for {course_short}"))
 ```
 
 <script defer>
