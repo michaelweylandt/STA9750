@@ -20,6 +20,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -137,12 +171,14 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#creating-github-repo" id="toc-creating-github-repo" class="nav-link" data-scroll-target="#creating-github-repo">Creating GitHub Repo</a></li>
   <li><a href="#connecting-github-repo-to-rstudio" id="toc-connecting-github-repo-to-rstudio" class="nav-link" data-scroll-target="#connecting-github-repo-to-rstudio">Connecting GitHub Repo to RStudio</a></li>
   <li><a href="#securing-connections-to-github" id="toc-securing-connections-to-github" class="nav-link" data-scroll-target="#securing-connections-to-github">Securing Connections to GitHub</a></li>
+  <li><a href="#git-check" id="toc-git-check" class="nav-link" data-scroll-target="#git-check"><code>git</code> Check</a></li>
   <li><a href="#initial-push" id="toc-initial-push" class="nav-link" data-scroll-target="#initial-push">Initial Push</a></li>
   </ul></li>
   <li><a href="#stage-3-personal-website-creation" id="toc-stage-3-personal-website-creation" class="nav-link" data-scroll-target="#stage-3-personal-website-creation">Stage 3: Personal Website Creation</a>
   <ul class="collapse">
   <li><a href="#configuration-file" id="toc-configuration-file" class="nav-link" data-scroll-target="#configuration-file">Configuration File</a></li>
   <li><a href="#index.qmd" id="toc-index.qmd" class="nav-link" data-scroll-target="#index.qmd"><code>index.qmd</code></a></li>
+  <li><a href="#additional-set-up---rendered-code" id="toc-additional-set-up---rendered-code" class="nav-link" data-scroll-target="#additional-set-up---rendered-code">Additional Set-Up - Rendered Code</a></li>
   <li><a href="#build_site.r" id="toc-build_site.r" class="nav-link" data-scroll-target="#build_site.r"><code>build_site.R</code></a></li>
   </ul></li>
   <li><a href="#stage-4-github-pages-deployment" id="toc-stage-4-github-pages-deployment" class="nav-link" data-scroll-target="#stage-4-github-pages-deployment">Stage 4: GitHub Pages Deployment</a></li>
@@ -193,7 +229,7 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="stage-2-course-repo-creation">Stage 2: Course Repo Creation</h2>
 <section id="creating-github-repo" class="level3">
 <h3 class="anchored" data-anchor-id="creating-github-repo">Creating GitHub Repo</h3>
-<p>Now that you have created a GitHub account, log in and proceed to your dashboard at <a href="https://github.com">https://github.com</a>. In the top right corner, click the <code>+</code> symbol and select “New Repository.”<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>Now that you have created a GitHub account, log in and proceed to your dashboard at <a href="https://github.com">https://github.com</a>. In the top right corner, click the <code>+</code> symbol and select “New Repository.”<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
 <p><img src="../images/gh_topbar.png" class="img-fluid"></p>
 <p>Create a new repository named <code>STA9750-2025-SPRING</code> with a suitable description.</p>
 <p><img src="../images/gh_new_repo.png" class="img-fluid"></p>
@@ -201,7 +237,7 @@ ul.task-list li input[type="checkbox"] {
 <p>After you create your repo, you should see a page like this:</p>
 <p><img src="../images/empty_repo.png" class="img-fluid"></p>
 <p>Note the URL highlighted in the main box:</p>
-<p><code>**https://github.com/&lt;USERNAME&gt;/STA9750-2025-SPRING.git**</code></p>
+<p><code>**https://github.com/&lt;GITHUB_ID&gt;/STA9750-2025-SPRING.git**</code></p>
 <p>You will need this in the next step.</p>
 </section>
 <section id="connecting-github-repo-to-rstudio" class="level3">
@@ -217,7 +253,7 @@ ul.task-list li input[type="checkbox"] {
 </ul>
 <p>This will take you to the following screen:</p>
 <p><img src="../images/new_project_wizard.png" class="img-fluid"></p>
-<p>Copy the <code>.git</code> URL from the previous step into <code>Repository URL</code>.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<p>Copy the <code>.git</code> URL from the previous step into <code>Repository URL</code>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
 </section>
 <section id="securing-connections-to-github" class="level3">
 <h3 class="anchored" data-anchor-id="securing-connections-to-github">Securing Connections to GitHub</h3>
@@ -230,10 +266,33 @@ ul.task-list li input[type="checkbox"] {
 <section id="github-personal-access-token" class="level4">
 <h4 class="anchored" data-anchor-id="github-personal-access-token">GitHub Personal Access Token</h4>
 <p>Next, you need to create a Personal Access Token (PAT) for GitHub. You can think of this as a “special-purpose” password. Unlike your general account password, a PAT can be restricted to only perform certain activities or only for a limited time period.</p>
+<p>The easiest way to do so is to run the following code:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"usethis"</span>)) <span class="fu">install.packages</span>(<span class="st">"usethis"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">create_github_token</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Once you have created a token, copy and save it on your computer. (Note that you only be able to copy it one time, so make sure you save it somewhere memorable.) Then run the following code to register the GitHub PAT on your computer:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"gitcreds"</span>)) <span class="fu">install.packages</span>(<span class="st">"gitcreds"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>gitcreds<span class="sc">::</span><span class="fu">gitcreds_set</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If that doesn’t work, you can also perform the same steps “by hand”:</p>
 <p>After logging in to GitHub via a web browser, visit <a href="https://github.com/settings/personal-access-tokens/new">https://github.com/settings/personal-access-tokens/new</a> to begin the token creation process. Give the token a meaningful name and description and set an expiration date after (at least) the end of the semester.</p>
 <p>Set the “Repository Access” to “All repositories” and, under “Permissions &gt; Repository Permissions”, set “Contents” to “Read and Write”. This will now let anyone using your token <em>read and write</em> to all your repositories. After you create your token, you will be given <strong>only one opportunity</strong> to copy it. (Note that you can change permissions later, but you can only copy the token once.) Copy this and save it for later use. If you loose this token, you may need to generate a new one.</p>
 <p>When you make your first push to GitHub (as described below), use this token as your password. If everything is set up correctly, GCM will save this token and use it to authenticate you every time you push to GitHub. You should not need to paste this token every time.</p>
 </section>
+</section>
+<section id="git-check" class="level3">
+<h3 class="anchored" data-anchor-id="git-check"><code>git</code> Check</h3>
+<p>At this point, run the following code to check your <code>git</code> setup:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"usethis"</span>)) <span class="fu">install.packages</span>(<span class="st">"usethis"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">git_sitrep</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This will print out a large amount of helpful information, but the important things to check are:</p>
+<ul>
+<li>Are your name and email set correctly?</li>
+<li>Is your GitHub user set correctly?</li>
+<li>Does the token have the requisite “repo” scope?</li>
+<li>Is the “origin” set correctly for the GitHub project?</li>
+</ul>
 </section>
 <section id="initial-push" class="level3">
 <h3 class="anchored" data-anchor-id="initial-push">Initial Push</h3>
@@ -271,7 +330,7 @@ Owner: &lt;YOURNAME&gt;</code></pre>
   output-dir: docs
 
 website:
-  title: "STA 9750 2024 Submission Material"
+  title: "STA 9750 Submission Material"
   description:
     Course Projects for STA 9750 at Baruch College
   site-url: "https://&lt;GITHUB_NAME&gt;.github.io/STA9750-2025-SPRING/"
@@ -285,7 +344,7 @@ format:
     toc: false</code></pre>
 <p>Note that the indentation pattern is important so copy this exactly.</p>
 <p>Replace <code>&lt;GITHUB_NAME&gt;</code> with your GitHub user name.</p>
-<p>For <code>&lt;THEME&gt;</code>, visit the <a href="https://bootswatch.com/">Bootswatch theme gallery</a> and pick your preferred theme. Replace <code>&lt;THEME&gt;</code> with a lower case version of the theme name; if you want to use the <a href="https://bootswatch.com/sandstone/">Sandstone theme</a> used for this course website, <code>&lt;THEME&gt;</code> will be <code>sandstone</code>.</p>
+<p>For <code>&lt;THEME&gt;</code>, visit the <a href="https://bootswatch.com/">Bootswatch theme gallery</a> and pick your preferred theme. Replace <code>&lt;THEME&gt;</code> with a lower case version of the theme name; if you want to use the <a href="https://bootswatch.com/sandstone/">Sandstone theme</a> used for this course website, <code>&lt;THEME&gt;</code> will be <code>sandstone</code> (NB: lower case).</p>
 <p>Once you have created this <code>_quarto.yml</code>, stage it (click the check mark) in RStudio’s git pane.</p>
 </section>
 <section id="index.qmd" class="level3">
@@ -296,9 +355,50 @@ format:
 <pre><code>---
 title: "YOUR TITLE GOES HERE"
 ---</code></pre>
-<p>Below the header, write the basic content of your website: a brief introduction of who you are.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> You can use <code>markdown</code> here for formatting. Basic text will suffice, but this is also a great opportunity to include things like a personal headshot, a link to a full resume, or similar.</p>
+<p>Below the header, write the basic content of your website: a brief introduction of who you are.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> You can use <code>markdown</code> here for formatting. Basic text will suffice, but this is also a great opportunity to include things like a personal headshot, a link to a full resume, or similar.</p>
 <p>As you work on this, click the “Render” button at the top of the editor pane to see what your site will look like.</p>
-<p>Once you are happy with this landing page, stage it and we’ll move on to building the website properly.</p>
+</section>
+<section id="additional-set-up---rendered-code" class="level3">
+<h3 class="anchored" data-anchor-id="additional-set-up---rendered-code">Additional Set-Up - Rendered Code</h3>
+<p>In order to make sure that your <code>R</code> and <code>quarto</code> environment has been properly configured, it is necessary to include to include a bit of <code>R</code> code in your submission. At this point in the course, you are not required to write any <code>R</code> code of your own, so I’ve written some options here. Pick one to include in your submission - or modify them to do something else fun. If there’s something else you’d like to include, reach out to the instructor and I might be able to help you put something together.</p>
+<p>Once you are happy with this landing page and have included on of these dynamic components (or similar), stage it and we’ll move on to building the website properly.</p>
+<section id="last-updated" class="level4">
+<h4 class="anchored" data-anchor-id="last-updated">Last Updated</h4>
+<p>The following code will add a “Last Updated:” footer at the bottom of your page.</p>
+<pre><code>--------------
+Last Updated: `r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`</code></pre>
+</section>
+<section id="baruch-map" class="level4">
+<h4 class="anchored" data-anchor-id="baruch-map">Baruch Map</h4>
+<p>The following adds a map with the location of Baruch College. You can change the GPS coordinates and text to another place of relevance to you.</p>
+<pre><code>```r
+#| echo: false
+#| message: false
+#| warning: false
+
+if(!require("leaflet")){
+    options(repos=c(CRAN="https://cloud.r-project.org")
+    install.packages("leaflet")
+    stopifnot(require("leaflet"))
+}
+
+baruch_longitude &lt;- -73.98333
+baruch_latitutde &lt;- +40.75028
+
+leaflet() |&gt;
+  addTiles() |&gt;
+  setView(baruch_longitude, baruch_latitude, zoom=17) |&gt;
+  addPopups(baruch_longitude, baruch_latitude, 
+            "I am a Master's student at &lt;b&gt;Baruch College&lt;/b&gt;!")
+```</code></pre>
+</section>
+<section id="resume-hosting" class="level4">
+<h4 class="anchored" data-anchor-id="resume-hosting">Resume Hosting</h4>
+<p>If you have a copy of your resume available as a PDF, TODO.</p>
+</section>
+<section id="todo" class="level4">
+<h4 class="anchored" data-anchor-id="todo">TODO</h4>
+</section>
 </section>
 <section id="build_site.r" class="level3">
 <h3 class="anchored" data-anchor-id="build_site.r"><code>build_site.R</code></h3>
@@ -321,12 +421,12 @@ if(!any(grepl("rstudio", search()))){q("no")}</code></pre>
 <section id="stage-4-github-pages-deployment" class="level2">
 <h2 class="anchored" data-anchor-id="stage-4-github-pages-deployment">Stage 4: GitHub Pages Deployment</h2>
 <p>Return to the GitHub repo you created; recall that the URL is something like:</p>
-<p><code>https://github.com/&lt;GITHUB_USERNAME&gt;/STA9750-2025-SPRING/</code></p>
+<p><code>https://github.com/&lt;GITHUB_ID&gt;/STA9750-2025-SPRING/</code></p>
 <p>Open the “Settings” menu and proceed to the “Pages” submenu. You should see a page that looks like this:</p>
 <p><img src="../images/pages_window.png" class="img-fluid"></p>
 <p>Under <code>Build and Deployment</code>, set the <code>main</code> branch to deploy and select the <code>docs</code> directory on that branch. Hit save and your website will go live!</p>
 <p>To check your website is working, proceed to</p>
-<p><code>https://&lt;GITHUB_USERNAME&gt;.github.io/STA9750-2025-SPRING</code></p>
+<p><code>https://&lt;GITHUB_ID&gt;.github.io/STA9750-2025-SPRING</code></p>
 <p>If everything works, you will see your site! (If you used the <code>Render</code> feature in RStudio, it should look familiar.)</p>
 <p>If you get stuck, use the course discussion board to seek help from your classmates and, if necessary, the instructor.</p>
 </section>
@@ -346,22 +446,23 @@ if(!any(grepl("rstudio", search()))){q("no")}</code></pre>
 <li>CUNY EmplID (8 digit ID code)</li>
 <li>CUNY email</li>
 <li>GitHub user name</li>
-<li>Which course section you are enrolled in: STA 9750 or OPR 9750</li>
 </ul>
 <p>This is the only place where you are required to connect your GitHub ID with your real name and CUNY credentials. I need this information to connect your public activity with my (private) gradebook and the CUNY system.</p>
 <p>If all your information looks good, I might not reply through the discussion board. When I reply through GitHub, I’m acknowledging both parts of your submission.</p>
 </section>
 <section id="instructor-tagging" class="level3">
 <h3 class="anchored" data-anchor-id="instructor-tagging">Instructor Tagging</h3>
-<p>Finally, you’re going to contact me through <code>GitHub</code>: go to</p>
-<p><code>https://github.com/&lt;GITHUB_USERNAME&gt;/STA9750-2025-SPRING/issues/new</code></p>
-<p>to open a new issue. Title the issue <code>STA 9750 &lt;GITHUB_USERNAME&gt; MiniProject #00</code> and fill in the following text for the issue:</p>
+<p>Finally, you’re going to contact me through <code>GitHub</code>: go to<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+<p><code>https://github.com/&lt;GITHUB_ID&gt;/STA9750-2025-SPRING/issues/new</code></p>
+<p>to open a new issue. Title the issue <code>STA 9750  &lt;GITHUB_ID&gt; MiniProject #00</code> and fill in the following text for the issue:</p>
+<div id="submission-text">
 <pre><code>Hi @michaelweylandt!
 
 I've created my STA 9750 website - check it out!
 
-https://&lt;GITHUB_USERNAME&gt;.github.io/STA9750-2025-SPRING/</code></pre>
-<p>(Replace <code>&lt;GITHUB_USERNAME&gt;</code> with your username throughout.)</p>
+https://&lt;GITHUB_ID&gt;.github.io/STA9750-2025-SPRING/</code></pre>
+</div>
+<p>(Replace <code>&lt;GITHUB_ID&gt;</code> with your username throughout.)</p>
 <p><img src="../images/github_issue.png" class="img-fluid"></p>
 <p>This will send me a notification through GitHub and I will confirm that I can access your repository and website. If you don’t do this, I may not be able to access your graded assignments when you submit them! I will confirm that I have your real ID verified as well.</p>
 </section>
@@ -369,13 +470,13 @@ https://&lt;GITHUB_USERNAME&gt;.github.io/STA9750-2025-SPRING/</code></pre>
 <section id="wrap-up" class="level2">
 <h2 class="anchored" data-anchor-id="wrap-up">Wrap-Up</h2>
 <p>Once I acknowledge receipt of your ID and website, you’re done with Mini-Project #00! You’ve built a website and are ready for the course to begin in earnest.</p>
-<p>Mini-Projects #01-#04 will be submitted as separate pages in your website (different quarto documents) and hosted via GitHub pages for peer feedback. We will discuss that process in more detail after Mini-Project #00 is complete.</p>
+<p>Mini-Projects #01-#04 will be submitted as separate pages in your website (different <code>quarto</code> documents) and hosted via GitHub pages for peer feedback. We will discuss that process in more detail after Mini-Project #00 is complete.</p>
 </section>
 <section id="hints" class="level2">
 <h2 class="anchored" data-anchor-id="hints">Hints</h2>
 <p>If you need help, the course discussion board should be your first stop.</p>
 <p>If you want to personalize your website further, you can see how I have created mine on <a href="https://github.com/michaelweylandt/michaelweylandt.github.io">GitHub</a>. Recall that the Markdown syntax used by <code>quarto</code> is summarized at <a href="https://www.markdownguide.org/basic-syntax/">https://www.markdownguide.org/basic-syntax/</a>.</p>
-<p>You may want to use the <a href="https://quarto.org/docs/websites/website-about.html">About Page</a> functionality to improve the look of your home page.</p>
+<p>You may want to use the <a href="https://quarto.org/docs/websites/website-about.html">About Page</a> functionality to improve the look of your home page. This gives you the ability to link to your social media (personal and professional) or personal blog, to include a professional headshot, <em>etc.</em></p>
 
 
 </section>
@@ -386,8 +487,10 @@ https://&lt;GITHUB_USERNAME&gt;.github.io/STA9750-2025-SPRING/</code></pre>
 <ol>
 <li id="fn1"><p>Early in the course, I will ‘scaffold’ most of the analysis, leaving only some small steps for you to fill in. As the course progresses, the mini-projects will be more self-directed.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>Alternatively, simply go to <a href="https://github.com/new">https://github.com/new</a> after logging in.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>You can leave the next two boxes blank or set a custom directory name and location. RStudio’s defaults are reasonable; the default directory name will simply be <code>STA9750-2025-SPRING</code> and it will be located in your home directory.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>If you choose to complete the course using a pseudonym, make up something fun. If you are using your real name, this is a great place to state that you are a Baruch student, your expected graduation date, your field of employment (current or desired), and one or two personal facts. This, along with a LinkedIn page, will quickly become one of the first things that comes up when a potential employer searches your name, so make a good impression!<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Note that these images are taken from a previous offering of this course. Update to the current semester as appropriate.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>You can leave the next two boxes blank or set a custom directory name and location. RStudio’s defaults are reasonable; the default directory name will simply be <code>STA9750-2025-SPRING</code> and it will be located in your home directory.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>If you choose to complete the course using a pseudonym, make up something fun. If you are using your real name, this is a great place to state that you are a Baruch student, your expected graduation date, your field of employment (current or desired), and one or two personal facts. This, along with a LinkedIn page, will quickly become one of the first things that comes up when a potential employer searches your name, so make a good impression!<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Throughout this course, make sure to replace <code>&lt;GITHUB_ID&gt;</code> with your recently created GitHub ID, making sure to remove the angle brackets. Note that the automated course infrastructure will be looking for precise formatting, so follow these instructions closely.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
