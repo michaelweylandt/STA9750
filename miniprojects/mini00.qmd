@@ -93,7 +93,7 @@ Follow through the menu to click:
 
 - New Project
 - Version Control
-- Git
+- Git 
 
 This will take you to the following screen:
 
@@ -126,6 +126,26 @@ of this as a "special-purpose" password. Unlike your general account password,
 a PAT can be restricted to only perform certain activities or only for a limited
 time period. 
 
+The easiest way to do so is to run the following code: 
+
+```r
+#| eval: false
+if(!require("usethis")) install.packages("usethis")
+usethis::create_github_token()
+```
+
+Once you have created a token, copy and save it on your computer. (Note that you
+only be able to copy it one time, so make sure you save it somewhere memorable.)
+Then run the following code to register the GitHub PAT on your computer: 
+
+```r
+#| eval: false
+if(!require("gitcreds")) install.packages("gitcreds")
+gitcreds::gitcreds_set()
+```
+
+If that doesn't work, you can also perform the same steps "by hand":
+
 After logging in to GitHub via a web browser, visit
 [https://github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
 to begin the token creation process. Give the token a meaningful name and
@@ -144,6 +164,23 @@ as your password. If everything is set up correctly, GCM will save this token
 and use it to authenticate you every time you push to GitHub. You should not 
 need to paste this token every time. 
 
+### `git` Check
+
+At this point, run the following code to check your `git` setup: 
+
+```r
+#| eval: false
+if(!require("usethis")) install.packages("usethis")
+usethis::git_sitrep()
+```
+
+This will print out a large amount of helpful information, but the important
+things to check are: 
+
+- Are your name and email set correctly?
+- Is your GitHub user set correctly? 
+- Does the token have the requisite "repo" scope? 
+- Is the "origin" set correctly for the GitHub project? 
 
 ### Initial Push
 
@@ -188,7 +225,8 @@ pushed a basic `README`, it's time to build a webpage using [`quarto`](https://q
 
 We will need three pages to build a website: 
 
-1. A configuration file, `_quarto.yml`, used to specify the look and layout of your website. 
+1. A configuration file, `_quarto.yml`, used to specify the
+   look and layout of your website. 
 2. An `index.qmd` file used to create the homepage. 
 3. A build script to create the website. 
 
@@ -222,25 +260,27 @@ Note that the indentation pattern is important so copy this exactly.
 
 Replace `<GITHUB_NAME>` with your GitHub user name. 
 
-For `<THEME>`, visit the [Bootswatch theme gallery](https://bootswatch.com/) and pick
-your preferred theme. Replace `<THEME>` with a lower case version of the theme name; if you 
-want to use the [Sandstone theme](https://bootswatch.com/sandstone/) used for this course website,
-`<THEME>` will be `sandstone`.
+For `<THEME>`, visit the [Bootswatch theme gallery](https://bootswatch.com/)
+and pick your preferred theme. Replace `<THEME>` with a lower case version
+of the theme name; if you want to use the [Sandstone
+theme](https://bootswatch.com/sandstone/) used for this course website,
+`<THEME>` will be `sandstone` (NB: lower case).
 
-Once you have created this `_quarto.yml`, stage it (click the check mark) in RStudio's
-git pane. 
+Once you have created this `_quarto.yml`, stage it (click the check mark) 
+in RStudio's git pane. 
 
 ### `index.qmd`
 
-Next, we'll build your home page, conventionally called `index.html`. We will not write
-the HTML code by hand - it's quite cumbersome - and will instead let `quarto` create it
-for us. Create another plain text file and save it as `index.qmd`. 
+Next, we'll build your home page, conventionally called `index.html`. We will
+not write the HTML code by hand - it's quite cumbersome - and will instead
+let `quarto` create it for us. Create another plain text file and save it as
+`index.qmd`. 
 
-This file will be divided into two parts, a header giving the *metadata* for the site,
-and a body, giving the *content* of the site.
+This file will be divided into two parts, a header giving the *metadata*
+for the site, and a body, giving the *content* of the site.
 
-First write the header, separated by three horizontal bars (minus signs) above and below.
-For now, all you need to specify is a `title`: 
+First write the header, separated by three horizontal bars (minus signs)
+above and below. For now, all you need to specify is a `title`: 
 
 ```
 ---
@@ -256,8 +296,63 @@ headshot, a link to a full resume, or similar.
 As you work on this, click the "Render" button at the top of the editor pane to 
 see what your site will look like. 
 
-Once you are happy with this landing page, stage it and we'll move on to building
-the website properly. 
+
+### Additional Set-Up - Rendered Code
+
+In order to make sure that your `R` and `quarto` environment has been properly
+configured, it is necessary to include to include a bit of `R` code in your
+submission. At this point in the course, you are not required to write any `R`
+code of your own, so I've written some options here. Pick one to include
+in your submission - or modify them to do something else fun. If there's something
+else you'd like to include, reach out to the instructor and I might be able to
+help you put something together. 
+
+Once you are happy with this landing page and have included on of these dynamic
+components (or similar), stage it and we'll move on to building the 
+website properly. 
+
+#### Last Updated
+
+The following code will add a "Last Updated:" footer at the bottom of your page. 
+
+```
+--------------
+Last Updated: `r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`
+```
+
+#### Baruch Map
+
+The following adds a map with the location of Baruch College. You can change
+the GPS coordinates and text to another place of relevance to you.
+
+````
+```r
+#| echo: false
+#| message: false
+#| warning: false
+
+if(!require("leaflet")){
+    options(repos=c(CRAN="https://cloud.r-project.org")
+    install.packages("leaflet")
+    stopifnot(require("leaflet"))
+}
+
+baruch_longitude <- -73.98333
+baruch_latitutde <- +40.75028
+
+leaflet() |>
+  addTiles() |>
+  setView(baruch_longitude, baruch_latitude, zoom=17) |>
+  addPopups(baruch_longitude, baruch_latitude, 
+            "I am a Master's student at <b>Baruch College</b>!")
+```
+````
+
+#### Resume Hosting
+
+If you have a copy of your resume available as a PDF, TODO. 
+
+#### TODO
 
 ### `build_site.R`
 
@@ -296,25 +391,26 @@ page that looks like this:
 
 ![](../images/pages_window.png)
 
-Under `Build and Deployment`, set the `main` branch to deploy and select the `docs`
-directory on that branch. Hit save and your website will go live!
+Under `Build and Deployment`, set the `main` branch to deploy and
+select the `docs` directory on that branch. Hit save and your website
+will go live!
 
 To check your website is working, proceed to 
 
 `https://<GITHUB_ID>.github.io/{{< var course.repo >}}`
 
-If everything works, you will see your site! (If you used the `Render` feature in 
-RStudio, it should look familiar.) 
+If everything works, you will see your site! (If you used the `Render`
+feature in  RStudio, it should look familiar.) 
 
-If you get stuck, use the course discussion board to seek help from your classmates
-and, if necessary, the instructor. 
+If you get stuck, use the course discussion board to seek help from
+your classmates and, if necessary, the instructor. 
 
 ## Stage 5: Submission
 
 Once your site is live, you will submit it to the instructor in two ways: 
 
-1) Log into the course discussion board (Piazza) and send me your GitHub name so I 
-   can link it to my gradebook. 
+1) Log into the course discussion board (Piazza) and send me your GitHub
+   name so I can link it to my gradebook. 
 2) Tag `@michaelweylandt` on GitHub to make sure I can access your repo. 
 
 These both must be completed to complete the assignment and verify enrollment.
@@ -344,8 +440,10 @@ Finally, you're going to contact me through `GitHub`: go to[^sub]
 
 `https://github.com/<GITHUB_ID>/{{< var course.repo >}}/issues/new`
 
-to open a new issue. Title the issue `{{< var course.short >}} <GITHUB_ID> MiniProject #00`
-and fill in the following text for the issue: 
+to open a new issue. Title the issue `{{< var course.short >}} 
+<GITHUB_ID> MiniProject #00` and fill in the following text for the issue: 
+
+::: {#submission-text}
 
 ```
 Hi @michaelweylandt!
@@ -354,6 +452,8 @@ I've created my {{< var course.short >}} website - check it out!
 
 https://<GITHUB_ID>.github.io/{{< var course.repo >}}/
 ```
+
+:::
 
 (Replace `<GITHUB_ID>` with your username throughout.)
 
@@ -387,10 +487,14 @@ If you need help, the course discussion board should be your first stop.
 
 If you want to personalize your website further, you can see how I have created
 mine on [GitHub](https://github.com/michaelweylandt/michaelweylandt.github.io). 
-Recall that the Markdown syntax used by `quarto` is summarized at [https://www.markdownguide.org/basic-syntax/](https://www.markdownguide.org/basic-syntax/).
+Recall that the Markdown syntax used by `quarto` is summarized at
+[https://www.markdownguide.org/basic-syntax/](https://www.markdownguide.org/basic-syntax/).
 
-You may want to use the [About Page](https://quarto.org/docs/websites/website-about.html)
-functionality to improve the look of your home page.
+You may want to use the [About
+Page](https://quarto.org/docs/websites/website-about.html)
+functionality to improve the look of your home page. This gives you the ability
+to link to your social media (personal and professional) or personal blog, to
+include a professional headshot, *etc.*
 
 [^1]: Early in the course, I will 'scaffold' most of the analysis, leaving only
 some small steps for you to fill in. As the course progresses, the mini-projects
