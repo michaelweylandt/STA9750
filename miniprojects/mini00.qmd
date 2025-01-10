@@ -20,7 +20,37 @@ you set up the course infrastructure you will use for the four graded mini-proje
 [*Verification of Enrollment*](https://enrollmentmanagement.baruch.cuny.edu/registrar/verification-of-enrollment/) 
 activity. If it is not completed on time, you may be involuntarily disenrolled from the course.** 
 
-*Estimated Time*: 2 hours. 
+### Due Dates
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+DATES <- readr::read_csv("../key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, Time)))
+```
+
+```{r echo=FALSE, warning=FALSE}
+library(glue)
+mp_id <- 0
+mp <-  DATES |> filter(element == "Mini-Projects", 
+                       item == mp_id)
+mp_file <- list(qmd=glue("`mp{sprintf('%02g', mp_id)}.qmd`"), 
+                html=glue("`mp{sprintf('%02g', mp_id)}.html`"),
+                html_long=glue("`docs/mp{sprintf('%02g', mp_id)}.html`"))
+```
+
+-   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+-   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
+-   **Peer Feedback:**
+    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
+    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
+
+
+*Estimated Time to Complete: 2 Hours*
+
+*Estimated Time for Peer Feedback: 1 Hour*
 
 ---
 
@@ -128,7 +158,7 @@ time period.
 
 The easiest way to do so is to run the following code: 
 
-```r
+```{r}
 #| eval: false
 if(!require("usethis")) install.packages("usethis")
 usethis::create_github_token()
@@ -138,7 +168,7 @@ Once you have created a token, copy and save it on your computer. (Note that you
 only be able to copy it one time, so make sure you save it somewhere memorable.)
 Then run the following code to register the GitHub PAT on your computer: 
 
-```r
+```{r}
 #| eval: false
 if(!require("gitcreds")) install.packages("gitcreds")
 gitcreds::gitcreds_set()
@@ -164,11 +194,34 @@ as your password. If everything is set up correctly, GCM will save this token
 and use it to authenticate you every time you push to GitHub. You should not 
 need to paste this token every time. 
 
+### `.gitignore`
+
+This course will involve many files, not all of which you will want to push
+to `GitHub`. Create a file named `.gitignore` and paste in the following to 
+tell `git` to ignore certain files. (Note the leading `.` in the file name.)
+
+```{md}
+**/.quarto/*
+.Rproj.user
+data/**
+**/*_cache/*
+**/*_files/*
+**/*_freeze/*
+**/*tsv*
+**/*csv*
+**/*xlsx*
+**/*zip
+**/*pdf
+.DS_Store
+.Rhistory
+/.quarto/*
+```
+
 ### `git` Check
 
 At this point, run the following code to check your `git` setup: 
 
-```r
+```{r}
 #| eval: false
 if(!require("usethis")) install.packages("usethis")
 usethis::git_sitrep()
@@ -236,7 +289,7 @@ Open a new text file and save it as `_quarto.yml`. This is a
 configuration file used by `quarto` to control the layout of your site. 
 For a barebones site, copy the following into `_quarto.yml`:
 
-```
+```{md}
 project:
   type: website
   output-dir: docs
@@ -282,7 +335,7 @@ for the site, and a body, giving the *content* of the site.
 First write the header, separated by three horizontal bars (minus signs)
 above and below. For now, all you need to specify is a `title`: 
 
-```
+```{md}
 ---
 title: "YOUR TITLE GOES HERE"
 ---
@@ -315,7 +368,7 @@ website properly.
 
 The following code will add a "Last Updated:" footer at the bottom of your page. 
 
-```
+```{md}
 --------------
 Last Updated: `r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`
 ```
@@ -325,8 +378,8 @@ Last Updated: `r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`
 The following adds a map with the location of Baruch College. You can change
 the GPS coordinates and text to another place of relevance to you.
 
-````
-```r
+````{md}
+```{r}
 #| echo: false
 #| message: false
 #| warning: false
@@ -440,8 +493,8 @@ Finally, you're going to contact me through `GitHub`: go to[^sub]
 
 `https://github.com/<GITHUB_ID>/{{< var course.repo >}}/issues/new`
 
-to open a new issue. Title the issue `{{< var course.short >}} 
-<GITHUB_ID> MiniProject #00` and fill in the following text for the issue: 
+to open a new issue. Title the issue "{{< var course.short >}} 
+<GITHUB_ID> MiniProject #{{< meta mp_num >}}" and fill in the following text for the issue: 
 
 ::: {#submission-text}
 
@@ -495,6 +548,11 @@ Page](https://quarto.org/docs/websites/website-about.html)
 functionality to improve the look of your home page. This gives you the ability
 to link to your social media (personal and professional) or personal blog, to
 include a professional headshot, *etc.*
+
+------------------------------------------------------------------------
+
+This work ©2025 by [Michael Weylandt](https://michael-weylandt.com) is licensed under a [Creative Commons BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en) license. ![](http://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png){width="10%"}
+
 
 [^1]: Early in the course, I will 'scaffold' most of the analysis, leaving only
 some small steps for you to fill in. As the course progresses, the mini-projects
