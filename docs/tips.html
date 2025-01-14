@@ -170,6 +170,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#create-peer-feedback-comment" id="toc-create-peer-feedback-comment" class="nav-link" data-scroll-target="#create-peer-feedback-comment">Create Peer Feedback Comment</a></li>
   <li><a href="#verify-peer-feedback-properly-formatted" id="toc-verify-peer-feedback-properly-formatted" class="nav-link" data-scroll-target="#verify-peer-feedback-properly-formatted">Verify Peer Feedback Properly Formatted:</a></li>
   <li><a href="#count-words" id="toc-count-words" class="nav-link" data-scroll-target="#count-words">Count Words</a></li>
+  <li><a href="#lint-submission" id="toc-lint-submission" class="nav-link" data-scroll-target="#lint-submission">Lint Submission</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/tips.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/tips.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -330,7 +331,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a>  resp <span class="ot">&lt;-</span> <span class="fu">request</span>(submitted_url) <span class="sc">|&gt;</span> <span class="fu">req_perform</span>()</span>
 <span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(resp<span class="sc">$</span>status_code <span class="sc">!=</span> <span class="dv">200</span>){</span>
+<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">resp_is_error</span>(resp)){</span>
 <span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Something appears to be incorrect at the URL: "</span>, </span>
 <span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a>        submitted_url, </span>
 <span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a>        <span class="st">"</span><span class="sc">\n</span><span class="st"> Please confirm that it is working as expected and try again."</span>)</span>
@@ -338,9 +339,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"MINIPROJECT NOT SUBMITTED SUCCESSFULLY."</span>)</span>
 <span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Congratulations! Your mini-project appears to have been submitted correctly!</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="cn">TRUE</span>)</span>
-<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a>  raw_url <span class="ot">&lt;-</span> <span class="fu">glue</span>(<span class="st">"https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/mp0{N}.qmd"</span>)</span>
+<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a>  resp_raw <span class="ot">&lt;-</span> <span class="fu">request</span>(raw_url) <span class="sc">|&gt;</span> <span class="fu">req_perform</span>()</span>
+<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">resp_is_error</span>(resp_raw)){</span>
+<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"I cannot find the source qmd document at"</span>, raw_url, <span class="st">".</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Please confirm it was correctly submitted and try again.</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a>          <span class="st">"This document is needed for automated code quality checks."</span>)</span>
+<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"MINIPROJECT NOT SUBMITTED SUCCESSFULLY."</span>)</span>
+<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Congratulations! Your mini-project appears to have been submitted correctly!</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="cn">TRUE</span>)</span>
+<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="create-peer-feedback-comment" class="level3">
@@ -458,6 +471,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">sum</span>()</span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="lint-submission" class="level3">
+<h3 class="anchored" data-anchor-id="lint-submission">Lint Submission</h3>
+<p>The following will automatically run the <code>lintr</code> package on a submitted <code>qmd</code> document.</p>
+<p>#| label: lint_submission lint_submission &lt;- function(N, peer_id){ library(rvest); library(glue); library(tidyverse); library(httr2); library(lintr) if(missing(N)){ N &lt;- menu(title=“Which Mini-Project submission would you like to lint?”, choices=c(0, 1, 2, 3, 4)) }</p>
+<p>if(missing(peer_id)){ peer_id &lt;- readline(“What is your Peer’s GitHub ID?”) }</p>
+<p>raw_url &lt;- glue(“https://raw.githubusercontent.com/{peer_id}/{course_repo}/refs/heads/main/mp0{N}.qmd”)</p>
+<p>cat(“Attempting to access qmd source at”, raw_url, “.”)</p>
+<p>resp &lt;- request(raw_url) |&gt; req_perform()</p>
+<p>if(resp_is_error(resp)){ cat(“I could not access the raw qmd document. Attempting to open in browser…”) browseURL(resp) return(FALSE) } else { cat(“I was able to access the raw qmd document. Beginning to lint.”)</p>
+<pre><code>  tf &lt;- tempfile(pattern=glue("mp0{N}_{peer_id}_lint_document.qmd"))
+  
+  writeLines(resp_body_string(resp), tf)
+  
+  lintr::lint(tf)</code></pre>
+<p>} }</p>
 
 
 </section>

@@ -124,11 +124,23 @@ mp_submission_verify <- function(N, github_id){
   
   resp <- request(submitted_url) |> req_perform()
   
-  if(resp$status_code != 200){
+  if(resp_is_error(resp)){
     cat("Something appears to be incorrect at the URL: ", 
         submitted_url, 
         "\n Please confirm that it is working as expected and try again.")
     browseURL(submitted_url)
+    stop("MINIPROJECT NOT SUBMITTED SUCCESSFULLY.")
+  }
+  
+  raw_url <- glue("https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/mp0{N}.qmd")
+  
+  resp_raw <- request(raw_url) |> req_perform()
+  
+  if(resp_is_error(resp_raw)){
+      cat("I cannot find the source qmd document at", raw_url, ".\n",
+          "Please confirm it was correctly submitted and try again.\n",
+          "This document is needed for automated code quality checks.")
+      
     stop("MINIPROJECT NOT SUBMITTED SUCCESSFULLY.")
   }
   
@@ -237,4 +249,36 @@ count_words <- function(url){
         html_text() |>
         stri_count_words() |>
         sum()
+}
+
+lint_submission <- function(N, peer_id){
+  library(rvest); library(glue); library(tidyverse); library(httr2); library(lintr)
+  if(missing(N)){
+    N <- menu(title="Which Mini-Project submission would you like to lint?", 
+              choices=c(0, 1, 2, 3, 4))
+  }
+    
+  if(missing(peer_id)){
+    peer_id <- readline("What is your Peer's GitHub ID? ")
+  }
+    
+  raw_url <- glue("https://raw.githubusercontent.com/{peer_id}/{course_repo}/refs/heads/main/mp0{N}.qmd")
+  
+  cat("Attempting to access qmd source at", raw_url, ".\n")
+  
+  resp <- request(raw_url) |> req_perform()
+  
+  if(resp_is_error(resp)){
+      cat("I could not access the raw qmd document. Attempting to open in browser...\n")
+      browseURL(resp)
+      return(FALSE)
+  } else {
+      cat("I was able to access the raw qmd document. Beginning to lint.\n")
+      
+      tf <- tempfile(pattern=glue("mp0{N}_{peer_id}_lint_document.qmd"))
+      
+      writeLines(resp_body_string(resp), tf)
+      
+      lintr::lint(tf)
+  }
 }
