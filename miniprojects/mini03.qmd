@@ -1,10 +1,13 @@
 ---
-title: "{{< var course.short >}} Mini-Project #{{< meta mp_num >}}: TBD"
+title: "{{< var course.short >}} Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}"
 format:
   html:
     code-link: true
 echo: true
 mp_num: "03"
+mp_title: "Creating the Ultimate Playlist"
+filters: 
+ - list-table
 ---
 
 ```{r echo=FALSE, message=FALSE}
@@ -36,21 +39,33 @@ mp_file <- list(qmd=glue("`mp0{mp_id}.qmd`"),
     -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
     -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
 
+*Estimated Time to Complete: 5 Hours*
+
+*Estimated Time for Peer Feedback: 1 Hour*
+
+
 ------------------------------------------------------------------------
 
 ## Introduction
 
-Welcome to Mini-Project #{{< meta mp_num >}}! In this project, TBD.
+Welcome to Mini-Project #{{< meta mp_num >}}! In this project, you will dive
+into the world of music analytics in an attempt to create **The Ultimate
+Playlist.** Specifically, we will explore two data exports made available
+by Spotify to identify i) the most popular songs on the platform and ii) the
+characteristics of those songs. From this data, you will create the ultimate
+playlist. Note that, while this project is inspired by the work of the [Great Sage, Mr Barney 
+Stinson](https://www.youtube.com/watch?v=f1gjcVD3D1s), pioneer of the 
+"All Rise" playlist, you can create whatever type of playlist you want, as
+long as it is **Ultimate**. 
 
-Also note that this mini-project is intended to be markedly less demanding than [Mini-Project #02](./mini02.html). At this point in the course, you should be diving into your [Course Project](../project.html), which should consume the majority of your out-of-class time dedicated to this course for the remainder of the semester.
+Also note that this mini-project is intended to be a bit less demanding than
+[Mini-Project #02](./mini02.html). At this point in the course, you should be
+diving into your [Course Project](../project.html), which should consume the
+majority of your out-of-class time dedicated to this course for the remainder of
+the semester.
 
-## Background
 
-## Mini-Project Objectives
-
-In this project, TBD. 
-
-## Student Responsbilities
+### Student Responsbilities
 
 Recall our basic analytic workflow and table of student responsibilities:
 
@@ -126,7 +141,7 @@ Title the issue `{{< var course.short >}} <GITHUB_ID> MiniProject #{{< meta mp_n
 ```         
 Hi @michaelweylandt!
 
-I've uploaded my work for MiniProject #{{< meta mp_num >}} - check it out!
+I've uploaded my work for MiniProject #**{{< meta mp_num >}}** - check it out!
 
 https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp{{< meta mp_num >}}.html
 ```
@@ -138,9 +153,13 @@ https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp{{< meta mp_num >}}.html
 Once the submission deadline passes, the instructor will tag classmates
 for peer feedback in this issue thread.
 
-*Additionally*, a PDF export of this report should be submitted on Brightspace. To create a PDF from the uploaded report, simply use your browser's 'Print to PDF' functionality.
+*Additionally*, a PDF export of this report should be submitted on Brightspace.
+To create a PDF from the uploaded report, simply use your browser's 'Print to PDF'
+functionality.
 
-**NB**: The analysis outline below specifies key *tasks* you need to perform within your write up. Your peer evaluators will check that you complete these. You are encouraged to do extra analysis, but the bolded **Tasks** are *mandatory*.
+**NB**: The analysis outline below specifies key *tasks* you need to perform
+within your write up. Your peer evaluators will check that you complete these.
+You are encouraged to do extra analysis, but the bolded **Tasks** are *mandatory*.
 
 **NB**: Your final submission should look like a *report*, not simply a list
 of facts answering questions. Add introductions, conclusions, and your own
@@ -154,6 +173,279 @@ stated without context or motivation.
 that the automated course infrastructure will be looking for precise formatting,
 so follow these instructions closely. 
 
+
+## Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}
+
+### Data Acquisition
+
+We will use two Spotify data exports: 
+
+1) A data set of songs and their characteristics
+2) An export of user-created playlists
+
+Interestingly, Spotify no longer makes these datasets available directly, but
+nothing ever leaves the internet and we can use mirrors of the original data
+posted by other data scientists. 
+
+### Song Characteristics
+
+First, we can download the song properties data from the mirror posted by
+GitHub user **gabminamendez**. Download the data and import it into `R`. 
+
+::: {.callout-tip title="Task 1: Song Characteristics Dataset"}
+
+Write a function called `load_songs` to 
+
+  i)  download the Spotify song analytics dataset (if needed) from
+      [https://raw.githubusercontent.com/gabminamedez/spotify-data/refs/heads/master/data.csv](https://raw.githubusercontent.com/gabminamedez/spotify-data/refs/heads/master/data.csv)
+  ii) read it into `R`. 
+  
+Your function should return a well-formatted data frame. 
+
+To be responsible, your download code should: 
+
+1) Only download the file if it is not already present
+2) Create a directory titled `data/mp03` if one is not already present
+3) Save the file in `data/mp03` and, if necessary, decompress it. 
+4) Use built-in `R` functions like `download.file`
+
+See prior mini-projects for examples of responsible downloading code.  
+
+:::
+
+The `artists` column of this data set is a bit oddly formatted: it contains
+multiple artists in a "list-type" format: *e.g.*, the song "Blinding Lights"
+has `artists` as `['The Weeknd']` and the song "Uptown Funk (feat. Bruno Mars)"
+has `artists` as `['Mark Ronson', 'Bruno Mars']`. The following code will split
+the `artists` across multiple rows, yielding *e.g.*, two rows for Uptown Funk,
+one each for Mark Ronson and Bruno Mars. 
+
+```{r}
+#| eval: false 
+library(tidyr)
+library(stringr)
+clean_artist_string <- function(x){
+    str_replace_all(x, "\\['", "") |> 
+        str_replace_all("'\\]", "") |>
+        str_replace_all(" '", "")
+}
+SONGS |> 
+  separate_longer_delim(artists, ",") |>
+  mutate(artist = clean_artist_string(artists)) |>
+  select(-artists)
+```
+
+Adapt it as needed for your analysis.
+
+### Playlists 
+
+Next, we'll download the Spotify Million Playlist dataset from GitHub user
+**DevinOgrady**. Because this dataset is large, **DevinOgrady** has uploaded
+it as a series of JSON files in his
+[`spotify_million_playlist_dataset`](https://github.com/DevinOgrady/spotify_million_playlist_dataset/tree/main)
+repository. Write a function to download all files from this repository
+(`data1` directory), store them locally, and read them into `R`. As above,
+your download function should be responsible (only downloading the data once
+as needed). 
+
+::: {.callout-tip title="Task 2: Playlist Dataset"}
+
+
+Write a function called `load_playlists` to 
+
+  i)  download the Spotify million playlist dataset (if needed);
+  ii) read all files into `R`; and
+  iii) concatenate them into a list object. 
+  
+As before, your download code should be "responsible" and avoid unnecessary
+duplicate downloads. (If your code is not 'responsible', GitHub may put a
+short-term block up to stop you from making too many requests. Be careful!)
+
+You **may not** hard-code invidual file names. You need to use a loop-type
+construct and create individual file names programmatically. 
+
+:::
+
+Unlike the song characteristics data, this is *hierarchical* data, not
+trivially represented as a tidy data frame. To proceed we will need to 
+process the playlists data into a more standard format. In particular, we 
+want a table of the following columns:
+
+- Playlist Name (`playlist_name`)
+- Playlist ID (`playlist_id`)
+- Playlist Position (`playlist_position`)
+- Playlist Followers (`playlist_followers`)
+- Artist Name (`artist_name`)
+- Artist ID (`artist_id`)
+- Track Name (`track_name`)
+- Track ID (`track_id`)
+- Album Name (`album_name`)
+- Album ID (`album_id`)
+- Duration (`duration`)
+
+where each row is one "track" from a playlist. (Certain songs will be repeated
+because they appear on multiple playlists.)
+
+::: {.callout-tip title="Task 3: 'Rectangle' the Playlist Data"}
+
+Using functions from the `tidyr`, `purrr`, and `dplyr` packages, convert
+the playlist data from Task 2 into the rectangular format described above. 
+
+To clean up the ID columns, you can use the following function to strip the
+`spotify:type:` prefix. 
+
+```{r}
+#| eval: false
+strip_spotify_prefix <- function(x){
+    library(stringr)
+    str_extract(x, ".*:.*:(.*)", group=1)
+}
+```
+
+:::
+
+### Initial Exploration
+
+Now that your data is imported and cleaned, it is time to begin exploring
+it and seeing how comprehensive it is. (Note that these exports were created
+at different times, so they will not have fully overlapping coverage.)
+
+::: {.callout-tip title="Task 4: Initial Exploration"}
+
+1. How many distinct tracks and artists are represented in the playlist data? 
+2. What are the 5 most popular tracks in the playlist data? 
+3. What is the most popular track in the playlist data that *does not have a
+   corresponding entry in the song characteristics* data? 
+4. According to the song characteristics data, what is the most "danceable" 
+   track? How often does it appear in a playlist? 
+5. Which playlist has the longest average track length?
+6. What is the most popular playlist on Spotify? 
+
+:::
+
+### Identifying Characteristics of Popular Songs
+
+::: {.callout-note title="Inner Join to Combine Data Sets"}
+
+For the remainder of this assignment, I recommend using an `inner_join` to
+combine the playlist and song characteristic data sets. This will throw out
+a (potentially large) fraction the playlist data, but given the timing and
+construction of these data exports, it is the best we can do.
+
+:::
+
+Next, we will *visually* explore this data, with an eye towards finding 
+characteristics of the most popular songs on Spotify. 
+
+::: {.callout-tip title="Task 5: Visually Identifying Characteristics of Popular Songs"}
+
+Answer the following questions using one or more visualizations. Make sure
+your plots are "publication-quality", with well-formatted axes, color schemes,
+*etc.*
+
+1. Is the `popularity` column correlated with the number of playlist 
+   appearances? If so, to what degree? 
+   
+   For the following questions, select a threshold that defines a "popular"
+   song. There's no 'right' answer here, but I would recommend finding a song
+   that is right "at the line" of being popular *per* your threshold and seeing
+   if you consider it "almost popular." If it's a very popular song, adjust
+   your threshold lower; if it's obscure, adjust your threshold higher. 
+2. In what year were the most popular songs released? 
+3. In what year did danceability peak? 
+4. Which decade is most represented on user playlists? (The integer
+   division (`%/%`) operator may be useful for computing decades from
+   years.)
+5. Create a plot of key frequency among songs. Because musical keys exist in
+   a 'cycle', your plot should use polar (circular) coordinates. 
+6. What are the most popular track lengths? (Are short tracks, long tracks,
+   or something in between most commonly included in user playlists?)
+7. Pose and visually answer at least two more other exploratory questions.
+:::
+
+Note that you can answer many of these using `dplyr` functions only, but
+a learning objective of this mini-project is to practice creating informative
+visualizations, so you are required to include at least one plot for each of
+these questions. If helpful, you can validate your visual findings with a 
+descriptive statistic: *e.g.*, if your plot shows a positive correlation between
+track length and popularity, you can also compute this correlation numerically
+and include it in your text. 
+
+### Building a Playlist from Anchor Songs
+
+To begin building your playlist, pick one or two "anchor" songs that you 
+like. (You can adjust these if you don't like how your playlist comes out.)
+
+You can find songs that work well in a playlist with these songs using
+various heuristics: 
+
+1) What other songs commonly appear on playlists along side this song? 
+
+2) What other songs are in the same key[^key] and have a similar tempo? 
+   (This makes it easy for a skilled DJ to transition from one song to the
+    next.)
+
+3) What other songs were released by the same artist? 
+
+4) What other songs were released in the same year and have similar
+   levels of `acousticness`, `danceability`, *etc.*? 
+
+::: {.callout-tip title="Task 6: Finding Related Songs"}
+
+Implement the four heuristics above plus one of your own to find potential
+songs that belong on a playlist with your anchor songs. You should identify
+at least 20 candidates, at least 8 of which are not "popular" based on the
+threshold you set above. 
+
+:::
+
+### Create Your Playlist
+
+Given your anchor songs and playlist candidates, it is now time to filter 
+down to a playlist of around 12 songs, suitably ordered. Using all the
+data available to you, determine an optimal playlist. Your playlist should
+include at least 2 songs you were not previously familiar with and at least 3 
+which are not "popular."
+
+Once you have created your playlist, visualize its evolution on the various
+quantitative metrics Spotify provides. Does it, *per Stinson*, 'rise and fall'
+or is it 'all rise'? 
+
+::: {.callout-tip title="Task 7: Curate and Analyze Your Ultimate Playlist"}
+
+Curate and Analyze the Ultimate Playlist per instructions above. In addition
+to its musical structure, make sure to consider thematic unity, *e.g.*, songs
+about cars, and to give your playlist a creative name.
+
+:::
+
+## Deliverable: The Ultimate Playlist
+
+Now that you have created the Ultimate Playlist, it is time to nominate it
+for the Internet's Best Playlist award. Write a title, description, and
+"design principles" for your playlist. Make sure to include at least
+one visualization that argues why your playlist is Ultimate. Describe how
+you used statistical and visual analysis to create this playlist, taking
+pride to showcase lesser known pieces that are integral to your playlist
+structure. 
+
+## Extra Credit
+
+In addition to the rubric-specified extra credit, extra credit may be given
+for the following: 
+
+- Up to 2 points: use of Quarto's [video
+  support](https://quarto.org/docs/authoring/videos.html) to embed recordings
+  of tracks from the playlist. 
+
+
+[^key]: As coded by the `key` column, 0 is C, 1 is C#, 2 is D, *etc.* For 
+non-musicians, this just means that the two songs share some harmonic structure
+that makes it easy to tie them together. 
+
 ------------------------------------------------------------------------
 
-This work ©2024 by [Michael Weylandt](https://michael-weylandt.com) is licensed under a [Creative Commons BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en) license. ![](http://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png){width="10%"}
+This work ©2025 by [Michael Weylandt](https://michael-weylandt.com) is licensed
+under a [Creative Commons BY-NC-SA 
+4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en) license.
+![](http://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png){width="10%"}
