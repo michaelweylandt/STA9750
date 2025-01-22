@@ -176,12 +176,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#open-mini-project-github-issue" id="toc-open-mini-project-github-issue" class="nav-link active" data-scroll-target="#open-mini-project-github-issue">Open Mini-Project GitHub Issue</a></li>
+  <li><a href="#miscellaneous-rstudio-and-git-advice" id="toc-miscellaneous-rstudio-and-git-advice" class="nav-link active" data-scroll-target="#miscellaneous-rstudio-and-git-advice">Miscellaneous <code>RStudio</code> and <code>Git</code> Advice</a></li>
+  <li><a href="#helper-scripts" id="toc-helper-scripts" class="nav-link" data-scroll-target="#helper-scripts">Helper Scripts</a>
+  <ul class="collapse">
+  <li><a href="#open-mini-project-github-issue" id="toc-open-mini-project-github-issue" class="nav-link" data-scroll-target="#open-mini-project-github-issue">Open Mini-Project GitHub Issue</a></li>
   <li><a href="#mp-submission-verify" id="toc-mp-submission-verify" class="nav-link" data-scroll-target="#mp-submission-verify">Verify Mini-Project Submission</a></li>
   <li><a href="#create-peer-feedback-comment" id="toc-create-peer-feedback-comment" class="nav-link" data-scroll-target="#create-peer-feedback-comment">Create Peer Feedback Comment</a></li>
   <li><a href="#verify-peer-feedback-properly-formatted" id="toc-verify-peer-feedback-properly-formatted" class="nav-link" data-scroll-target="#verify-peer-feedback-properly-formatted">Verify Peer Feedback Properly Formatted:</a></li>
   <li><a href="#count-words" id="toc-count-words" class="nav-link" data-scroll-target="#count-words">Count Words</a></li>
   <li><a href="#lint-submission" id="toc-lint-submission" class="nav-link" data-scroll-target="#lint-submission">Lint Submission</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/tips.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/tips.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -207,6 +211,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="miscellaneous-rstudio-and-git-advice" class="level2">
+<h2 class="anchored" data-anchor-id="miscellaneous-rstudio-and-git-advice">Miscellaneous <code>RStudio</code> and <code>Git</code> Advice</h2>
+<ol type="1">
+<li><p>When you are writing <code>quarto</code> documents in <code>RStudio</code>, <strong>do not use</strong> the “Visual” editor mode. It will seem tempting at first, but it will lead to difficult and hard to debug errors down the road. You should disable it in your <code>RStudio</code> settings (if possible) and include <code>editor: source</code> in the header of <code>quarto</code> documents to keep it from opening automatically.</p></li>
+<li><p><code>git</code> supports a huge variety of programming workflow and was originally designed to allow large teams of programmers to work together. This flexibility leads to a few “sharp edges”, however.</p>
+<p>You will have the best experience with <code>git</code> in this course if:</p>
+<ol type="1">
+<li><p>You <code>commit</code> early and often. <code>git</code> commits are essentially free (40 bytes - less than a text!) and give you the ability to roll back changes if you get into a bad situation.</p></li>
+<li><p>You do all your work on a single computer. Keeping files and <code>git</code> synchronized across multiple machines is possible, but trickier. If, for whatever reason, you need to use multiple computers, reach out to course staff in office hours for advice.</p></li>
+<li><p>You <code>git push</code> at the end of every work session. This is the stage when things are most likely to go wrong, so you want to be <code>push</code>ing early and often, giving you the best chance to spot and fix an issues early.</p></li>
+<li><p>You work in a “regular” file system. Synchronization and back up tools like DropBox or OneDrive perform magic behind the scenes that doesn’t always play well with <code>git</code>. You don’t need to use these tools with <code>git</code> since <code>git</code> (used properly and in conjunction with <code>GitHub</code>) will give you automatic history and backups.</p></li>
+<li><p>You avoid anti-virus issues. If you are on a Windows machine, tell your anti-virus software to ignore the directory containing your work for this course. Both <code>git</code> and <code>quarto</code> create and delete lots of little files as they execute; certain anti-virus tools interpret this as evidence of a cyber attack and attempt to lock the file system, leading to a variety of subtle and hard to explain errors.</p></li>
+<li><p>You are careful about what files you <code>add</code> in <code>git</code>. You should generally only include your <code>qmd</code> files and the rendered outputs in the <code>docs</code> folder. The <code>build_site</code> script included in <a href="./miniprojects/mini00.html">Mini-Project #00</a> is helpful, but not bullet-proof, here.</p></li>
+</ol></li>
+<li><p>Use the file names and directory structures specified in the course instructions. I use a variety of automated processing tools to coordinate this course and if you do not follow instructions closely, your assignments will not be processed. I will typically manually handle your submissions, but with a penalty applied to your grade. It is better for all parties if you avoid this.</p>
+<p>The helper scripts below can be used to confirm whether your submissions are properly formatted.</p></li>
+</ol>
+</section>
+<section id="helper-scripts" class="level2">
+<h2 class="anchored" data-anchor-id="helper-scripts">Helper Scripts</h2>
 <p>The following helper scripts can be used to help automate several students tasks in this course. To use any of them, run</p>
 <blockquote class="blockquote">
 <p><code>source("https://michael-weylandt.com/STA9750/load_helpers.R")</code></p>
@@ -486,20 +510,42 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="lint-submission" class="level3">
 <h3 class="anchored" data-anchor-id="lint-submission">Lint Submission</h3>
 <p>The following will automatically run the <code>lintr</code> package on a submitted <code>qmd</code> document.</p>
-<p>#| label: lint_submission lint_submission &lt;- function(N, peer_id){ library(rvest); library(glue); library(tidyverse); library(httr2); library(lintr) if(missing(N)){ N &lt;- menu(title=“Which Mini-Project submission would you like to lint?”, choices=c(0, 1, 2, 3, 4)) }</p>
-<p>if(missing(peer_id)){ peer_id &lt;- readline(“What is your Peer’s GitHub ID?”) }</p>
-<p>raw_url &lt;- glue(“https://raw.githubusercontent.com/{peer_id}/{course_repo}/refs/heads/main/mp0{N}.qmd”)</p>
-<p>cat(“Attempting to access qmd source at”, raw_url, “.”)</p>
-<p>resp &lt;- request(raw_url) |&gt; req_perform()</p>
-<p>if(resp_is_error(resp)){ cat(“I could not access the raw qmd document. Attempting to open in browser…”) browseURL(resp) return(FALSE) } else { cat(“I was able to access the raw qmd document. Beginning to lint.”)</p>
-<pre><code>  tf &lt;- tempfile(pattern=glue("mp0{N}_{peer_id}_lint_document.qmd"))
-  
-  writeLines(resp_body_string(resp), tf)
-  
-  lintr::lint(tf)</code></pre>
-<p>} }</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>lint_submission <span class="ot">&lt;-</span> <span class="cf">function</span>(N, peer_id){</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(rvest); <span class="fu">library</span>(glue); <span class="fu">library</span>(tidyverse); <span class="fu">library</span>(httr2); <span class="fu">library</span>(lintr)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">missing</span>(N)){</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    N <span class="ot">&lt;-</span> <span class="fu">menu</span>(<span class="at">title=</span><span class="st">"Which Mini-Project submission would you like to lint?"</span>, </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">choices=</span><span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">missing</span>(peer_id)){</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    peer_id <span class="ot">&lt;-</span> <span class="fu">readline</span>(<span class="st">"What is your Peer's GitHub ID? "</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  raw_url <span class="ot">&lt;-</span> <span class="fu">glue</span>(<span class="st">"https://raw.githubusercontent.com/{peer_id}/{course_repo}/refs/heads/main/mp0{N}.qmd"</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Attempting to access qmd source at"</span>, raw_url, <span class="st">".</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  resp <span class="ot">&lt;-</span> <span class="fu">request</span>(raw_url) <span class="sc">|&gt;</span> <span class="fu">req_perform</span>()</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">resp_is_error</span>(resp)){</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"I could not access the raw qmd document. Attempting to open in browser...</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>      <span class="fu">browseURL</span>(resp)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(<span class="cn">FALSE</span>)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"I was able to access the raw qmd document. Beginning to lint.</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>      tf <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">pattern=</span><span class="fu">glue</span>(<span class="st">"mp0{N}_{peer_id}_lint_document.qmd"</span>))</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>      <span class="fu">writeLines</span>(<span class="fu">resp_body_string</span>(resp), tf)</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>      lintr<span class="sc">::</span><span class="fu">lint</span>(tf)</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
