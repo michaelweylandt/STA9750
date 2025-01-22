@@ -77,7 +77,17 @@ library(quarto)
 if(!quarto::quarto_binary_sitrep()){
     stop("Something is wrong with your quarto installation.")
 }
-quarto::quarto_render(".")
+
+QMD_FILES <- list.files(recursive=TRUE,
+                        pattern="*qmd",
+                        full.names=TRUE)
+
+QMD_FILES <- QMD_FILES |> str_subset("(archive|_)", negate=TRUE)
+
+for(fname in QMD_FILES){
+    cat("Rendering", fname, "\n")
+    quarto::quarto_render(fname)
+}
 
 # Process navbar in archive folders
 cat("Adapting Archive Navbars")
