@@ -111,17 +111,20 @@ Dropping is mainly useful for
 `group_by` is an _adverb_. On its own, it does nothing; it changes the
 behavior of later functionality. 
 
-```{r include=FALSE}
+```{r}
+#| include: false
 library(palmerpenguins)
 library(tidyverse)
 ```
 
-```{r echo=TRUE}
+```{r}
+#| echo: true
 penguins |> drop_na() |> print(n=2)
 ```
 
 
-```{r echo=TRUE}
+```{r}
+#| echo: true
 penguins |> drop_na() |> group_by(species) |> print(n=2)
 ```
 
@@ -129,12 +132,14 @@ penguins |> drop_na() |> group_by(species) |> print(n=2)
 
 
 No `group_by` - full summarization:
-```{r echo=TRUE}
+```{r}
+#| echo: true
 penguins |> drop_na() |> summarize(mean(body_mass_g))
 ```
 
 With `group_by` - summary within groups. 
-```{r echo=TRUE}
+```{r}
+#| echo: true
 penguins |> drop_na() |> group_by(species) |> summarize(mean(body_mass_g))
 ```
 
@@ -142,13 +147,15 @@ penguins |> drop_na() |> group_by(species) |> summarize(mean(body_mass_g))
 
 With multiple grouping - "cross-tabs" of results: 
 
-```{r echo=TRUE}
+```{r}
+#| echo: true
 penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass_g))
 ```
 
 Note that result of multi-`group_by` is still grouped: 
 
-```{r echo=TRUE}
+```{r}
+#| echo: true
 penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass_g))
 ```
 
@@ -156,17 +163,20 @@ penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass_g))
 
 Changes next call to `summarize`:
 
-```{r echo=TRUE}
+```{r}
+#| echo: true
 penguins |> drop_na() |> group_by(species) |> 
     summarize(mbmg = mean(body_mass_g)) |> summarize(mean(mbmg))
 ```
 
-```{r echo=TRUE}
+```{r}
+#| echo: true
 penguins |> drop_na() |> group_by(species, sex) |> 
     summarize(mbmg = mean(body_mass_g)) |> summarize(mean(mbmg))
 ```
 
-```{r echo=TRUE}
+```{r}
+#| echo: true
 penguins |> drop_na() |> group_by(sex, species) |> 
     summarize(mbmg = mean(body_mass_g)) |> summarize(mean(mbmg))
 ```
@@ -183,7 +193,9 @@ penguins |> drop_na() |> group_by(sex, species) |>
 - Remove all grouping structure
 - Defensive to keep group structure from "propogating" unwantedly
 
-```{r, eval=FALSE, echo=TRUE}
+```{r}
+#| echo: true
+#| eval: false
 sum_penguins <- penguins |> 
     group_by(sex, species) |> 
     summarize(mbmg = mean(body_mass_g))
@@ -204,13 +216,15 @@ sum_penguins |> filter(mbmg == max(mbmg)) # Still grouped!!
 
 If you want to name them (so you can use them later), use named argument
 
-```{r echo=TRUE}
+```{r}
+#| echo: true
 penguins |> group_by(species) |> summarize(n())
 ```
 
 vs
 
-```{r echo=TRUE}
+```{r}
+#| echo: true
 penguins |> group_by(species) |> summarize(n_species = n())
 ```
 
@@ -220,7 +234,9 @@ Pipe syntax (`|>`) is "syntactic sugar"
 
 Just makes code easier to read: 
 
-```{r, eval=FALSE, echo=TRUE}
+```{r}
+#| echo: true
+#| eval: false
 penguins |> group_by(species) |> summarize(n_species = n())
 # vs
 summarize(group_by(penguins, species), n_species=n())

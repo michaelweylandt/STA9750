@@ -164,7 +164,8 @@ file path. Unfortunately, data providers are rarely as perfect as we might hope.
 Con-Ed, NYC's electric utility, provides electric usage data in 15-minute
 intervals. My usage data for 2024-10-24 looks something like this: 
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 cat(readLines("mw_coned_20241024.csv")[1:20], sep="\n")
 ```
 
@@ -175,7 +176,8 @@ code.
 
 The default `read.csv` function in `R` fails on this file: 
 
-```{r error=TRUE}
+```{r}
+#| error: true
 read.csv("mw_coned_20241024.csv")
 ```
 
@@ -245,7 +247,9 @@ The `USAGE (kWh)` column is clearly the most important to us, but `R` doesn't
 like column names with spaces and punctuation, so let's go ahead and manually
 rename it: 
 
-```{r warning=FALSE, message=FALSE}
+```{r}
+#| warning: false
+#| message: false
 library(readr); library(dplyr)
 con_ed <- read_csv("mw_coned_20241024.csv", skip = 6) |>
     rename(usage = `USAGE (kWh)`)
@@ -255,7 +259,9 @@ Recall that we have to use double back ticks to surround "weird" names. We
 can also drop the unused `NOTES` column and clean up the start and end time
 columns as well. 
 
-```{r warning=FALSE, message=FALSE}
+```{r}
+#| warning: false
+#| message: false
 library(readr); library(dplyr)
 con_ed <- read_csv("mw_coned_20241024.csv", skip = 6) |>
     rename(usage = `USAGE (kWh)`, 
@@ -266,7 +272,9 @@ con_ed <- read_csv("mw_coned_20241024.csv", skip = 6) |>
 
 We now have nice tidy data that we can use to make a plot: 
 
-```{r warning=FALSE, message=FALSE}
+```{r}
+#| warning: false
+#| message: false
 library(readr); library(dplyr); library(ggplot2)
 read_csv("mw_coned_20241024.csv", skip = 6) |>
     rename(usage = `USAGE (kWh)`, 
