@@ -5,6 +5,7 @@ format:
     code-link: true
 mp_num: "01"
 mp_title: "Welcome to the Commission to Analyze Taxpayer Spending (CATS)"
+engine: knitr
 ---
 
 ```{r}
@@ -23,7 +24,8 @@ DATES <- readr::read_csv("key_dates.csv") |>
 #| echo: false
 #| warning: false
 library(glue)
-mp_id <- 1
+library(rmarkdown)
+mp_id <- as.integer(rmarkdown::metadata$mp_num)
 mp <-  DATES |> filter(element == "Mini-Projects", 
                        item == mp_id)
 mp_file <- list(qmd=glue("`mp{sprintf('%02g', mp_id)}.qmd`"), 
