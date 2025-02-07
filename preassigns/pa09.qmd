@@ -1,6 +1,28 @@
 ---
-title: "{{< var course.short >}} Week 9 Pre Assignment: Flat-File Data Ingest"
+title: "{{< var course.short >}} Week {{< meta pa_num >}} Pre Assignment: {{< meta pa_title >}}"
+pa_num: 9
+pa_title: "Flat-File Data Ingest"
 ---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+NUMBER <- as.integer(rmarkdown::metadata$pa_num)
+due_date_str <- read_csv("key_dates.csv") |> 
+    filter(`Course Element` == "Pre-Assignments", 
+           `Item Number` == NUMBER, 
+           str_detect(Details, "Due")) |> 
+    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
+    pull(dt) |>
+    format("%Y-%m-%d (%A) at %I:%M%P")
+```
+
+**Due Date**: `{r} due_date_str`
+
+**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
+
 
 We now turn to the next "unit" of this course - acquiring data and preparing
 it for further analysis. In what follows, our goal will be go get data to a 

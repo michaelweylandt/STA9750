@@ -1,6 +1,28 @@
 ---
-title: "{{< var course.short >}} Week 8 Pre Assignment: More Plots"
+title: "{{< var course.short >}} Week {{< meta pa_num >}} Pre Assignment: {{< meta pa_title >}}"
+pa_num: 8
+pa_title: "More Plots"
 ---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+NUMBER <- as.integer(rmarkdown::metadata$pa_num)
+due_date_str <- read_csv("key_dates.csv") |> 
+    filter(`Course Element` == "Pre-Assignments", 
+           `Item Number` == NUMBER, 
+           str_detect(Details, "Due")) |> 
+    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
+    pull(dt) |>
+    format("%Y-%m-%d (%A) at %I:%M%P")
+```
+
+**Due Date**: `{r} due_date_str`
+
+**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
+
 
 This week, we will dive deeper into the world of `ggplot2`, with a focus
 on spatial data visualization and interactive graphics. Before we do so, 
