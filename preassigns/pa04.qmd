@@ -2,7 +2,10 @@
 title: "{{< var course.short >}} Week 4 Pre Assignment: Single-Table `dplyr` Verbs"
 ---
 
-```{r echo=FALSE, message=FALSE}
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
 library(tidyverse)
 NUMBER <- 4
 due_date_str <- read_csv("key_dates.csv") |> 
@@ -124,13 +127,15 @@ the `pipe` operator.
 
 `R` provides an operator `|>` which "rewrites" code, so 
 
-```{r eval=FALSE}
+```{r}
+#| eval: false
 select(penguins, species, island)
 ```
 
 and 
 
-```{r eval=FALSE}
+```{r}
+#| eval: false
 penguins |> select(species, island)
 ```
 
@@ -173,21 +178,24 @@ Here, note the use of the `==` operator for testing _equality_.
 A very common mistake is to use the single equals (assignment) 
 operator inside of `filter`. Thankfully, `dplyr` will alert us with an `error`
 if we make this mistake: 
-```{r, error=TRUE}
+```{r}
+#| error: true
 penguins |> filter(sex = "male")
 ```
 
 If we supply multiple tests to `filter`, we get the _intersection_: that is, 
 we get rows that pass _all_ tests. 
 
-```{r, error=TRUE}
+```{r}
+#| error: true
 penguins |> filter(sex == "male", bill_length_mm > 38)
 ```
 
 If we want the _union_-rows that satisfy _any_ of the tests-we have to use
 the logical operators we previous applied to vectors: 
 
-```{r, error=TRUE}
+```{r}
+#| error: true
 penguins |> filter( (sex == "male") | (bill_length_mm > 38))
 ```
 
@@ -347,7 +355,8 @@ Here, `R` applies the summarization function `mean` _groupwise_ for us.
 Before we close out, let's put this all together: what species has
 the largest difference in average body mass between the sexes? 
 
-```{r include=FALSE}
+```{r}
+#| include: false
 sex_diff <- penguins |> 
     group_by(species, sex) |>
     summarize(body_mass_avg_g = mean(body_mass_g, na.rm=TRUE)) |>

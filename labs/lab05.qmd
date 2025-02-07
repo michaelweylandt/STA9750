@@ -3,7 +3,8 @@ title: "{{< var course.short >}} Week 5 In-Class Activity: Let us `JOIN` Our Tab
 engine: knitr
 ---
 
-```{r include=FALSE}
+```{r}
+#| include: false
 if(!require("tidyverse")) install.packages("tidyverse")
 if(!require("nycflights13")) install.packages("nycflights13")
 library(tidyverse)
@@ -23,7 +24,9 @@ and read it into `R` and answer the following review questions with your group.
 
 The following code may be useful: 
 
-```{r, eval=FALSE, echo=TRUE}
+```{r}
+#| eval: false
+#| echo: true
 if(!file.exists("births.csv")){
     download.file("https://raw.githubusercontent.com/michaelweylandt/STA9750/main/births.csv", 
                   destfile="births.csv")
@@ -48,7 +51,8 @@ The columns here are:
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-```{r, eval=FALSE}
+```{r}
+#| eval: false
 births |> filter(day==1, month==1, year==1984)
 ```
 
@@ -58,7 +62,8 @@ births |> filter(day==1, month==1, year==1984)
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-```{r, eval=FALSE}
+```{r}
+#| eval: false
 births |> filter(year==1984) |> summarize(sum(births))
 ```
 
@@ -68,7 +73,8 @@ births |> filter(year==1984) |> summarize(sum(births))
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-```{r, eval=FALSE}
+```{r}
+#| eval: false
 births |> group_by(year) |> summarize(n_births = sum(births))
 ```
 
@@ -79,7 +85,8 @@ births |> group_by(year) |> summarize(n_births = sum(births))
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-```{r, eval=FALSE}
+```{r}
+#| eval: false
 births |> 
     group_by(year) |>
     summarize(n_births = sum(births)) |>
@@ -92,7 +99,8 @@ births |>
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-```{r, eval=FALSE}
+```{r}
+#| eval: false
 births |> 
     group_by(month) |>
     summarize(avg_births = mean(births)) |>
@@ -155,7 +163,8 @@ these logical tests to construct their output.
 The simplest and most useful logical test to use in a join is an equality test. 
 In `dplyr`, these are simply written as
 
-```{r, eval=FALSE}
+```{r}
+#| eval: false
 join_by(left_name == right_name)
 ```
 
@@ -166,7 +175,8 @@ first (left) argument matches the value in the `right_name` column of the second
 For example, if I wanted to join the `origin` column of `flights` table to the
 `faa` column of the `airports` table, I might use something like the following: 
 
-```{r eval=TRUE}
+```{r}
+#| eval: true
 inner_join(flights, airports, join_by(origin == faa))
 ```
 
@@ -191,7 +201,8 @@ and `weather` table on _many_ columns:
 
 In this case, we'd pass 5 equality conditions to `join_by`: 
 
-```{r eval=TRUE}
+```{r}
+#| eval: true
 inner_join(flights, 
            weather, 
            join_by(origin == origin,
@@ -208,7 +219,8 @@ results.
 Note that it is relatively common for matched columns to have the same name in
 both tables: to support this case, `dplyr` reads a single column name as "self-equality". So the above code can be more concisely written as: 
 
-```{r eval=TRUE}
+```{r}
+#| eval: true
 inner_join(flights, 
            weather, 
            join_by(origin, 
