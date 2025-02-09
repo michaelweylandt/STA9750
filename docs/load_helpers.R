@@ -69,8 +69,8 @@ mp_submission_verify <- function(N, github_id){
   
   name_match <- which(issue_names == title)
   
-  if(length(name_match) == 0){
-    cat("I could not find an issue with the title:\n", 
+  if(length(name_match) != 1){
+    cat("I could not find a unique issue with the title:\n", 
         "    ", sQuote(title),"\n",
         "The issues I found had the following titles:\n",
         paste(c("", issue_names), collapse="\n - "), "\n",
@@ -209,8 +209,8 @@ mp_feedback_verify <- function(N, github_id, peer_id){
   
   name_match <- which(issue_names == title)
   
-  if(length(name_match) != 0){
-      cat("I could not find an issue with the title:\n", 
+  if(length(name_match) != 1){
+      cat("I could not find a unique issue with the title:\n", 
           "    ", sQuote(title),"\n",
           "I'm afraid I can't verify whether the peer feedback was submitted properly.\n")
           stop("PEER FEEDBACK NOT VERIFIED.")
