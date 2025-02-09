@@ -70,21 +70,30 @@ mp_submission_verify <- function(N, github_id){
   name_match <- which(issue_names == title)
   
   if(length(name_match) == 0){
-      cat("I could not find an issue with the title:\n", 
-          "    ", sQuote(title),"\n",
-          "The issues I found had the following titles:\n",
-          paste(c("", issue_names), collapse="\n - "), "\n",
-          "If something on that list looks correct, please check",
-          "capitalization and punctuation.\n")
-          stop("MINIPROJECT NOT SUBMITTED CORRECTLY.")
+    cat("I could not find an issue with the title:\n", 
+        "    ", sQuote(title),"\n",
+        "The issues I found had the following titles:\n",
+        paste(c("", issue_names), collapse="\n - "), "\n",
+        "If something on that list looks correct, please check",
+        "capitalization and punctuation.\n")
+      
+    case_insensitive_match <- which(tolower(issue_names) == tolower(title))
+        
+    if(length(case_insensitive_match) > 0){
+      cat("In particular, please check", 
+          sQuote(issue_names[case_insensitive_match]), 
+          "which appears to be the same, modulo capitalization.\n")
+    }
+         
+    stop("MINIPROJECT NOT SUBMITTED CORRECTLY.")
   } else if(length(name_match) > 1){
-     cat("I found multiple issues with the title:\n", 
-          "    ", sQuote(title),"\n",
-          "Please change the names of issues so that there is only", 
-          "issue with the desired name. (Note that closing an issue is",
-          "not sufficient.)\n")
+    cat("I found multiple issues with the title:\n", 
+        "    ", sQuote(title),"\n",
+        "Please change the names of issues so that there is only", 
+        "issue with the desired name. (Note that closing an issue is",
+        "not sufficient.)\n")
           
-          stop("MINIPROJECT NOT SUBMITTED CORRECTLY.")
+    stop("MINIPROJECT NOT SUBMITTED CORRECTLY.")
   }
   
   issue <- issues[[name_match]]
@@ -96,9 +105,9 @@ mp_submission_verify <- function(N, github_id){
   cat("Identified Issue #", issue_num, "at", issue_url, "as possible candidate.\n")
   
   if(issue$state != "open"){
-     cat("Issue does not appear to be in 'open' status. Please",
-         "confirm the issue is open and try again.\n")
-     stop("MINIPROJECT NOT SUBMITTED CORRECTLY.")
+    cat("Issue does not appear to be in 'open' status. Please",
+        "confirm the issue is open and try again.\n")
+    stop("MINIPROJECT NOT SUBMITTED CORRECTLY.")
   }
   
   if(issue_body != body){
@@ -127,7 +136,9 @@ mp_submission_verify <- function(N, github_id){
         stop("MINIPROJECT NOT SUBMITTED CORRECTLY.")
   }
   
-  resp <- request(submitted_url) |> req_perform()
+  resp <- request(submitted_url) |> 
+      req_error(is_error = \(r) FALSE) |>
+      req_perform()
   
   if(resp_is_error(resp)){
     cat("Something appears to be incorrect at the URL: ", 
@@ -284,7 +295,9 @@ lint_submission <- function(N, peer_id){
   
   cat("Attempting to access qmd source at", raw_url, ".\n")
   
-  resp <- request(raw_url) |> req_perform()
+  resp <- request(raw_url) |> 
+      req_error(is_error = \(r) FALSE) |>
+      req_perform()
   
   if(resp_is_error(resp)){
       cat("I could not access the raw qmd document. Attempting to open in browser...\n")
