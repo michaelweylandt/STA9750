@@ -195,7 +195,7 @@ mp_submission_verify <- function(N, github_id){
   issue_url <- issue$html_url
   issue_body <- issue$body |> str_squish()
   
-  cat("Identified Issue #", issue_num, "at", issue_url, "as possible candidate.")
+  cat("Identified Issue #", issue_num, "at", issue_url, "as possible candidate.\n")
   
   if(issue$state != "open"){
      cat("Issue does not appear to be in 'open' status. Please",
@@ -239,9 +239,15 @@ mp_submission_verify <- function(N, github_id){
     stop("MINIPROJECT NOT SUBMITTED SUCCESSFULLY.")
   }
   
-  raw_url <- glue("https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/mp0{N}.qmd")
+  if(N == 0){
+    raw_url <- glue("https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/index.qmd")
+  } else {
+    raw_url <- glue("https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/mp0{N}.qmd")
+  }
   
-  resp_raw <- request(raw_url) |> req_perform()
+  resp_raw <- request(raw_url) |> 
+      req_error(is_error = \(r) FALSE) |>
+      req_perform()
   
   if(resp_is_error(resp_raw)){
       cat("I cannot find the source qmd document at", raw_url, ".\n",

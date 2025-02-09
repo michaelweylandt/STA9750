@@ -4,7 +4,12 @@ course_repo  <- variables$course$repo
 course_short <- variables$course$short
 
 mp_submission_create <- function(N, github_id){
-  library(rvest); library(glue); library(tidyverse); library(httr2); library(gh)
+  library(rvest)
+  library(glue)
+  library(tidyverse)
+  library(httr2)
+  library(gh)
+  
   if(missing(N)){
     N <- menu(title="Which Mini-Project would you like to submit on GitHub?", 
               choices=c(0, 1, 2, 3, 4))
@@ -88,7 +93,7 @@ mp_submission_verify <- function(N, github_id){
   issue_url <- issue$html_url
   issue_body <- issue$body |> str_squish()
   
-  cat("Identified Issue #", issue_num, "at", issue_url, "as possible candidate.")
+  cat("Identified Issue #", issue_num, "at", issue_url, "as possible candidate.\n")
   
   if(issue$state != "open"){
      cat("Issue does not appear to be in 'open' status. Please",
@@ -132,9 +137,15 @@ mp_submission_verify <- function(N, github_id){
     stop("MINIPROJECT NOT SUBMITTED SUCCESSFULLY.")
   }
   
-  raw_url <- glue("https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/mp0{N}.qmd")
+  if(N == 0){
+    raw_url <- glue("https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/index.qmd")
+  } else {
+    raw_url <- glue("https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/mp0{N}.qmd")
+  }
   
-  resp_raw <- request(raw_url) |> req_perform()
+  resp_raw <- request(raw_url) |> 
+      req_error(is_error = \(r) FALSE) |>
+      req_perform()
   
   if(resp_is_error(resp_raw)){
       cat("I cannot find the source qmd document at", raw_url, ".\n",
@@ -241,7 +252,9 @@ mp_feedback_verify <- function(N, github_id, peer_id){
 }
 
 count_words <- function(url){
-    library(rvest); library(stringi)
+    library(rvest)
+    library(stringi)
+    
     # Note that this includes code inside an inline block, but omits
     # full-sized code blocks
     read_html(url) |>
@@ -252,10 +265,15 @@ count_words <- function(url){
 }
 
 lint_submission <- function(N, peer_id){
-  library(rvest); library(glue); library(tidyverse); library(httr2); library(lintr)
+  library(rvest)
+  library(glue)
+  library(tidyverse)
+  library(httr2)
+  library(lintr)
+
   if(missing(N)){
     N <- menu(title="Which Mini-Project submission would you like to lint?", 
-              choices=c(0, 1, 2, 3, 4))
+              choices=c(1, 2, 3, 4))
   }
     
   if(missing(peer_id)){
