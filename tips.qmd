@@ -40,6 +40,16 @@ course_short <- variables$course$short
       you need to use multiple computers, reach out to
       course staff in office hours for advice.
       
+      In particular, even though it may be tempting to edit files
+      directly through the GitHub web interface, resist! You will
+      get into situations where your local copy and the copy on
+      GitHub are out of sync and you will have issues pushing
+      your work onto GitHub. 
+      
+      (It is possible to fix this, but you'll have to learn a lot
+      more about how `git` works, far beyond what is expected of
+      you in this course.)
+      
    3) You `git push` at the end of every work session. This
       is the stage when things are most likely to go wrong,
       so you want to be `push`ing early and often, giving
@@ -171,8 +181,8 @@ mp_submission_verify <- function(N, github_id){
   
   name_match <- which(issue_names == title)
   
-  if(length(name_match) == 0){
-    cat("I could not find an issue with the title:\n", 
+  if(length(name_match) != 1){
+    cat("I could not find a unique issue with the title:\n", 
         "    ", sQuote(title),"\n",
         "The issues I found had the following titles:\n",
         paste(c("", issue_names), collapse="\n - "), "\n",
@@ -324,8 +334,8 @@ mp_feedback_verify <- function(N, github_id, peer_id){
   
   name_match <- which(issue_names == title)
   
-  if(length(name_match) != 0){
-      cat("I could not find an issue with the title:\n", 
+  if(length(name_match) != 1){
+      cat("I could not find a unique issue with the title:\n", 
           "    ", sQuote(title),"\n",
           "I'm afraid I can't verify whether the peer feedback was submitted properly.\n")
           stop("PEER FEEDBACK NOT VERIFIED.")
