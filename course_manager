@@ -1,0 +1,156 @@
+#!/usr/bin/env python
+import click
+import os.path as op
+from pathlib import Path
+import pandas as pd
+import functools
+import yaml
+import json
+import subprocess
+
+@functools.cache
+def git_version():
+    "Return the current git hash (for use in auto-posting to student repos"
+    # https://stackoverflow.com/a/57683700
+    return subprocess.check_output(["git", "describe", "--always"]).\
+              strip().decode()
+
+@functools.cache
+def course_directory():
+    with open("_teaching.yml") as f: 
+        course_config = yaml.safe_load(f)
+        
+    return course_config["gradedir"]
+
+@functools.cache
+def roster_file():
+    print(course_directory())
+    filename = Path(op.join(course_directory(), "roster.json")).\
+                 expanduser().\
+                 resolve(strict=True)
+    filename.touch(exist_ok=True)
+    return filename
+
+@click.group()
+def course_manager():
+    """Course Management Tool (CISSOID) for STA9750
+
+This tool can be used to perform various administrative things (e.g., roster
+management, peer feedback assignment, etc.) associated with STA 9750."""
+
+@course_manager.group()
+def roster():
+    """Course Roster Management
+
+This subcommand manages the course roster. As part of Mini-Project #00, students
+should register their GitHub ID with the instructor. The instructor must log
+these GitHub IDs here. Once the course is underway, the instructor can use
+this command to drop / deactive students, delete them entirely (in rare
+circumstances) or otherwise manage the course. Note that this roster is
+used implicitly by all other commands, so it must be kept up to date."""
+def current_roster():
+    try:
+        return pd.read_json(roster_file())
+    except ValueError:
+        return pd.DataFrame()
+
+@roster.command(name="list")
+def roster_list():
+    print(current_roster())
+
+@roster.command(name="add")
+@click.option("--github", help="Student's GitHub ID", 
+              prompt="What is the Student's GitHub ID?")
+@click.option("--email", help="Student's Email",
+              prompt="What is the Student's Email?")
+@click.option("--emplid", help="Student's CUNY EmplID", 
+              prompt="What is the Student's CUNY EmplID?")
+@click.option("--name", help="Student's Real Name", 
+              prompt="What is the Student's Real Name?")
+def roster_add(github, email, emplid, name):
+    NEW_STUDENT = pd.DataFrame({"github": github, 
+                                "email": email, 
+                                "emplid": emplid, 
+                                "name": name, 
+                                "active": True, 
+                                "project_team": None}, 
+                                index=[emplid])
+                                
+    ROSTER = current_roster()
+    
+    if not ROSTER.empty and github in ROSTER.github.values:
+        warning("Student with GitHub ID", github, "already in roster.")
+        click.confirm("Should I overwrite?", abort=True)
+        
+    NEW_ROSTER = pd.concat([ROSTER, NEW_STUDENT], ignore_index=True)
+    
+    print("The following student has been added to the roster")
+    print(NEW_STUDENT)
+    
+    with open(roster_file(), "w+") as f:
+        f.write(NEW_ROSTER.to_json())
+        
+
+@roster.command(name="delete")
+@click.option("--github", help="Student's GitHub ID", 
+              prompt="What is the Student's GitHub ID?", 
+              prompt_required=False,
+              default=None)
+def roster_delete(github): 
+    ROSTER = current_roster()
+    
+    print(ROSTER)
+    
+    if github is None:
+        github = click.prompt(
+            "Which student would you like to delete?", 
+            type=click.Choice(ROSTER.github.values)
+        )
+        
+    if github not in ROSTER.github.values:
+        click.abort("Could not match user to existing roster")
+        
+    DROPPER = ROSTER.loc[ROSTER["github"] == github]
+    
+    print("Student to be deleted:")
+    print(DROPPER)
+    click.confirm("Are you sure you want to delete this student?", abort=True)
+    
+    NEW_ROSTER =  ROSTER.loc[ROSTER["github"] != github]
+    
+    with open(roster_file(), "w+") as f:
+        f.write(NEW_ROSTER.to_json())
+        
+@course_manager.group()
+def project():
+    """Course Project Management
+
+This subcommand manages the course project. It includes functionality to create
+groups, add students to them, and to assign grades for group-based work."""
+
+@project.command(name="create")
+def project_create():
+    "Define a new team. After running this, use 'build' to add or remove students."
+    raise NotImplementedError
+
+@project.command(name="list")
+def project_list():
+    "List existing teams (with members) and identify students not yet on a team."
+    raise NotImplementedError
+
+@project.command(name="grade")
+def project_grade():
+    "Assign group project grades"
+    raise NotImplementedError
+
+@course_manager.group()
+def minis():
+    """Mini-Project Management
+
+This subcommand manages the mini-projects (homework). It includes functionality
+to automatically verify GitHub submissions, to download GitHub submissions, 
+to assign peer feedback, to download peer feedback once complete, and to assign
+meta-reviews."""
+
+if __name__ == "__main__":
+    course_manager()
