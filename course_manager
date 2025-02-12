@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import click
+import re
+import os
 import os.path as op
 from pathlib import Path
 import pandas as pd
@@ -7,11 +9,29 @@ import functools
 import yaml
 import json
 import subprocess
+import requests as r
+from bs4 import BeautifulSoup as BS
+from collections import namedtuple
+import subprocess
+from datetime import datetime
+
+def str_simplify(x):
+    return re.sub("\s+", " ", x.replace(" +", " ").lower())
 
 def vecho(*args, **kwargs):
     if click.get_current_context().params["verbose"]:
         return click.echo(*args, **kwargs)
     return None
+
+def print_web_to_pdf(url, output_file):
+    CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    FLAGS = ["--headless", "--disable-gpu"]
+    
+    OUTPUT= f"--print-to-pdf={output_file}"
+    INPUT = url
+    
+    return subprocess.run([CHROME] + FLAGS + [OUTPUT] + [INPUT], 
+                          check=True)
 
 @functools.cache
 def git_version():
@@ -21,16 +41,70 @@ def git_version():
               strip().decode()
 
 @functools.cache
-def course_directory():
+def gh_pat():
+    "Read GitHub PAT from relevant file"
+    with open(".githubPAT") as f:
+        return f.read().strip()
+    
+@functools.cache
+def _gh(path):
+    headers = {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': f'Bearer {gh_pat()}',
+        'X-GitHub-Api-Version': '2022-11-28',
+    }
+    
+    fullpath = "https://api.github.com/" + path
+    
+    return r.get(fullpath).json()
+    
+    
+Issue = namedtuple("Issue", [
+    "title", "number", "html_url", "body", "state"
+])
+
+Comment = namedtuple("Comment", [
+    "commenter", "text", "ctime", "url"
+])
+
+@functools.cache
+def gh_list_issues(owner):
+    resp = _gh(f'/repos/{owner}/{course_repo()}/issues?state=all')
+    if "status" in resp and resp["status"] != "200":
+        return dict()
+    return {str_simplify(i["title"]): Issue(i["title"], i["number"], i["html_url"], i["body"], i["state"]) for i in resp}
+
+@functools.cache
+def gh_list_comments(owner, issue_id):
+    resp = _gh(f'/repos/{owner}/{course_repo()}/issues/{issue_id}/comments')
+    if "status" in resp and resp["status"] != "200":
+        return list()
+    return [Comment(c["user"]["login"], c["body"], c["created_at"], c["html_url"]) for c in resp]
+
+@functools.cache
+def course_dir():
     with open("_teaching.yml") as f: 
         course_config = yaml.safe_load(f)
         
-    return course_config["gradedir"]
+    return op.expanduser(course_config["gradedir"])
+
+@functools.cache
+def course_short():
+    with open("_variables.yml") as f: 
+        course_config = yaml.safe_load(f)
+        
+    return course_config["course"]["short"]
+
+@functools.cache
+def course_repo():
+    with open("_variables.yml") as f: 
+        course_config = yaml.safe_load(f)
+        
+    return course_config["course"]["repo"]
 
 @functools.cache
 def roster_file():
-    filename = Path(op.join(course_directory(), "roster.json")).\
-                 expanduser().\
+    filename = Path(op.join(course_dir(), "roster.json")).\
                  resolve(strict=True)
     filename.touch(exist_ok=True)
     return filename
@@ -43,8 +117,7 @@ def course_manager(verbose):
 
 This tool can be used to perform various administrative things (e.g., roster
 management, peer feedback assignment, etc.) associated with STA 9750."""
-    print(verbose)
-    vecho("Course Directory: " + course_directory())
+    vecho("Course Directory: " + course_dir())
 
 @course_manager.group()
 def roster():
@@ -67,13 +140,13 @@ def roster_list():
     click.echo(current_roster())
 
 @roster.command(name="add")
-@click.option("--github", help="Student's GitHub ID", 
+@click.option("-g", "--github", help="Student's GitHub ID", 
               prompt="What is the Student's GitHub ID?")
-@click.option("--email", help="Student's Email",
+@click.option("-e", "--email", help="Student's Email",
               prompt="What is the Student's Email?")
-@click.option("--emplid", help="Student's CUNY EmplID", 
+@click.option("-E", "--emplid", help="Student's CUNY EmplID", 
               prompt="What is the Student's CUNY EmplID?")
-@click.option("--name", help="Student's Real Name", 
+@click.option("-n", "--name", help="Student's Real Name", 
               prompt="What is the Student's Real Name?")
 def roster_add(github, email, emplid, name):
     NEW_STUDENT = pd.DataFrame({"github": github, 
@@ -161,13 +234,224 @@ to assign peer feedback, to download peer feedback once complete, and to assign
 meta-reviews."""
 
 @mini.command(name="archive")
-@click.option('--mpid', "project_id", prompt="Which mini-project to verify?", 
+@click.option('-N', '--number', "project_id", 
+              prompt="Which mini-project to archive?", 
               type=click.IntRange(min=0, max=4))
-def mini_archive(project_id):
-    ROSTER = current_roster()
+@click.option('-g', '--github', multiple=True, 
+              help="GitHub ID to verify. Can be given multiple times. If blank, all active students in roster.")
+def mini_archive(project_id, github):
+    """Archive Student Mini-Project Submissions
     
-    for ghid in ROSTER.github.values:
-        click.echo("Processing " + ghid)
+This function will archive all elements of a student's mini-project
+submission. It is designed to be used after deadlines pass, but it can
+be run repeatedly if needed. Specifically, this function will: 
+    
+1) Sync the student's Git repository (cloning if needed)
+2) Download all issue comment threads
+3) Export a PDF of their rendered site. 
+
+PDF export depends on a headless use of Chrome/Chromium and
+may be a bit tricky to get working."""
+    if not github: 
+        github = current_roster().github.values
+    
+    for gh in github:
+        click.echo(f"Archiving Mini-Project #0{project_id} for User {gh}")
+        
+        click.echo("Syncronizing Git Repository")
+        
+        student_dir = op.join(course_dir(), gh)
+        student_git_dir = op.join(student_dir, "git")
+        # Don't worry too much about race conditions / file system issues
+        os.makedirs(student_git_dir, exist_ok=True) 
+        
+        if op.exists(op.join(student_git_dir, ".git")):
+            subprocess.run(["git", "-C", student_git_dir, "pull"])
+        else: 
+            student_repo_url = f"https://github.com/{gh}/{course_repo()}"
+            subprocess.run(["git", "clone", student_repo_url, student_git_dir])
+        
+        click.echo("Exporting Web Page as PDF")
+        
+        now = datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S_%Z")
+        student_web_dir = op.join(student_dir, now, "pdfs")
+        # Don't worry too much about race conditions / file system issues
+        os.makedirs(student_web_dir, exist_ok=True)
+        if project_id > 0:
+            student_mp_url = f"https://{gh}.github.io/{course_repo()}/mp0{project_id}"
+            student_mp_pdf = op.join(student_web_dir, f"mp0{project_id}.pdf")
+        else: 
+            student_mp_url = f"https://{gh}.github.io/{course_repo()}/"
+            student_mp_pdf = op.join(student_web_dir, "index.pdf")
+            
+        rr = print_web_to_pdf(student_mp_url, student_mp_pdf)
+        
+        if rr.returncode: 
+            click.echo(f"Failed to export {student_mp_url} to PDF.")
+        
+        student_issues_dir = op.join(student_dir, now, "issues")
+        # Don't worry too much about race conditions / file system issues
+        os.makedirs(student_issues_dir, exist_ok=True)
+        
+        click.echo(f"Exporting GitHub Issues to {student_issues_dir}")
+        
+        ISSUES = [issue._asdict() for issue in gh_list_issues(gh).values()]
+        
+        for issue in ISSUES:
+            click.echo(f" - Exporting Issue #{issue['number']}")
+            issue["comments"] = [c._asdict() for c in gh_list_comments(gh, issue["number"])]
+            issue_file = op.join(student_issues_dir, f"issue{issue['number']}.json")
+            
+            with open(issue_file, "w") as f:
+                f.write(json.dumps(issue, indent=4))
+                
+        current_symlink = op.join(student_dir, "pdf")
+        try: 
+            os.remove(current_symlink)
+        except FileNotFoundError:
+            pass
+        os.symlink(student_web_dir, current_symlink, target_is_directory=True)
+        
+        
+        current_symlink = op.join(student_dir, "issues")
+        try: 
+            os.remove(current_symlink)
+        except FileNotFoundError:
+            pass
+        os.symlink(student_issues_dir, current_symlink, target_is_directory=True)
+        
+@mini.command(name="verify")
+@click.option('-N', '--number', "project_id", 
+              prompt="Mini-Project submission to verify", 
+              type=click.IntRange(min=0, max=4))
+@click.option('-g', '--github', multiple=True, 
+              help="GitHub ID to verify. Can be given multiple times. If blank, all active students in roster. ")
+def mini_verify(project_id, github):
+    """Verify that a mini-project was submitted and formatted correctly
+    
+This script can be used to verify correct submission of mini-projects and,
+if necessary, to highlight possible issues. This function does _not_ provide 
+feedback for students and is primarily intended for instructor use.
+
+To process submissions after the deadline passes, use the `process` command 
+instead."""
+    MP_URL = f"https://michael-weylandt.com/STA9750/miniprojects/mini0{project_id}.html"
+    
+    MP_PAGE = r.get(MP_URL)
+    MP_TEXT = BS(MP_PAGE.text, features="lxml").find(id="submission-text").\
+                                                get_text().strip()
+    
+    if not github: 
+        github = current_roster().github.values
+        
+    RESULTS = {g: None for g in github}
+        
+    for gh in github:
+        click.echo("-----------------------------------")
+        click.echo(f"Attempting to verify for user {gh}")
+        TITLE = f"{course_short()} {gh} MiniProject #0{project_id}"
+        BODY = MP_TEXT.replace("<GITHUB_ID>", gh)
+        
+        ISSUES = gh_list_issues(gh)
+        
+        if not ISSUES:
+            click.echo("No issues found for user {gh} in repo {course_repo()}")
+            RESULTS[gh] = (False, gh, "NO ISSUES FOUND", None)
+            continue
+
+        if str_simplify(TITLE) not in ISSUES.keys():
+            click.echo("I could not find an issue with the desired title:")
+            click.echo(f" - {TITLE}")
+            click.echo("I found issues with the following titles instead:")
+            
+            for t in ISSUES.values():
+                click.echo(f" - {t.title}")
+                
+            RESULTS[gh] = (False, gh, "NO TITLE MATCH", None)
+            continue
+        
+        ISSUE = ISSUES[str_simplify(TITLE)]
+        
+        if ISSUE.state != "open":
+            click.echo("Issue {TITLE} is not in 'open' state")
+            RESULTS[gh] = (False, gh, "ISSUE CLOSED", ISSUE.number)
+            
+        URL_REGEX = "http[A-Za-z0-9:/\\.\\-]+"
+        
+        SUB_URL = re.search(URL_REGEX, ISSUE.body)
+        EXPECTED_URL = re.search(URL_REGEX, BODY)
+        
+        if EXPECTED_URL is None:
+            click.abort("Could not find expected URL in MP Instructions")
+            
+        if SUB_URL is None: 
+            click.echo("No URL found in submission")
+            RESULTS[gh] = (False, gh, "NO URL", ISSUE.number)
+            continue
+        
+        SUB_URL = SUB_URL.group()
+        EXPECTED_URL = EXPECTED_URL.group()
+        
+        if SUB_URL != EXPECTED_URL: 
+            click.echo("Submitted URL does not match MP Instructions")
+            click.echo("Expected: " + EXPECTED_URL)
+            click.echo("Submitted: " + SUB_URL)
+            
+            RESULTS[gh] = (False, gh, "INCORRECT URL", ISSUE.number)
+            continue
+        
+        SUB_RESP = r.get(SUB_URL)
+        
+        if not SUB_RESP.ok:
+            click.echo("Submitted URL did not resolve properly")
+            click.echo(" - Submitted: " + SUB_URL)
+            
+            RESULTS[gh] = (False, gh, "INVALID URL", ISSUE.number)
+            continue
+        
+        if project_id: 
+            RAW_URL = f"https://raw.githubusercontent.com/{gh}/{course_repo()}/refs/heads/main/mp0{project_id}.qmd"
+        else: 
+            RAW_URL = f"https://raw.githubusercontent.com/{gh}/{course_repo()}/refs/heads/main/index.qmd"
+            
+        RAW_RESP = r.get(RAW_URL)
+        
+        if not RAW_RESP.ok:
+            # Some students use 'master' instead of 'main' branch 
+            # so try this as well
+            RAW_URL = RAW_URL.replace("main", "master")
+            RAW_RESP = r.get(RAW_URL)
+        
+        if not RAW_RESP.ok: 
+            click.echo("Could not identify qmd source")
+            click.echo(" - Expected: " + RAW_URL)
+            
+            RESULTS[gh] = (False, gh, "NO SOURCE", ISSUE.number)
+            continue
+        
+        RESULTS[gh] = (True, gh, "SUCCESS", ISSUE.number)
+        
+    DF = pd.DataFrame(RESULTS).T
+    DF.columns = ["ok", "github", "message", "issue_num"]
+    
+    if DF.ok.any():
+        click.echo("-----------------------------------")
+        click.echo("----------ANALYSIS COMPLETE--------")
+        click.echo("-----------------------------------")
+        click.echo(f"MP {project_id} successfully verified for: ")
+        click.echo(", ".join(DF[DF.ok].github.values))
+        
+    if not DF.ok.all():
+        click.echo("-----------------------------------")
+        click.echo("Problems were identified for the following users.")
+        
+        for _, row in DF[DF.ok != True].iterrows():
+            if row.issue_num:
+                click.echo(f"- GitHub user {row.github} failed with message {row.message}. See https://github.com/{row.github}/{course_repo()}/issues/{row.issue_num} for details")
+            else: 
+                click.echo(f"- GitHub user {row.github} failed with message {row.message}. No suitable issue found")
+                
+    return DF
 
 if __name__ == "__main__":
     course_manager()
