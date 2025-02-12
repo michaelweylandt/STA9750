@@ -8,6 +8,11 @@ import yaml
 import json
 import subprocess
 
+def vecho(*args, **kwargs):
+    if click.get_current_context().params["verbose"]:
+        return click.echo(*args, **kwargs)
+    return None
+
 @functools.cache
 def git_version():
     "Return the current git hash (for use in auto-posting to student repos"
@@ -24,7 +29,6 @@ def course_directory():
 
 @functools.cache
 def roster_file():
-    print(course_directory())
     filename = Path(op.join(course_directory(), "roster.json")).\
                  expanduser().\
                  resolve(strict=True)
@@ -32,11 +36,15 @@ def roster_file():
     return filename
 
 @click.group()
-def course_manager():
+@click.option("-v", "--verbose", count=True,
+              help="Include additional output", default=False)
+def course_manager(verbose):
     """Course Management Tool (CISSOID) for STA9750
 
 This tool can be used to perform various administrative things (e.g., roster
 management, peer feedback assignment, etc.) associated with STA 9750."""
+    print(verbose)
+    vecho("Course Directory: " + course_directory())
 
 @course_manager.group()
 def roster():
@@ -56,7 +64,7 @@ def current_roster():
 
 @roster.command(name="list")
 def roster_list():
-    print(current_roster())
+    click.echo(current_roster())
 
 @roster.command(name="add")
 @click.option("--github", help="Student's GitHub ID", 
@@ -84,8 +92,8 @@ def roster_add(github, email, emplid, name):
         
     NEW_ROSTER = pd.concat([ROSTER, NEW_STUDENT], ignore_index=True)
     
-    print("The following student has been added to the roster")
-    print(NEW_STUDENT)
+    click.echo("The following student has been added to the roster")
+    click.echo(NEW_STUDENT)
     
     with open(roster_file(), "w+") as f:
         f.write(NEW_ROSTER.to_json())
@@ -99,7 +107,7 @@ def roster_add(github, email, emplid, name):
 def roster_delete(github): 
     ROSTER = current_roster()
     
-    print(ROSTER)
+    click.echo(ROSTER)
     
     if github is None:
         github = click.prompt(
@@ -112,8 +120,8 @@ def roster_delete(github):
         
     DROPPER = ROSTER.loc[ROSTER["github"] == github]
     
-    print("Student to be deleted:")
-    print(DROPPER)
+    click.echo("Student to be deleted:")
+    click.echo(DROPPER)
     click.confirm("Are you sure you want to delete this student?", abort=True)
     
     NEW_ROSTER =  ROSTER.loc[ROSTER["github"] != github]
@@ -144,13 +152,22 @@ def project_grade():
     raise NotImplementedError
 
 @course_manager.group()
-def minis():
+def mini():
     """Mini-Project Management
 
 This subcommand manages the mini-projects (homework). It includes functionality
 to automatically verify GitHub submissions, to download GitHub submissions, 
 to assign peer feedback, to download peer feedback once complete, and to assign
 meta-reviews."""
+
+@mini.command(name="archive")
+@click.option('--mpid', "project_id", prompt="Which mini-project to verify?", 
+              type=click.IntRange(min=0, max=4))
+def mini_archive(project_id):
+    ROSTER = current_roster()
+    
+    for ghid in ROSTER.github.values:
+        click.echo("Processing " + ghid)
 
 if __name__ == "__main__":
     course_manager()
