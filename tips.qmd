@@ -288,6 +288,14 @@ mp_submission_verify <- function(N, github_id){
       req_perform()
   
   if(resp_is_error(resp_raw)){
+      ## Try again with 'master' instead of 'main' branch
+      raw_url <- str_replace(raw_url, "main", "master")
+      resp_raw <- request(raw_url) |> 
+      req_error(is_error = \(r) FALSE) |>
+      req_perform()
+  }
+  
+  if(resp_is_error(resp_raw)){
       cat("I cannot find the source qmd document at", raw_url, ".\n",
           "Please confirm it was correctly submitted and try again.\n",
           "This document is needed for automated code quality checks.\n")
