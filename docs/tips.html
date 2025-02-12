@@ -313,7 +313,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  name_match <span class="ot">&lt;-</span> <span class="fu">which</span>(issue_names <span class="sc">==</span> title)</span>
 <span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(name_match) <span class="sc">!=</span> <span class="dv">1</span>){</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(name_match) <span class="sc">==</span> <span class="dv">0</span>){</span>
 <span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"I could not find a unique issue with the title:</span><span class="sc">\n</span><span class="st">"</span>, </span>
 <span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>        <span class="st">"    "</span>, <span class="fu">sQuote</span>(title),<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>,</span>
 <span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>        <span class="st">"The issues I found had the following titles:</span><span class="sc">\n</span><span class="st">"</span>,</span>
@@ -360,59 +360,64 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a>        <span class="st">"information is included.</span><span class="sc">\n</span><span class="st">"</span>)</span>
 <span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a>  urls <span class="ot">&lt;-</span> <span class="fu">str_match_all</span>(<span class="fu">paste</span>(issue_body, <span class="st">"</span><span class="sc">\n</span><span class="st"> Thanks!</span><span class="sc">\n</span><span class="st">"</span>, <span class="at">sep=</span><span class="st">""</span>), <span class="st">"http.*"</span>)[[<span class="dv">1</span>]]</span>
-<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a>  expected_url <span class="ot">&lt;-</span> <span class="fu">str_extract</span>(body, <span class="st">"http.*"</span>)</span>
-<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(urls) <span class="sc">&gt;</span> <span class="dv">1</span>){</span>
-<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"The following URLs were found in the issue text:"</span>,</span>
-<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>        <span class="fu">paste</span>(<span class="fu">c</span>(<span class="st">""</span>, urls), <span class="at">collapse=</span><span class="st">"</span><span class="sc">\n</span><span class="st"> - "</span>), </span>
-<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Only one URL was expected; please remove any extras.</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"MINIPROJECT NOT SUBMITTED CORRECTLY."</span>)</span>
-<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a>  submitted_url <span class="ot">&lt;-</span> urls[<span class="dv">1</span>]</span>
-<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(submitted_url <span class="sc">!=</span> expected_url){</span>
-<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"The submitted URL does not match the Mini-Project instructions.</span><span class="sc">\n</span><span class="st">"</span>, </span>
-<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Expected:</span><span class="sc">\n</span><span class="st"> - "</span>, expected_url, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>, </span>
-<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Submitted:</span><span class="sc">\n</span><span class="st"> - "</span>, submitted_url, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>, </span>
-<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Please correct any differences and try again.</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a>        <span class="fu">stop</span>(<span class="st">"MINIPROJECT NOT SUBMITTED CORRECTLY."</span>)</span>
-<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a>  resp <span class="ot">&lt;-</span> <span class="fu">request</span>(submitted_url) <span class="sc">|&gt;</span> </span>
-<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a>      <span class="fu">req_error</span>(<span class="at">is_error =</span> \(r) <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>      <span class="fu">req_perform</span>()</span>
-<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">resp_is_error</span>(resp)){</span>
-<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Something appears to be incorrect at the URL: "</span>, </span>
-<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a>        submitted_url, </span>
-<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a>        <span class="st">"</span><span class="sc">\n</span><span class="st"> Please confirm that it is working as expected and try again."</span>)</span>
-<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a>    <span class="fu">browseURL</span>(submitted_url)</span>
-<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"MINIPROJECT NOT SUBMITTED SUCCESSFULLY."</span>)</span>
-<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(N <span class="sc">==</span> <span class="dv">0</span>){</span>
-<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a>    raw_url <span class="ot">&lt;-</span> <span class="fu">glue</span>(<span class="st">"https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/index.qmd"</span>)</span>
-<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a>    raw_url <span class="ot">&lt;-</span> <span class="fu">glue</span>(<span class="st">"https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/mp0{N}.qmd"</span>)</span>
-<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a>  resp_raw <span class="ot">&lt;-</span> <span class="fu">request</span>(raw_url) <span class="sc">|&gt;</span> </span>
-<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a>      <span class="fu">req_error</span>(<span class="at">is_error =</span> \(r) <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a>      <span class="fu">req_perform</span>()</span>
-<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">resp_is_error</span>(resp_raw)){</span>
-<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"I cannot find the source qmd document at"</span>, raw_url, <span class="st">".</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Please confirm it was correctly submitted and try again.</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a>          <span class="st">"This document is needed for automated code quality checks."</span>)</span>
-<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"MINIPROJECT NOT SUBMITTED SUCCESSFULLY."</span>)</span>
-<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Congratulations! Your mini-project appears to have been submitted correctly!</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="cn">TRUE</span>)</span>
-<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a>  <span class="co"># This isn't quite general enough, but I think it covers everything</span></span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a>  <span class="co"># we'll see in this course. </span></span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a>  URL_REGEX <span class="ot">&lt;-</span> <span class="st">"http[A-Za-z0-9:/</span><span class="sc">\\</span><span class="st">-</span><span class="sc">\\</span><span class="st">.]*"</span></span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a>  urls <span class="ot">&lt;-</span> <span class="fu">str_match_all</span>(<span class="fu">paste</span>(issue_body, <span class="st">"</span><span class="sc">\n</span><span class="st"> Thanks!</span><span class="sc">\n</span><span class="st">"</span>, <span class="at">sep=</span><span class="st">""</span>), </span>
+<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>                        URL_REGEX)[[<span class="dv">1</span>]]</span>
+<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a>  expected_url <span class="ot">&lt;-</span> <span class="fu">str_extract</span>(body, URL_REGEX)</span>
+<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(urls) <span class="sc">&gt;</span> <span class="dv">1</span>){</span>
+<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"The following URLs were found in the issue text:"</span>,</span>
+<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a>        <span class="fu">paste</span>(<span class="fu">c</span>(<span class="st">""</span>, urls), <span class="at">collapse=</span><span class="st">"</span><span class="sc">\n</span><span class="st"> - "</span>), </span>
+<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Only one URL was expected; please remove any extras.</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"MINIPROJECT NOT SUBMITTED CORRECTLY."</span>)</span>
+<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a>  submitted_url <span class="ot">&lt;-</span> urls[<span class="dv">1</span>]</span>
+<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(submitted_url <span class="sc">!=</span> expected_url){</span>
+<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"The submitted URL does not match the Mini-Project instructions.</span><span class="sc">\n</span><span class="st">"</span>, </span>
+<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Expected:</span><span class="sc">\n</span><span class="st"> - "</span>, expected_url, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>, </span>
+<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Submitted:</span><span class="sc">\n</span><span class="st"> - "</span>, submitted_url, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>, </span>
+<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Please correct any differences and try again.</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>        <span class="fu">stop</span>(<span class="st">"MINIPROJECT NOT SUBMITTED CORRECTLY."</span>)</span>
+<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a>  resp <span class="ot">&lt;-</span> <span class="fu">request</span>(submitted_url) <span class="sc">|&gt;</span> </span>
+<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a>      <span class="fu">req_error</span>(<span class="at">is_error =</span> \(r) <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a>      <span class="fu">req_perform</span>()</span>
+<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">resp_is_error</span>(resp)){</span>
+<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"Something appears to be incorrect at the URL: "</span>, </span>
+<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a>        submitted_url, </span>
+<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a>        <span class="st">"</span><span class="sc">\n</span><span class="st"> Please confirm that it is working as expected and try again."</span>)</span>
+<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a>    <span class="fu">browseURL</span>(submitted_url)</span>
+<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"MINIPROJECT NOT SUBMITTED SUCCESSFULLY."</span>)</span>
+<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(N <span class="sc">==</span> <span class="dv">0</span>){</span>
+<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a>    raw_url <span class="ot">&lt;-</span> <span class="fu">glue</span>(<span class="st">"https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/index.qmd"</span>)</span>
+<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a>    raw_url <span class="ot">&lt;-</span> <span class="fu">glue</span>(<span class="st">"https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/mp0{N}.qmd"</span>)</span>
+<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a>  resp_raw <span class="ot">&lt;-</span> <span class="fu">request</span>(raw_url) <span class="sc">|&gt;</span> </span>
+<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a>      <span class="fu">req_error</span>(<span class="at">is_error =</span> \(r) <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a>      <span class="fu">req_perform</span>()</span>
+<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">resp_is_error</span>(resp_raw)){</span>
+<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"I cannot find the source qmd document at"</span>, raw_url, <span class="st">".</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Please confirm it was correctly submitted and try again.</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a>          <span class="st">"This document is needed for automated code quality checks.</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"MINIPROJECT NOT SUBMITTED SUCCESSFULLY."</span>)</span>
+<span id="cb2-133"><a href="#cb2-133" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-134"><a href="#cb2-134" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-135"><a href="#cb2-135" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Congratulations! Your mini-project appears to have been submitted correctly!</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb2-136"><a href="#cb2-136" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="cn">TRUE</span>)</span>
+<span id="cb2-137"><a href="#cb2-137" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="create-peer-feedback-comment" class="level3">

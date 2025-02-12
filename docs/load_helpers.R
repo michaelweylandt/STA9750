@@ -69,7 +69,7 @@ mp_submission_verify <- function(N, github_id){
   
   name_match <- which(issue_names == title)
   
-  if(length(name_match) != 1){
+  if(length(name_match) == 0){
     cat("I could not find a unique issue with the title:\n", 
         "    ", sQuote(title),"\n",
         "The issues I found had the following titles:\n",
@@ -116,8 +116,13 @@ mp_submission_verify <- function(N, github_id){
         "information is included.\n")
   }
   
-  urls <- str_match_all(paste(issue_body, "\n Thanks!\n", sep=""), "http.*")[[1]]
-  expected_url <- str_extract(body, "http.*")
+  # This isn't quite general enough, but I think it covers everything
+  # we'll see in this course. 
+  URL_REGEX <- "http[A-Za-z0-9:/\\-\\.]*"
+    
+  urls <- str_match_all(paste(issue_body, "\n Thanks!\n", sep=""), 
+                        URL_REGEX)[[1]]
+  expected_url <- str_extract(body, URL_REGEX)
   
   if(length(urls) > 1){
     cat("The following URLs were found in the issue text:",
@@ -161,7 +166,7 @@ mp_submission_verify <- function(N, github_id){
   if(resp_is_error(resp_raw)){
       cat("I cannot find the source qmd document at", raw_url, ".\n",
           "Please confirm it was correctly submitted and try again.\n",
-          "This document is needed for automated code quality checks.")
+          "This document is needed for automated code quality checks.\n")
       
     stop("MINIPROJECT NOT SUBMITTED SUCCESSFULLY.")
   }
