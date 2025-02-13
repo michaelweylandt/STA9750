@@ -356,13 +356,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>You will, from time to time, need to send somewhat large files to GitHub, primarily high-resolution figures. Since <code>git</code> is primarily designed for small-ish text files (code), this can be a bit tricky, but you can increase the maximum transferrable size by running the following command at the <code>Terminal</code>.</p>
 <pre><code>git config --global http.postbuffer 524288000</code></pre>
 <p>This only increases a limit - you might still run into problems with exceptionally large files, <em>esp.</em> data files if you do not set your <code>.gitignore</code> up properly - but it should avoid most problems.</p>
+<p>Next, run the following at the <code>Terminal</code>:</p>
+<pre><code>git config --global init.defaultBranch main</code></pre>
+<p>This will tell <code>git</code> to use the term “main” for your first branch. We won’t use branches in this course, but this can eliminate some issues.</p>
 </section>
 <section id="git-check" class="level3">
 <h3 class="anchored" data-anchor-id="git-check"><code>git</code> Check</h3>
 <p>At this point, run the following code to check your <code>git</code> setup:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"usethis"</span>)) <span class="fu">install.packages</span>(<span class="st">"usethis"</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">git_sitrep</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"usethis"</span>)) <span class="fu">install.packages</span>(<span class="st">"usethis"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>usethis<span class="sc">::</span><span class="fu">git_sitrep</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This will print out a large amount of helpful information, but the important things to check are:</p>
 <ul>
@@ -371,6 +374,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Does the token have the requisite “repo” scope?</li>
 <li>Is the “origin” set correctly for the GitHub project?</li>
 </ul>
+<div class="callout callout-style-default callout-warning callout-titled" title="Default branch mismatch between local repo and remote.">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Default branch mismatch between local repo and remote.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Certain older versions of <code>git</code> will use the default name <code>master</code> for the initial branch (though the command above should address this). If you get the message</p>
+<blockquote class="blockquote">
+<p><code>Default branch mismatch between local repo and remote.</code></p>
+</blockquote>
+<p>from <code>git_sitrep()</code>, proceed to make your first commit (as described below) and then run the command</p>
+<pre><code>git branch -m main</code></pre>
+<p>This should eliminate the above issue. Note that this command needs to be run <em>between</em> making your first commit and <em>pushing</em> that first commit.</p>
+</div>
+</div>
+</div>
 </section>
 <section id="initial-push" class="level3">
 <h3 class="anchored" data-anchor-id="initial-push">Initial Push</h3>
@@ -434,9 +459,9 @@ editor:
 <p>This file will be divided into two parts, a header giving the <em>metadata</em> for the site, and a body, giving the <em>content</em> of the site.</p>
 <p>First write the header, separated by three horizontal bars (minus signs) above and below. For now, all you need to specify is a <code>title</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "YOUR TITLE GOES HERE"</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "YOUR TITLE GOES HERE"</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Below the header, write the basic content of your website: a brief introduction of who you are.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> You can use <code>markdown</code> here for formatting. Basic text will suffice, but this is also a great opportunity to include things like a personal headshot, a link to a full resume, or similar.</p>
 <p>As you work on this, click the “Render” button at the top of the editor pane to see what your site will look like.</p>
@@ -449,12 +474,12 @@ editor:
 <h4 class="anchored" data-anchor-id="last-updated">Last Updated</h4>
 <p>The following code will add a “Last Updated:” footer at the bottom of your page.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="in">#| include: false</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="in">1+1</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>--------------</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>Last Updated: <span class="in">`r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="in">#| include: false</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="in">1+1</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>--------------</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>Last Updated: <span class="in">`r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -474,26 +499,26 @@ Warning
 <h4 class="anchored" data-anchor-id="baruch-map">Baruch Map</h4>
 <p>The following adds a map with the location of Baruch College. You can change the GPS coordinates and text to another place of relevance to you.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="in">#| echo: false</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="in">#| message: false</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="in">#| warning: false</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="in">if(!require("leaflet")){</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="in">    options(repos=c(CRAN="https://cloud.r-project.org")</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="in">    install.packages("leaflet")</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="in">    stopifnot(require("leaflet"))</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="in">baruch_longitude &lt;- -73.98333</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="in">baruch_latitutde &lt;- +40.75028</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="in">leaflet() |&gt;</span></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="in">  addTiles() |&gt;</span></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="in">  setView(baruch_longitude, baruch_latitude, zoom=17) |&gt;</span></span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="in">  addPopups(baruch_longitude, baruch_latitude, </span></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="in">            "I am a Master's student at &lt;b&gt;Baruch College&lt;/b&gt;!")</span></span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="in">#| echo: false</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="in">#| message: false</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="in">#| warning: false</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="in">if(!require("leaflet")){</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="in">    options(repos=c(CRAN="https://cloud.r-project.org")</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="in">    install.packages("leaflet")</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="in">    stopifnot(require("leaflet"))</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="in">baruch_longitude &lt;- -73.98333</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="in">baruch_latitutde &lt;- +40.75028</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="in">leaflet() |&gt;</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="in">  addTiles() |&gt;</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="in">  setView(baruch_longitude, baruch_latitude, zoom=17) |&gt;</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="in">  addPopups(baruch_longitude, baruch_latitude, </span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="in">            "I am a Master's student at &lt;b&gt;Baruch College&lt;/b&gt;!")</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="resume-hosting" class="level4">
@@ -570,8 +595,8 @@ https://&lt;GITHUB_ID&gt;.github.io/STA9750-2025-SPRING/</code></pre>
 <p><img src="../images/github_issue.png" class="img-fluid"></p>
 <p>This will send me a notification through GitHub and I will confirm that I can access your repository and website. You should also use the <a href="../tips.html">course helper scripts</a> to verify you have opened a GitHub issue properly. For this project, simply run:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"https://michael-weylandt.com/STA9750/load_helpers.R"</span>)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mp_submission_verify</span>(<span class="dv">0</span>, <span class="st">"&lt;GITHUB_ID&gt;"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"https://michael-weylandt.com/STA9750/load_helpers.R"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mp_submission_verify</span>(<span class="dv">0</span>, <span class="st">"&lt;GITHUB_ID&gt;"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If you don’t do this, I may not be able toaccess your graded assignments when you submit them! I will confirm that I have your real ID verified as well.</p>
 </section>
