@@ -28,7 +28,7 @@ mp_submission_create <- function(N, github_id){
   body <- mp_text |> str_replace("<GITHUB_ID>", github_id)
   
   r <- request("https://github.com/") |>
-         req_url_path_append(github_id) |>
+         req_url_path_append("michaelweylandt") |>
          req_url_path_append(course_repo) |>
          req_url_path_append("issues/new") |>
          req_url_query(title=title, 
