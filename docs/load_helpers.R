@@ -61,7 +61,7 @@ mp_submission_verify <- function(N, github_id){
   
   body <- mp_text |> str_replace("<GITHUB_ID>", github_id) |> str_squish()
   
-  issues <- gh("/repos/{owner}/{repo}/issues?state=all", 
+  issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all", 
                owner=github_id, 
                repo=course_repo)
   
@@ -183,6 +183,49 @@ mp_submission_verify <- function(N, github_id){
   invisible(TRUE)
 }
 
+mp_feedback_locate <- function(N, github_id){
+    library(rvest)
+    library(glue)
+    library(tidyverse)
+    library(httr2)
+    library(gh)
+    
+    if(missing(N)){
+        N <- menu(title="Which Mini-Project's Peer Feedback cycle is it currently?", 
+                  choices=c(0, 1, 2, 3, 4))
+    }
+    
+    if(missing(github_id)){
+        github_id <- readline("What is your GitHub ID? ")
+    }
+    
+    issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all", 
+                 repo=course_repo)
+    
+    pf_urls <- issues |> 
+        keep(~ str_detect(.x$title, glue("#0{N}"))) |>
+        map(~data.frame(html=.x$html_url, comments=.x$comments_url)) |>
+        keep(~any(str_detect(map_chr(gh(.x$comments), "body"), github_id))) |>
+        map("html") |>
+        list_c()
+    
+    cat(glue("I have found several MP#0{N} issues that may be assigned to you.\n"),
+             "Please review the following:\n")
+    for(pf in pf_urls){
+        cat(" - ", pf, "\n")
+    }
+    
+    to_browser <- menu(title="Would you like me to open these in your web browser?", 
+                       choices=c("Yes", "No"))
+    
+    if(to_browser){
+        for(pf in pf_urls){
+            browseURL(pf)
+        }
+    }
+    invisible(TRUE)
+}
+
 mp_feedback_verify <- function(N, github_id, peer_id){
   library(rvest)
   library(glue)
@@ -214,7 +257,7 @@ mp_feedback_verify <- function(N, github_id, peer_id){
   
   title <- glue("{course_short} {github_id} MiniProject #0{N}")
 
-  issues <- gh("/repos/{owner}/{repo}/issues?state=all", 
+  issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all", 
                owner=peer_id, 
                repo=course_repo)
   
