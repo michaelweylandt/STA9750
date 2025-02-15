@@ -1,23 +1,35 @@
 #!/usr/bin/env python
-import click
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-import random
-import re
+
+## Standard Library
+from collections import namedtuple
+from functools import cache
+from datetime import datetime
 from glob import glob
+import json
 import os
 import os.path as op
 from pathlib import Path
-import pandas as pd
-import functools
-import yaml
-import json
 import subprocess
-import requests as r
-from bs4 import BeautifulSoup as BS
-from collections import namedtuple
-import subprocess
-from datetime import datetime
+import random
+import re
 
+# PyPI Modules - Nothing here is too exotic, so not worrying about 
+# environment management / versioning for now
+from bs4 import BeautifulSoup as BS
+import click
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+import pandas as pd
+import requests as r
+from yaml import safe_load as yaml_load
+
+Issue = namedtuple(
+    "Issue", ["title", "number", "html_url", "body", "state", "opened_by"]
+)
+
+Comment = namedtuple("Comment", ["commenter", "text", "ctime", "url"])
+
+# FIXME: This technically isn't sufficient for arbitrary URLs, but it
+# seems to cover the whole GitHub API, which is enough for us. 
 URL_REGEX = "http[A-Za-z0-9:/\\.\\-]+"
 
 
@@ -41,21 +53,21 @@ def print_web_to_pdf(url, output_file):
     return subprocess.run([CHROME] + FLAGS + [OUTPUT] + [INPUT], check=True)
 
 
-@functools.cache
+@cache
 def git_version():
     "Return the current git hash (for use in auto-posting to student repos"
     # https://stackoverflow.com/a/57683700
     return subprocess.check_output(["git", "describe", "--always"]).strip().decode()
 
 
-@functools.cache
+@cache
 def gh_pat():
     "Read GitHub PAT from relevant file"
     with open(".githubPAT") as f:
         return f.read().strip()
 
 
-@functools.cache
+@cache
 def _gh(path, get=True, data=None):
     headers = {
         "Accept": "application/vnd.github+json",
@@ -71,14 +83,9 @@ def _gh(path, get=True, data=None):
         return r.post(fullpath, headers=headers, data=data)
 
 
-Issue = namedtuple(
-    "Issue", ["title", "number", "html_url", "body", "state", "opened_by"]
-)
-
-Comment = namedtuple("Comment", ["commenter", "text", "ctime", "url"])
 
 
-@functools.cache
+@cache
 def gh_list_issues(owner=None):
     resp = _gh(f"/repos/michaelweylandt/{course_repo()}/issues?state=all")
     if "status" in resp and resp["status"] != "200":
@@ -106,7 +113,7 @@ def gh_list_issues(owner=None):
     return ISSUES_DICT
 
 
-@functools.cache
+@cache
 def gh_list_comments(issue_id):
     resp = _gh(f"/repos/michaelweylandt/{course_repo()}/issues/{issue_id}/comments")
     if "status" in resp and resp["status"] != "200":
@@ -125,31 +132,31 @@ def gh_issue_comment(issue_id, text):
     )
 
 
-@functools.cache
+@cache
 def course_dir():
     with open("_teaching.yml") as f:
-        course_config = yaml.safe_load(f)
+        course_config = yaml_load(f)
 
     return op.expanduser(course_config["gradedir"])
 
 
-@functools.cache
+@cache
 def course_short():
     with open("_variables.yml") as f:
-        course_config = yaml.safe_load(f)
+        course_config = yaml_load(f)
 
     return course_config["course"]["short"]
 
 
-@functools.cache
+@cache
 def course_repo():
     with open("_variables.yml") as f:
-        course_config = yaml.safe_load(f)
+        course_config = yaml_load(f)
 
     return course_config["course"]["repo"]
 
 
-@functools.cache
+@cache
 def roster_file():
     filename = Path(op.join(course_dir(), "roster.json")).resolve(strict=True)
     filename.touch(exist_ok=True)
