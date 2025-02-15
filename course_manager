@@ -20,339 +20,405 @@ from datetime import datetime
 
 URL_REGEX = "http[A-Za-z0-9:/\\.\\-]+"
 
+
 def str_simplify(x):
     return re.sub("\s+", " ", x.replace(" +", " ").lower())
+
 
 def vecho(*args, **kwargs):
     if click.get_current_context().params["verbose"]:
         return click.echo(*args, **kwargs)
     return None
 
+
 def print_web_to_pdf(url, output_file):
     CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
     FLAGS = ["--headless", "--disable-gpu"]
-    
-    OUTPUT= f"--print-to-pdf={output_file}"
+
+    OUTPUT = f"--print-to-pdf={output_file}"
     INPUT = url
-    
-    return subprocess.run([CHROME] + FLAGS + [OUTPUT] + [INPUT], 
-                          check=True)
+
+    return subprocess.run([CHROME] + FLAGS + [OUTPUT] + [INPUT], check=True)
+
 
 @functools.cache
 def git_version():
     "Return the current git hash (for use in auto-posting to student repos"
     # https://stackoverflow.com/a/57683700
-    return subprocess.check_output(["git", "describe", "--always"]).\
-              strip().decode()
+    return subprocess.check_output(["git", "describe", "--always"]).strip().decode()
+
 
 @functools.cache
 def gh_pat():
     "Read GitHub PAT from relevant file"
     with open(".githubPAT") as f:
         return f.read().strip()
-    
+
+
 @functools.cache
 def _gh(path, get=True, data=None):
     headers = {
-        'Accept': 'application/vnd.github+json',
-        'Authorization': f'Bearer {gh_pat()}',
-        'X-GitHub-Api-Version': '2022-11-28',
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {gh_pat()}",
+        "X-GitHub-Api-Version": "2022-11-28",
     }
-    
-    fullpath = "https://api.github.com/" + path
-    
-    if get: 
-        return r.get(fullpath, headers=headers).json()
-    else: 
-        return r.post(fullpath, headers=headers, data=data)
-    
-Issue = namedtuple("Issue", [
-    "title", "number", "html_url", "body", "state", "opened_by"
-])
 
-Comment = namedtuple("Comment", [
-    "commenter", "text", "ctime", "url"
-])
+    fullpath = "https://api.github.com/" + path
+
+    if get:
+        return r.get(fullpath, headers=headers).json()
+    else:
+        return r.post(fullpath, headers=headers, data=data)
+
+
+Issue = namedtuple(
+    "Issue", ["title", "number", "html_url", "body", "state", "opened_by"]
+)
+
+Comment = namedtuple("Comment", ["commenter", "text", "ctime", "url"])
+
 
 @functools.cache
 def gh_list_issues(owner=None):
-    resp = _gh(f'/repos/michaelweylandt/{course_repo()}/issues?state=all')
+    resp = _gh(f"/repos/michaelweylandt/{course_repo()}/issues?state=all")
     if "status" in resp and resp["status"] != "200":
         return dict()
-    
-    ISSUES_DICT = {str_simplify(i["title"]): Issue(i["title"], 
-                                                   i["number"], 
-                                                   i["html_url"], 
-                                                   i["body"], 
-                                                   i["state"], 
-                                                   i["user"]["login"]) for i in resp}
-                                                   
-    if owner: 
-        ISSUES_DICT = {k:v for k,v in ISSUES_DICT.items() if owner in v.title or owner in v.opened_by}
+
+    ISSUES_DICT = {
+        str_simplify(i["title"]): Issue(
+            i["title"],
+            i["number"],
+            i["html_url"],
+            i["body"],
+            i["state"],
+            i["user"]["login"],
+        )
+        for i in resp
+    }
+
+    if owner:
+        ISSUES_DICT = {
+            k: v
+            for k, v in ISSUES_DICT.items()
+            if owner in v.title or owner in v.opened_by
+        }
 
     return ISSUES_DICT
+
+
 @functools.cache
 def gh_list_comments(issue_id):
-    resp = _gh(f'/repos/michaelweylandt/{course_repo()}/issues/{issue_id}/comments')
+    resp = _gh(f"/repos/michaelweylandt/{course_repo()}/issues/{issue_id}/comments")
     if "status" in resp and resp["status"] != "200":
         return list()
-    return [Comment(c["user"]["login"], c["body"], c["created_at"], c["html_url"]) for c in resp]
+    return [
+        Comment(c["user"]["login"], c["body"], c["created_at"], c["html_url"])
+        for c in resp
+    ]
+
 
 def gh_issue_comment(issue_id, text):
-    return _gh(f'/repos/michaelweylandt/{course_repo()}/issues/{issue_id}/comments', 
-               get=False, data=json.dumps({'body': text}))
+    return _gh(
+        f"/repos/michaelweylandt/{course_repo()}/issues/{issue_id}/comments",
+        get=False,
+        data=json.dumps({"body": text}),
+    )
+
 
 @functools.cache
 def course_dir():
-    with open("_teaching.yml") as f: 
+    with open("_teaching.yml") as f:
         course_config = yaml.safe_load(f)
-        
+
     return op.expanduser(course_config["gradedir"])
+
 
 @functools.cache
 def course_short():
-    with open("_variables.yml") as f: 
+    with open("_variables.yml") as f:
         course_config = yaml.safe_load(f)
-        
+
     return course_config["course"]["short"]
+
 
 @functools.cache
 def course_repo():
-    with open("_variables.yml") as f: 
+    with open("_variables.yml") as f:
         course_config = yaml.safe_load(f)
-        
+
     return course_config["course"]["repo"]
+
 
 @functools.cache
 def roster_file():
-    filename = Path(op.join(course_dir(), "roster.json")).\
-                 resolve(strict=True)
+    filename = Path(op.join(course_dir(), "roster.json")).resolve(strict=True)
     filename.touch(exist_ok=True)
     return filename
 
+
 @click.group()
-@click.option("-v", "--verbose", count=True,
-              help="Include additional output", default=False)
+@click.option(
+    "-v", "--verbose", count=True, help="Include additional output", default=False
+)
 def course_manager(verbose):
     """Course Management Tool (CISSOID) for STA9750
 
-This tool can be used to perform various administrative things (e.g., roster
-management, peer feedback assignment, etc.) associated with STA 9750."""
+    This tool can be used to perform various administrative things (e.g., roster
+    management, peer feedback assignment, etc.) associated with STA 9750."""
     vecho("Course Directory: " + course_dir())
+
 
 @course_manager.group()
 def roster():
     """Course Roster Management
 
-This subcommand manages the course roster. As part of Mini-Project #00, students
-should register their GitHub ID with the instructor. The instructor must log
-these GitHub IDs here. Once the course is underway, the instructor can use
-this command to drop / deactive students, delete them entirely (in rare
-circumstances) or otherwise manage the course. Note that this roster is
-used implicitly by all other commands, so it must be kept up to date."""
+    This subcommand manages the course roster. As part of Mini-Project #00, students
+    should register their GitHub ID with the instructor. The instructor must log
+    these GitHub IDs here. Once the course is underway, the instructor can use
+    this command to drop / deactive students, delete them entirely (in rare
+    circumstances) or otherwise manage the course. Note that this roster is
+    used implicitly by all other commands, so it must be kept up to date."""
+
+
 def current_roster():
     try:
         return pd.read_json(roster_file())
     except ValueError:
         return pd.DataFrame()
 
+
 @roster.command(name="list")
 def roster_list():
     """Print current course roster"""
     click.echo(current_roster())
 
-@roster.command(name="add")
-@click.option("-g", "--github", help="Student's GitHub ID", 
-              prompt="What is the Student's GitHub ID?")
-@click.option("-e", "--email", help="Student's Email",
-              prompt="What is the Student's Email?")
-@click.option("-E", "--emplid", help="Student's CUNY EmplID", 
-              prompt="What is the Student's CUNY EmplID?")
-@click.option("-n", "--name", help="Student's Real Name", 
-              prompt="What is the Student's Real Name?")
-def roster_add(github, email, emplid, name):
-    """Add a new student to the roster. 
 
-This function is intended for use following MP00. As part of MP00,
-students need to register their GitHub ID and contact info with the
-instructor. This function maintains a roster which is used for all later
-course activities."""
-    NEW_STUDENT = pd.DataFrame({"github": github, 
-                                "email": email, 
-                                "emplid": emplid, 
-                                "name": name, 
-                                "active": True, 
-                                "project_team": None}, 
-                                index=[emplid])
-                                
+@roster.command(name="add")
+@click.option(
+    "-g",
+    "--github",
+    help="Student's GitHub ID",
+    prompt="What is the Student's GitHub ID?",
+)
+@click.option(
+    "-e", "--email", help="Student's Email", prompt="What is the Student's Email?"
+)
+@click.option(
+    "-E",
+    "--emplid",
+    help="Student's CUNY EmplID",
+    prompt="What is the Student's CUNY EmplID?",
+)
+@click.option(
+    "-n",
+    "--name",
+    help="Student's Real Name",
+    prompt="What is the Student's Real Name?",
+)
+def roster_add(github, email, emplid, name):
+    """Add a new student to the roster.
+
+    This function is intended for use following MP00. As part of MP00,
+    students need to register their GitHub ID and contact info with the
+    instructor. This function maintains a roster which is used for all later
+    course activities."""
+    NEW_STUDENT = pd.DataFrame(
+        {
+            "github": github,
+            "email": email,
+            "emplid": emplid,
+            "name": name,
+            "active": True,
+            "project_team": None,
+        },
+        index=[emplid],
+    )
+
     ROSTER = current_roster()
-    
+
     if not ROSTER.empty and github in ROSTER.github.values:
         warning("Student with GitHub ID", github, "already in roster.")
         click.confirm("Should I overwrite?", abort=True)
-        
+
     NEW_ROSTER = pd.concat([ROSTER, NEW_STUDENT], ignore_index=True)
-    
+
     click.echo("The following student has been added to the roster")
     click.echo(NEW_STUDENT)
-    
+
     with open(roster_file(), "w+") as f:
-        f.write(NEW_ROSTER.to_json(orient='records'))
+        f.write(NEW_ROSTER.to_json(orient="records"))
+
 
 @roster.command(name="delete")
-@click.option("--github", help="Student's GitHub ID", 
-              prompt="What is the Student's GitHub ID?", 
-              prompt_required=False,
-              default=None)
-def roster_delete(github): 
+@click.option(
+    "--github",
+    help="Student's GitHub ID",
+    prompt="What is the Student's GitHub ID?",
+    prompt_required=False,
+    default=None,
+)
+def roster_delete(github):
     """Delete a student from the course roster.
-    
-This function should only be used in exceptional circumstances.
-Students who drop the course are better handled by marking them
-as inactive, rather than deleting all records."""
+
+    This function should only be used in exceptional circumstances.
+    Students who drop the course are better handled by marking them
+    as inactive, rather than deleting all records."""
     ROSTER = current_roster()
-    
+
     click.echo(ROSTER)
-    
+
     if github is None:
         github = click.prompt(
-            "Which student would you like to delete?", 
-            type=click.Choice(ROSTER.github.values)
+            "Which student would you like to delete?",
+            type=click.Choice(ROSTER.github.values),
         )
-        
+
     if github not in ROSTER.github.values:
         click.abort("Could not match user to existing roster")
-        
+
     DROPPER = ROSTER.loc[ROSTER["github"] == github]
-    
+
     click.echo("Student to be deleted:")
     click.echo(DROPPER)
     click.confirm("Are you sure you want to delete this student?", abort=True)
-    
-    NEW_ROSTER =  ROSTER.loc[ROSTER["github"] != github]
-    
+
+    NEW_ROSTER = ROSTER.loc[ROSTER["github"] != github]
+
     with open(roster_file(), "w+") as f:
         f.write(NEW_ROSTER.to_json())
-        
+
+
 @course_manager.group()
 def project():
     """Course Project Management
 
-This subcommand manages the course project. It includes functionality to create
-groups, add students to them, and to assign grades for group-based work."""
+    This subcommand manages the course project. It includes functionality to create
+    groups, add students to them, and to assign grades for group-based work."""
+
 
 @project.command(name="create")
 def project_create():
     "Define a new team. After running this, use 'build' to add or remove students."
     raise NotImplementedError
 
+
 @project.command(name="list")
 def project_list():
     "List existing teams (with members) and identify students not yet on a team."
     raise NotImplementedError
+
 
 @project.command(name="grade")
 def project_grade():
     "Assign group project grades"
     raise NotImplementedError
 
+
 @course_manager.group()
 def mini():
     """Mini-Project Management
 
-This subcommand manages the mini-projects (homework). It includes functionality
-to automatically verify GitHub submissions, to download GitHub submissions, 
-to assign peer feedback, to download peer feedback once complete, and to assign
-meta-reviews."""
+    This subcommand manages the mini-projects (homework). It includes functionality
+    to automatically verify GitHub submissions, to download GitHub submissions,
+    to assign peer feedback, to download peer feedback once complete, and to assign
+    meta-reviews."""
+
 
 @mini.command(name="archive")
-@click.option('-N', '--number', "project_id", 
-              prompt="Which mini-project to archive?", 
-              type=click.IntRange(min=0, max=4))
-@click.option('-g', '--github', multiple=True, 
-              help="GitHub ID to archive. Can be given multiple times. If blank, all active students in roster.")
-@click.option("--skip-pdf", is_flag=True, default=False,
-              help="Skip PDF archiving")
+@click.option(
+    "-N",
+    "--number",
+    "project_id",
+    prompt="Which mini-project to archive?",
+    type=click.IntRange(min=0, max=4),
+)
+@click.option(
+    "-g",
+    "--github",
+    multiple=True,
+    help="GitHub ID to archive. Can be given multiple times. If blank, all active students in roster.",
+)
+@click.option("--skip-pdf", is_flag=True, default=False, help="Skip PDF archiving")
 def mini_archive(project_id, github, skip_pdf):
     """Archive Student Mini-Project Submissions
 
-This function will archive all elements of a student's mini-project
-submission. It is designed to be used after deadlines pass, but it can
-be run repeatedly if needed. Specifically, this function will: 
+    This function will archive all elements of a student's mini-project
+    submission. It is designed to be used after deadlines pass, but it can
+    be run repeatedly if needed. Specifically, this function will:
 
-1) Sync the student's Git repository (cloning if needed)
-2) Download all issue comment threads
-3) Export a PDF of their rendered site. 
+    1) Sync the student's Git repository (cloning if needed)
+    2) Download all issue comment threads
+    3) Export a PDF of their rendered site.
 
-PDF export depends on a headless use of Chrome/Chromium and
-may be a bit tricky to get working."""
+    PDF export depends on a headless use of Chrome/Chromium and
+    may be a bit tricky to get working."""
     return _mini_archive(project_id, github, skip_pdf)
+
 
 def _mini_archive(project_id, github, skip_pdf=False):
     "Actual implementation of mini_archive. Can be called directly"
-    if not github: 
+    if not github:
         github = current_roster().github.values
-        
+
     latest_dir = op.join(course_dir(), "latest")
     os.makedirs(latest_dir, exist_ok=True)
     now = datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S_%Z")
-    
+
     for gh in github:
         click.echo(f"Archiving Mini-Project #0{project_id} for User {gh}")
-        
+
         click.echo("Syncronizing Git Repository")
-        
+
         student_dir = op.join(course_dir(), "students", gh)
         student_git_dir = op.join(student_dir, "git")
         # Don't worry too much about race conditions / file system issues
-        os.makedirs(student_git_dir, exist_ok=True) 
-        
+        os.makedirs(student_git_dir, exist_ok=True)
+
         if op.exists(op.join(student_git_dir, ".git")):
             subprocess.run(["git", "-C", student_git_dir, "pull"])
-        else: 
+        else:
             student_repo_url = f"https://github.com/{gh}/{course_repo()}"
             subprocess.run(["git", "clone", student_repo_url, student_git_dir])
-        
-        if skip_pdf: 
+
+        if skip_pdf:
             continue
-        
+
         click.echo("Exporting Web Page as PDF")
-        
+
         student_web_dir = op.join(student_dir, "pdfs", now)
         # Don't worry too much about race conditions / file system issues
         os.makedirs(student_web_dir, exist_ok=True)
         if project_id > 0:
             student_mp_url = f"https://{gh}.github.io/{course_repo()}/mp0{project_id}"
             student_mp_pdf = op.join(student_web_dir, f"mp0{project_id}.pdf")
-        else: 
+        else:
             student_mp_url = f"https://{gh}.github.io/{course_repo()}/"
             student_mp_pdf = op.join(student_web_dir, "index.pdf")
-            
+
         rr = print_web_to_pdf(student_mp_url, student_mp_pdf)
-        
-        if rr.returncode: 
+
+        if rr.returncode:
             click.echo(f"Failed to export {student_mp_url} to PDF.")
 
         latest_pdf_dir = op.join(latest_dir, "pdfs")
         os.makedirs(latest_pdf_dir, exist_ok=True)
-    
+
         pdf_symlink = op.join(latest_pdf_dir, f"{gh}_mp{project_id}.pdf")
-        try: 
+        try:
             os.remove(pdf_symlink)
         except FileNotFoundError:
             pass
         os.symlink(student_mp_pdf, pdf_symlink, target_is_directory=True)
-        
-    
+
     # Now export all comments from my course issues repository
     issues_dir = op.join(course_dir(), "issues", now)
     # Don't worry too much about race conditions / file system issues
     os.makedirs(issues_dir, exist_ok=True)
-        
+
     click.echo(f"Exporting GitHub Issues to {issues_dir}")
-        
+
     ISSUES = [issue._asdict() for issue in gh_list_issues().values()]
-        
+
     for issue in ISSUES:
         click.echo(f" - Exporting Issue #{issue['number']}")
         issue["comments"] = [c._asdict() for c in gh_list_comments(issue["number"])]
@@ -360,73 +426,86 @@ def _mini_archive(project_id, github, skip_pdf=False):
 
         with open(issue_file, "w") as f:
             f.write(json.dumps(issue, indent=4))
-    
+
     issue_symlink = op.join(latest_dir, "issues")
-    try: 
+    try:
         os.remove(issue_symlink)
     except FileNotFoundError:
         pass
     os.symlink(issues_dir, issue_symlink, target_is_directory=True)
-        
+
+
 @mini.command(name="verify")
-@click.option('-N', '--number', "project_id", 
-              prompt="Mini-Project submission to verify", 
-              type=click.IntRange(min=0, max=4))
-@click.option('-g', '--github', multiple=True, 
-              help="GitHub ID to verify. Can be given multiple times. If blank, all active students in roster. ")
+@click.option(
+    "-N",
+    "--number",
+    "project_id",
+    prompt="Mini-Project submission to verify",
+    type=click.IntRange(min=0, max=4),
+)
+@click.option(
+    "-g",
+    "--github",
+    multiple=True,
+    help="GitHub ID to verify. Can be given multiple times. If blank, all active students in roster. ",
+)
 def mini_verify(project_id, github):
     """Verify that a mini-project was submitted and formatted correctly
-    
-This script can be used to verify correct submission of mini-projects and,
-if necessary, to highlight possible issues. This function does _not_ provide 
-feedback for students and is primarily intended for instructor use.
 
-To process submissions after the deadline passes, use the `process` command 
-instead."""
+    This script can be used to verify correct submission of mini-projects and,
+    if necessary, to highlight possible issues. This function does _not_ provide
+    feedback for students and is primarily intended for instructor use.
+
+    To process submissions after the deadline passes, use the `process` command
+    instead."""
     return _mini_verify(project_id, github)
+
 
 def _get_submission_urls(project_id, github, check_master=True):
     MP_URL = f"https://michael-weylandt.com/STA9750/miniprojects/mini0{project_id}.html"
-    
+
     MP_PAGE = r.get(MP_URL)
-    MP_TEXT = BS(MP_PAGE.text, features="lxml").find(id="submission-text").\
-                                                get_text().strip()
+    MP_TEXT = (
+        BS(MP_PAGE.text, features="lxml").find(id="submission-text").get_text().strip()
+    )
     BODY = MP_TEXT.replace("<GITHUB_ID>", github)
     EXPECTED_URL = re.search(URL_REGEX, BODY).group()
-    
-    if project_id: 
+
+    if project_id:
         RAW_URL = f"https://raw.githubusercontent.com/{github}/{course_repo()}/refs/heads/main/mp0{project_id}.qmd"
-    else: 
+    else:
         RAW_URL = f"https://raw.githubusercontent.com/{github}/{course_repo()}/refs/heads/main/index.qmd"
-        
+
     if check_master and not r.get(RAW_URL).ok:
         RAW_URL_MASTER = RAW_URL.replace("main", "master")
         if r.get(RAW_URL_MASTER).ok:
             return (EXPECTED_URL, RAW_URL_MASTER)
-        
+
     return (EXPECTED_URL, RAW_URL)
+
 
 def _mini_verify(project_id, github):
     "Implementation of mini_verify. Can be called directly by other functions"
     MP_URL = f"https://michael-weylandt.com/STA9750/miniprojects/mini0{project_id}.html"
-    
+
     MP_PAGE = r.get(MP_URL)
-    MP_TEXT = BS(MP_PAGE.text, features="lxml").find(id="submission-text").\
-                                                get_text().strip()
-    
-    if not github: 
+    MP_TEXT = (
+        BS(MP_PAGE.text, features="lxml").find(id="submission-text").get_text().strip()
+    )
+
+    if not github:
         github = current_roster().github.values
-        
+
     RESULTS = {g: None for g in github}
-    
+
     for gh in github:
         click.echo("-----------------------------------")
         click.echo(f"Attempting to verify for user {gh}")
         TITLE = f"{course_short()} {gh} MiniProject #0{project_id}"
         BODY = MP_TEXT.replace("<GITHUB_ID>", gh)
-        
+
         ISSUES = gh_list_issues(gh)
-        
+
         if not ISSUES:
             click.echo(f"No issues found for user {gh} in repo {course_repo()}")
             RESULTS[gh] = (False, gh, "NO ISSUES FOUND", None)
@@ -436,144 +515,161 @@ def _mini_verify(project_id, github):
             click.echo("I could not find an issue with the desired title:")
             click.echo(f" - {TITLE}")
             click.echo("I found issues with the following titles instead:")
-            
+
             for t in ISSUES.values():
                 click.echo(f" - {t.title}")
-                
+
             RESULTS[gh] = (False, gh, "NO TITLE MATCH", None)
             continue
-        
+
         ISSUE = ISSUES[str_simplify(TITLE)]
-        
+
         if ISSUE.state != "open":
             click.echo("Issue {TITLE} is not in 'open' state")
             RESULTS[gh] = (False, gh, "ISSUE CLOSED", ISSUE.number)
-            
+
         SUB_URL = re.search(URL_REGEX, ISSUE.body)
         EXPECTED_URL = re.search(URL_REGEX, BODY)
-        
+
         if EXPECTED_URL is None:
             click.abort("Could not find expected URL in MP Instructions")
-            
-        if SUB_URL is None: 
+
+        if SUB_URL is None:
             click.echo("No URL found in submission")
             RESULTS[gh] = (False, gh, "NO URL", ISSUE.number)
             continue
-        
+
         SUB_URL = SUB_URL.group()
         EXPECTED_URL = EXPECTED_URL.group()
-        
-        if SUB_URL != EXPECTED_URL: 
+
+        if SUB_URL != EXPECTED_URL:
             click.echo("Submitted URL does not match MP Instructions")
             click.echo("Expected: " + EXPECTED_URL)
             click.echo("Submitted: " + SUB_URL)
-            
+
             RESULTS[gh] = (False, gh, "INCORRECT URL", ISSUE.number)
             continue
-        
+
         SUB_RESP = r.get(SUB_URL)
-        
+
         if not SUB_RESP.ok:
             click.echo("Submitted URL did not resolve properly")
             click.echo(" - Submitted: " + SUB_URL)
-            
+
             RESULTS[gh] = (False, gh, "INVALID URL", ISSUE.number)
             continue
-        
-        if project_id: 
+
+        if project_id:
             RAW_URL = f"https://raw.githubusercontent.com/{gh}/{course_repo()}/refs/heads/main/mp0{project_id}.qmd"
-        else: 
+        else:
             RAW_URL = f"https://raw.githubusercontent.com/{gh}/{course_repo()}/refs/heads/main/index.qmd"
-            
+
         RAW_RESP = r.get(RAW_URL)
-        
+
         if not RAW_RESP.ok:
-            # Some students use 'master' instead of 'main' branch 
+            # Some students use 'master' instead of 'main' branch
             # so try this as well
             RAW_URL = RAW_URL.replace("main", "master")
             RAW_RESP = r.get(RAW_URL)
-        
-        if not RAW_RESP.ok: 
+
+        if not RAW_RESP.ok:
             click.echo("Could not identify qmd source")
             click.echo(" - Expected: " + RAW_URL)
-            
+
             RESULTS[gh] = (False, gh, "NO SOURCE", ISSUE.number)
             continue
-        
+
         RESULTS[gh] = (True, gh, "SUCCESS", ISSUE.number)
-        
+
     DF = pd.DataFrame(RESULTS).T
     DF.columns = ["ok", "github", "message", "issue_num"]
-    
+
     click.echo("-----------------------------------")
     click.echo("----------ANALYSIS COMPLETE--------")
-    
+
     if DF.ok.any():
         click.echo("-----------------------------------")
         click.echo(f"MP {project_id} successfully verified for: ")
         click.echo(", ".join(DF[DF.ok].github.values))
-        
+
     if not DF.ok.all():
         click.echo("-----------------------------------")
         click.echo("Problems were identified for the following users.")
-        
+
         for _, row in DF[DF.ok != True].iterrows():
             if row.issue_num:
-                click.echo(f"- GitHub user {row.github} failed with message {row.message}. See https://github.com/michaelweylandt/{course_repo()}/issues/{row.issue_num} for details")
-            else: 
-                click.echo(f"- GitHub user {row.github} failed with message {row.message}. No suitable issue found")
-                
+                click.echo(
+                    f"- GitHub user {row.github} failed with message {row.message}. See https://github.com/michaelweylandt/{course_repo()}/issues/{row.issue_num} for details"
+                )
+            else:
+                click.echo(
+                    f"- GitHub user {row.github} failed with message {row.message}. No suitable issue found"
+                )
+
     return DF
+
 
 @mini.group(name="peer")
 def peer():
     """Assign, collect, and evaluate peer feedback"""
-    
+
+
 @peer.command(name="assign")
-@click.option('-N', '--number', "project_id", 
-              prompt="Which mini-project to archive?", 
-              type=click.IntRange(min=0, max=4))
-@click.option("--dry-run", "dry_run", 
-              help="Skip posting to GitHub", 
-              default=False, is_flag=True)
-@click.option("--skip-archive", "skip_archive", 
-              help="Skip archiving student submissions", 
-              default=False, is_flag=True)
-@click.option("-P", "--peer-count", 
-              help="How many peers to assign per submission", 
-              prompt="How many peers should be assigned for each submission?", 
-              type=click.IntRange(min=1, max=5))
+@click.option(
+    "-N",
+    "--number",
+    "project_id",
+    prompt="Which mini-project to archive?",
+    type=click.IntRange(min=0, max=4),
+)
+@click.option(
+    "--dry-run", "dry_run", help="Skip posting to GitHub", default=False, is_flag=True
+)
+@click.option(
+    "--skip-archive",
+    "skip_archive",
+    help="Skip archiving student submissions",
+    default=False,
+    is_flag=True,
+)
+@click.option(
+    "-P",
+    "--peer-count",
+    help="How many peers to assign per submission",
+    prompt="How many peers should be assigned for each submission?",
+    type=click.IntRange(min=1, max=5),
+)
 def peer_assign(project_id, peer_count, dry_run, skip_archive):
     """Assign Mini-Project Peer Feedback
 
-This command does several things: 
+    This command does several things:
 
-0) It archives all submissions for that MP
-1) It creates a mapping from submitters to peer reviewers
-2) It automatically creates assignment comments for each student,
-   noting any automatically identified issues
-3) It posts comments to GitHub.
+    0) It archives all submissions for that MP
+    1) It creates a mapping from submitters to peer reviewers
+    2) It automatically creates assignment comments for each student,
+       noting any automatically identified issues
+    3) It posts comments to GitHub.
 
-Note that this command should only be used once per assignment.
+    Note that this command should only be used once per assignment.
 
-TODO: 
-  1) Avoid re-assignments
-  2) TBD
-"""
+    TODO:
+      1) Avoid re-assignments
+      2) TBD
+    """
     if not skip_archive:
         _mini_archive(project_id, [])
 
-    # We begin by building (and saving) the peer feedback 
+    # We begin by building (and saving) the peer feedback
     # mapping for this assignment
     ROSTER = current_roster()
     PF_MAPPING = {}
-    
+
     PF_DIR = op.join(course_dir(), f"mp0{project_id}")
     os.makedirs(PF_DIR, exist_ok=True)
     os.makedirs(op.join(PF_DIR, "assignments"), exist_ok=True)
-    
+
     mapping_file = op.join(PF_DIR, "peer_assignment.json")
-    
+
     # Create mapping file if not found
     if not op.exists(mapping_file):
         for gh in ROSTER.github.values:
@@ -581,129 +677,148 @@ TODO:
             PEERS.remove(gh)
             random.shuffle(PEERS)
             PF_MAPPING[gh] = PEERS
-        
+
         with open(mapping_file, "w") as f:
-          f.write(json.dumps(PF_MAPPING, indent=4))
-          
+            f.write(json.dumps(PF_MAPPING, indent=4))
+
     with open(mapping_file, "r") as f:
         PF_MAPPING = json.loads(f.read())
-        
+
     ## TODO: FILTER OUT PREVIOUS PEER ASSIGNMENTS OR PROJECT TEAMMATES
-    
-    PF_TEMPLATES = Environment(loader=FileSystemLoader("_cissoid/templates"), 
-                               autoescape=select_autoescape())
-                               
+
+    PF_TEMPLATES = Environment(
+        loader=FileSystemLoader("_cissoid/templates"), autoescape=select_autoescape()
+    )
+
     for gh in ROSTER.github.values:
         post_glob = post_glob = glob(op.join(PF_DIR, "assignments", f"{gh}_issue*.md"))
-        
+
         if post_glob:
-            continue 
-        
+            continue
+
         EVALUATORS = PF_MAPPING[gh][:peer_count]
-        
+
         ISSUE_STATUS = _mini_verify(project_id, [gh])
-        
+
         SUB_URL, RAW_URL = _get_submission_urls(project_id, gh)
-        
+
         if ISSUE_STATUS.ok.item():
             gh_issue_num = ISSUE_STATUS.issue_num.item()
             template = PF_TEMPLATES.get_template("success.md")
         elif ISSUE_STATUS.issue_num.item():
             gh_issue_num = ISSUE_STATUS.issue_num.item()
             template = PF_TEMPLATES.get_template("fail_issue_ok.md")
-        else: 
+        else:
             try:
                 ALL_ISSUES = gh_list_issues(gh)
             except TypeError:
-                import pdb; pdb.set_trace()
-            
+                import pdb
+
+                pdb.set_trace()
+
             ALL_ISSUES = list(ALL_ISSUES.values())
             ALL_ISSUES.sort(key=lambda i: i.number)
-            
+
             if ALL_ISSUES:
-                click.echo("The following GitHub issues opened by {gh} were found on the repository.")
+                click.echo(
+                    "The following GitHub issues opened by {gh} were found on the repository."
+                )
                 for issue in ALL_ISSUES:
                     if issue.opened_by == gh:
-                        click.echo(f" - Issue Number {issue.number}. Title '{issue.title}")
+                        click.echo(
+                            f" - Issue Number {issue.number}. Title '{issue.title}"
+                        )
                 click.echo("Where would you like to assign peer feedback?")
-            
-                gh_issue_num = input("Enter the number of the issue above or 0 for opening a new issue: >> ")
+
+                gh_issue_num = input(
+                    "Enter the number of the issue above or 0 for opening a new issue: >> "
+                )
                 gh_issue_num = int(gh_issue_num)
-            else: 
+            else:
                 click.echo("No issues found. Creating new issue")
                 gh_issue_num = 0
-            
-            if gh_issue_num: 
+
+            if gh_issue_num:
                 template = PF_TEMPLATES.get_template("fail_issue_selected.md")
-            else: 
+            else:
                 template = PF_TEMPLATES.get_template("fail_issue_created.md")
-                
-        post_md = template.render(project_id = project_id, 
-                                  gh = gh, 
-                                  peers = EVALUATORS, 
-                                  sub_url = SUB_URL, 
-                                  raw_url = RAW_URL, 
-                                  check_message = ISSUE_STATUS.message.item())
-                                      
+
+        post_md = template.render(
+            project_id=project_id,
+            gh=gh,
+            peers=EVALUATORS,
+            sub_url=SUB_URL,
+            raw_url=RAW_URL,
+            check_message=ISSUE_STATUS.message.item(),
+        )
+
         post_file = op.join(PF_DIR, "assignments", f"{gh}_issue{gh_issue_num}.md")
-            
+
         with open(post_file, "w") as f:
             f.write(post_md)
-            
-    if dry_run: 
+
+    if dry_run:
         return 0
-    
+
     for gh in ROSTER.github.values:
         click.echo(f"Assigning Peer Feed back for {gh}'s MP#0{project_id}")
         post_glob = glob(op.join(PF_DIR, "assignments", f"{gh}_issue*.md"))
         if len(post_glob) != 1:
             click.abort(f"Cannot find unique PF assignment script for {gh}")
-        
+
         post_file = post_glob[0]
-        
+
         with open(post_file, "r") as f:
             post_md = f.read()
-            
+
         post_file_short = op.basename(post_file)
-        
+
         gh_issue_num = int(re.search("_issue([0-9]+)\\.md$", post_file_short).group(1))
-        
+
         ## Directory with files indicating a successful post
         confirm_dir = op.join(PF_DIR, "confirms")
-        os.makedirs(confirm_dir, exist_ok=True) 
-        
+        os.makedirs(confirm_dir, exist_ok=True)
+
         ## Check to see if issue has already been posted
         confirm_file = op.join(confirm_dir, f"{gh}_issue{gh_issue_num}_COMMENTSUCCESS")
-        if op.exists(confirm_file): 
+        if op.exists(confirm_file):
             click.echo(f"Peer Feedback already assigned for {gh}'s MP#0{project_id}")
-            continue # If we find something that matches, move to next student 
-        
+            continue  # If we find something that matches, move to next student
+
         ## Else make a post
-        if gh_issue_num: 
+        if gh_issue_num:
             resp = gh_issue_comment(gh_issue_num, post_md)
             if resp.ok:
                 with open(confirm_file, "w") as f:
-                    f.write(f"Successfully posted as {datetime.now().astimezone().strftime('%Y-%m-%dT%H:%M:%S_%Z')}")
-                click.echo(f"Peer Feedback successfully assigned for {gh}'s MP#0{project_id}")
-            else: 
+                    f.write(
+                        f"Successfully posted as {datetime.now().astimezone().strftime('%Y-%m-%dT%H:%M:%S_%Z')}"
+                    )
+                click.echo(
+                    f"Peer Feedback successfully assigned for {gh}'s MP#0{project_id}"
+                )
+            else:
                 click.abort("Could not post issue for {gh} at #{gh_issue_num}")
-        else: 
+        else:
             ## TODO make a new issue
-            import pdb; pdb.set_trace()
-    
+            import pdb
+
+            pdb.set_trace()
+
 
 @peer.command(name="collect")
 def peer_collect():
     pass
 
+
 @peer.command(name="evaluate")
 def peer_evaluate():
     """Review Peer-Feedback
 
-After collecting peer feedback, the course staff (instructor or TAs)
-need to assign a 'meta-review' score (0-10) on the quality of the peer
-feedback given. This function is designed to be used repeatedly and saves
-scores throughout evaluation."""
+    After collecting peer feedback, the course staff (instructor or TAs)
+    need to assign a 'meta-review' score (0-10) on the quality of the peer
+    feedback given. This function is designed to be used repeatedly and saves
+    scores throughout evaluation."""
+
 
 if __name__ == "__main__":
     course_manager()

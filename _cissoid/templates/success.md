@@ -50,7 +50,7 @@ The submission should be visible at
 
 > [{{ sub_url }}]({{ sub_url }})
 
-The source code for that document should found at 
+The source code for that document should be found at 
 
 > [{{ raw_url }}]({{ raw_url }})
 
