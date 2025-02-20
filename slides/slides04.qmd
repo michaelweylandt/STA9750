@@ -1,14 +1,53 @@
 ---
-title: "{{< var course.short >}} - Week 4 Update"
+session: "`r session <- 4; session`"
+class_date: 
+  "`r library(tidyverse); read_csv('key_dates.csv', name_repair='universal') |> filter(Course.Element == 'Class Session', Item.Number==session) |> pull(Date)`"
+title: "{{< var course.short >}} </br> Week {{< meta session >}} Update </br> {{< meta class_date >}}"
 author: "Michael Weylandt"
 format: revealjs
 ---
+
+# Today
+
+## Today
+
+Hello from New Mexico!
+
+I'm on hotel Wifi, so if I drop, hold on a bit and I'll rejoin. 
+
+. . . 
+
+- Course Administration
+- PA#04 FAQs
+- Single-Table Verbs
+- Wrap-Up
+  - Life Tip of the Day
+
+# Course Administration
 
 ## {{< var course.short >}} Mini-Project #00
 
 Thank you to those of you who provided peer feedback!
 
-(Over 75% of the class reported receiving useful peer feedback.)
+. . . 
+
+A few of you still haven't completed MP#00. 
+
+Too late for peer feedback, but you need to get this done in order to submit MP#01. 
+
+[No late work accepted on graded MPs.](../syllabus.html#late-work-policy)
+
+## Mini-Project #00 - Pay Attention to the Details
+
+At least one submission had title "YOUR TITLE GOES HERE"
+
+. . . 
+
+![](https://i.pinimg.com/originals/51/6c/28/516c28ae4dc99514fc252e29b1d95099.jpg){fig-align="center"}
+
+## Mini-Project #00 - Peer Feedback
+
+Over 75% of the class reported receiving useful peer feedback.
 
 . . .
 
@@ -17,20 +56,61 @@ in peer feedback. Goal is to help your peers improve: _constructive_ criticism.
 
 . . .
 
-A few of you still haven't completed MP#00. Too late for peer feedback, but
-you need to get this done in order to submit MP#01. 
-
-[No late work accepted on graded MPs.](../syllabus.html#late-work-policy)
-
-## {{< var course.short >}} Mini-Project #01
-
-[MP#01 released](../miniprojcts/mini01.html) - Transit System Financials
+When submitting peer feedback on graded MPs, **use [comment template](https://michael-weylandt.com/STA9750/miniprojects.html#peer-feedback)**. 
 
 . . . 
 
-**Due September 25th**
+If you didn't get useful peer feedback on MP#00, please post a follow-up comment
+in your thread and I'll take a look. 
 
-  - GitHub post (used for peer feedback) AND Brightspace
+## Mini-Project Helper Scripts
+
+Remember [course helper functions](https://michael-weylandt.com/STA9750/tips.html#helper-scripts)
+
+- `mp_submission_create` - Open an issue for your submission
+- `mp_submission_verify` - Check that your issue is formatted and page is available for review
+- `mp_feedback_locate` - Find issues on which you're being asked to comment
+- `mp_feedback_verify` - Check that your peer feedback comments are formatted
+
+## {{< var course.short >}} Mini-Project #01
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(glue)
+library(rlang)
+library(yaml)
+get_mp_title <- function(N){
+    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_text <- readLines(mp_file, n=50)
+    
+    header_end <- which(grepl("---", mp_text))[2]
+    
+    header_info <- yaml.load(readLines(mp_file, n=header_end))
+    
+    header_info$mp_title %||% "TBD"
+}
+
+get_mp_deadline <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Mini-Projects", 
+               `Item Number`== 0, 
+               str_detect(Details, "Due"), 
+               !str_detect(Details, "Peer")) |>
+        mutate(due = paste(Date, "at", Time)) |>
+        pull(due)
+}
+```
+
+[MP#01 released](../miniprojcts/mini01.html) - `r get_mp_title(1)`
+
+. . . 
+
+**Due `r get_mp_deadline(1)`**
+
+  - GitHub post (used for peer feedback) *AND* Brightspace
+  - Significant penalties for only submitting one
   
 . . . 
 
@@ -39,58 +119,60 @@ Pay attention to [the rubric](../miniprojects/mini01.html#rubric)
 - Writing and presentation are about 50% of your grade
 - Evaluated on _rigor_ and _thoughtfulness_, not necessarily correctness
 
-## MP#01 Corrections
+## MP #01 
 
-Thanks to EL and JA for finding two mistakes in MP statement:
+Happy to see folks already getting started!
 
-- Apples/Oranges problem in "longest average trip" (JA)
-- Data cleaning problem in `FARES` table (EL)
+- A bit of debugging of network connection issues (possibly transient)
+- Treatment of OT for *per Annum* and *per diem* employees 
+  - Great questions on this (HT 😎) - Piazza pinned
 
-Will fix after class:
+*Not everything has a single _right_ answer - be reasonable, justify, and document*
 
-- Skip longest average trip question
-- Better instructor-provided code for `FARES` table
+## MP #01
+
+How to deal with messy / incorrect data? 
+
+- Process it intensely
+- Go 'robust'
+
+## Course Project
+
+```{r}
+#| echo: false
+#| message: false
+roster_deadline <- read_csv("key_dates.csv") |>
+    filter(str_detect(Details, "Roster Submission")) |>
+    mutate(due = paste(Date, "at", Time)) |>
+    pull(due)
+```
+
+Roster due at *`r roster_deadline`* by email to me. 
+
+All teammates need to agree, so takes a bit of time. 
+
+Once you set a team, start thinking about a **team name**!
 
 ## Upcoming Mini-Projects
+
 MP#02 assigned next week: 
 
-- Hollywood Development Executive Case Study
-- MP#03: Political Analysis (tentative)
-- MP#04: Retirement Forecasting (tentative)
+- `r get_mp_title(2)` due at `r get_mp_deadline(2)`
+
+  *With revised MP #01 deadline, MP #02 released before MP #01 due*
+
+Later: 
+
+- MP#03 due at `r get_mp_deadline(3)`
+- MP#04 due at `r get_mp_deadline(4)`
 
 ## Pre-Assignments
 
-Brightspace - Wednesdays at 11:45
+Brightspace - Wednesdays at 11:45pm
 
 - Reading, typically on course website
 - Brightspace auto-grades. 
   - I have to manually change to completion grading. 
-
-## Course Project
-
-3 teams already formed!
-
-- Breakout rooms in teams 
-  - Team/Room 1: GZ + VF + EY + AG + TD
-  - Team/Room 2: YZ + HM + TN + NG
-  - Team/Room 3: SK + HA + DS
-- All team commitments due 2024-10-02
-
-## Graduate Teaching Assistant (GTA)
-
-- Charles Ramirez
-- Twice Weekly Office Hours (Zoom - Links of Brightspace)
-  - Tuesdays 4-5pm
-  - Fridays 12-1pm
-- Will also help coordinate peer feedback (GitHub), Piazza responses, *etc.*
-- Excellent resource for course project advice!
-
-## Upcoming Week
-
-Next Wednesday at 11:45pm: 
-
-- Next Pre-Assignment
-- MP#01 Initial Submission due
 
 # Pre-Assignment #04 FAQs
 
@@ -106,7 +188,7 @@ Dropping is mainly useful for
 - Advanced:
   - Operations _across_ columns
   
-## FAQ: `filter` vs `group_by`
+## FAQ: `filter` vs `group_by` {.smaller}
 
 `group_by` is an _adverb_. On its own, it does nothing; it changes the
 behavior of later functionality. 
@@ -128,8 +210,7 @@ penguins |> drop_na() |> print(n=2)
 penguins |> drop_na() |> group_by(species) |> print(n=2)
 ```
 
----
-
+## FAQ: `filter` vs `group_by` {.smaller}
 
 No `group_by` - full summarization:
 ```{r}
@@ -143,7 +224,7 @@ With `group_by` - summary within groups.
 penguins |> drop_na() |> group_by(species) |> summarize(mean(body_mass_g))
 ```
 
----
+## FAQ: `filter` vs `group_by` {.smaller}
 
 With multiple grouping - "cross-tabs" of results: 
 
@@ -159,7 +240,7 @@ Note that result of multi-`group_by` is still grouped:
 penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass_g))
 ```
 
----
+## FAQ: `filter` vs `group_by` {.smaller}
 
 Changes next call to `summarize`:
 
@@ -244,7 +325,11 @@ summarize(group_by(penguins, species), n_species=n())
 
 _Exactly_ the same execution: improved UX
 
-## FAQ: Assignment of Pipeline Results
+. . . 
+
+`%>%` is an older way of doing essentially the same thing
+
+## FAQ: Assignment of Pipeline Results {.smaller}
 
 When to start a pipeline with `NAME <-`? Creating a new variable: 
 
@@ -263,6 +348,8 @@ When to start a pipeline with `NAME <-`? Creating a new variable:
 `dplyr` is _heavily_ inspired by `SQL` (standard query language for data bases)
 
 - MW (2014): "Why bother? Can't folks just use SQL"
+
+. . . 
 
 `pandas` (in Python) inspired by `R` `data.frame` and `SQL`: 
  
@@ -295,10 +382,16 @@ Don't worry about improving code performance until:
 
 Incorrect code is _infinitely slow_.
 
-# Today
+# New Material - Single Table Verbs
 
 ## Diving Deeper with `group_by`, `filter`, and `summarize`
 
 Data Set: [`nycflights13`](https://nycflights13.tidyverse.org/)
 
 Exercise: [Lab #04](../labs/lab04.html)
+
+# Wrap-Up
+
+## Looking Ahead
+
+{{< include ../advice/zsb_benefits.qmd >}}
