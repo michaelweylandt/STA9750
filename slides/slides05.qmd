@@ -1,29 +1,124 @@
 ---
-title: "{{< var course.short >}} - Week 5 Update"
+session: "`r session <- 5; session`"
+class_date: 
+  "`r library(tidyverse); read_csv('key_dates.csv', name_repair='universal') |> filter(Course.Element == 'Class Session', Item.Number==session) |> pull(Date)`"
+title: "{{< var course.short >}} </br> Week {{< meta session >}} Update </br> {{< meta class_date >}}"
 author: "Michael Weylandt"
 format: revealjs
 ---
 
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(glue)
+library(rlang)
+library(yaml)
+get_mp_title <- function(N){
+    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_text <- readLines(mp_file, n=50)
+    
+    header_end <- which(grepl("---", mp_text))[2]
+    
+    header_info <- yaml.load(readLines(mp_file, n=header_end))
+    
+    header_info$mp_title %||% "TBD"
+}
+
+get_mp_deadline <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Mini-Projects", 
+               `Item Number`== N, 
+               str_detect(Details, "Due"), 
+               !str_detect(Details, "Peer")) |>
+        mutate(due = paste(Date, "at", Time)) |>
+        pull(due)
+}
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, "at", Time)))
+```
+
+
+# Today
+
+## Today
+
+- Course Administration
+- PA#05 Review
+- PA#05 FAQs
+- Diving Deeper into Multi-Table Verbs
+- Wrap-Up
+  - Life Tip of the Day
+
 ## {{< var course.short >}} Mini-Project #01
 
-Submission due _yesterday_ at 11:45pm
+Due in **6 Days** Four already submitted - fantastic! 
 
-- $\approx 90\%$ submitted on time
+(Hopefully an excess of preparedness, not a last minute panic)
+
+. . .
+
+
 - **Submit early and submit often**
   - Less "last minute" tech support going forward
 - Use Piazza and use your peers
 
-*Very impressed* by Detailed Analyses, Code Folding and Callout Blocks, Fancy `gt` Tables, Graphics
+*Very impressed* by Detailed Analyses, Fancy Tables, Graphics
+
+You don't need fancy graphics yet, but I love to see 
+*above and beyond*
+
+## {{< var course.short >}} Mini-Project #01
+
+Make sure your code is included in your submission
+
+- [Code-Folding](https://quarto.org/docs/output-formats/html-code.html#folding-code) is very useful
+
+. . . 
+
+Follow submission instructions
+
+- You need to have `mp01.qmd` and `docs/mp01.html` in your 
+  `{{< var course.repo >}}` repository
+
+- Helper function can verify submission is properly formatted
+
+## {{< var course.short >}} Mini-Project #01
+
+Your classmates have asked several excellent questions on Piazza. 
+
+Reminders: 
+
+- This data is _messy_ because NYC is messy
+- Can handle by either (or a mix): 
+  1) By fixing as many issues as possible
+  2) By using 'robust' methods
+- Document your choices and do your best
+  
 
 ## {{< var course.short >}} Mini-Project #01 - Peer Feedback
 
-Peer feedback assigned on GitHub this morning
+To be assigned on GitHub in one week (March 5th):
 
 - $\approx 4$ feedbacks each 
 - Take this seriously: around 20\% of this assignment is "meta-review"
 - Goal: _rigorous_ _constructive_ critique
 
-. . .
+Use [helper functions](https://michael-weylandt.com/STA9750/tips.html#find-peer-feedback-assigned-to-me) 
+to find submissions assigned to you. Ask on Piazza if still having
+trouble.
+
+## {{< var course.short >}} Mini-Project #01 - Peer Feedback
 
 Submissions may not map perfectly to rubric - use your best judgement
 
@@ -33,11 +128,11 @@ Learn from this! What can you adapt for MP#02?
 
 ## {{< var course.short >}} Mini-Project #02
 
-[MP#02 released](../miniprojcts/mini02.html) - Hollywood Movies
+[MP#02 released](../miniprojcts/mini02.html) - Public Transit
 
 . . .
 
-**Due October 23rd**
+**Due `r get_mp_deadline(2)`**
 
 - GitHub post (used for peer feedback) AND Brightspace
 - One Month: don't wait until the very end
@@ -51,10 +146,10 @@ Pay attention to [the rubric](../miniprojects/mini02.html#rubric)
 
 ## Upcoming Mini-Projects
 
-Tentative Topics
+Topics
 
--   MP#03: Political Analysis
--   MP#04: Retirement Forecasting
+-   MP#03: Spotify Analytics - `r get_mp_deadline(3)`
+-   MP#04: Political Analysis - `r get_mp_deadline(4)`
 
 ## Pre-Assignments
 
@@ -64,38 +159,43 @@ Brightspace - Wednesdays at 11:45
 - Brightspace auto-grades
   - I have to manually change to completion grading
 
-Next pre-assignment is **October 16th**
+Next pre-assignment is **March 20th** - few weeks off
 
-## Course Project
+. . . 
 
-6 teams already formed!
-
-- Breakout rooms in teams
-    -  Team/Room 1: GZ + VF + EY + AG + TD
-    -  Team/Room 2: YZ + HM + TN + NG
-    -  Team/Room 3: SK + HA + DS
-    -  Team/Room 4: AC + EL + CL + WP
-    -  Team/Room 5: CC + AO + HS + MT + DM
-    -  Team/Room 6: SK + CM + MK + JV (pending confirmation)
-- All team commitments due via email **2024-10-02**
+Apologies for misleading question this week. I forgot to change it when giving
+the extension
 
 ## Course Support
 
 - Synchronous
-  - Office Hours 4x / week
+  - Office Hours 2x / week
 - Asynchronous
-  - Piazza (<40 minute average response time)
+  - Piazza (<30 minute average response time)
 
-## Upcoming Week
+. . . 
 
-Next Wednesday at 11:45pm:
+Long list of helpful resources added on Piazza, esp. [https://learnr.numbat.space/](https://learnr.numbat.space/)
 
--  MP#01 peer feedback due
--  Team membership due
+. . . 
 
-No class on October 3rd
+Ask questions! This course is demanding but rewarding. 
 
-## October 10 - Project Proposal Presentations
+Social contract: I push you hard, but I also provide lots of support.
+
+## Course Project
+
+2 teams already formed
+
+- Team 1: DL + DS + SG + VH
+- Team 2: VG
+- More to come
+    
+All team commitments due via email 
+**`{r} DATES |> filter(str_detect(Details, "Team Roster Submission")) |> pull(dt)`**
+
+
+## March 13th - Project Proposal Presentations
 
 [Official Description](https://michael-weylandt.com/STA9750/project.html#project-proposal-presentations)
 
@@ -103,9 +203,123 @@ No class on October 3rd
 - Key topics: 
   - _Animating Question_
   - _Team Roster_
-- Also discuss: Possible specific questions, data sources, analytical plan, anticipated challenges
+- Also discuss: Possible specific questions, 
+  data sources, analytical plan, anticipated challenges
 
-Peer feedback mechanism TBD
+# Pre-Assignment #05
+
+## Multi-Table Analysis
+
+*Multiple Tables*:
+
+- More insights than from a single table
+- Maintain 'tidy' structure throughout
+
+Will create new (compound) rows - be ware of accidental over-duplication
+
+## Primary Keys {.smaller}
+
+_Keys_ are unique identifiers for individual records
+
+- Primary (one column) or compound (multiple columns together) 
+
+. . . 
+
+The history of corporate IT is largely one of (failed) primary keys
+
+- Finance: Tickers, Tickers + Exchange, Tickers + Share Class, CUSIP, ISIN,
+  SEDOL, ... 
+  
+. . . 
+
+Meaningful true keys are vanishingly rare - cherish them when you find them
+
+Often 'unique enough' for an analysis
+
+`dplyr::count` is helpful here
+
+## Joins
+
+Joins combine tables _by identity_ - not simple 'stacking' 
+
+Specify a _join key_ - ideally this is an actual key, but doesn't have to be
+
+In `dplyr`, we use the `join_by` function: 
+
+```{r}
+#| eval: false
+#| echo: true
+join_by(table_1_name == table_2_name)
+```
+
+Here `table_1_name` and `table_2_name` are column names from two tables
+
+. . . 
+
+Join rows where these values are equal (advanced joins possible)
+
+
+## Inner and Outer Joins {.smaller}
+
+When tables are perfectly matched, not an issue: 
+
+```{r}
+#| echo: true
+library(dplyr)
+x <- tribble(~college, ~campus_borough, 
+             "CCNY", "Manhattan",
+             "Baruch", "Manhattan", 
+             "CSI", "Staten Island",
+             "York", "Queens")
+
+y <- tribble(~borough_name, ~bus_code,
+             "Manhattan", "M",
+             "Staten Island", "S", 
+             "Queens", "Q")
+
+inner_join(x, y, join_by(campus_borough == borough_name))
+```
+
+Default to `inner` but irrelevant
+
+Note automatic repetition of `"M"` row
+
+## Inner and Outer Joins
+
+How to handle 'unaligned' values?
+
+```{r}
+#| echo: true
+x <- tribble(~college, ~campus_borough, 
+             "CCNY", "Manhattan",
+             "Baruch", "Manhattan", 
+             "CSI", "Staten Island",
+             "York", "Queens", 
+             "Medgar Evers", "Brooklyn")
+
+inner_join(x, y, join_by(campus_borough == borough_name))
+```
+
+MEC vanished!
+
+## Inner and Outer Joins {.smaller}
+
+```{r}
+#| echo: true
+left_join(x, y, join_by(campus_borough == borough_name))
+```
+
+MEC stays, but no bus code - `NA` value
+
+. . . 
+
+- `inner_join` - Keep only matches
+- `left_join` - Keep all rows in left (first) table even w/o matches
+- `right_join` - Keep all rows in right (second) table even w/o matches
+- `full_join` - Keep all rows from both tables, even w/o matches
+
+`left_` and `right_` are types of 'outer' joins
+
 
 # Pre-Assignment #05 FAQs
 
@@ -181,8 +395,6 @@ Rare: looking for _unmatched_ rows.
 - Useful to find data integrity issues or 'implicit' missingness. 
 - I use an `anti_join` to find students who haven't submitted an assignment.
 
-`semi_join` appears in MP #02.
-
 ## FAQ: `many-to-many` Warning
 
 Tricky to address, but fortunately pretty rare. 
@@ -218,7 +430,7 @@ Designed to work together elegantly.
   - Creates "all pairs" of rows. Useful for 'design' problems 
 - filter joins (`anti_`, `semi_`): 
   - Hunting down quietly missing data.
-  - Filtering to sub-samples (see MP#02)
+  - Filtering to sub-samples
 - `nest_join`: beyond this course. 
   - `left_join` with extra structure to output.
 
@@ -228,21 +440,6 @@ Designed to work together elegantly.
 
 Topic of today's work.
 
-## Other Tips
-
-1. Disable `RStudio`'s visual Quarto editor. It's more trouble than it's worth.
-   To stop it from opening by default, add `editor: source` in the header
-   of your `qmd` files.
-   
-2. `Quarto` depends on file structure for organizing content. The main
-   directory (`{{< var course.repo >}}`) should hold all of your input
-   files. You should never directly put anything in the `docs/` folder.
-   That's where generated output should live. 
-   
-3. When I leave `<GITHUB_NAME>` or similar in instructions, put in _your_
-   GitHub ID. (And make sure to remove the `<` and `>` symbols)
-   
-
 # Today
 
 ## Diving Deeper with `dplyr` - Joins and Pivots
@@ -250,3 +447,99 @@ Topic of today's work.
 Data Set: [`nycflights13`](https://nycflights13.tidyverse.org/)
 
 Exercise: [Lab #05](../labs/lab05.html)
+
+## Pivots
+
+`pivot_` changes the shape of a data set
+
+- Get ready for presentation
+- Prep for a join
+- Combine rows before looking at 'cross-row' structure
+
+## Pivots
+
+Q: Which penguin species has the largest between-sex mass difference? 
+
+```{r}
+#| echo: true
+library(tidyr)
+library(palmerpenguins)
+avg_mass_tbl <- penguins |> drop_na() |> 
+    group_by(sex, species) |> 
+    summarize(avg_mass = mean(body_mass_g)) |> 
+    ungroup()
+avg_mass_tbl
+```
+
+## Pivots
+
+We want data that is _wider_ than our current data: 
+
+| species   | male_avg | female_avg | 
+|-----------|----------|-------------
+| Adelie    |...|...|
+| Chinstrap |...|...|
+| Gentoo    |...|...|
+
+
+## Pivots
+```{r}
+#| echo: true
+pivot_wider(avg_mass_tbl, 
+            id_cols = species, 
+            names_from=sex, 
+            values_from=avg_mass)
+```
+
+```{r}
+#| echo: true
+pivot_wider(avg_mass_tbl, 
+            id_cols = species, 
+            names_from=sex, 
+            values_from=avg_mass) |>
+    mutate(sex_diff = male - female) |>
+    slice_max(sex_diff)
+```
+
+## Pivots
+
+`pivot_wider` Aguments:
+
+- `id_cols`: kept as 'keys' for new table
+- `names_from`: existing column 'spread' to create new
+                columns names
+- `values_from`: values in new table
+
+. . . 
+
+`pivot_longer`: 
+
+- 'Inverse' operation
+- Spread one row + multiple columns => one col + multiple rows
+
+# Wrap-Up
+
+## Upcoming Two Weeks
+
+Next Wednesday (March 5th) at 11:45pm:
+
+- MP#01 Initial Submission due
+- Team membership due
+
+. . . 
+
+**No class on March 6th**
+
+. . . 
+
+Following Wednesday (March 12th) at 11:45pm:
+
+- MP#01 Peer Feedback Due
+- No Pre-Assignment
+
+. . . 
+
+**March 13th: Proposal Presentations**
+
+{{< include ../advice/barnette.qmd >}}
+
