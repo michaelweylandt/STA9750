@@ -1,20 +1,16 @@
 Hi @{{ gh }},
 
-Thanks for submitting [MP 0{{ project_id }}](https://michael-weylandt.com/STA9750/miniprojects/mini0{{ project_id }}.html)!
+I was unable to find an issue where you submitted 
+[MP 0{{ project_id }}](https://michael-weylandt.com/STA9750/miniprojects/mini0{{ project_id }}.html)
+so I am opening this one on your behalf. 
 
 We are now starting the *peer feedback* portion of the cycle.
 
 ---
 
-This submission did not pass the automated formatting checks. 
+This submission did not undergo any automated formatting checks. 
 
-In particular, the checks noted `{{ check_message }}`. Peer evaluators, 
-please make sure to check this. The automated checks are not foolproof, 
-however, and this may be a false positive or an otherwise inconsequential 
-difference.
-
-Additionally, the checks were unable to find an exact match to the expected
-issue title, and this new issue was created instead. 
+Peer evaluators, please check that both of the links below work. 
 
 ---
 
@@ -28,7 +24,7 @@ on your submission:
 Peers, please a look at the submission associated with 
 this GitHub repo and provide peer feedback to @{{ gh }}.
 
-{%- if project_id > 0 -%}
+{% if project_id > 0 -%}
 
 A rubric for peer evaluation of this Mini-Project can be found
 in the [Instructions for this Mini-Project](https://michael-weylandt.com/STA9750/miniprojects/mini0{{ project_id }}.html).

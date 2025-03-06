@@ -13,13 +13,14 @@ submission formatting.
 
 The following students have been assigned to provide peer feedback
 on your submission: 
-
 {% for peer in peers %}
 - @{{ peer }}
 {%- endfor %}
 
 Peers, please a look at the submission associated with 
-this GitHub repo and provide peer feedback to @{{ gh }}.
+this GitHub repo and provide peer feedback to @{{ gh }}. 
+
+
 
 {%- if project_id > 0 -%}
 
