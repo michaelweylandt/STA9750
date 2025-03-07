@@ -401,10 +401,9 @@ mp_feedback_verify <- function(N, github_id, peer_id){
     str_replace_all("NN", "(.*)") |>
     str_replace_all("TEXT TEXT TEXT", "(.*)")
   
-  title <- glue("{course_short} {github_id} MiniProject #0{N}")
+  title <- glue("{course_short} {peer_id} MiniProject #0{N}")
 
   issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all", 
-               owner=peer_id, 
                repo=course_repo)
   
   issue_names <- vapply(issues, function(x) str_squish(x$title), "")
@@ -414,14 +413,15 @@ mp_feedback_verify <- function(N, github_id, peer_id){
   if(length(name_match) != 1){
       cat("I could not find a unique issue with the title:\n", 
           "    ", sQuote(title),"\n",
-          "I'm afraid I can't verify whether the peer feedback was submitted properly.\n")
+          "I'm afraid I can't verify whether the peer feedback was submitted properly\n", 
+          "but the issue likely lies with the submittor, not with your feedback.")
           stop("PEER FEEDBACK NOT VERIFIED.")
   } 
   
   issue <- issues[[name_match]]
   
   issue_url <- issue$html_url
-  issue_comment_url <- issue$comment_url
+  issue_comment_url <- issue$comments_url
   
   comments <- gh(issue_comment_url)
   
@@ -442,11 +442,13 @@ mp_feedback_verify <- function(N, github_id, peer_id){
     stop("PEER FEEDBACK NOT VERIFIED.")
   }
   
-  comment_body <- comment$body
+  comment_body <- comments[[comment_num]]$body
   
   cat("I have found your comment, with the following text:")
   
   cat(comment_body)
+  
+  cat("\n-----\n")
   
   comment_body  <- comment_body |> str_squish()
   template_text <- template_text |> str_squish()
@@ -458,7 +460,7 @@ mp_feedback_verify <- function(N, github_id, peer_id){
     stop("PEER FEEDBACK NOT VERIFIED.")
   }
   
-  cat(glue("Congratulations! Your peer feedback on {peer_id}'s MP #0{N} appears properly formatted. Thank you for your contributions to {course_short}"))
+  cat(glue("Congratulations! Your peer feedback on {peer_id}'s MP #0{N} appears properly formatted.\nThank you for your contributions to {course_short}!\n"))
   
   invisible(TRUE)
   
