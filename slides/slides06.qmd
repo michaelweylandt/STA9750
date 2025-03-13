@@ -1,5 +1,8 @@
 ---
-title: "{{< var course.short >}} - Week 6 Update"
+session: "`r session <- 6; session`"
+class_date: 
+  "`r library(tidyverse); read_csv('key_dates.csv', name_repair='universal') |> filter(Course.Element == 'Class Session', Item.Number==session) |> pull(Date)`"
+title: "{{< var course.short >}} </br> Week {{< meta session >}} Update </br> {{< meta class_date >}}"
 author: "Michael Weylandt"
 format: revealjs
 ---
@@ -8,20 +11,29 @@ format: revealjs
 
 👏 Thank you to everyone who took part in peer feedback! 👏
 
-Charles and I have marked all grades - expect on Brightspace soon.
-
-(Tech issues on our end...)
+I will start processing grades and uploading to Brightspace soon. 
+(Moving day for me...)
 
 . . .
 
-Also - let's thank Charles for going through every post manually with reminders 👏
+I've started reading some submissions - really excellent work! 
+
+- Plots (exciting!), sophisticated and insightful analyses, creative policymaking
+
+. . . 
+
+Hopefully automated checks and personalized emails helpful (new this year)
+
+If you have ideas for other useful automated 'supports' let me know
 
 ## {{< var course.short >}} Mini-Project #01
 
 Some popular tips:
 
--   The [`gt`](https://gt.rstudio.com/) makes very nice tables
--   `Quarto` allows "code folding": useful for hiding long boring code blocks
+- The [`kable`](https://bookdown.org/yihui/rmarkdown-cookbook/kable.html) function
+  makes nice tables
+- The [`gt`](https://gt.rstudio.com/) package makes very nice tables
+- `Quarto` allows "code folding": useful for hiding long boring code blocks
 
 ```{r}
 #| echo: true
@@ -34,11 +46,51 @@ You can set this globally. You also want to keep `echo: true`.
 
 ## {{< var course.short >}} Mini-Project #02
 
-[MP#02 released](../miniprojcts/mini02.html) - Hollywood Movies
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(glue)
+library(rlang)
+library(yaml)
+get_mp_title <- function(N){
+    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_text <- readLines(mp_file, n=50)
+    
+    header_end <- which(grepl("---", mp_text))[2]
+    
+    header_info <- yaml.load(readLines(mp_file, n=header_end))
+    
+    header_info$mp_title %||% "TBD"
+}
+
+get_mp_deadline <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Mini-Projects", 
+               `Item Number`== N, 
+               str_detect(Details, "Due"), 
+               !str_detect(Details, "Peer")) |>
+        mutate(due = paste(Date, "at", Time)) |>
+        pull(due)
+}
+
+
+get_pa_deadline <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Pre-Assignments", 
+               `Item Number`== N, 
+               str_detect(Details, "Due"), 
+               !str_detect(Details, "Peer")) |>
+        mutate(due = paste(Date, "at", Time)) |>
+        pull(due)
+}
+```
+
+[MP#02 in process now](../miniprojcts/mini02.html) - `r get_mp_title(2)`
 
 . . .
 
-**Due October 23rd**
+**Due `r get_mp_deadline(2)`**
 
 -   GitHub post (used for peer feedback) AND Brightspace
 
@@ -48,33 +100,36 @@ Pay attention to [the rubric](../miniprojects/mini02.html#rubric)
 
 -   Writing and presentation are about 50% of your grade
 -   Evaluated on *rigor* and *thoughtfulness*
--   Use what you learned from MP#01
--   Pre-processed data now available as well
+-   Use what you learned from MP #01
 
 ## Upcoming Mini-Projects
 
-Tentative Topics
+Topics
 
--   MP#03: Political Analysis
--   MP#04: Retirement Forecasting
+-   MP#03: `r get_mp_title(3)`
+-   MP#04: `r get_mp_title(4)`
 
 ## Pre-Assignments
 
 Brightspace - Wednesdays at 11:45
 
--   Reading, typically on course website
--   Brightspace auto-grades
-    -   I have to manually change to completion grading
+- Reading, typically on course website
+- Brightspace auto-grades
+  - I have to manually change to completion grading
 
-Next pre-assignment is **October 16th**
+Next pre-assignment is **`r get_pa_deadline(7)`**
+
+. . . 
+
+I missed a few comments in the previous cycle (sorry!) - trying to catch up 
+in the next few days
 
 ## Course Support
 
--   Synchronous
-    -   Office Hours 4x / week
-        -   MW Office Hours on **Tuesday** next week only
--   Asynchronous
-    -   Piazza ($<30$ minute average response time)
+- Synchronous
+  - Office Hours 2x / week
+- Asynchronous
+  - Piazza ($<30$ minute average response time)
 
 ## Upcoming Week
 
@@ -82,47 +137,59 @@ Due Wednesday at 11:45pm:
 
 - Pre-Assignment #07 (Brightspace)
   * Introduction to plotting with `ggplot2`
-- Project Proposal Peer Feedback (Vocat)
 
 Expect back:
 
 -   MP#01 consolidated grades
--   Project Proposal instructor feedback
-
-## Course Project Presentations
-
-| Team | Members                    |   | Team | Members                |
-|------|----------------------------|---|------|------------------------|
-| 1    | TD + VF + AG + EY + GZ     |   | 6    | JA + CPV               |
-| 2    | NG + HM + TN + ZL(C)Y + YZ |   | 7    | CD + JCMB + PR + CKZF  |
-| 3    | AC + EL + CL + WP          |   | 8    | HH(C)L + EO + GS + FW  |
-| 4    | HA + HA + SK + VL + DS     |   | 9    | AA + LC + MAJ          |
-| 5    | CC + DM + AO + HS + MT     |   | 10   | HB + SK + MK + CM + JV |
+-   Project proposal instructor feedback
 
 ## Project Proposal Presentations
 
 [Official Description](https://michael-weylandt.com/STA9750/project.html#project-proposal-presentations)
 
--   **6 minute presentation**
--   Key topics:
-    -   *Animating Question*
-    -   *Team Roster*
--   Also discuss: Possible specific questions, data sources, analytical plan, anticipated challenges
+- **6 minute presentation**
+- Key topics:
+  - *Animating Question*
+  - *Team Roster*
+- Also discuss: Possible specific questions, data sources, 
+  analytical plan, anticipated challenges
 
-## Proposal Peer Feedback
+. . . 
 
-Project Peer Feedback Platform: [Vocat](https://baruch.vocat.io/courses/2439)
+Most important: team names! 
 
-After class: 
-
-- I upload presentation videos
-- You leave comments and scores on at least **1** presentation
-  * Try to comment on "under-discussed" presentations
-  * I will be looking for constructive feedback
-  * Less detail than mini-prorjects
- 
-New tool - learning experience for all. Bear with us.
+Last semester: Rat Pack, Subway Surfers, Going for Gold, EVengers, *etc.*
 
 ## After Proposals
 
-Special presentation on Baruch data resources
+100% optional discussion of `dplyr` vs `SQL`
+
+- `SQL` is a very common Data Scientist interview topic so if you're not taking
+  a database course, might be useful
+  
+## Reminder: CUNY Citizenship Now!
+
+- Free and confidental immigration law services provided by CUNY
+- Targeted at CUNY students and families, but open to all NYers
+
+To access: 
+
+- [Callback Request Form](https://www.cuny.edu/about/administration/offices/communications-marketing/citizenship-now/about/callback/)
+- [Locations throughout NYC](https://www.cuny.edu/about/administration/offices/communications-marketing/citizenship-now/about/#locations)
+
+## Reminder: ISS Workshops
+
+See Brightspace Announcement
+
+# On to the Show!
+
+## Course Project Presentations
+
+| Order | Members           |   | Team | Members             |
+|-------|-------------------|---|------|---------------------|
+| 1     | VH + SG + DS + DL |   | 6    | VG                  |
+| 2     | HZ + JLL + CA     |   | 7    | EM + AK + GMdS + JL |
+| 3     | MT + CW           |   | 8    | SJB + JC + SB + ZS  |
+| 4     | SD + GO + CFGF    |   | 9    | GS                  |
+| 5     | GB + RJ + FS + MH |   | 10   | CWo.                |
+
