@@ -18,7 +18,7 @@
     "href": "tips.html#helper-scripts",
     "title": "STA 9750: Tips and Tricks",
     "section": "Helper Scripts",
-    "text": "Helper Scripts\nThe following helper scripts can be used to help automate several students tasks in this course. To use any of them, run\n\nsource(\"https://michael-weylandt.com/STA9750/load_helpers.R\")\n\nand then run the name of the relevant script.\n\nMini-Project Submission\n\nSubmit Mini-Project via GitHub Issue\nThe following functon will create the GitHub issue necessary to submit a mini-project:\n\nmp_submission_create &lt;- function(N, github_id){\n  library(rvest)\n  library(glue)\n  library(tidyverse)\n  library(httr2)\n  library(gh)\n  \n  if(missing(N)){\n    N &lt;- menu(title=\"Which Mini-Project would you like to submit on GitHub?\", \n              choices=c(0, 1, 2, 3, 4))\n  }\n    \n  mp_url &lt;- glue(\"https://michael-weylandt.com/STA9750/miniprojects/mini0{N}.html\")\n  \n  mp_text &lt;- read_html(mp_url) |&gt; html_element(\"#submission-text\") |&gt; html_text()\n  \n  if(missing(github_id)){\n    github_id &lt;- readline(\"What is your GitHub ID? \")\n  }\n  \n  title &lt;- glue(\"{course_short} {github_id} MiniProject #0{N}\")\n  \n  body &lt;- mp_text |&gt; str_replace(\"&lt;GITHUB_ID&gt;\", github_id)\n  \n  r &lt;- request(\"https://github.com/\") |&gt;\n         req_url_path_append(\"michaelweylandt\") |&gt;\n         req_url_path_append(course_repo) |&gt;\n         req_url_path_append(\"issues/new\") |&gt;\n         req_url_query(title=title, \n                       body=body) \n  \n  browseURL(r$url)\n}\n\n\n\nVerify Mini-Project Submission\nThe following function will confirm that the submission issue is properly formatted.\n\nmp_submission_verify &lt;- function(N, github_id){\n  library(rvest)\n  library(glue)\n  library(tidyverse)\n  library(httr2)\n  library(gh)\n    \n  if(missing(N)){\n    N &lt;- menu(title=\"Which Mini-Project would you like to check was properly submitted on GitHub?\", \n              choices=c(0, 1, 2, 3, 4))\n  }\n  \n  mp_url &lt;- glue(\"https://michael-weylandt.com/STA9750/miniprojects/mini0{N}.html\")\n  \n  mp_text &lt;- read_html(mp_url) |&gt; html_element(\"#submission-text\") |&gt; html_text()\n  \n  if(missing(github_id)){\n    github_id &lt;- readline(\"What is your GitHub ID? \")\n  }\n  \n  title &lt;- glue(\"{course_short} {github_id} MiniProject #0{N}\")\n  \n  body &lt;- mp_text |&gt; str_replace(\"&lt;GITHUB_ID&gt;\", github_id) |&gt; str_squish()\n  \n  issues &lt;- gh(\"/repos/michaelweylandt/{repo}/issues?state=all\", \n               owner=github_id, \n               repo=course_repo)\n  \n  issue_names &lt;- vapply(issues, function(x) str_squish(x$title), \"\")\n  \n  name_match &lt;- which(issue_names == title)\n  \n  if(length(name_match) == 0){\n    cat(\"I could not find a unique issue with the title:\\n\", \n        \"    \", sQuote(title),\"\\n\",\n        \"The issues I found had the following titles:\\n\",\n        paste(c(\"\", issue_names), collapse=\"\\n - \"), \"\\n\",\n        \"If something on that list looks correct, please check\",\n        \"capitalization and punctuation.\\n\")\n      \n    case_insensitive_match &lt;- which(tolower(issue_names) == tolower(title))\n        \n    if(length(case_insensitive_match) &gt; 0){\n      cat(\"In particular, please check\", \n          sQuote(issue_names[case_insensitive_match]), \n          \"which appears to be the same, modulo capitalization.\\n\")\n    }\n         \n    stop(\"MINIPROJECT NOT SUBMITTED CORRECTLY.\")\n  } else if(length(name_match) &gt; 1){\n    cat(\"I found multiple issues with the title:\\n\", \n        \"    \", sQuote(title),\"\\n\",\n        \"Please change the names of issues so that there is only\", \n        \"issue with the desired name. (Note that closing an issue is\",\n        \"not sufficient.)\\n\")\n          \n    stop(\"MINIPROJECT NOT SUBMITTED CORRECTLY.\")\n  }\n  \n  issue &lt;- issues[[name_match]]\n  \n  issue_num &lt;- issue$number\n  issue_url &lt;- issue$html_url\n  issue_body &lt;- issue$body |&gt; str_squish()\n  \n  cat(\"Identified Issue #\", issue_num, \"at\", issue_url, \"as possible candidate.\\n\")\n  \n  if(issue$state != \"open\"){\n    cat(\"Issue does not appear to be in 'open' status. Please\",\n        \"confirm the issue is open and try again.\\n\")\n    stop(\"MINIPROJECT NOT SUBMITTED CORRECTLY.\")\n  }\n  \n  if(issue_body != body){\n    cat(\"Issue does not appear to have the correct body text. This is not\",\n        \"necessarily an issue, but you may want to confirm all relevant\",\n        \"information is included.\\n\")\n  }\n  \n  # This isn't quite general enough, but I think it covers everything\n  # we'll see in this course. \n  URL_REGEX &lt;- \"http[A-Za-z0-9:/\\\\-\\\\.]*\"\n    \n  urls &lt;- str_match_all(paste(issue_body, \"\\n Thanks!\\n\", sep=\"\"), \n                        URL_REGEX)[[1]]\n  expected_url &lt;- str_extract(body, URL_REGEX)\n  \n  if(length(urls) &gt; 1){\n    cat(\"The following URLs were found in the issue text:\",\n        paste(c(\"\", urls), collapse=\"\\n - \"), \n        \"Only one URL was expected; please remove any extras.\\n\")\n    stop(\"MINIPROJECT NOT SUBMITTED CORRECTLY.\")\n  }\n \n  submitted_url &lt;- urls[1]\n  \n  if(submitted_url != expected_url){\n    cat(\"The submitted URL does not match the Mini-Project instructions.\\n\", \n        \"Expected:\\n - \", expected_url, \"\\n\", \n        \"Submitted:\\n - \", submitted_url, \"\\n\", \n        \"Please correct any differences and try again.\\n\")\n        stop(\"MINIPROJECT NOT SUBMITTED CORRECTLY.\")\n  }\n  \n  resp &lt;- request(submitted_url) |&gt; \n      req_error(is_error = \\(r) FALSE) |&gt;\n      req_perform()\n  \n  if(resp_is_error(resp)){\n    cat(\"Something appears to be incorrect at the URL: \", \n        submitted_url, \n        \"\\n Please confirm that it is working as expected and try again.\")\n    browseURL(submitted_url)\n    stop(\"MINIPROJECT NOT SUBMITTED SUCCESSFULLY.\")\n  }\n  \n  if(N == 0){\n    raw_url &lt;- glue(\"https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/index.qmd\")\n  } else {\n    raw_url &lt;- glue(\"https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/mp0{N}.qmd\")\n  }\n  \n  resp_raw &lt;- request(raw_url) |&gt; \n      req_error(is_error = \\(r) FALSE) |&gt;\n      req_perform()\n  \n  if(resp_is_error(resp_raw)){\n      ## Try again with 'master' instead of 'main' branch\n      raw_url &lt;- str_replace(raw_url, \"main\", \"master\")\n      resp_raw &lt;- request(raw_url) |&gt; \n      req_error(is_error = \\(r) FALSE) |&gt;\n      req_perform()\n  }\n  \n  if(resp_is_error(resp_raw)){\n      cat(\"I cannot find the source qmd document at\", raw_url, \".\\n\",\n          \"Please confirm it was correctly submitted and try again.\\n\",\n          \"This document is needed for automated code quality checks.\\n\")\n      \n    stop(\"MINIPROJECT NOT SUBMITTED SUCCESSFULLY.\")\n  }\n  \n  cat(\"Congratulations! Your mini-project appears to have been submitted correctly!\\n\")\n  invisible(TRUE)\n}\n\n\n\n\nPeer Feedback\n\nCreate Peer Feedback Comment\nAs of January 2025, GitHub does not support pre-filling issue comments via URL so I am currently unable to pre-load the peer feedback template for you. For now, you should be able to copy the template on the mini-project overview page. (Note the “copy” button in the top right corner of the code-formatted block.)\n\n\nFind Peer Feedback Assigned to Me\n\nmp_feedback_locate &lt;- function(N, github_id){\n    library(rvest)\n    library(glue)\n    library(tidyverse)\n    library(httr2)\n    library(gh)\n    \n    if(missing(N)){\n        N &lt;- menu(title=\"Which Mini-Project's Peer Feedback cycle is it currently?\", \n                  choices=c(0, 1, 2, 3, 4))\n    }\n    \n    if(missing(github_id)){\n        github_id &lt;- readline(\"What is your GitHub ID? \")\n    }\n    \n    issues &lt;- gh(\"/repos/michaelweylandt/{repo}/issues?state=all\", \n                 repo=course_repo)\n    \n    pf_urls &lt;- issues |&gt; \n        keep(~ str_detect(.x$title, glue(\"#0{N}\"))) |&gt;\n        map(~data.frame(html=.x$html_url, comments=.x$comments_url)) |&gt;\n        keep(~any(str_detect(map_chr(gh(.x$comments), \"body\"), github_id))) |&gt;\n        map(\"html\") |&gt;\n        list_c()\n    \n    cat(glue(\"I have found several MP#0{N} issues that may be assigned to you.\\n\"),\n             \"Please review the following:\\n\")\n    for(pf in pf_urls){\n        cat(\" - \", pf, \"\\n\")\n    }\n    \n    to_browser &lt;- menu(title=\"Would you like me to open these in your web browser?\", \n                       choices=c(\"Yes\", \"No\"))\n    \n    if(to_browser == 1){\n        for(pf in pf_urls){\n            browseURL(pf)\n        }\n    }\n    invisible(TRUE)\n}\n\n\n\nVerify Peer Feedback Properly Formatted\n\nmp_feedback_verify &lt;- function(N, github_id, peer_id){\n  library(rvest)\n  library(glue)\n  library(tidyverse)\n  library(httr2)\n  library(gh)\n    \n  if(missing(N)){\n    N &lt;- menu(title=\"Which Mini-Project's Peer Feedback would you like to check was properly submitted on GitHub?\", \n              choices=c(0, 1, 2, 3, 4))\n  }\n  \n  if(missing(github_id)){\n    github_id &lt;- readline(\"What is your GitHub ID? \")\n  }\n\n  if(missing(peer_id)){\n    peer_id &lt;- readline(\"What is your Peer's GitHub ID? \")\n  }\n \n  template_url &lt;- \"https://michael-weylandt.com/STA9750/miniprojects.html\"\n  \n  template_text &lt;- read_html(template_url) |&gt; \n    html_element(\"#peer-feedback-template\") |&gt; \n    html_text() |&gt;\n    str_trim() |&gt;\n    str_replace_all(\"NN\", \"(.*)\") |&gt;\n    str_replace_all(\"TEXT TEXT TEXT\", \"(.*)\")\n  \n  title &lt;- glue(\"{course_short} {peer_id} MiniProject #0{N}\")\n\n  issues &lt;- gh(\"/repos/michaelweylandt/{repo}/issues?state=all\", \n               repo=course_repo)\n  \n  issue_names &lt;- vapply(issues, function(x) str_squish(x$title), \"\")\n  \n  name_match &lt;- which(issue_names == title)\n  \n  if(length(name_match) != 1){\n      cat(\"I could not find a unique issue with the title:\\n\", \n          \"    \", sQuote(title),\"\\n\",\n          \"I'm afraid I can't verify whether the peer feedback was submitted properly\\n\", \n          \"but the issue likely lies with the submittor, not with your feedback.\")\n          stop(\"PEER FEEDBACK NOT VERIFIED.\")\n  } \n  \n  issue &lt;- issues[[name_match]]\n  \n  issue_url &lt;- issue$html_url\n  issue_comment_url &lt;- issue$comments_url\n  \n  comments &lt;- gh(issue_comment_url)\n  \n  commenters &lt;- vapply(comments, function(x) x$user$login, \"\")\n  \n  comment_num &lt;- which(commenters == github_id)\n  \n  if(length(comment_num) != 1){\n    cat(\"I cannot identify your comment on the issue at\", \n       sQuote(issue_url), \". Please verify that this is the correct link.\\n\")\n       \n    if(length(comment_num) == 0){\n      cat(\"You do not appear to have commented on this issue.\")\n    } else {\n      cat(\"You have left multiple comments on this issue.\",\n          \"Please consolidate your feedback\")\n    }\n    stop(\"PEER FEEDBACK NOT VERIFIED.\")\n  }\n  \n  comment_body &lt;- comments[[comment_num]]$body\n  \n  cat(\"I have found your comment, with the following text:\")\n  \n  cat(comment_body)\n  \n  cat(\"\\n-----\\n\")\n  \n  comment_body  &lt;- comment_body |&gt; str_squish()\n  template_text &lt;- template_text |&gt; str_squish()\n  \n  matches &lt;- str_match_all(comment_body, template_text)[[1]][-1]\n  \n  if(anyNA(matches)){\n    cat(\"I couldn't match the template to your comment. Please modify and try again.\")\n    stop(\"PEER FEEDBACK NOT VERIFIED.\")\n  }\n  \n  cat(glue(\"Congratulations! Your peer feedback on {peer_id}'s MP #0{N} appears properly formatted.\\nThank you for your contributions to {course_short}!\\n\"))\n  \n  invisible(TRUE)\n  \n}\n\n\n\n\nCount Words\nThe following script can be used to count words on a Quarto-generated web page.\n\ncount_words &lt;- function(url){\n    library(rvest)\n    library(stringi)\n    \n    # Note that this includes code inside an inline block, but omits\n    # full-sized code blocks\n    read_html(url) |&gt;\n        html_elements(\"main p\") |&gt;\n        html_text() |&gt;\n        stri_count_words() |&gt;\n        sum()\n}\n\n\n\nLint Submission\nThe following will automatically run the lintr package on a submitted qmd document.\n\nlint_submission &lt;- function(N, peer_id){\n  library(rvest)\n  library(glue)\n  library(tidyverse)\n  library(httr2)\n  library(lintr)\n\n  if(missing(N)){\n    N &lt;- menu(title=\"Which Mini-Project submission would you like to lint?\", \n              choices=c(1, 2, 3, 4))\n  }\n    \n  if(missing(peer_id)){\n    peer_id &lt;- readline(\"What is your Peer's GitHub ID? \")\n  }\n    \n  raw_url &lt;- glue(\"https://raw.githubusercontent.com/{peer_id}/{course_repo}/refs/heads/main/mp0{N}.qmd\")\n  \n  cat(\"Attempting to access qmd source at\", raw_url, \".\\n\")\n  \n  resp &lt;- request(raw_url) |&gt; \n      req_error(is_error = \\(r) FALSE) |&gt;\n      req_perform()\n  \n  if(resp_is_error(resp)){\n      cat(\"I could not access the raw qmd document. Attempting to open in browser...\\n\")\n      browseURL(resp)\n      return(FALSE)\n  } else {\n      cat(\"I was able to access the raw qmd document. Beginning to lint.\\n\")\n      \n      tf &lt;- tempfile(pattern=glue(\"mp0{N}_{peer_id}_lint_document.qmd\"))\n      \n      writeLines(resp_body_string(resp), tf)\n      \n      lintr::lint(tf)\n  }\n}"
+    "text": "Helper Scripts\nThe following helper scripts can be used to help automate several students tasks in this course. To use any of them, run\n\nsource(\"https://michael-weylandt.com/STA9750/load_helpers.R\")\n\nand then run the name of the relevant script.\n\nMini-Project Submission\n\nSubmit Mini-Project via GitHub Issue\nThe following functon will create the GitHub issue necessary to submit a mini-project:\n\nmp_submission_create &lt;- function(N, github_id){\n  library(rvest)\n  library(glue)\n  library(tidyverse)\n  library(httr2)\n  library(gh)\n  \n  if(missing(N)){\n    N &lt;- menu(title=\"Which Mini-Project would you like to submit on GitHub?\", \n              choices=c(0, 1, 2, 3, 4))\n  }\n    \n  mp_url &lt;- glue(\"https://michael-weylandt.com/STA9750/miniprojects/mini0{N}.html\")\n  \n  mp_text &lt;- read_html(mp_url) |&gt; html_element(\"#submission-text\") |&gt; html_text()\n  \n  if(missing(github_id)){\n    github_id &lt;- readline(\"What is your GitHub ID? \")\n  }\n  \n  title &lt;- glue(\"{course_short} {github_id} MiniProject #0{N}\")\n  \n  body &lt;- mp_text |&gt; str_replace(\"&lt;GITHUB_ID&gt;\", github_id)\n  \n  r &lt;- request(\"https://github.com/\") |&gt;\n         req_url_path_append(\"michaelweylandt\") |&gt;\n         req_url_path_append(course_repo) |&gt;\n         req_url_path_append(\"issues/new\") |&gt;\n         req_url_query(title=title, \n                       body=body) \n  \n  browseURL(r$url)\n}\n\n\n\nVerify Mini-Project Submission\nThe following function will confirm that the submission issue is properly formatted.\n\nmp_submission_verify &lt;- function(N, github_id){\n  library(rvest)\n  library(glue)\n  library(tidyverse)\n  library(httr2)\n  library(gh)\n    \n  if(missing(N)){\n    N &lt;- menu(title=\"Which Mini-Project would you like to check was properly submitted on GitHub?\", \n              choices=c(0, 1, 2, 3, 4))\n  }\n  \n  mp_url &lt;- glue(\"https://michael-weylandt.com/STA9750/miniprojects/mini0{N}.html\")\n  \n  mp_text &lt;- read_html(mp_url) |&gt; html_element(\"#submission-text\") |&gt; html_text()\n  \n  if(missing(github_id)){\n    github_id &lt;- readline(\"What is your GitHub ID? \")\n  }\n  \n  title &lt;- glue(\"{course_short} {github_id} MiniProject #0{N}\")\n  \n  body &lt;- mp_text |&gt; str_replace(\"&lt;GITHUB_ID&gt;\", github_id) |&gt; str_squish()\n  \n  issues &lt;- gh(\"/repos/michaelweylandt/{repo}/issues?state=all\", \n               owner=github_id, \n               repo=course_repo)\n  \n  issue_names &lt;- vapply(issues, function(x) str_squish(x$title), \"\")\n  \n  name_match &lt;- which(issue_names == title)\n  \n  if(length(name_match) == 0){\n    cat(\"I could not find a unique issue with the title:\\n\", \n        \"    \", sQuote(title),\"\\n\",\n        \"The issues I found had the following titles:\\n\",\n        paste(c(\"\", issue_names), collapse=\"\\n - \"), \"\\n\",\n        \"If something on that list looks correct, please check\",\n        \"capitalization and punctuation.\\n\")\n      \n    case_insensitive_match &lt;- which(tolower(issue_names) == tolower(title))\n        \n    if(length(case_insensitive_match) &gt; 0){\n      cat(\"In particular, please check\", \n          sQuote(issue_names[case_insensitive_match]), \n          \"which appears to be the same, modulo capitalization.\\n\")\n    }\n         \n    stop(\"MINIPROJECT NOT SUBMITTED CORRECTLY.\")\n  } else if(length(name_match) &gt; 1){\n    cat(\"I found multiple issues with the title:\\n\", \n        \"    \", sQuote(title),\"\\n\",\n        \"Please change the names of issues so that there is only\", \n        \"issue with the desired name. (Note that closing an issue is\",\n        \"not sufficient.)\\n\")\n          \n    stop(\"MINIPROJECT NOT SUBMITTED CORRECTLY.\")\n  }\n  \n  issue &lt;- issues[[name_match]]\n  \n  issue_num &lt;- issue$number\n  issue_url &lt;- issue$html_url\n  issue_body &lt;- issue$body |&gt; str_squish()\n  \n  cat(\"Identified Issue #\", issue_num, \"at\", issue_url, \"as possible candidate.\\n\")\n  \n  if(issue$state != \"open\"){\n    cat(\"Issue does not appear to be in 'open' status. Please\",\n        \"confirm the issue is open and try again.\\n\")\n    stop(\"MINIPROJECT NOT SUBMITTED CORRECTLY.\")\n  }\n  \n  if(issue_body != body){\n    cat(\"Issue does not appear to have the correct body text. This is not\",\n        \"necessarily an issue, but you may want to confirm all relevant\",\n        \"information is included.\\n\")\n  }\n  \n  # This isn't quite general enough, but I think it covers everything\n  # we'll see in this course. \n  URL_REGEX &lt;- \"http[A-Za-z0-9:/\\\\-\\\\.]*\"\n    \n  urls &lt;- str_match_all(paste(issue_body, \"\\n Thanks!\\n\", sep=\"\"), \n                        URL_REGEX)[[1]]\n  expected_url &lt;- str_extract(body, URL_REGEX)\n  \n  if(length(urls) &gt; 1){\n    cat(\"The following URLs were found in the issue text:\",\n        paste(c(\"\", urls), collapse=\"\\n - \"), \n        \"Only one URL was expected; please remove any extras.\\n\")\n    stop(\"MINIPROJECT NOT SUBMITTED CORRECTLY.\")\n  }\n \n  submitted_url &lt;- urls[1]\n  \n  if(submitted_url != expected_url){\n    cat(\"The submitted URL does not match the Mini-Project instructions.\\n\", \n        \"Expected:\\n - \", expected_url, \"\\n\", \n        \"Submitted:\\n - \", submitted_url, \"\\n\", \n        \"Please correct any differences and try again.\\n\")\n        stop(\"MINIPROJECT NOT SUBMITTED CORRECTLY.\")\n  }\n  \n  resp &lt;- request(submitted_url) |&gt; \n      req_error(is_error = \\(r) FALSE) |&gt;\n      req_perform()\n  \n  if(resp_is_error(resp)){\n    cat(\"Something appears to be incorrect at the URL: \", \n        submitted_url, \n        \"\\n Please confirm that it is working as expected and try again.\")\n    browseURL(submitted_url)\n    stop(\"MINIPROJECT NOT SUBMITTED SUCCESSFULLY.\")\n  }\n  \n  if(N == 0){\n    raw_url &lt;- glue(\"https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/index.qmd\")\n  } else {\n    raw_url &lt;- glue(\"https://raw.githubusercontent.com/{github_id}/{course_repo}/refs/heads/main/mp0{N}.qmd\")\n  }\n  \n  resp_raw &lt;- request(raw_url) |&gt; \n      req_error(is_error = \\(r) FALSE) |&gt;\n      req_perform()\n  \n  if(resp_is_error(resp_raw)){\n      ## Try again with 'master' instead of 'main' branch\n      raw_url &lt;- str_replace(raw_url, \"main\", \"master\")\n      resp_raw &lt;- request(raw_url) |&gt; \n      req_error(is_error = \\(r) FALSE) |&gt;\n      req_perform()\n  }\n  \n  if(resp_is_error(resp_raw)){\n      cat(\"I cannot find the source qmd document at\", raw_url, \".\\n\",\n          \"Please confirm it was correctly submitted and try again.\\n\",\n          \"This document is needed for automated code quality checks.\\n\")\n      \n    stop(\"MINIPROJECT NOT SUBMITTED SUCCESSFULLY.\")\n  }\n  \n  cat(\"Congratulations! Your mini-project appears to have been submitted correctly!\\n\")\n  invisible(TRUE)\n}\n\n\n\n\nPeer Feedback\n\nCreate Peer Feedback Comment\nAs of January 2025, GitHub does not support pre-filling issue comments via URL so I am currently unable to pre-load the peer feedback template for you. For now, you should be able to copy the template on the mini-project overview page. (Note the “copy” button in the top right corner of the code-formatted block.)\n\n\nFind Peer Feedback Assigned to Me\n\nmp_feedback_locate &lt;- function(N, github_id){\n    library(rvest)\n    library(glue)\n    library(tidyverse)\n    library(httr2)\n    library(gh)\n    \n    if(missing(N)){\n        N &lt;- menu(title=\"Which Mini-Project's Peer Feedback cycle is it currently?\", \n                  choices=c(0, 1, 2, 3, 4))\n    }\n    \n    if(missing(github_id)){\n        github_id &lt;- readline(\"What is your GitHub ID? \")\n    }\n    \n    issues &lt;- gh(\"/repos/michaelweylandt/{repo}/issues?state=all\", \n                 repo=course_repo)\n    \n    pf_urls &lt;- issues |&gt; \n        keep(~ str_detect(.x$title, glue(\"#0{N}\"))) |&gt;\n        map(~data.frame(html=.x$html_url, comments=.x$comments_url)) |&gt;\n        keep(~any(str_detect(map_chr(gh(.x$comments), \"body\"), github_id))) |&gt;\n        map(\"html\") |&gt;\n        list_c()\n    \n    cat(glue(\"I have found several MP#0{N} issues that may be assigned to you.\\n\"),\n             \"Please review the following:\\n\")\n    for(pf in pf_urls){\n        cat(\" - \", pf, \"\\n\")\n    }\n    \n    to_browser &lt;- menu(title=\"Would you like me to open these in your web browser?\", \n                       choices=c(\"Yes\", \"No\"))\n    \n    if(to_browser == 1){\n        for(pf in pf_urls){\n            browseURL(pf)\n        }\n    }\n    invisible(TRUE)\n}\n\n\n\nVerify Peer Feedback Properly Formatted\n\nmp_feedback_verify &lt;- function(N, github_id, peer_id){\n  library(rvest)\n  library(glue)\n  library(tidyverse)\n  library(httr2)\n  library(gh)\n    \n  if(missing(N)){\n    N &lt;- menu(title=\"Which Mini-Project's Peer Feedback would you like to check was properly submitted on GitHub?\", \n              choices=c(0, 1, 2, 3, 4))\n  }\n  \n  if(missing(github_id)){\n    github_id &lt;- readline(\"What is your GitHub ID? \")\n  }\n\n  if(missing(peer_id)){\n    peer_id &lt;- readline(\"What is your Peer's GitHub ID? \")\n  }\n \n  template_url &lt;- \"https://michael-weylandt.com/STA9750/miniprojects.html\"\n  \n  template_text &lt;- read_html(template_url) |&gt; \n    html_element(\"#peer-feedback-template\") |&gt; \n    html_text() |&gt;\n    str_trim() |&gt;\n    str_replace_all(\"NN\", \"(.*)\") |&gt;\n    str_replace_all(\"TEXT TEXT TEXT\", \"(.*)\")\n  \n  title &lt;- glue(\"{course_short} {peer_id} MiniProject #0{N}\")\n\n  issues &lt;- gh(\"/repos/michaelweylandt/{repo}/issues?state=all\", \n               repo=course_repo)\n  \n  issue_names &lt;- vapply(issues, function(x) str_squish(x$title), \"\")\n  \n  name_match &lt;- which(issue_names == title)\n  \n  if(length(name_match) != 1){\n      cat(\"I could not find a unique issue with the title:\\n\", \n          \"    \", sQuote(title),\"\\n\",\n          \"I'm afraid I can't verify whether the peer feedback was submitted properly\\n\", \n          \"but the issue likely lies with the submittor, not with your feedback.\")\n          stop(\"PEER FEEDBACK NOT VERIFIED.\")\n  } \n  \n  issue &lt;- issues[[name_match]]\n  \n  issue_url &lt;- issue$html_url\n  issue_comment_url &lt;- issue$comments_url\n  \n  comments &lt;- gh(issue_comment_url)\n  \n  commenters &lt;- vapply(comments, function(x) x$user$login, \"\")\n  \n  comment_num &lt;- which(commenters == github_id)\n  \n  if(length(comment_num) != 1){\n    cat(\"I cannot identify your comment on the issue at\", \n       sQuote(issue_url), \". Please verify that this is the correct link.\\n\")\n       \n    if(length(comment_num) == 0){\n      cat(\"You do not appear to have commented on this issue.\")\n    } else {\n      cat(\"You have left multiple comments on this issue.\",\n          \"Please consolidate your feedback\")\n    }\n    stop(\"PEER FEEDBACK NOT VERIFIED.\")\n  }\n  \n  comment_body &lt;- comments[[comment_num]]$body\n  \n  cat(\"I have found your comment, with the following text:\\n-----\\n\")\n  \n  cat(comment_body)\n  \n  cat(\"\\n-----\\n\")\n  \n  comment_body  &lt;- comment_body |&gt; str_squish()\n  template_text &lt;- template_text |&gt; str_squish()\n  \n  matches &lt;- str_match_all(comment_body, template_text)[[1]][-1]\n  \n  if(anyNA(matches)){\n    cat(\"I couldn't match the template to your comment. Please modify and try again.\")\n    stop(\"PEER FEEDBACK NOT VERIFIED.\")\n  }\n  \n  cat(glue(\"Congratulations! Your peer feedback on {peer_id}'s MP #0{N} appears properly formatted.\\nThank you for your contributions to {course_short}!\\n\"))\n  \n  invisible(TRUE)\n  \n}\n\n\n\n\nCount Words\nThe following script can be used to count words on a Quarto-generated web page.\n\ncount_words &lt;- function(url){\n    library(rvest)\n    library(stringi)\n    \n    # Note that this includes code inside an inline block, but omits\n    # full-sized code blocks\n    read_html(url) |&gt;\n        html_elements(\"main p\") |&gt;\n        html_text() |&gt;\n        stri_count_words() |&gt;\n        sum()\n}\n\n\n\nLint Submission\nThe following will automatically run the lintr package on a submitted qmd document.\n\nlint_submission &lt;- function(N, peer_id){\n  library(rvest)\n  library(glue)\n  library(tidyverse)\n  library(httr2)\n  library(lintr)\n\n  if(missing(N)){\n    N &lt;- menu(title=\"Which Mini-Project submission would you like to lint?\", \n              choices=c(1, 2, 3, 4))\n  }\n    \n  if(missing(peer_id)){\n    peer_id &lt;- readline(\"What is your Peer's GitHub ID? \")\n  }\n    \n  raw_url &lt;- glue(\"https://raw.githubusercontent.com/{peer_id}/{course_repo}/refs/heads/main/mp0{N}.qmd\")\n  \n  cat(\"Attempting to access qmd source at\", raw_url, \".\\n\")\n  \n  resp &lt;- request(raw_url) |&gt; \n      req_error(is_error = \\(r) FALSE) |&gt;\n      req_perform()\n  \n  if(resp_is_error(resp)){\n      cat(\"I could not access the raw qmd document. Attempting to open in browser...\\n\")\n      browseURL(resp)\n      return(FALSE)\n  } else {\n      cat(\"I was able to access the raw qmd document. Beginning to lint.\\n\")\n      \n      tf &lt;- tempfile(pattern=glue(\"mp0{N}_{peer_id}_lint_document.qmd\"))\n      \n      writeLines(resp_body_string(resp), tf)\n      \n      lintr::lint(tf)\n  }\n}"
   },
   {
     "objectID": "project.html",
@@ -247,16 +247,16 @@
   {
     "objectID": "slides/slides07.html#mini-project-01",
     "href": "slides/slides07.html#mini-project-01",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "STA 9750 Mini-Project #01",
     "text": "STA 9750 Mini-Project #01\nGrades returned this afternoon.\nReview regrade policy and late work policy if you have questions."
   },
   {
     "objectID": "slides/slides07.html#mini-project-02",
     "href": "slides/slides07.html#mini-project-02",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "STA 9750 Mini-Project #02",
-    "text": "STA 9750 Mini-Project #02\nMP#02 - Hollywood Movies – Due October 23rd\n\nGitHub post (used for peer feedback) AND Brightspace\nStart early to avoid Git issues\n\n\nPay attention to the rubric\n\nWriting and presentation are about 50% of your grade\nEvaluated on rigor and thoughtfulness\nUse what you learned from MP#01\nPre-processed data now available as well"
+    "text": "STA 9750 Mini-Project #02\nMP#02 - Identifying Environmentally Responsible US Public Transit Systems\nDue 2025-03-26 at 11:45pm ET\n\nGitHub post (used for peer feedback) AND Brightspace\nStart early to avoid Git issues\n\n\nPay attention to the rubric\n\nWriting and presentation are about 50% of your grade\nEvaluated on rigor and thoughtfulness\nUse what you learned from MP#01\nPre-processed data now available as well"
   },
   {
     "objectID": "slides/slides07.html#upcoming-mini-projects",
@@ -275,366 +275,366 @@
   {
     "objectID": "slides/slides07.html#pre-assignments",
     "href": "slides/slides07.html#pre-assignments",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "Pre-Assignments",
-    "text": "Pre-Assignments\nBrightspace - Wednesdays at 11:45\n\nReading, typically on course website\nBrightspace auto-grades\n\nI have to manually change to completion grading\n\n\nNext pre-assignment is October 23rd\n\nThank you for FAQs and (honest) team feedback. Keep it coming!"
+    "text": "Pre-Assignments\nBrightspace - Wednesdays at 11:45\n\nReading, typically on course website\nBrightspace auto-grades\n\nI have to manually change to completion grading\n\n\nNext pre-assignment is 2025-03-26 at 11:45pm ET:\n\nIncludes an optional (but really great) lecture on data visualization from Di Cook (Monash B School (AUS))\n\n\nThank you for FAQs and (honest) team feedback. Keep it coming!"
   },
   {
     "objectID": "slides/slides07.html#course-support",
     "href": "slides/slides07.html#course-support",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "Course Support",
-    "text": "Course Support\n\nSynchronous\n\nOffice Hours 4x / week\n\nMW Office Hours on Monday + Thursday for rest of semester\nCR Tuesday + Friday\nNo OH during Thanksgiving break\n\n\nAsynchronous\n\nPiazza (\\(&lt;30\\) minute average response time)"
+    "text": "Course Support\n\nSynchronous\n\nOffice Hours 2x / week\n\nMW Office Hours on Tuesdays + Thursday for rest of semester\nNo OH during Spring Break\n\n\nAsynchronous\n\nPiazza (\\(&lt;30\\) minute average response time)\n\n\nThanks to DS for helping peers on Piazza!"
   },
   {
     "objectID": "slides/slides07.html#upcoming-week",
     "href": "slides/slides07.html#upcoming-week",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "Upcoming Week",
-    "text": "Upcoming Week\nDue Wednesday at 11:45pm:\n\nPre-Assignment #08 (Brightspace)\n\nAdvanced plotting with ggplot2\n\nMP #02 on GitHub AND Brightspace"
+    "text": "Upcoming Week\nDue Wednesday at 11:45pm:\n\nPre-Assignment #08 (Brightspace)\n\nInteractive Tools for Data Visualization\n\nMP #02 on GitHub AND Brightspace"
   },
   {
     "objectID": "slides/slides07.html#additional-resources",
     "href": "slides/slides07.html#additional-resources",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "Additional Resources",
     "text": "Additional Resources\n\nC. Wilke. Fundamentals of Data Visualization\nK. Healy. Data Visualization\nH. Wickham ggplot2: Elegant Visualizations for Data Analysis\n\n\n\nB. Yu and R. Barter Veridical Data Science"
   },
   {
     "objectID": "slides/slides07.html#faq-ggplot2-vs-tableau",
     "href": "slides/slides07.html#faq-ggplot2-vs-tableau",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: ggplot2 vs Tableau",
     "text": "FAQ: ggplot2 vs Tableau\n\nTableau\n\n$$$\nIT department automatically integrates with data sources\nEasy, if it does what you want\n\nggplot2\n\nFree\nCan use arbitrary data sources, with effort\nFlexible / customizable"
   },
   {
     "objectID": "slides/slides07.html#faq-ggplot2-vs-matplotlib",
     "href": "slides/slides07.html#faq-ggplot2-vs-matplotlib",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: ggplot2 vs matplotlib",
     "text": "FAQ: ggplot2 vs matplotlib\n\nggplot2\n\nData visualizations\nEnforces “good practice” via gg\n\nmatplotlib\n\nScientific visualizations\nMore flexible for good or for ill\nInspired by Matlab plotting\n\n\nClosest Python analogue to ggplot2 is seaborn"
   },
   {
     "objectID": "slides/slides07.html#faq-why-use-instead-of",
     "href": "slides/slides07.html#faq-why-use-instead-of",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Why use + instead of |>",
     "text": "FAQ: Why use + instead of |&gt;\n\nggplot2 is older than |&gt;\nPer H. Wickham: if ggplot3 ever gets made, will use |&gt;\nUnlikely to change: too much code depends on it"
   },
   {
     "objectID": "slides/slides07.html#faq-performance",
     "href": "slides/slides07.html#faq-performance",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Performance",
     "text": "FAQ: Performance\n\nI tried an interactive plot with \\(n=132,000\\) points, but it brought my computer to a halt. [Ed. Paraphrased]\n\nThat’s a lot of plots!!\nggplot2 is itself pretty fast, but it depends on (possibly slow) graphics backends\n\nDifferent file types implement graphics differently.\nYou should also think about overplotting / pre-processing"
   },
   {
     "objectID": "slides/slides07.html#faq-overplotting",
     "href": "slides/slides07.html#faq-overplotting",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Overplotting",
     "text": "FAQ: Overplotting\nLarge data sets can lead to overplotting:\n\nPoints “on top of” each other\nCan also occur with “designed” experiments / rounded data\n\nWays to address:\n\ngeom_jitter\ngeom_hex"
   },
   {
     "objectID": "slides/slides07.html#faq-overplotting-1",
     "href": "slides/slides07.html#faq-overplotting-1",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Overplotting",
     "text": "FAQ: Overplotting\nJitter: add a bit of random noise so points don’t step on each other\n\nlibrary(ggplot2); library(patchwork)\np &lt;- ggplot(mpg, aes(cyl, hwy))\np1 &lt;- p + geom_point() + ggtitle(\"geom_point\")\np2 &lt;- p + geom_jitter() + ggtitle(\"geom_jitter\")\np1 + p2"
   },
   {
     "objectID": "slides/slides07.html#faq-hexagonal-binning",
     "href": "slides/slides07.html#faq-hexagonal-binning",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Hexagonal Binning",
     "text": "FAQ: Hexagonal Binning\nLittle “heatmaps” of counts. Hexagons to avoid weird rounding artifacts\n\nlibrary(ggplot2); library(patchwork)\np &lt;- ggplot(diamonds, aes(carat, price))\np1 &lt;- p + geom_point() + ggtitle(\"geom_point\")\np2 &lt;- p + geom_hex() + ggtitle(\"geom_hex\")\np1 + p2"
   },
   {
     "objectID": "slides/slides07.html#faq-inside-vs.-outside-aes",
     "href": "slides/slides07.html#faq-inside-vs.-outside-aes",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Inside vs. Outside aes()",
     "text": "FAQ: Inside vs. Outside aes()\naes maps data to values. Outside of aes, set constant value\n\nlibrary(ggplot2); library(palmerpenguins)\nggplot(penguins, \n       aes(x=bill_length_mm, y=bill_depth_mm, color=species))+ geom_point()"
   },
   {
     "objectID": "slides/slides07.html#faq-inside-vs.-outside-aes-1",
     "href": "slides/slides07.html#faq-inside-vs.-outside-aes-1",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Inside vs. Outside aes()",
     "text": "FAQ: Inside vs. Outside aes()\naes maps data to values. Outside of aes, set constant value\n\nlibrary(ggplot2); library(palmerpenguins)\nggplot(penguins, \n       aes(x=bill_length_mm, y=bill_depth_mm))+ geom_point(color=\"blue\")"
   },
   {
     "objectID": "slides/slides07.html#faq-global-vs-geom_-specific-aes",
     "href": "slides/slides07.html#faq-global-vs-geom_-specific-aes",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Global vs geom_ specific aes()",
     "text": "FAQ: Global vs geom_ specific aes()\n\nElements set in ggplot() apply to entire plot\nElements set in specific geom apply there only\n\nOverride globals\n\n\n\nlibrary(ggplot2); library(palmerpenguins)\nggplot(penguins, \n       aes(x=bill_length_mm, y=bill_depth_mm, color=species))+\n    geom_smooth() + \n    geom_point(color=\"blue\")"
   },
   {
     "objectID": "slides/slides07.html#faq-how-to-choose-plot-types",
     "href": "slides/slides07.html#faq-how-to-choose-plot-types",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: How to choose plot types",
     "text": "FAQ: How to choose plot types\nTwo “modes”\n\nExploratory data analysis. Quick, rapid iteration, for your eyes only\n\nLet the data tell you a story\nLow pre-processing: scatter plots, lines, histograms\n\n“Publication quality”. Polished,\n\nYou tell the reader a story\nMore processing, more modeling: trends, line segments, ribbons"
   },
   {
     "objectID": "slides/slides07.html#faq-color-palettes",
     "href": "slides/slides07.html#faq-color-palettes",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Color Palettes",
     "text": "FAQ: Color Palettes\nThree types of color palettes:\n\nSequential: ordered from 0 to “high”\n\nExample: rain forecast in different areas\n\nDiverging: ordered from -X to +X with meaningful 0 in the middle\n\nExample: political leaning\n\nQualitative: no ordering\n\n\nWhen mapping quantitative variables to palettes (sequential/diverging), two approaches:\n\nBinned: \\([0, 1)\\) light green, \\([1, 3)\\) medium green; \\([3, 5]\\) dark green\nContinuous"
   },
   {
     "objectID": "slides/slides07.html#faq-color-palettes-1",
     "href": "slides/slides07.html#faq-color-palettes-1",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Color Palettes",
     "text": "FAQ: Color Palettes\n\nlibrary(ggplot2); library(palmerpenguins)\nggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + \n    geom_point() + theme_bw() + \n    scale_color_distiller(type=\"seq\") # Continuous"
   },
   {
     "objectID": "slides/slides07.html#faq-color-palettes-2",
     "href": "slides/slides07.html#faq-color-palettes-2",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Color Palettes",
     "text": "FAQ: Color Palettes\n\nlibrary(ggplot2); library(palmerpenguins)\nggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + \n    geom_point() + theme_bw() + \n    scale_color_fermenter(type=\"seq\") # Binned"
   },
   {
     "objectID": "slides/slides07.html#faq-color-palettes-3",
     "href": "slides/slides07.html#faq-color-palettes-3",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Color Palettes",
     "text": "FAQ: Color Palettes\n\nlibrary(ggplot2); library(palmerpenguins)\nggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + \n    geom_point() + theme_bw() + \n    scale_color_fermenter(type=\"seq\") # Binned + Sequential"
   },
   {
     "objectID": "slides/slides07.html#faq-color-palettes-4",
     "href": "slides/slides07.html#faq-color-palettes-4",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Color Palettes",
     "text": "FAQ: Color Palettes\n\nlibrary(ggplot2); library(palmerpenguins)\nggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + \n    geom_point() + theme_bw() +\n    scale_color_fermenter(type=\"qual\") # Binned + Qualitative"
   },
   {
     "objectID": "slides/slides07.html#faq-color-palettes-5",
     "href": "slides/slides07.html#faq-color-palettes-5",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Color Palettes",
     "text": "FAQ: Color Palettes\n\nlibrary(ggplot2); library(palmerpenguins)\nggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + \n    geom_point() + theme_bw() + \n    scale_color_fermenter(type=\"div\") # Binned + Diverging"
   },
   {
     "objectID": "slides/slides07.html#faq-how-to-hard-code-colors",
     "href": "slides/slides07.html#faq-how-to-hard-code-colors",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: How to “hard-code” colors",
     "text": "FAQ: How to “hard-code” colors\n\nlibrary(dplyr)\ndata &lt;- data.frame(x = rnorm(5), \n                   y = rnorm(5), \n                   group = c(\"a\", \"a\", \"b\", \"b\", \"b\"))\n\ndata |&gt; \n    group_by(group) |&gt;\n    mutate(n_count = n()) |&gt;\n    ungroup() |&gt;\n    mutate(color = ifelse(n_count == max(n_count), \"red\", \"black\")) |&gt;\n    ggplot(aes(x=x, y=y, shape=group, color=color)) + \n    geom_point() + \n    scale_color_identity()"
   },
   {
     "objectID": "slides/slides07.html#faq-how-to-customize-themes",
     "href": "slides/slides07.html#faq-how-to-customize-themes",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: How to Customize Themes",
     "text": "FAQ: How to Customize Themes\nBuilt-in themes + ggthemes package:\n\nlibrary(ggplot2); library(ggthemes); \nlibrary(palmerpenguins); library(ggpmisc)\np &lt;- ggplot(penguins, \n       aes(x=flipper_length_mm, \n           y=body_mass_g, \n           color=species)) + \n    geom_point() + \n    stat_poly_line(se=FALSE, \n                   color=\"black\") +\n    stat_poly_eq() + \n    xlab(\"Flipper Length (mm)\") + \n    ylab(\"Body Mass (g)\") + \n    scale_color_brewer(type=\"qual\", \n                       palette=2, \n                       name=\"Species\") + \n    facet_wrap(~species)"
   },
   {
     "objectID": "slides/slides07.html#faq-themes",
     "href": "slides/slides07.html#faq-themes",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nDefault theme (ggplot2::theme_grey()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-1",
     "href": "slides/slides07.html#faq-themes-1",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nBlack and White theme (ggplot2::theme_bw()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-2",
     "href": "slides/slides07.html#faq-themes-2",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nMinimal theme (ggplot2::theme_minimal()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-3",
     "href": "slides/slides07.html#faq-themes-3",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nLight theme (ggplot2::theme_light()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-4",
     "href": "slides/slides07.html#faq-themes-4",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nDark theme (ggplot2::theme_dark()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-5",
     "href": "slides/slides07.html#faq-themes-5",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nExcel theme (ggthemes::theme_excel()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-6",
     "href": "slides/slides07.html#faq-themes-6",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nGoogle Docs theme (ggthemes::theme_gdocs()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-7",
     "href": "slides/slides07.html#faq-themes-7",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nThe Economist theme (ggthemes::theme_economist()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-8",
     "href": "slides/slides07.html#faq-themes-8",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nThe Economist theme (ggthemes::theme_economist()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-9",
     "href": "slides/slides07.html#faq-themes-9",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nSolarized theme (ggthemes::theme_solarized()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-10",
     "href": "slides/slides07.html#faq-themes-10",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nSolarized2 theme (ggthemes::theme_solarized_2()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-11",
     "href": "slides/slides07.html#faq-themes-11",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nStata theme (ggthemes::theme_stata()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-12",
     "href": "slides/slides07.html#faq-themes-12",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nTufte theme (ggthemes::theme_tufte()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-13",
     "href": "slides/slides07.html#faq-themes-13",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nWall Street Journal theme (ggthemes::theme_wsj()):"
   },
   {
     "objectID": "slides/slides07.html#faq-themes-14",
     "href": "slides/slides07.html#faq-themes-14",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Themes",
     "text": "FAQ: Themes\nMany more online:\n\nThemePark for movie themes"
   },
   {
     "objectID": "slides/slides07.html#faq-order-of-layers",
     "href": "slides/slides07.html#faq-order-of-layers",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Order of Layers",
     "text": "FAQ: Order of Layers\nOrder of layers technically matters, but the effect is small\n\np1 &lt;- ggplot(penguins, aes(x=bill_length_mm, y=flipper_length_mm)) +\n        geom_point(color=\"black\") + \n        geom_smooth(color=\"blue\", method=\"lm\") + ggtitle(\"Line on points\")\np2 &lt;- ggplot(penguins, aes(x=bill_length_mm, y=flipper_length_mm)) +\n        geom_smooth(color=\"blue\", method=\"lm\") + \n        geom_point(color=\"black\") + ggtitle(\"Points on line\")\np1 + p2"
   },
   {
     "objectID": "slides/slides07.html#faq-order-of-layers-1",
     "href": "slides/slides07.html#faq-order-of-layers-1",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Order of layers",
     "text": "FAQ: Order of layers\nOrder matters more with theme. Adding a theme_*() will override any theme() customization you did:\n\np1 &lt;- p + theme_bw() + theme(legend.position=\"bottom\")\np2 &lt;- p + theme(legend.position=\"bottom\") + theme_bw() \np1 + p2"
   },
   {
     "objectID": "slides/slides07.html#faq-stat_poly_lineeq-vs-geom_smooth",
     "href": "slides/slides07.html#faq-stat_poly_lineeq-vs-geom_smooth",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: stat_poly_{line,eq} vs geom_smooth",
-    "text": "FAQ: stat_poly_{line,eq} vs geom_smooth\nBy default geom_smooth fits a generalized additive model (GAM)\nggpmisc::stat_poly_{line,eq} fit linear models, so they can expose more machinery.\n\nWhat is a GAM? Take 9890 with me (Spring, Tuesdays at 6) to find out!"
+    "text": "FAQ: stat_poly_{line,eq} vs geom_smooth\nBy default geom_smooth fits a generalized additive model (GAM)\nggpmisc::stat_poly_{line,eq} fit linear models, so they can expose more machinery.\n\nWhat is a GAM?\n\nTake 9890 with me (typically Spring semester) to find out!\nFree Course: “GAMs in R” from Noam Ross"
   },
   {
     "objectID": "slides/slides07.html#faq-titles-and-captions",
     "href": "slides/slides07.html#faq-titles-and-captions",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Titles and Captions",
     "text": "FAQ: Titles and Captions\n\nggplot() + \n    labs(title=\"Title\", subtitle=\"Subtitle\", caption=\"Caption\",\n         tag=\"Tag\", alt=\"Alt-Text\", alt_insight=\"Alt-Insight\")\n\n\n+ggtitle(\"text\") is just shorthand for +labs(title=\"text\")"
   },
   {
     "objectID": "slides/slides07.html#faq-relative-importance-of-aesthetics",
     "href": "slides/slides07.html#faq-relative-importance-of-aesthetics",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Relative Importance of Aesthetics",
     "text": "FAQ: Relative Importance of Aesthetics\nPerceptually:\n\nLocation &gt; Color &gt; Size &gt; Shape\n\nHumans are better at:\n\nLength &gt; Area &gt; Volume"
   },
   {
     "objectID": "slides/slides07.html#faq-when-to-use-facets",
     "href": "slides/slides07.html#faq-when-to-use-facets",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: When to Use Facets?",
     "text": "FAQ: When to Use Facets?\nFacets are group_by for plots. Useful for\n\nDistinguishing intra- vs inter-group trends\nAvoiding overplotting"
   },
   {
     "objectID": "slides/slides07.html#faq-simpsons-paradox",
     "href": "slides/slides07.html#faq-simpsons-paradox",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Simpson’s Paradox",
     "text": "FAQ: Simpson’s Paradox"
   },
   {
     "objectID": "slides/slides07.html#faq-simpsons-paradox-1",
     "href": "slides/slides07.html#faq-simpsons-paradox-1",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Simpson’s Paradox",
     "text": "FAQ: Simpson’s Paradox"
   },
   {
     "objectID": "slides/slides07.html#faq-twin-axes-plots",
     "href": "slides/slides07.html#faq-twin-axes-plots",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Twin Axes Plots",
     "text": "FAQ: Twin Axes Plots\n\nHow can I implement a dual (twin) axis plot in ggplot2?\n\nDisfavored. But if you must …\nsec.axis\nDoesn’t allow arbitrary secondary axes; allows transformed axes (e.g., Celsius and Fahrenheit)"
   },
   {
     "objectID": "slides/slides07.html#faq-embedding-images-in-ggplot",
     "href": "slides/slides07.html#faq-embedding-images-in-ggplot",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Embedding images in ggplot",
     "text": "FAQ: Embedding images in ggplot\nSee the ggimage or ggflags package for images as “points”:\n\n#devtools::install_github(\"jimjam-slam/ggflags\"); \nlibrary(ggflags)\nd &lt;- data.frame(x=rnorm(50), y=rnorm(50), \n                country=sample(c(\"ar\",\"fr\", \"nz\", \"gb\", \"es\", \"ca\"), 50, TRUE), \n                stringsAsFactors = FALSE)\nggplot(d, aes(x=x, y=y, country=country, size=x)) + \n  geom_flag() + \n  scale_country()"
   },
   {
     "objectID": "slides/slides07.html#faq-embedding-images",
     "href": "slides/slides07.html#faq-embedding-images",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "FAQ: Embedding Images",
     "text": "FAQ: Embedding Images\nSee cowplot::draw_image() for image background:\n\nlibrary(cowplot)\np &lt;- ggplot(iris, aes(x = Sepal.Length, fill = Species)) +\n  geom_density(alpha = 0.7) +\n  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +\n  theme_half_open(12)\n\nlogo_file &lt;- system.file(\"extdata\", \"logo.png\", package = \"cowplot\")\nggdraw() +\n  draw_image(\n    logo_file, scale = .7\n  ) +\n  draw_plot(p)"
   },
   {
     "objectID": "slides/slides07.html#diving-deeper-with-ggplot2",
     "href": "slides/slides07.html#diving-deeper-with-ggplot2",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "Diving Deeper with ggplot2",
     "text": "Diving Deeper with ggplot2\nData Sets:\n\ndiamonds from the ggplot2 package\ncdiac from the CVXR package\ngapminder from the gapminder package\n\nYou need to install CVXR and gapminder now.\nExercise: Lab #07"
   },
   {
     "objectID": "slides/slides07.html#diving-deeper-with-ggplot2-learning-goals",
     "href": "slides/slides07.html#diving-deeper-with-ggplot2-learning-goals",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 6 Update  2025-03-13",
     "section": "Diving Deeper with ggplot2: Learning Goals",
-    "text": "Diving Deeper with ggplot2: Learning Goals\nToday:\n\nFluency with basic geoms\nAnimation\n\nNext Week:\n\nSpatial data\nInteractive graphics\nDashboards (time allowing)"
+    "text": "Diving Deeper with ggplot2: Learning Goals\nToday:\n\nFluency with basic geoms\nAnimation (Just a bit)\n\nNext Week:\n\nInteractive graphics\nDashboards\nSpatial Data (time allowing)"
   },
   {
     "objectID": "slides/slides07.html#breakout-rooms",
     "href": "slides/slides07.html#breakout-rooms",
-    "title": "STA 9750 - Week 7",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
     "section": "Breakout Rooms",
-    "text": "Breakout Rooms\n\n\n\nRoom\nTeam\n\nRoom\nTeam\n\n\n\n\n1\nRat Pack\n\n6\nCa$h VZ\n\n\n2\nSubway Surfers\n\n7\nListing Legends\n\n\n3\nChart Toppers\n\n8\nTDSSG\n\n\n4\nMetro Mindset\n\n9\nBroker T’s\n\n\n5\nApple Watch\n\n10\nEVengers"
+    "text": "Breakout Rooms\n\n\n\nRoom\nTeam\n\nRoom\nTeam\n\n\n\n\n1\nVH + SG + DS + DL\n\n5\nGB + RJ + FS + MH\n\n\n2\nHZ + JLL + CA\n\n6\nEM + AK + GMdS + JL\n\n\n3\nMT + CW + VG + GS + CWo.\n\n7\nSJB + JC + SB + ZS\n\n\n4\nSD + GO + CFGF"
   },
   {
     "objectID": "slides/slides05.html#mini-project-01",
@@ -2979,7 +2979,7 @@
     "href": "miniprojects/mini02.html#mini-project",
     "title": "STA 9750 Mini-Project #02: Identifying Environmentally Responsible US Public Transit Systems",
     "section": "Mini-Project #02: Identifying Environmentally Responsible US Public Transit Systems",
-    "text": "Mini-Project #02: Identifying Environmentally Responsible US Public Transit Systems\nAmong the commonly cited benefits of robust public transit is a reduction in environmental impact. In this mini-project, we will explore US Public Transit systems to assess their environmental efficiency. Our analysis will use a variety of data sources to i) determine how many riders are served by different transit systems; ii) determine how far each public transit system transports an average rider; and iii) investigate the effective emissions associated with each form of transit.\nData Acquisition\nWe begin by downloading and importing relevant data sets. For this mini-project, we will download the following details:\n\nEIA State Electricity Profiles, which we will use to estimate the environmental impact of the electricity used to run certain transit systems.\n\n\n\n\n\n\n\nTask 1: Data Import\n\n\n\nIncorporate the instructor provided code below into your report. As you do so, make sure to look for possible “keys” on which you will be able to join datasets together.\n\n\nState Electricity Profiles\nFor purposes of this analysis, we will assume that all electricity generation in a state is fungible. That is, we will assign the average generation emissions to all electric transit in a state, even if the transit authority officially has a “green supply” agreement in place.\nThe following code will parse the EIA SEP summary pages and create a “tidy” table for your use:\n\nensure_package &lt;- function(pkg){\n    pkg &lt;- as.character(substitute(pkg))\n    options(repos = c(CRAN = \"https://cloud.r-project.org\"))\n    if(!require(pkg, character.only=TRUE)) install.packages(pkg)\n    stopifnot(require(pkg, character.only=TRUE))\n}\n\nensure_package(httr2)\nensure_package(rvest)\nensure_package(datasets)\nensure_package(purrr)\nensure_package(DT)\n\nget_eia_sep &lt;- function(state, abbr){\n    state_formatted &lt;- str_to_lower(state) |&gt; str_replace_all(\"\\\\s\", \"\")\n    \n    dir_name &lt;- file.path(\"data\", \"mp02\")\n    file_name &lt;- file.path(dir_name, state_formatted)\n    \n    dir.create(dir_name, showWarnings=FALSE, recursive=TRUE)\n    \n    if(!file.exists(file_name)){\n        BASE_URL &lt;- \"https://www.eia.gov\"\n        REQUEST &lt;- request(BASE_URL) |&gt; \n            req_url_path(\"electricity\", \"state\", state_formatted)\n    \n        RESPONSE &lt;- req_perform(REQUEST)\n    \n        resp_check_status(RESPONSE)\n        \n        writeLines(resp_body_string(RESPONSE), file_name)\n    }\n    \n    TABLE &lt;- read_html(file_name) |&gt; \n        html_element(\"table\") |&gt; \n        html_table() |&gt;\n        mutate(Item = str_to_lower(Item))\n    \n    if(\"U.S. rank\" %in% colnames(TABLE)){\n        TABLE &lt;- TABLE |&gt; rename(Rank = `U.S. rank`)\n    }\n    \n    CO2_MWh &lt;- TABLE |&gt; \n        filter(Item == \"carbon dioxide (lbs/mwh)\") |&gt;\n        pull(Value) |&gt; \n        str_replace_all(\",\", \"\") |&gt;\n        as.numeric()\n    \n    PRIMARY &lt;- TABLE |&gt; \n        filter(Item == \"primary energy source\") |&gt; \n        pull(Rank)\n    \n    RATE &lt;- TABLE |&gt;\n        filter(Item == \"average retail price (cents/kwh)\") |&gt;\n        pull(Value) |&gt;\n        as.numeric()\n    \n    GENERATION_MWh &lt;- TABLE |&gt;\n        filter(Item == \"net generation (megawatthours)\") |&gt;\n        pull(Value) |&gt;\n        str_replace_all(\",\", \"\") |&gt;\n        as.numeric()\n    \n    data.frame(CO2_MWh               = CO2_MWh, \n               primary_source        = PRIMARY,\n               electricity_price_MWh = RATE * 10, # / 100 cents to dollars &\n               # * 1000 kWh to MWH \n               generation_MWh        = GENERATION_MWh, \n               state                 = state, \n               abbreviation          = abbr\n    )\n}\n\nEIA_SEP_REPORT &lt;- map2(state.name, state.abb, get_eia_sep) |&gt; list_rbind()\n\nThis produces the following table:\n\nensure_package(scales)\nensure_package(DT)\n\nEIA_SEP_REPORT |&gt; \n    select(-abbreviation) |&gt;\n    arrange(desc(CO2_MWh)) |&gt;\n    mutate(CO2_MWh = number(CO2_MWh, big.mark=\",\"), \n           electricity_price_MWh = dollar(electricity_price_MWh), \n           generation_MWh = number(generation_MWh, big.mark=\",\")) |&gt;\n    rename(`Pounds of CO2 Emitted per MWh of Electricity Produced`=CO2_MWh, \n           `Primary Source of Electricity Generation`=primary_source, \n           `Average Retail Price for 1000 kWh`=electricity_price_MWh, \n           `Total Generation Capacity (MWh)`= generation_MWh, \n           State=state) |&gt;\n    datatable()\n\n\n\n\n\n \nHere, we have collected the effective emissions per MWh2 as well as price and total state-wide generation capacity. We will use this data to compare the emissions of different transit modalities. We next turn to the National Transit Database to get information on various public transit authorities. Before we do so, however, let’s explore the SEP data a bit first.\n\n\n\n\n\n\nTask 2: Initial Analysis of SEP Data\n\n\n\nAnswer the following questions using the EIA_SEP_REPORT data:\n\nWhich state has the most expensive retail electricity?\nWhich state has the ‘dirtiest’ electricity mix?\nOn average, how many pounds of CO2 are emitted per MWh of electricity produced in the US? (Note that you will need to use a suitably weighted average here.)\nWhat is the rarest primary energy source in the US? What is the associated cost of electricity and where is it used?\nMy home state, Texas, has a reputation as being the home of “dirty fossil fuels” while NY has a reputation as a leader in clean energy. How many times cleaner is NY’s energy mix than that of Texas?\n\n\n\n2023 Annual Database Energy Consumption\nWe first download the 2023 Annual Database Energy Consumption report. This report is shared as a Excel spreadsheet (.xlsx filetype), so we use the readxl package to import it to R.\n\nensure_package(readxl)\n# Create 'data/mp02' directory if not already present\nDATA_DIR &lt;- file.path(\"data\", \"mp02\")\ndir.create(DATA_DIR, showWarnings=FALSE, recursive=TRUE)\n\nNTD_ENERGY_FILE &lt;- file.path(DATA_DIR, \"2023_ntd_energy.xlsx\")\n\nif(!file.exists(NTD_ENERGY_FILE)){\n    DS &lt;- download.file(\"https://www.transit.dot.gov/sites/fta.dot.gov/files/2024-10/2023%20Energy%20Consumption.xlsx\", \n                  destfile=NTD_ENERGY_FILE, \n                  method=\"curl\")\n    \n    if(DS | (file.info(NTD_ENERGY_FILE)$size == 0)){\n        cat(\"I was unable to download the NTD Energy File. Please try again.\\n\")\n        stop(\"Download failed\")\n    }\n}\n\nNTD_ENERGY_RAW &lt;- read_xlsx(NTD_ENERGY_FILE)\n\n\n\n\n\n\n\nSelection of Download Methods\n\n\n\nR provides several different internal tools to download data files from the internet. These can be accessed more-or-less seamlessly by changing the method argument of the download.file function.\nDepending on your operating system, different methods may work better than others. Above, I used the \"curl\" method as that seemed to be the most robust on my computer. If this doesn’t work, for you, I would recommend trying the following:\n\nmethod = \"internal\"\nmethod = \"wget\"\nmethod = \"libcurl\"\nmethod = \"wininet\"\n\nIf none of these work, download the file by hand and save it as data/mp02/2023_ntd_energy.xlsx. It is worth making sure that you are able to download data files through R as this will be important in your course project (and in life generally).\n\n\nNext, we do some basic clean-up:\n\nensure_package(tidyr)\nto_numeric_fill_0 &lt;- function(x){\n    replace_na(as.numeric(x), 0)\n}\n\nNTD_ENERGY &lt;- NTD_ENERGY_RAW |&gt; \n    select(-c(`Reporter Type`, \n              `Reporting Module`, \n              `Other Fuel`, \n              `Other Fuel Description`)) |&gt;\n    mutate(across(-c(`Agency Name`, \n                     `Mode`,\n                     `TOS`), \n                  to_numeric_fill_0)) |&gt;\n    group_by(`NTD ID`, `Mode`, `Agency Name`) |&gt;\n    summarize(across(where(is.numeric), sum), \n              .groups = \"keep\") |&gt;\n    mutate(ENERGY = sum(c_across(c(where(is.numeric))))) |&gt;\n    filter(ENERGY &gt; 0) |&gt;\n    select(-ENERGY) |&gt;\n    ungroup()\n\nThe resulting table is almost ready for us to work with:\n\n# Display 10 random rows\nslice_sample(NTD_ENERGY , n=10)\n\n# A tibble: 10 × 16\n   `NTD ID` Mode  `Agency Name`       `Bio-Diesel` `Bunker Fuel` `C Natural Gas`\n      &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;                      &lt;dbl&gt;         &lt;dbl&gt;           &lt;dbl&gt;\n 1    30205 MB    Transit Management…            0             0               0\n 2    80107 MB    University of Mont…            0             0               0\n 3    20100 CR    MTA Long Island Ra…            0             0               0\n 4       11 MB    Valley Regional Tr…            0             0          384903\n 5    50002 DR    City of Green Bay              0             0               0\n 6    40041 MB    Hillsborough Area …            0             0         1371713\n 7    50050 RB    Indianapolis and M…            0             0               0\n 8    50045 DR    Gary Public Transp…            0             0               0\n 9    60014 DR    City of Brownsville            0             0               0\n10       40 CB    Central Puget Soun…       517602             0          355175\n# ℹ 10 more variables: `Diesel Fuel` &lt;dbl&gt;, `Electric Battery` &lt;dbl&gt;,\n#   `Electric Propulsion` &lt;dbl&gt;, Ethanol &lt;dbl&gt;, Methonal &lt;dbl&gt;, Gasoline &lt;dbl&gt;,\n#   Hydrogen &lt;dbl&gt;, Kerosene &lt;dbl&gt;, `Liquified Nat Gas` &lt;dbl&gt;,\n#   `Liquified Petroleum Gas` &lt;dbl&gt;\n\n\nHere, the first 3 columns (NTD ID, Mode, and Agency Name) identify the operating agency and the relevant mode of transportation while the remaining columns denote how much of each type of fuel that agency used during 2023. The non-electric sources are all quoted in gallons, while Electric Battery and Electric Propulsion are quoted in kWh used.\nThe Mode column is important: it is used to distinguish multiple transport types operated the same agency, e.g. MTA subways and buses in NYC. The two letter codes used by the NTD, however, are not immediately interpretable.\n\n\n\n\n\n\nTask 3: Recoding the Mode column\n\n\n\nFirst, find the unique Mode codes in our data using the distinct function. Next, examine the NTD website and find the interpretations of these codes. Complete the following snippet to recode the Mode column.\n\n## This code needs to be modified\nNTD_ENERGY &lt;- NTD_ENERGY |&gt;\n    mutate(Mode=case_when(\n        Mode == \"HR\" ~ \"Heavy Rail\", \n        ...\n        ...\n        TRUE ~ \"Unknown\"))\n\n\n\n2023 Annual Database Service by Agency\nNext, we download the 2023 Service by Agency report, from which we will extract characteristics of typical passenger trips on each transit service.\n\nNTD_SERVICE_FILE &lt;- file.path(DATA_DIR, \"2023_service.csv\")\nif(!file.exists(NTD_SERVICE_FILE)){\n    DS &lt;- download.file(\"https://data.transportation.gov/resource/6y83-7vuw.csv\", \n                  destfile=NTD_SERVICE_FILE, \n                  method=\"curl\")\n    \n    if(DS | (file.info(NTD_SERVICE_FILE)$size == 0)){\n        cat(\"I was unable to download the NTD Service File. Please try again.\\n\")\n        stop(\"Download failed\")\n    }\n}\n\nNTD_SERVICE_RAW &lt;- read_csv(NTD_SERVICE_FILE)\n\nAs before, we need to clean up the data a bit before we can use it:\n\nNTD_SERVICE &lt;- NTD_SERVICE_RAW |&gt;\n    mutate(`NTD ID` = as.numeric(`_5_digit_ntd_id`)) |&gt; \n    rename(Agency = agency, \n           City   = max_city, \n           State  = max_state,\n           UPT    = sum_unlinked_passenger_trips_upt, \n           MILES  = sum_passenger_miles) |&gt;\n    select(matches(\"^[A-Z]\", ignore.case=FALSE)) |&gt;\n    filter(MILES &gt; 0)\n\nHere UPT is the number of total Unlinked Passenger Trips during 2023; that is, the number of distinct (non-transfer) trips taken. E.g., if you transfer from the 7 to the 6 to get to Baruch. You ride two segments, but only take 1 UPT to get to Baruch (2 total UPT if you go home the same way).\nLet’s explore this data a bit to get familiar with it.\n\n\n\n\n\n\nTask 4: Explore NTD Service Data\n\n\n\nAnswer the following questions using the NTD_SERVICE data.\n\nWhich transit service has the most UPT annually?\nWhat is the average trip length of a trip on MTA NYC?\n\nWhich transit service in NYC has the longest average trip length?\n(NB: You need to be careful with the City column here. Certain MTA services are officially located in “New York City” while others are located in Brooklyn.)\n\nWhich state has the fewest total miles travelled by public transit?\nAre all states represented in this data? If no, which ones are missing? The state.name and state.abb objects we used above may be useful here.\n\n\n\nWe’re now ready to start putting these datasets together and using them to identify America’s greenest transit agencies.\nAnalysis\nCalculate Total Emissions\nCompute the total emissions associated with each Agency + Mode pair.\n\n\n\n\n\n\nTask 5: Calculate Emissions\n\n\n\nYou will need to join the three tables (NTD_SERVICE, NTD_ENERGY, and EIA_SEP_REPORT) together. You should create a table with the following format:\n\nEach row should be an Agency + Mode Pair\nEach row should include the state in which the Agency is located (per the NTD_SERVICE table)\nEach row should include all fuel sources from the NTD_ENERGY table\nEach row should include the EIA estimated CO2 emissions per MWh from the EIA_SEP_REPORT table.\n\nOnce this table is created, use a (long-ish) arithmetic formula within a mutate to compute the total emissions for that row. Note that you will need additional data to convert combustion fuels to CO2 emissions; these conversions can be found on the EIA website. (You may hard code these values in your submission. Note that the fuel names used by the EIA do not exactly match those reported by the NTD; you will need to align these manually to best effort.)\n\n\nRelate Total Emissions and Passenger Service\nNow that you have computed the total emissions for each Agency + Mode pair, it is time to normalize these by the actual size of the transit agency. E.g., the NYC Subway almost certainly has higher total emissions than local bus service in Ithaca, NY, but it also serves many more riders, so the per capita or per transit emissions may be lower.\n\n\n\n\n\n\nTask 6: Normalize Emissions to Transit Usage\n\n\n\nUsing the total emissions calculated above, compute the emissions:\n\nPer UPT; and\nPer passenger mile\n\nWhich agencies are most efficient on these bases? You may want to filter out extremely small agencies and to create “small”, “medium”, and “large” agencies so that you can give multiple awards.\nNote that transit usage is reported at the Agency level, so you may need to sum emissions across multiple modes.\n\n\nIdenitify ‘Greenest’ Transit Agencies\nWith the above analysis, determine the winners of (at least) three GTA IV awards:\n\nGreenest Transit Agency\nMost Emissions Avoided\nA third award of your creation\nA “Worst Of” award of your creation\n\nThe Greenest Transit Agency award can be determined using your analysis above.\nFor the “Most Emissions Avoided” award, you should first compute the total emissions if all transit usage were replaced with driving individual vehicles. Then use US CAFE standards to convert miles to gallons of motor fuel used and convert motor fuel to total emissions as per above. Compare this to the actual emissions associated with that agency to determine emissions avoided.\nFor the third award, determine an additional metric on which a transit agency can be considered to be highly green (e.g., highest percentage of electrification) and then determine the appropriate winner.\nFinally, for the fourth award, “name and shame” an agency which does not have particularly ‘green’ operations. As with the third award, you can determine a metric you think is best.\nPer discussion above, you may choose to break these down into multiple categories (or honorable mention awards) to recognize smaller agencies.\n\n\n\n\n\n\nTask 7: Determine Award Winners\n\n\n\nDesign and implement metrics for the four GTA IV Green Transit Awards and determine winners."
+    "text": "Mini-Project #02: Identifying Environmentally Responsible US Public Transit Systems\nAmong the commonly cited benefits of robust public transit is a reduction in environmental impact. In this mini-project, we will explore US Public Transit systems to assess their environmental efficiency. Our analysis will use a variety of data sources to i) determine how many riders are served by different transit systems; ii) determine how far each public transit system transports an average rider; and iii) investigate the effective emissions associated with each form of transit.\nData Acquisition\nWe begin by downloading and importing relevant data sets. For this mini-project, we will download the following details:\n\nEIA State Electricity Profiles, which we will use to estimate the environmental impact of the electricity used to run certain transit systems.\n\n\n\n\n\n\n\nTask 1: Data Import\n\n\n\nIncorporate the instructor provided code below into your report. As you do so, make sure to look for possible “keys” on which you will be able to join datasets together.\n\n\nState Electricity Profiles\nFor purposes of this analysis, we will assume that all electricity generation in a state is fungible. That is, we will assign the average generation emissions to all electric transit in a state, even if the transit authority officially has a “green supply” agreement in place.\nThe following code will parse the EIA SEP summary pages and create a “tidy” table for your use:\n\nensure_package &lt;- function(pkg){\n    pkg &lt;- as.character(substitute(pkg))\n    options(repos = c(CRAN = \"https://cloud.r-project.org\"))\n    if(!require(pkg, character.only=TRUE)) install.packages(pkg)\n    stopifnot(require(pkg, character.only=TRUE))\n}\n\nensure_package(dplyr)\nensure_package(httr2)\nensure_package(rvest)\nensure_package(datasets)\nensure_package(purrr)\nensure_package(DT)\n\nget_eia_sep &lt;- function(state, abbr){\n    state_formatted &lt;- str_to_lower(state) |&gt; str_replace_all(\"\\\\s\", \"\")\n    \n    dir_name &lt;- file.path(\"data\", \"mp02\")\n    file_name &lt;- file.path(dir_name, state_formatted)\n    \n    dir.create(dir_name, showWarnings=FALSE, recursive=TRUE)\n    \n    if(!file.exists(file_name)){\n        BASE_URL &lt;- \"https://www.eia.gov\"\n        REQUEST &lt;- request(BASE_URL) |&gt; \n            req_url_path(\"electricity\", \"state\", state_formatted)\n    \n        RESPONSE &lt;- req_perform(REQUEST)\n    \n        resp_check_status(RESPONSE)\n        \n        writeLines(resp_body_string(RESPONSE), file_name)\n    }\n    \n    TABLE &lt;- read_html(file_name) |&gt; \n        html_element(\"table\") |&gt; \n        html_table() |&gt;\n        mutate(Item = str_to_lower(Item))\n    \n    if(\"U.S. rank\" %in% colnames(TABLE)){\n        TABLE &lt;- TABLE |&gt; rename(Rank = `U.S. rank`)\n    }\n    \n    CO2_MWh &lt;- TABLE |&gt; \n        filter(Item == \"carbon dioxide (lbs/mwh)\") |&gt;\n        pull(Value) |&gt; \n        str_replace_all(\",\", \"\") |&gt;\n        as.numeric()\n    \n    PRIMARY &lt;- TABLE |&gt; \n        filter(Item == \"primary energy source\") |&gt; \n        pull(Rank)\n    \n    RATE &lt;- TABLE |&gt;\n        filter(Item == \"average retail price (cents/kwh)\") |&gt;\n        pull(Value) |&gt;\n        as.numeric()\n    \n    GENERATION_MWh &lt;- TABLE |&gt;\n        filter(Item == \"net generation (megawatthours)\") |&gt;\n        pull(Value) |&gt;\n        str_replace_all(\",\", \"\") |&gt;\n        as.numeric()\n    \n    data.frame(CO2_MWh               = CO2_MWh, \n               primary_source        = PRIMARY,\n               electricity_price_MWh = RATE * 10, # / 100 cents to dollars &\n               # * 1000 kWh to MWH \n               generation_MWh        = GENERATION_MWh, \n               state                 = state, \n               abbreviation          = abbr\n    )\n}\n\nEIA_SEP_REPORT &lt;- map2(state.name, state.abb, get_eia_sep) |&gt; list_rbind()\n\nThis produces the following table:\n\nensure_package(scales)\nensure_package(DT)\n\nEIA_SEP_REPORT |&gt; \n    select(-abbreviation) |&gt;\n    arrange(desc(CO2_MWh)) |&gt;\n    mutate(CO2_MWh = number(CO2_MWh, big.mark=\",\"), \n           electricity_price_MWh = dollar(electricity_price_MWh), \n           generation_MWh = number(generation_MWh, big.mark=\",\")) |&gt;\n    rename(`Pounds of CO2 Emitted per MWh of Electricity Produced`=CO2_MWh, \n           `Primary Source of Electricity Generation`=primary_source, \n           `Average Retail Price for 1000 kWh`=electricity_price_MWh, \n           `Total Generation Capacity (MWh)`= generation_MWh, \n           State=state) |&gt;\n    datatable()\n\n\n\n\n\n \nHere, we have collected the effective emissions per MWh2 as well as price and total state-wide generation capacity. We will use this data to compare the emissions of different transit modalities. We next turn to the National Transit Database to get information on various public transit authorities. Before we do so, however, let’s explore the SEP data a bit first.\n\n\n\n\n\n\nTask 2: Initial Analysis of SEP Data\n\n\n\nAnswer the following questions using the EIA_SEP_REPORT data:\n\nWhich state has the most expensive retail electricity?\nWhich state has the ‘dirtiest’ electricity mix?\nOn average, how many pounds of CO2 are emitted per MWh of electricity produced in the US? (Note that you will need to use a suitably weighted average here.)\nWhat is the rarest primary energy source in the US? What is the associated cost of electricity and where is it used?\nMy home state, Texas, has a reputation as being the home of “dirty fossil fuels” while NY has a reputation as a leader in clean energy. How many times cleaner is NY’s energy mix than that of Texas?\n\n\n\n2023 Annual Database Energy Consumption\nWe first download the 2023 Annual Database Energy Consumption report. This report is shared as a Excel spreadsheet (.xlsx filetype), so we use the readxl package to import it to R.\n\nensure_package(readxl)\n# Create 'data/mp02' directory if not already present\nDATA_DIR &lt;- file.path(\"data\", \"mp02\")\ndir.create(DATA_DIR, showWarnings=FALSE, recursive=TRUE)\n\nNTD_ENERGY_FILE &lt;- file.path(DATA_DIR, \"2023_ntd_energy.xlsx\")\n\nif(!file.exists(NTD_ENERGY_FILE)){\n    DS &lt;- download.file(\"https://www.transit.dot.gov/sites/fta.dot.gov/files/2024-10/2023%20Energy%20Consumption.xlsx\", \n                  destfile=NTD_ENERGY_FILE, \n                  method=\"curl\")\n    \n    if(DS | (file.info(NTD_ENERGY_FILE)$size == 0)){\n        cat(\"I was unable to download the NTD Energy File. Please try again.\\n\")\n        stop(\"Download failed\")\n    }\n}\n\nNTD_ENERGY_RAW &lt;- read_xlsx(NTD_ENERGY_FILE)\n\n\n\n\n\n\n\nSelection of Download Methods\n\n\n\nR provides several different internal tools to download data files from the internet. These can be accessed more-or-less seamlessly by changing the method argument of the download.file function.\nDepending on your operating system, different methods may work better than others. Above, I used the \"curl\" method as that seemed to be the most robust on my computer. If this doesn’t work, for you, I would recommend trying the following:\n\nmethod = \"internal\"\nmethod = \"wget\"\nmethod = \"libcurl\"\nmethod = \"wininet\"\n\nIf none of these work, download the file by hand and save it as data/mp02/2023_ntd_energy.xlsx. It is worth making sure that you are able to download data files through R as this will be important in your course project (and in life generally).\n\n\nNext, we do some basic clean-up:\n\nensure_package(tidyr)\nto_numeric_fill_0 &lt;- function(x){\n    x &lt;- if_else(x == \"-\", NA, x)\n    replace_na(as.numeric(x), 0)\n}\n\nNTD_ENERGY &lt;- NTD_ENERGY_RAW |&gt; \n    select(-c(`Reporter Type`, \n              `Reporting Module`, \n              `Other Fuel`, \n              `Other Fuel Description`)) |&gt;\n    mutate(across(-c(`Agency Name`, \n                     `Mode`,\n                     `TOS`), \n                  to_numeric_fill_0)) |&gt;\n    group_by(`NTD ID`, `Mode`, `Agency Name`) |&gt;\n    summarize(across(where(is.numeric), sum), \n              .groups = \"keep\") |&gt;\n    mutate(ENERGY = sum(c_across(c(where(is.numeric))))) |&gt;\n    filter(ENERGY &gt; 0) |&gt;\n    select(-ENERGY) |&gt;\n    ungroup()\n\nThe resulting table is almost ready for us to work with:\n\n# Display 10 random rows\nslice_sample(NTD_ENERGY , n=10)\n\n# A tibble: 10 × 16\n   `NTD ID` Mode  `Agency Name`       `Bio-Diesel` `Bunker Fuel` `C Natural Gas`\n      &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;                      &lt;dbl&gt;         &lt;dbl&gt;           &lt;dbl&gt;\n 1       24 VP    Clark County Publi…            0             0               0\n 2    66339 VP    New Mexico Departm…            0             0               0\n 3    40053 MB    Greenville Transit…            0             0               0\n 4    10086 MB    Cooperative Allian…        42400             0               0\n 5    60017 SR    Central Oklahoma T…            0             0               0\n 6    50029 DR    Bay Metropolitan T…            0             0               0\n 7    10040 DR    Southeast Area Tra…            0             0               0\n 8    30010 MB    Lehigh and Northam…            0             0          899658\n 9    10053 MB    Cape Ann Transport…            0             0               0\n10       34 DR    Rogue Valley Trans…            0             0               0\n# ℹ 10 more variables: `Diesel Fuel` &lt;dbl&gt;, `Electric Battery` &lt;dbl&gt;,\n#   `Electric Propulsion` &lt;dbl&gt;, Ethanol &lt;dbl&gt;, Methonal &lt;dbl&gt;, Gasoline &lt;dbl&gt;,\n#   Hydrogen &lt;dbl&gt;, Kerosene &lt;dbl&gt;, `Liquified Nat Gas` &lt;dbl&gt;,\n#   `Liquified Petroleum Gas` &lt;dbl&gt;\n\n\nHere, the first 3 columns (NTD ID, Mode, and Agency Name) identify the operating agency and the relevant mode of transportation while the remaining columns denote how much of each type of fuel that agency used during 2023. The non-electric sources are all quoted in gallons, while Electric Battery and Electric Propulsion are quoted in kWh used.\nThe Mode column is important: it is used to distinguish multiple transport types operated the same agency, e.g. MTA subways and buses in NYC. The two letter codes used by the NTD, however, are not immediately interpretable.\n\n\n\n\n\n\nTask 3: Recoding the Mode column\n\n\n\nFirst, find the unique Mode codes in our data using the distinct function. Next, examine the NTD website and find the interpretations of these codes. Complete the following snippet to recode the Mode column.\n\n## This code needs to be modified\nNTD_ENERGY &lt;- NTD_ENERGY |&gt;\n    mutate(Mode=case_when(\n        Mode == \"HR\" ~ \"Heavy Rail\", \n        ...\n        ...\n        TRUE ~ \"Unknown\"))\n\n\n\n2023 Annual Database Service by Agency\nNext, we download the 2023 Service by Agency report, from which we will extract characteristics of typical passenger trips on each transit service.\n\nNTD_SERVICE_FILE &lt;- file.path(DATA_DIR, \"2023_service.csv\")\nif(!file.exists(NTD_SERVICE_FILE)){\n    DS &lt;- download.file(\"https://data.transportation.gov/resource/6y83-7vuw.csv\", \n                  destfile=NTD_SERVICE_FILE, \n                  method=\"curl\")\n    \n    if(DS | (file.info(NTD_SERVICE_FILE)$size == 0)){\n        cat(\"I was unable to download the NTD Service File. Please try again.\\n\")\n        stop(\"Download failed\")\n    }\n}\n\nNTD_SERVICE_RAW &lt;- read_csv(NTD_SERVICE_FILE)\n\nAs before, we need to clean up the data a bit before we can use it:\n\nNTD_SERVICE &lt;- NTD_SERVICE_RAW |&gt;\n    mutate(`NTD ID` = as.numeric(`_5_digit_ntd_id`)) |&gt; \n    rename(Agency = agency, \n           City   = max_city, \n           State  = max_state,\n           UPT    = sum_unlinked_passenger_trips_upt, \n           MILES  = sum_passenger_miles) |&gt;\n    select(matches(\"^[A-Z]\", ignore.case=FALSE)) |&gt;\n    filter(MILES &gt; 0)\n\nHere UPT is the number of total Unlinked Passenger Trips during 2023; that is, the number of distinct (non-transfer) trips taken. E.g., if you transfer from the 7 to the 6 to get to Baruch. You ride two segments, but only take 1 UPT to get to Baruch (2 total UPT if you go home the same way).\nLet’s explore this data a bit to get familiar with it.\n\n\n\n\n\n\nTask 4: Explore NTD Service Data\n\n\n\nAnswer the following questions using the NTD_SERVICE data.\n\nWhich transit service has the most UPT annually?\nWhat is the average trip length of a trip on MTA NYC?\n\nWhich transit service in NYC has the longest average trip length?\n(NB: You need to be careful with the City column here. Certain MTA services are officially located in “New York City” while others are located in Brooklyn.)\n\nWhich state has the fewest total miles travelled by public transit?\nAre all states represented in this data? If no, which ones are missing? The state.name and state.abb objects we used above may be useful here.\n\n\n\nWe’re now ready to start putting these datasets together and using them to identify America’s greenest transit agencies.\nAnalysis\nCalculate Total Emissions\nCompute the total emissions associated with each Agency + Mode pair.\n\n\n\n\n\n\nTask 5: Calculate Emissions\n\n\n\nYou will need to join the three tables (NTD_SERVICE, NTD_ENERGY, and EIA_SEP_REPORT) together. You should create a table with the following format:\n\nEach row should be an Agency + Mode Pair\nEach row should include the state in which the Agency is located (per the NTD_SERVICE table)\nEach row should include all fuel sources from the NTD_ENERGY table\nEach row should include the EIA estimated CO2 emissions per MWh from the EIA_SEP_REPORT table.\n\nOnce this table is created, use a (long-ish) arithmetic formula within a mutate to compute the total emissions for that row. Note that you will need additional data to convert combustion fuels to CO2 emissions; these conversions can be found on the EIA website. (You may hard code these values in your submission. Note that the fuel names used by the EIA do not exactly match those reported by the NTD; you will need to align these manually to best effort.)\n\n\nRelate Total Emissions and Passenger Service\nNow that you have computed the total emissions for each Agency + Mode pair, it is time to normalize these by the actual size of the transit agency. E.g., the NYC Subway almost certainly has higher total emissions than local bus service in Ithaca, NY, but it also serves many more riders, so the per capita or per transit emissions may be lower.\n\n\n\n\n\n\nTask 6: Normalize Emissions to Transit Usage\n\n\n\nUsing the total emissions calculated above, compute the emissions:\n\nPer UPT; and\nPer passenger mile\n\nWhich agencies are most efficient on these bases? You may want to filter out extremely small agencies and to create “small”, “medium”, and “large” agencies so that you can give multiple awards.\nNote that transit usage is reported at the Agency level, so you may need to sum emissions across multiple modes.\n\n\nIdenitify ‘Greenest’ Transit Agencies\nWith the above analysis, determine the winners of (at least) three GTA IV awards:\n\nGreenest Transit Agency\nMost Emissions Avoided\nA third award of your creation\nA “Worst Of” award of your creation\n\nThe Greenest Transit Agency award can be determined using your analysis above.\nFor the “Most Emissions Avoided” award, you should first compute the total emissions if all transit usage were replaced with driving individual vehicles. Then use US CAFE standards to convert miles to gallons of motor fuel used and convert motor fuel to total emissions as per above. Compare this to the actual emissions associated with that agency to determine emissions avoided.\nFor the third award, determine an additional metric on which a transit agency can be considered to be highly green (e.g., highest percentage of electrification) and then determine the appropriate winner.\nFinally, for the fourth award, “name and shame” an agency which does not have particularly ‘green’ operations. As with the third award, you can determine a metric you think is best.\nPer discussion above, you may choose to break these down into multiple categories (or honorable mention awards) to recognize smaller agencies.\n\n\n\n\n\n\nTask 7: Determine Award Winners\n\n\n\nDesign and implement metrics for the four GTA IV Green Transit Awards and determine winners."
   },
   {
     "objectID": "miniprojects/mini02.html#deliverable-transit-award-press-release",
@@ -3504,7 +3504,7 @@
     "href": "preassigns/pa08.html",
     "title": "STA 9750 Week 8 Pre Assignment: More Plots",
     "section": "",
-    "text": "Due Date: 2025-03-26 (Wednesday) at 11:45pm\nSubmission: CUNY Brightspace\nThis week, we will dive deeper into the world of ggplot2, with a focus on spatial data visualization and interactive graphics. Before we do so, let’s pause and consolidate everything we’ve done to date.\n\nIf you did not finish last week’s in-class lab, do so now.\nWatch Prof. Di Cook’s lecture “Myth busting and\napophenia in data visualisation: is what you see really there?”. As we discussed in class, plots are an excellent way to explore data, but we always want to be careful that what we think find truly exists. Prof. Cook discusses relationships between effective statistical visualization and effective statistical practice.\n\nAfter finishing Prof. Cook’s lecture, explore the R Graphics Gallery “Best Charts” collection. Pick one chart from this collection and evaluate it with a critical eye:\n\nIs it well styled?\nWhat story is it trying to tell?\nDoes it tell that story effectively?\nDo you believe that story?\nHow could it tell the story more effectively?\n\n\nAfter finishing these, complete the Weekly Pre-Assignment Quiz on Brightspace."
+    "text": "Due Date: 2025-03-26 (Wednesday) at 11:45pm\nSubmission: CUNY Brightspace\nThis week, we will dive deeper into the world of data visualization, with a focus on tools for interactive (and animated) data visualization. Before doing so, let’s pause and consolidate everything we’ve done to date:\nOk - we’re now ready to move forward. This week, we will explore various technologies for interactive data visualization. These can be divided into two broad categories:\nGenerally, server-based approaches are more flexible (and a bit easier to implement) while browser-based approaches are more responsive and scalable. Since the browser work is done locally on the user’s computer (or phone or tablet), they are also cheaper and safer to run as there’s no need to have a server constantly responding to user input.\nThis week, we will explore a bit of each modality, though entire courses (and indeed entire careers) have been spent on both.\nIn the R ecosystem, the tool of choice for building server-based1 web applications is shiny.2 For this pre-assignment, you will work through Lessons 1 and 2 of the “Shiny Basics” web tutorial. (You do not need to do the “Next Steps” in Lesson 3, but you are of course welcome to.)\nAfter finishing these activities, complete the Weekly Pre-Assignment Quiz on Brightspace."
   },
   {
     "objectID": "preassigns/pa02.html",
@@ -6900,5 +6900,89 @@
     "title": "STA 9750  Week 6 Update  2025-03-13",
     "section": "Reminder: ISS Workshops",
     "text": "Reminder: ISS Workshops\nSee Brightspace Announcement"
+  },
+  {
+    "objectID": "preassigns/pa08.html#footnotes",
+    "href": "preassigns/pa08.html#footnotes",
+    "title": "STA 9750 Week 8 Pre Assignment: More Plots",
+    "section": "Footnotes",
+    "text": "Footnotes\n\n\nThere is an effort to run shiny fully in browser (avoiding the need for a web server). It is still a work-in-progress, but you can try it out on the r-shinylive website, with a full gallery of examples here.↩︎\nIf you are more of a Python person, you can also check out the Python versions of shiny and shinylive.↩︎"
+  },
+  {
+    "objectID": "slides/slides07.html#mini-project-02-1",
+    "href": "slides/slides07.html#mini-project-02-1",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
+    "section": "STA 9750 Mini-Project #02",
+    "text": "STA 9750 Mini-Project #02\nA few students have reported issues with rate-limiting on the EIA SEP site. Re-running the code seems to resolve issues.\nMy download code is written to save the files locally, so only needs to succeed once.\n\nOne student reported NA conversion warnings in processing the NTD data. These were harmless, but I’ve modified the provided code to suppress these warnings.\nIn brief: update to NTD now uses dashes in a few places for missing data and NA warning came up when trying to conver these to numeric values"
+  },
+  {
+    "objectID": "slides/slides07.html#feedback",
+    "href": "slides/slides07.html#feedback",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
+    "section": "Feedback",
+    "text": "Feedback\n\nI’ve started to return Proposal Feedback (via email) - will finish tomorrow\nMP#01 grades to follow"
+  },
+  {
+    "objectID": "slides/slides07.html#teaching-observation",
+    "href": "slides/slides07.html#teaching-observation",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
+    "section": "Teaching Observation",
+    "text": "Teaching Observation\nOn April 3rd, Prof. Brandwein will sit in and observe class\n\nYou don’t need to do anything different - just an FYI"
+  },
+  {
+    "objectID": "slides/slides07.html#looking-ahead",
+    "href": "slides/slides07.html#looking-ahead",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nCourse Structure:\n\nOne more week on analyzing data you already have\nThen 3 weeks on getting data into R\nOne brief week on statistical modeling\n\n\nCourse Projects:\n\nVery excited by your proposals!\nPlease send me questions anytime - my goal is to help you achieve your goals"
+  },
+  {
+    "objectID": "slides/slides07.html#life-tip-of-the-week",
+    "href": "slides/slides07.html#life-tip-of-the-week",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
+    "section": "Life Tip of the Week",
+    "text": "Life Tip of the Week\nDon’t confuse an explanation with an excuse\n\nExplanation is neutral: why?\nExcuse presumes forgiveness"
+  },
+  {
+    "objectID": "slides/slides07.html#diving-deeper-learning-goals",
+    "href": "slides/slides07.html#diving-deeper-learning-goals",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
+    "section": "Diving Deeper: Learning Goals",
+    "text": "Diving Deeper: Learning Goals\nToday:\n\nFluency with basic geoms\nAnimation (Just a bit)\n\nNext Week:\n\nInteractive graphics\nDashboards\nSpatial Data (time allowing)"
+  },
+  {
+    "objectID": "slides/slides07.html#looking-ahead-1",
+    "href": "slides/slides07.html#looking-ahead-1",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nMy Learning Goals:\n\n(IMO) Most ‘practical’ course we offer\n\nExposure to tools and, more importantly, techniques for data analysis\n\nMy goal is to give you tools to achieve your goals in 3, 6, 12, 48 months\nBiggest failure for me is catching up with you in 2-3 years and hearing you feel held back by lack of skills.\nInvestment of time now, but payoff throughout your career"
+  },
+  {
+    "objectID": "slides/slides07.html#explanation-vs-excuse",
+    "href": "slides/slides07.html#explanation-vs-excuse",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
+    "section": "Explanation vs Excuse",
+    "text": "Explanation vs Excuse\nAs a speaker: If you failed at achieving a task, just say why.\n\nDon’t ‘impose’ forgiveness on your listener - they will give it or they won’t.\n\n\n\nAs a receiver: All reasons are not necessarily valid reasons.\n\n\n As a consumer of media content:\n\nI often find myself getting annoyed at various political commentators for reacting in a way I feel is not strong enough.\nThey are doing their job - explaining the world; dispassion is not approval."
+  },
+  {
+    "objectID": "slides/slides07.html#explanation-vs-excuse-1",
+    "href": "slides/slides07.html#explanation-vs-excuse-1",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
+    "section": "Explanation vs Excuse",
+    "text": "Explanation vs Excuse\nSeparating these concepts will make you:\n\nmore responsible in your own actions;\nmore just in your treatment of others; and\nmore understanding of the views of those whom you may disagree with"
+  },
+  {
+    "objectID": "slides/slides07.html#faq-uc-berkeley-graduate-admissions",
+    "href": "slides/slides07.html#faq-uc-berkeley-graduate-admissions",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
+    "section": "FAQ: UC Berkeley Graduate Admissions",
+    "text": "FAQ: UC Berkeley Graduate Admissions\n1973: UCB was concerned about bias in Grad School Admissions\n\nHigher fraction of men admitted than women\nBickel, Hammell, O’Connell asked to study\n\nWhen they try to find the source of this bias, there is none!\nEach department admits women at a higher rate than men\nWomen applied to more selective programs at a higher rate\n\n\nThis phenomenon occurs throughout the social sciences\n\nBHO note:\n\nWomen are shunted by their socialization and education toward fields of graduate study that are generally more crowded, less productive of completed degrees, and less well funded, and that frequently offer poorer professional employment prospects."
+  },
+  {
+    "objectID": "slides/slides07.html#faq-ucb-graduate-admissions",
+    "href": "slides/slides07.html#faq-ucb-graduate-admissions",
+    "title": "STA 9750  Week 7 Update  2025-03-20",
+    "section": "FAQ: UCB Graduate Admissions",
+    "text": "FAQ: UCB Graduate Admissions\n1973: UC Berkeley was concerned about bias in Grad School Admissions\n\nHigher fraction of men admitted than women\nBickel, Hammell, O’Connell asked to study\n\nWhen they try to find the source of this bias, there is none!\nEach department admits women at a higher rate than men\nWomen applied to more selective programs at a higher rate\n\n\nThis phenomenon occurs throughout the social sciences: the best doctors have the worst patient outcomes\n\nBHO note:\n\nWomen are shunted by their socialization and education toward fields of graduate study that are generally more crowded, less productive of completed degrees, and less well funded, and that frequently offer poorer professional employment prospects."
   }
 ]
