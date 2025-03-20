@@ -228,6 +228,7 @@ ensure_package <- function(pkg){
     stopifnot(require(pkg, character.only=TRUE))
 }
 
+ensure_package(dplyr)
 ensure_package(httr2)
 ensure_package(rvest)
 ensure_package(datasets)
@@ -404,6 +405,7 @@ Next, we do some basic clean-up:
 #| warning: false
 ensure_package(tidyr)
 to_numeric_fill_0 <- function(x){
+    x <- if_else(x == "-", NA, x)
     replace_na(as.numeric(x), 0)
 }
 
