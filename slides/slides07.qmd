@@ -1,5 +1,8 @@
 ---
-title: "{{< var course.short >}} - Week 7"
+session: "`r session <- 7; session`"
+class_date: 
+  "`r library(tidyverse); read_csv('key_dates.csv', name_repair='universal') |> filter(Course.Element == 'Class Session', Item.Number==session) |> pull(Date)`"
+title: "{{< var course.short >}} </br> Week {{< meta session >}} Update </br> {{< meta class_date >}}"
 author: "Michael Weylandt"
 format: revealjs
 ---
@@ -12,7 +15,50 @@ Review [regrade policy](https://michael-weylandt.com/STA9750/syllabus.html#regra
 
 ## {{< var course.short >}} Mini-Project #02
 
-[MP#02](../miniprojcts/mini02.html) - Hollywood Movies -- **Due October 23rd**
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(glue)
+library(rlang)
+library(yaml)
+get_mp_title <- function(N){
+    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_text <- readLines(mp_file, n=50)
+    
+    header_end <- which(grepl("---", mp_text))[2]
+    
+    header_info <- yaml.load(readLines(mp_file, n=header_end))
+    
+    header_info$mp_title %||% "TBD"
+}
+
+get_mp_deadline <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Mini-Projects", 
+               `Item Number`== N, 
+               str_detect(Details, "Due"), 
+               !str_detect(Details, "Peer")) |>
+        mutate(due = paste(Date, "at", Time)) |>
+        pull(due)
+}
+
+
+get_pa_deadline <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Pre-Assignments", 
+               `Item Number`== N, 
+               str_detect(Details, "Due"), 
+               !str_detect(Details, "Peer")) |>
+        mutate(due = paste(Date, "at", Time)) |>
+        pull(due)
+}
+```
+
+[MP#02](../miniprojects/mini02.html) - `r get_mp_title(2)`
+
+**Due `r get_mp_deadline(2)`**
 
 -   GitHub post (used for peer feedback) AND Brightspace
 -   Start early to avoid Git issues
@@ -26,16 +72,32 @@ Pay attention to [the rubric](../miniprojects/mini02.html#rubric)
 -   Use what you learned from MP#01
 -   Pre-processed data now available as well
 
-## Upcoming Mini-Projects
+## {{< var course.short >}} Mini-Project #02
 
-Tentative Topics
+A few students have reported issues with rate-limiting on the EIA
+SEP site. Re-running the code seems to resolve issues. 
 
--   MP#03: Political Analysis
--   MP#04: Retirement Forecasting
+My download code is written to save the files locally, so only needs
+to succeed once. 
 
-## Course Project
+. . . 
 
-Proposal feedback *soon* (need to do 2 more before releasing)
+
+One student reported `NA` conversion warnings in processing the NTD
+data. These were harmless, but I've modified the provided code to 
+suppress these warnings. 
+
+In brief: update to NTD now uses dashes in a few places for missing
+data and `NA` warning came up when trying to conver these to numeric
+values
+
+## Feedback
+
+- I've started to return Proposal Feedback (via email) - will finish 
+tomorrow
+
+- MP#01 grades to follow
+
 
 ## Pre-Assignments
 
@@ -45,7 +107,10 @@ Brightspace - Wednesdays at 11:45
 -   Brightspace auto-grades
     -   I have to manually change to completion grading
 
-Next pre-assignment is **October 23rd**
+Next pre-assignment is **`r get_pa_deadline(8)`**: 
+
+- Includes an optional (but really great) lecture on data
+  visualization from Di Cook (Monash B School (AUS))
 
 . . .
 
@@ -54,20 +119,27 @@ Thank you for FAQs and (honest) team feedback. Keep it coming!
 ## Course Support
 
 -   Synchronous
-    -   Office Hours 4x / week
-        -   MW Office Hours on **Monday** + **Thursday** for rest of semester
-        -   CR **Tuesday** + **Friday**
-        -   No OH during Thanksgiving break
+    -   Office Hours 2x / week
+        -   MW Office Hours on **Tuesdays** + **Thursday** for rest of semester
+        -   No OH during Spring Break
 -   Asynchronous
     -   Piazza ($<30$ minute average response time)
+    
+Thanks to DS for helping peers on Piazza!
 
 ## Upcoming Week
 
 Due Wednesday at 11:45pm:
 
--   Pre-Assignment #08 (Brightspace)
-    -   Advanced plotting with `ggplot2`
+- Pre-Assignment #08 (Brightspace)
+  - Interactive Tools for Data Visualization
 -   MP #02 on GitHub AND Brightspace
+
+## Teaching Observation
+
+On April 3rd, Prof. Brandwein will sit in and observe class
+
+- You don't need to do anything different - just an FYI
 
 ## Additional Resources
 
@@ -475,7 +547,13 @@ By default `geom_smooth` fits a _generalized additive model_ (GAM)
 
 . . . 
 
-What is a GAM? Take 9890 with me (Spring, Tuesdays at 6) to find out!
+What is a GAM?
+
+- Take 9890 with me (typically Spring semester) to find out!
+- Free Course: ["GAMs in R"](https://noamross.github.io/gams-in-r-course/) from
+  Noam Ross
+
+
 
 ## FAQ: Titles and Captions
 
@@ -532,6 +610,32 @@ ggplot(simpsons_paradox, aes(x=x, y=y, color=group)) +
     geom_point() + geom_smooth(method="lm") + facet_grid(~group)
 ```
 
+## FAQ: UCB Graduate Admissions {.smaller}
+
+1973: UC Berkeley was concerned about bias in Grad School Admissions
+
+- Higher fraction of men admitted than women
+- Bickel, Hammell, O'Connell asked to study
+  - When they try to find the source of this bias, there is none!
+  - Each department admits women at a higher rate than men
+  - Women applied to more selective programs at a higher rate
+  
+
+This phenomenon occurs _throughout_ the social sciences: the best doctors have
+the worst patient outcomes
+
+. . . 
+  
+BHO note: 
+
+> Women are shunted by their socialization and education
+toward fields of graduate study that are generally more
+crowded, less productive of completed degrees, and less
+well funded, and that frequently offer poorer professional
+employment prospects.
+
+. . . 
+
 ## FAQ: Twin Axes Plots
 
 > How can I implement a dual (twin) axis plot in `ggplot2`?
@@ -540,7 +644,8 @@ Disfavored. But if you must ...
 
 [sec.axis](https://r-graph-gallery.com/line-chart-dual-Y-axis-ggplot2.html)
 
-Doesn't allow *arbitrary* secondary axes; allows *transformed* axes (e.g., Celsius and Fahrenheit)
+Doesn't allow *arbitrary* secondary axes; allows *transformed* axes 
+(e.g., Celsius and Fahrenheit)
 
 
 ## FAQ: Embedding images in `ggplot`
@@ -593,26 +698,54 @@ You need to install `CVXR` and `gapminder` now.
 
 Exercise: [Lab #07](../labs/lab07.html)
 
-## Diving Deeper with `ggplot2`: Learning Goals
-
+## Diving Deeper: Learning Goals
 
 Today: 
 
 - Fluency with basic `geom`s
-- Animation
+- Animation (Just a bit)
 
 Next Week: 
 
-- Spatial data
 - Interactive graphics
-- Dashboards (time allowing)
+- Dashboards
+- Spatial Data (time allowing)
 
 ## Breakout Rooms
 
-| Room | Team           |  | Room | Team            |
-|------|----------------|--|------|-----------------|
-| 1    | Rat Pack       |  | 6    | Ca\$h VZ        |
-| 2    | Subway Surfers |  | 7    | Listing Legends |
-| 3    | Chart Toppers  |  | 8    | TDSSG           |
-| 4    | Metro Mindset  |  | 9    | Broker T's      |
-| 5    | Apple Watch    |  | 10   | EVengers        |
+| Room | Team                     |   | Room | Team                |
+|-------|-------------------------|---|------|---------------------|
+| 1     | VH + SG + DS + DL       |   | 5    | GB + RJ + FS + MH   |  
+| 2     | HZ + JLL + CA           |   | 6    | EM + AK + GMdS + JL |
+| 3     | MT + CW + VG + GS + CWo.|   | 7    | SJB + JC + SB + ZS  |
+| 4     | SD + GO + CFGF          |   |      |                     |
+
+# Wrap-Up
+
+## Looking Ahead
+
+Course Structure: 
+
+- One more week on analyzing data you already have
+- Then 3 weeks on getting data into `R`
+- One brief week on statistical modeling
+
+. . . 
+
+Course Projects: 
+
+- Very excited by your proposals! 
+- Please send me questions anytime - my goal is to help you achieve your goals
+
+## Looking Ahead
+
+My Learning Goals: 
+
+- (IMO) Most 'practical' course we offer
+  - Exposure to tools and, more importantly, _techniques_ for data analysis
+- My goal is to give you tools to achieve your goals in 3, 6, 12, 48 months
+- Biggest failure for me is catching up with you in 2-3 years and hearing you
+  feel held back by lack of skills. 
+- Investment of time now, but payoff throughout your career
+
+{{< include ../advice/explanation.qmd >}}
