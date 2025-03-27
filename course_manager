@@ -13,6 +13,7 @@ import subprocess
 import random
 import re
 import webbrowser
+from copy import deepcopy as dcopy
 
 # PyPI Modules - Nothing here is too exotic, so not worrying about
 # environment management / versioning for now
@@ -25,6 +26,9 @@ import requests as r
 from requests.compat import urljoin, quote, quote_plus
 from yaml import safe_load as yaml_load
 from pandas.api.types import is_list_like
+import math
+from math import nan
+from statistics import median
 
 Issue = namedtuple(
     "Issue", ["title", "number", "html_url", "body", "state", "opened_by"]
@@ -35,6 +39,13 @@ Comment = namedtuple("Comment", ["commenter", "text", "ctime", "url"])
 # FIXME: This technically isn't sufficient for arbitrary URLs, but it
 # seems to cover the whole GitHub API, which is enough for us.
 URL_REGEX = "http[A-Za-z0-9:/\\.\\-]+"
+
+
+def is_nan(x):
+    if type(x) == float:
+        return math.isnan(x)
+    else:
+        return False
 
 
 def str_simplify(x):
@@ -136,8 +147,9 @@ def gh_list_issues(owner=None):
     ISSUES_DICT = {
         # FIXME: Handle duplicate issue titles
         # Common case is students forgetting to fix "<GITHUB_ID>"
-        # str_simplify(i["title"].replace("<GITHUB_ID>", i["user"]["login"]))
+        #
         str_simplify(i["title"]): Issue(
+            # str_simplify(i["title"].replace("<GITHUB_ID>", i["user"]["login"])): Issue(
             i["title"],
             i["number"],
             i["html_url"],
@@ -196,6 +208,28 @@ def course_dir():
 
 
 @cache
+def load_issues():
+    issues_dir = op.join(course_dir(), "latest", "issues")
+
+    ALL_ISSUES = []
+    for fname in glob(op.join(issues_dir, "*.json")):
+        with open(fname) as f:
+            RAW_ISSUE = json.loads(f.read())
+            ISSUE = {
+                "title": RAW_ISSUE["title"],
+                "number": RAW_ISSUE["number"],
+                "comments": [
+                    (c["commenter"], c["text"]) for c in RAW_ISSUE["comments"]
+                ],
+            }
+            ALL_ISSUES.append(ISSUE)
+
+    ALL_ISSUES.sort(key=lambda x: x["number"])
+
+    return ALL_ISSUES
+
+
+@cache
 def course_short():
     with open("_variables.yml") as f:
         course_config = yaml_load(f)
@@ -219,8 +253,22 @@ def roster_file():
 
 
 @cache
+def grades_file():
+    filename = Path(op.join(course_dir(), "grades.json")).resolve()
+    filename.touch(exist_ok=True)
+    return filename
+
+
+@cache
 def teams_file():
     filename = Path(op.join(course_dir(), "teams.json")).resolve()
+    filename.touch(exist_ok=True)
+    return filename
+
+
+@cache
+def team_grades_file():
+    filename = Path(op.join(course_dir(), "team_grades.json")).resolve()
     filename.touch(exist_ok=True)
     return filename
 
@@ -276,15 +324,20 @@ def get_pf_mapping(project_id):
                 continue
 
             if len(issue) > 1:
-                click.abort(f"Multiple issues found for {author} on MP #0{project_id}")
+                click.echo(
+                    "ERROR: "
+                    + f"Multiple issues found for {author} on MP #0{project_id}"
+                )
+                raise click.Abort()
 
             issue_file = op.basename(issue[0])
             issue_num = int(re.search("_issue([0-9]+)\\.md$", issue_file).group(1))
 
             if not issue_file:
-                click.abort(
-                    "Issue appears to be issue #0. Please confirm all PF properly assigned."
+                click.echo(
+                    "ERROR: Issue appears to be issue #0. Please confirm all PF properly assigned."
                 )
+                raise click.Abort()
 
             issue_url = (
                 f"https://github.com/michaelweylandt/{course_repo()}/issues/{issue_num}"
@@ -428,7 +481,7 @@ def roster_delete(github):
         )
 
     if github not in ROSTER.github.values:
-        click.abort("Could not match user to existing roster")
+        raise click.Abort("Could not match user to existing roster")
 
     DROPPER = ROSTER.loc[ROSTER["github"] == github]
 
@@ -452,7 +505,7 @@ def project():
 
 @project.command(name="create")
 def project_create():
-    "Define a new team. After running this, use 'build' to add or remove students."
+    "Define a new team. After running this, use 'modify' to add or remove students."
 
     TEAMS = current_teams()
     n_teams, _ = TEAMS.shape
@@ -517,11 +570,72 @@ def project_create():
         f.write(ROSTER.to_json())
 
 
-@project.command(name="build")
-def project_build():
-    "Add or remove students from a team"
+@project.command(name="modify")
+@click.option("-N", "--number", default=0, help="Number of team to modify")
+@click.option(
+    "-A",
+    "--action",
+    type=click.Choice(
+        ["Rename", "Add-student", "Remove-Student"], case_sensitive=False
+    ),
+    help="Which action to take?",
+    prompt="Which modification should be performed?",
+)
+def project_modify(number, action):
+    "Add or remove students from a team or change team name"
 
-    raise NotImplementedError
+    TEAMS = current_teams()
+    N_TEAMS, _ = TEAMS.shape
+
+    if number > N_TEAMS or number < 0:
+        raise click.Abort("Invalid team number provided.")
+
+    if number == 0:
+        click.echo("The current teams are:")
+        for row in TEAMS.itertuples():
+            click.echo(f"Team Number {row.number} - {row.name}")
+
+        number = click.prompt(
+            "Which team would you like to modify?",
+            type=click.IntRange(min=TEAMS["number"].min(), max=TEAMS["number"].max()),
+        )
+
+    ROSTER = current_roster()
+    BIG_ROSTER = pd.merge(
+        ROSTER,
+        TEAMS.rename(columns={"name": "team_name"}),
+        how="left",
+        left_on="project_team",
+        right_on="number",
+    )
+
+    TEAM = BIG_ROSTER[BIG_ROSTER["project_team"] == number]
+
+    click.echo("You are about to assign modify the team consisting of:")
+    for row in TEAM.itertuples():
+        click.echo(f"{row.name} (GH: {row.github}; EMAIL: {row.email})")
+    click.echo("\n")
+
+    if action != "Rename":
+        raise NotImplementedError
+
+    if action == "Rename":
+        current_name = TEAM["team_name"].iloc[0]
+        click.echo(f"The current name of this team is {current_name}.")
+        new_name = click.prompt("What should the new name of this team be?")
+
+        if new_name in TEAMS["name"]:
+            click.echo("WARNING: This team name is already in use. Be careful.")
+
+        click.confirm(
+            f"Are you sure you would like to change the name of Team {number} from {current_name} to {new_name}?",
+            abort=True,
+        )
+
+        TEAMS.loc[TEAMS["number"] == number, "name"] = new_name
+
+        with open(teams_file(), "w+") as f:
+            f.write(TEAMS.to_json(orient="records"))
 
 
 @project.command(name="list")
@@ -560,9 +674,113 @@ def project_list():
 
 
 @project.command(name="grade")
-def project_grade():
+@click.option(
+    "--element",
+    type=click.Choice(["Proposal", "Check-In", "Final"], case_sensitive=False),
+    help="Which project element to assign grades for?",
+    prompt="Which project element should grades be assigned for?",
+)
+@click.option("-N", "--number", default=0, help="Number of team to grade")
+@click.option(
+    "--skip-email",
+    default=False,
+    is_flag=True,
+    help="Should email feedback be skipped?",
+)
+def project_grade(element, number, skip_email):
     "Assign group project grades"
-    raise NotImplementedError
+
+    TEAMS = current_teams()
+    N_TEAMS, _ = TEAMS.shape
+
+    if number > N_TEAMS or number < 0:
+        raise click.Abort("Invalid team number provided.")
+
+    if number == 0:
+        click.echo("The current teams are:")
+        for row in TEAMS.itertuples():
+            click.echo(f"Team Number {row.number} - {row.name}")
+
+        number = click.prompt(
+            "Which team would you like to provide feedback to?",
+            type=click.IntRange(min=TEAMS["number"].min(), max=TEAMS["number"].max()),
+        )
+
+    ROSTER = current_roster()
+    BIG_ROSTER = pd.merge(
+        ROSTER,
+        TEAMS.rename(columns={"name": "team_name"}),
+        how="left",
+        left_on="project_team",
+        right_on="number",
+    )
+
+    TEAM = BIG_ROSTER[BIG_ROSTER["project_team"] == number]
+    TEAM_NAME = TEAM["team_name"].iloc[0]
+
+    click.echo("You are about to assign feedback to the team consisting of:")
+    for row in TEAM.itertuples():
+        click.echo(
+            f"{row.name} (GH: {row.github}; EMAIL: {row.email}) - {row.team_name}"
+        )
+
+    feedback_dir = op.join(course_dir(), element.lower())
+    os.makedirs(feedback_dir, exist_ok=True)
+
+    feedback_file = op.join(feedback_dir, f"team_{number}.txt")
+
+    if op.exists(feedback_file):
+        new_feedback = click.confirm(
+            f"Feedback already found for Team {number}. Are you sure you want to overwrite?"
+        )
+    else:
+        new_feedback = True
+
+    if new_feedback:
+        TEMPLATES = Environment(
+            loader=FileSystemLoader("_cissoid/templates"),
+            autoescape=select_autoescape(),
+        )
+
+        TEMPLATE = TEMPLATES.get_template(f"project_{element.lower()}.md")
+
+        SKELETON = TEMPLATE.render(team_name=TEAM_NAME, members=TEAM.itertuples())
+
+        FEEDBACK = click.edit(text=SKELETON, editor="/usr/bin/nano")
+
+        with open(feedback_file, "w") as f:
+            f.write(FEEDBACK)
+
+    with open(feedback_file, "r") as f:
+        FEEDBACK_TXT = f.read()
+
+    scores = [int(s) for s in re.findall("points\\): (\\d{,2})", FEEDBACK_TXT)]
+    total = sum(scores)
+
+    with open(team_grades_file(), "r") as f:
+        file_text = f.read()
+
+        if not file_text:
+            ALL_GRADES = dict()
+        else:
+            ALL_GRADES = json.loads(file_text)
+
+    if element.lower() not in ALL_GRADES:
+        ALL_GRADES[element.lower()] = dict()
+
+    ALL_GRADES[element.lower()][number] = total
+
+    with open(team_grades_file(), "w") as f:
+        f.write(json.dumps(ALL_GRADES))
+
+    if skip_email:
+        return 0
+
+    open_email(
+        subject=f"STA 9750 - Team {TEAM_NAME} - Project {element} - Score {total}",
+        to=TEAM["email"].to_list(),
+        body=FEEDBACK_TXT,
+    )
 
 
 @course_manager.group()
@@ -783,7 +1001,7 @@ def _mini_verify(project_id, github):
         EXPECTED_URL = re.search(URL_REGEX, BODY, re.IGNORECASE)
 
         if EXPECTED_URL is None:
-            click.abort("Could not find expected URL in MP Instructions")
+            raise click.Abort("Could not find expected URL in MP Instructions")
 
         if SUB_URL is None:
             click.echo("No URL found in submission")
@@ -907,7 +1125,7 @@ def _peer_assignment_master():
     return MAPPING
 
 
-def _peer_assignment_mapping(project_id, n_peers):
+def _peer_assignment_mapping(project_id, n_peers=None):
     MASTER_MAPPING = _peer_assignment_master()
     project_id_s = f"mp0{project_id}"
 
@@ -925,6 +1143,8 @@ def _peer_assignment_mapping(project_id, n_peers):
             INDEX_DICT = {}
 
     if project_id_s not in INDEX_DICT:
+        if not n_peers:
+            raise click.Abort("Cannot assign peer feedback with 0 peers")
         ALL_PREVIOUS = [ix for mp in INDEX_DICT.values() for ix in mp]
         ALL_POSSIBLE = range(len(MASTER_MAPPING))
         AVAILABLE = set(ALL_POSSIBLE) - set(ALL_PREVIOUS)
@@ -1032,9 +1252,7 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip):
             try:
                 ALL_ISSUES = gh_list_issues(gh)
             except TypeError:
-                import pdb
-
-                pdb.set_trace()
+                import pdb; pdb.set_trace()
 
             ALL_ISSUES = list(ALL_ISSUES.values())
             ALL_ISSUES.sort(key=lambda i: i.number)
@@ -1085,7 +1303,7 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip):
         post_glob = glob(op.join(PF_DIR, "assignments", f"{gh}_issue*.md"))
 
         if len(post_glob) != 1:
-            click.abort(f"Cannot find unique PF assignment script for {gh}")
+            raise click.Abort(f"Cannot find unique PF assignment script for {gh}")
 
         post_file = post_glob[0]
 
@@ -1118,7 +1336,7 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip):
                     f"Peer Feedback successfully assigned for {gh}'s MP#0{project_id}"
                 )
             else:
-                click.abort("Could not post issue for {gh} at #{gh_issue_num}")
+                raise click.Abort("Could not post issue for {gh} at #{gh_issue_num}")
         else:
             title = f"MP #0{project_id} Peer Feedback for {gh} [INSTRUCTOR OPENED]"
             resp = gh_issue_create(title, post_md)
@@ -1134,17 +1352,372 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip):
                 new_file = post_file.replace("issue0", f"issue{new_issue_num}")
                 os.rename(post_file, new_file)
             else:
-                click.abort("Could not post issue for {gh} at #{gh_issue_num}")
+                raise click.Abort("Could not post issue for {gh} at #{gh_issue_num}")
+
+
+@cache
+def _peer_feedback_collect_file(project_id):
+    fname = op.join(course_dir(), f"mp0{project_id}", "COLLECTED_PEER_FEEDBACK.json")
+
+    if not op.exists(fname):
+        Path(fname).touch(exist_ok=True)
+
+    return fname
+
+
+@cache
+def grade_dir(project_id):
+    dirname = op.join(course_dir(), f"mp0{project_id}", "grades")
+
+    os.makedirs(dirname, exist_ok=True)
+
+    return dirname
 
 
 @peer.command(name="collect")
-def peer_collect():
-    raise NotImplementedError
+@click.option(
+    "-N",
+    "--number",
+    "project_id",
+    help="Mini-project to process peer feedback",
+    prompt="Which mini-project to collect peer feedback for?",
+    type=click.IntRange(min=0, max=4),
+)
+@click.option(
+    "--use-existing",
+    "rearchive",
+    is_flag=True,
+    default=True,
+    help="Skip archiving and use cached issue comments",
+)
+@click.option("--skip-pdf", is_flag=True, default=False, help="Skip PDF archiving")
+@click.option(
+    "-F",
+    "--force",
+    is_flag=True,
+    default=False,
+    help="Force re-evaluation of peer feedback.",
+)
+def peer_collect(project_id, rearchive, skip_pdf, force):
+    """Collect all peer feedback in a standardized format
+
+    After the peer feedback window ends, this function will parse all GH
+    issue comments to collect students' peer feedback. In theory, this is
+    fully automatable, but students are bad at following instruction so this
+    function will prompt for clarification repeatedly as it runs. This function
+    saves its output as it goes so it is safe to terminate mid-execution and
+    resume later. Run with '--force' to force regrading from the beginning.
+
+    TODO: Add support for the -g flag to only process certain students."""
+    if rearchive:
+        _mini_archive(project_id, [], skip_pdf)
+
+    ROSTER = current_roster()
+    PF_MAPPING = _peer_assignment_mapping(project_id)
+
+    PEER_FEEDBACK_SKELETON = {
+        "scores": {
+            "Written Communication": nan,
+            "Project Skeleton": nan,
+            "Formatting & Display": nan,
+            "Code Quality": nan,
+            "Data Preparation": nan,
+            "Extra Credit": nan,
+        },
+        "comments": {
+            "Written Communication": nan,
+            "Project Skeleton": nan,
+            "Formatting & Display": nan,
+            "Code Quality": nan,
+            "Data Preparation": nan,
+            "Extra Credit": nan,
+        },
+        "posts": nan,
+        "formatted_properly": nan,
+    }
+
+    pf_file = _peer_feedback_collect_file(project_id)
+
+    with open(pf_file, "r") as f:
+        try:
+            ALL_PEER_FEEDBACK = json.loads(f.read())
+        except ValueError:
+            ALL_PEER_FEEDBACK = {
+                s: {vv: dcopy(PEER_FEEDBACK_SKELETON) for vv in v}
+                for s, v in PF_MAPPING.items()
+            }
+
+    ALL_ISSUES_CONTENTS = load_issues()
+
+    for student in ALL_PEER_FEEDBACK.keys():
+        if "issue_num" in ALL_PEER_FEEDBACK[student]:
+            if not force:
+                continue
+
+        STUDENT_ISSUES = [
+            c for c in ALL_ISSUES_CONTENTS if student.lower() in c["title"].lower()
+        ]
+        STUDENT_ISSUES.sort(key=lambda c: c["number"])
+
+        num_str = f"#0{project_id}"
+
+        RELEVANT_ISSUES = [s for s in STUDENT_ISSUES if num_str in s["title"]]
+
+        if not RELEVANT_ISSUES:
+            click.echo(
+                f"I could not find an issue for {student} with '{num_str}' in the title."
+            )
+            click.echo("Please select the relevant issue from the choices below.")
+            click.echo("If you want to see all issues, press 0.")
+
+            for s in STUDENT_ISSUES:
+                click.echo(f"- {s['number']}. Title: {s['title']}")
+
+            issue_num = click.prompt(
+                "Select the issue to use or press 0.",
+                type=click.Choice([str(s["number"]) for s in STUDENT_ISSUES] + ["0"]),
+            )
+
+            try:
+                issue_num = int(issue_num)
+            except ValueError:
+                click.echo(
+                    "I could not interpret your input as an issue number. Interpreting as 0."
+                )
+                issue_num = 0
+
+            if issue_num:
+                KEY_ISSUE = [r for r in STUDENT_ISSUES if r["number"] == issue_num][0]
+            else:
+                click.echo(
+                    "Please select from all issues. If no issue is appropriate, press 0."
+                )
+                for i in ALL_ISSUES_CONTENTS:
+                    click.echo(f"- {i['number']}. Title: {i['title']}")
+
+                issue_num = click.prompt(
+                    "Select the issue to use or press 0.",
+                    type=click.Choice(
+                        [str(i["number"]) for i in ALL_ISSUES_CONTENTS] + ["0"]
+                    ),
+                )
+
+                try:
+                    issue_num = int(issue_num)
+                except ValueError:
+                    click.echo(
+                        "I could not interpret your input as an issue number. Interpreting as 0."
+                    )
+                    issue_num = 0
+
+            if not issue_num:
+                continue  # Go to next student
+
+            KEY_ISSUE = [i for i in ALL_ISSUES_CONTENTS if i["number"] == issue_num][0]
+
+        elif len(RELEVANT_ISSUES) > 1:
+            click.echo(
+                f"I found multiple issue for {student} with '{num_str}' in the title."
+            )
+            click.echo("Please select the relevant issue from the choices below.")
+
+            for r in RELEVANT_ISSUES:
+                click.echo(f"- {r['number']}. Title: {r['title']}")
+
+            issue_num = click.prompt(
+                "Select the issue to use.",
+                type=click.Choice([str(r["number"]) for r in RELEVANT_ISSUES]),
+            )
+
+            try:
+                issue_num = int(issue_num)
+            except ValueError:
+                raise click.Abort("I could not interpret your input as an issue number")
+
+            KEY_ISSUE = [r for r in RELEVANT_ISSUES if r["number"] == issue_num][0]
+        else:
+            KEY_ISSUE = RELEVANT_ISSUES[0]
+
+        for evaluator in ALL_PEER_FEEDBACK[student].keys():
+            if not is_nan(ALL_PEER_FEEDBACK[student][evaluator]["posts"]):
+                if not force:
+                    continue
+
+            POSTS = "\n----NEW POST----\n".join(
+                [
+                    text
+                    for author, text in KEY_ISSUE["comments"]
+                    if author.lower() == evaluator.lower()
+                ]
+            )
+
+            if not POSTS:
+                ALL_PEER_FEEDBACK[student][evaluator]["posts"] = POSTS
+                continue
+
+            ALL_FORMATTING = True
+            for k in ALL_PEER_FEEDBACK[student][evaluator]["scores"].keys():
+                pattern = k + "[:][ ]+(\\d{1,2})"
+                match = re.search(pattern, POSTS)
+
+                if match is not None:
+                    try:
+                        score = int(match.group(1))
+                    except ValueError:
+                        ALL_FORMATTING = False
+                        click.echo(f"I was unable to locate a score for '{k}'")
+                        click.echo(
+                            "What score should be given, based on these comments:\n----"
+                        )
+                        click.echo(POSTS)
+                        click.echo("----\n")
+                        score = click.prompt(
+                            f"Enter a score 0-10 for '{k}' or leave blank to keep NaN",
+                            type=int,
+                            default=-1,
+                        )
+
+                        if score < 0:
+                            score = nan
+
+                else:
+                    ALL_FORMATTING = False
+                    click.echo(f"I was unable to locate a score for '{k}'")
+                    click.echo(
+                        "What score should be given, based on these comments:\n----"
+                    )
+                    click.echo(POSTS)
+                    click.echo("----\n")
+                    score = click.prompt(
+                        f"Enter a score 0-10 for '{k}' or leave blank to keep NaN",
+                        type=int,
+                        default=nan,
+                    )
+
+                ALL_PEER_FEEDBACK[student][evaluator]["scores"][k] = score
+
+            for k in ALL_PEER_FEEDBACK[student][evaluator]["comments"].keys():
+                pattern = k + "[ \n]+(.*)[\n]?"
+                match = re.search(pattern, POSTS)
+
+                if match is not None:
+                    comment = match.group(1)
+                else:
+                    ALL_FORMATTING = False
+                    HEADER = f"""
+                    I was unable to extract comments for '{k}'. Please edit
+                    this file and leave only the comments on that topic.\n------\n"""
+                    SOURCE = HEADER + POSTS
+                    comment = click.edit(text=SOURCE, editor="/usr/bin/nano")
+
+                    if not comment:
+                        comment = ""
+
+                ALL_PEER_FEEDBACK[student][evaluator]["comments"][k] = comment.strip()
+
+            ALL_PEER_FEEDBACK[student][evaluator]["formatted_properly"] = ALL_FORMATTING
+            ALL_PEER_FEEDBACK[student][evaluator]["posts"] = POSTS
+
+            with open(pf_file, "w") as f:
+                f.write(json.dumps(ALL_PEER_FEEDBACK))
+
+        # Save the issue number for later just in case
+        ALL_PEER_FEEDBACK[student]["issue_num"] = KEY_ISSUE["number"]
+        ALL_PEER_FEEDBACK[student]["submission_penalty"] = (
+            INSTRUCTOR in KEY_ISSUE["title"]
+        )
+
+    click.echo(f"All peer feedback processed for MP#0{project_id}")
+    click.echo("You may now run 'peer grade' to compute actual grades")
 
 
-@peer.command(name="evaluate")
-def peer_evaluate():
-    """Review Peer-Feedback
+@peer.command(name="grade")
+@click.option(
+    "-N",
+    "--number",
+    "project_id",
+    help="Mini-Project to grade",
+    prompt="Which mini-project to grade using peer feedback?",
+    type=click.IntRange(min=0, max=4),
+)
+def peer_grade(project_id):
+    """Consolidate collected peer feedback to assign grades
+
+    After running 'collect', this function will parse the peer feedback
+    comments and create text files summarizing feedback for each student.
+    The instructor must then upload these to Brightspace to return them
+    to the students. This function is very fast and can be safely re-run."""
+    pf_file = _peer_feedback_collect_file(project_id)
+
+    ROSTER = current_roster()
+
+    with open(pf_file, "r") as f:
+        try:
+            ALL_PEER_FEEDBACK = json.loads(f.read())
+        except ValueError:
+            click.echo(
+                "ERROR: Feedback file appears to be empty. Run 'peer collect' first."
+            )
+            raise click.Abort()
+
+    template = Environment(
+        loader=FileSystemLoader("_cissoid/templates"), autoescape=select_autoescape()
+    ).get_template("pf_grade_for_brightspace.md")
+
+    with click.progressbar(ALL_PEER_FEEDBACK.items()) as bar:
+        for student, feedback in bar:
+            real_name = ROSTER[ROSTER["github"] == student]["name"].item()
+            safe_name = real_name.lower().replace(" ", "_")
+            evaluators = [e for e in feedback.keys() if e != "issue_num"]
+
+            penalty = feedback["submission_penalty"]
+
+            CATEGORIES = feedback[evaluators[0]]["scores"].keys()
+
+            SCORE_DICT = {c: [] for c in CATEGORIES}
+            COMMENTS_DICT = {c: [] for c in CATEGORIES}
+
+            for evaluator in evaluators:
+                e_feedback = feedback[evaluator]
+
+                for c in CATEGORIES:
+                    if is_nan(e_feedback["scores"][c]):
+                        continue
+
+                    SCORE_DICT[c].append(e_feedback["scores"][c])
+                    COMMENTS_DICT[c].append((evaluator, e_feedback["comments"][c]))
+
+            try:
+                SCORES = {k: median(v) if v else nan for k, v in SCORE_DICT.items()}
+                TOTAL = sum(SCORES.values())
+            except:
+                import pdb; pdb.set_trace()
+
+            if penalty:
+                TOTAL = TOTAL - 5
+
+            grade_text = template.render(
+                project_id=project_id,
+                categories=CATEGORIES,
+                scores=SCORES,
+                scores_dict=SCORE_DICT,
+                comments=COMMENTS_DICT,
+                name=real_name,
+                total=TOTAL,
+                penalty=penalty,
+                course_dir=course_dir(),
+                issue_num=feedback["issue_num"],
+            )
+
+            grade_file = op.join(grade_dir(project_id), f"{safe_name}.txt")
+
+            with open(grade_file, "w") as f:
+                f.write(grade_text)
+
+
+@peer.command(name="meta")
+def peer_meta():
+    """Provide a Meta-Review of Peer-Feedback
 
     After collecting peer feedback, the course staff (instructor or TAs)
     need to assign a 'meta-review' score (0-10) on the quality of the peer
