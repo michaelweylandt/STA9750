@@ -3019,7 +3019,7 @@
   {
     "objectID": "labs/lab08.html",
     "href": "labs/lab08.html",
-    "title": "STA 9750 Week 8 In-Class Activity: Advanced ggplot2",
+    "title": "STA 9750 Week 8 In-Class Activity: More ggplot2 + Tools for Interactive Data Analysis",
     "section": "",
     "text": "Week 8 Slides"
   },
@@ -3033,28 +3033,28 @@
   {
     "objectID": "labs/lab08.html#exercises-1---geospatial-visualizations",
     "href": "labs/lab08.html#exercises-1---geospatial-visualizations",
-    "title": "STA 9750 Week 8 In-Class Activity: Advanced ggplot2",
+    "title": "STA 9750 Week 8 In-Class Activity: More ggplot2 + Tools for Interactive Data Analysis",
     "section": "Exercises 1 - Geospatial Visualizations",
     "text": "Exercises 1 - Geospatial Visualizations\n\nDownload the New York City Council Districts (Clipped to Shoreline) shapefiles. Unzip the download and read the shape file, nycc.shp, using the sf::read_sf function.\nUse ggplot2::geom_sf to create a basic map of NYC’s city council districts. This should just be a plot of the outlines of each district (recognizable as NYC, but otherwise showing no data).\nUsing the nyc_demos.csv data file, create a chloropleth map of NYC, where the color variable represents the 2010 under 5-year-old population of each district.\nNote that you will need to use some dplyr *_join functions to combine the shape data with the demographic data before passing it to ggplot2.2 Which parts of NYC have the fewest young children? Does this seem right?\nUnder the “one person one vote” principle, the number of adult residents in each council district should be roughly equal. Create a chloropleth plot showing how many more/fewer adult residents each district has than the average district. Are any districts (significantly) over/under-represented on the NY city council?\nTo do this, you will need to first 1) determine the number of voting age residents in each district; 2) compute the average number of voting age residents per district; 3) see how each district compares to the average (above/below and by how much).\nCreate a facet plot where each facet is a chloropleth indicating the percentage of residents in each district identifying as a member of each census-designated racial categories.3 Note that the nyc_demos.csv file contains total counts by race, so you will need to normalize by overall population to get percentages.\nTo get the data into suitable form for plotting, you will need to pivot the data into a longer format using the pivot_longer function from the tidyr package.\nCreate a visualization to compare the ratio of rental vs owner-owned housing per district with the age demographics of this district. What do you find? Is this what you would have expected?"
   },
   {
     "objectID": "labs/lab08.html#limitations-and-extensions-of-chloropleths",
     "href": "labs/lab08.html#limitations-and-extensions-of-chloropleths",
-    "title": "STA 9750 Week 8 In-Class Activity: Advanced ggplot2",
+    "title": "STA 9750 Week 8 In-Class Activity: More ggplot2 + Tools for Interactive Data Analysis",
     "section": "Limitations and Extensions of Chloropleths",
     "text": "Limitations and Extensions of Chloropleths\nChloropleth plots are rightly popular but they have a major limitation: humans are not uniformly distributed across space! Smaller regions may have higher populations (cf Connecticut vs Montana) and administrative regions are not the same size. Because human perception is naturally drawn to larger regions, we often need to adjust the color schemes used to compensate for area effects. This process can be powerful, but it is a bit difficult to get right.\nFor instance, let’s see what happens if we create a chloropleth of the SID74 data, the number of children who die of SIDS during our sample period in North Carolina:\n\nggplot(nc, aes(geometry = geometry, fill = SID74)) + \n    geom_sf()\n\n\n\n\n\n\n\n\nHere, Mecklenberg County (middle, bottom) sticks out because it has a large population, not because SIDS was particularly more common in that county. We can modify our plot to show the SIDS rate, rather than raw counts:\n\nnc |&gt;\n    mutate(sids_rate_74 = SID74 / BIR74) |&gt;\n    ggplot(aes(geometry = geometry, \n               fill = sids_rate_74)) + \n    geom_sf()\n\n\n\n\n\n\n\n\nWe see less variation here, but there is still some. Note that this type of data – rate estimation from rare counts – can be somewhat tricky to analyze, but that’s not the primary focus of this class so we’ll leave it here.\nThis plot still isn’t perfect however: Sampson county is the largest county in NC, but it has a relatively small population. That means that the largest area - and hence the place our eyes will most immediately look - is assigned to a relatively unimportant county. Relatedly, Anson County is a small population county, but it appears to be a “hot-spot”. This could be true, but it is more likely a noise-effect resulting from a small population.\nTo address these issues, we can use a cartogram which will “adjust” the map so that area maps to a relevant quantity. This is quite complex mathematically, but the cartogram package handles it reasonably transparently for us:\n\nlibrary(cartogram)\nnc |&gt; \n    mutate(sids_rate_74 = SID74 / BIR74) |&gt;\n    st_transform(26916) |&gt; \n    cartogram_cont(weight=\"BIR74\") |&gt; \n    ggplot(aes(geometry=geometry, \n               fill = sids_rate_74)) + \n    geom_sf()\n\n\n\n\n\n\n\n\nHere the st_transform function species what projection to equilibrate area in. I’m not an expert on this, but the internet seems to suggest 26916 is not a bad default.\nLooking at this plot, we see that counties are now adjusted to population, or really birth count and Anson county - while still high - is clearly down-weighted in accordance with its population."
   },
   {
     "objectID": "labs/lab08.html#exercises-2---cartograms-of-nyc",
     "href": "labs/lab08.html#exercises-2---cartograms-of-nyc",
-    "title": "STA 9750 Week 8 In-Class Activity: Advanced ggplot2",
+    "title": "STA 9750 Week 8 In-Class Activity: More ggplot2 + Tools for Interactive Data Analysis",
     "section": "Exercises 2 - Cartograms of NYC",
     "text": "Exercises 2 - Cartograms of NYC\n\nModify your plot of NYC to adjust city council districts by area.\nNext, modify your analysis to use the Dorling cartogram (cartogram_dorling) which gives a more regular cartogram representation."
   },
   {
     "objectID": "labs/lab08.html#footnotes",
     "href": "labs/lab08.html#footnotes",
-    "title": "STA 9750 Week 8 In-Class Activity: Advanced ggplot2",
+    "title": "STA 9750 Week 8 In-Class Activity: More ggplot2 + Tools for Interactive Data Analysis",
     "section": "Footnotes",
     "text": "Footnotes\n\n\nIn MP#03, you will learn how to extract the shp file from a zip archive automatically, but for now you can do so “by hand” by opening the zip file as if it were a regular file.↩︎\nIf you get an error reading “stat_sf() requires the following missing aesthetics: geometry”, make sure you include geometry=geometry in your aes (5 points)↩︎\nThese are c(\"White Hispanic\", \"Black Hispanic\", \"Asian and Pacific Islander Nonhispanic\", \"Other Nonhispanic\", \"Two or More Races Nonhispanic\", \"Hispanic Origin\"). Note that the census has changed these over time and the categories for the 2020 and 2030 censuses will be different.↩︎"
   },
@@ -5063,9 +5063,9 @@
   {
     "objectID": "slides/slides08.html#mini-project-02",
     "href": "slides/slides08.html#mini-project-02",
-    "title": "STA 9750 - Week 8",
-    "section": "",
-    "text": "Submission due yesterday at 11:45pm\n. . .\nY’all have it out for The Shawshank Redemption…\n. . .\n\nVery entertained by fake posters\nImpressive graphics and analysis - very nice."
+    "title": "STA 9750  Week 8 Update  2025-03-27",
+    "section": "STA 9750 Mini-Project #02",
+    "text": "STA 9750 Mini-Project #02\nSubmission due yesterday at 11:45pm\n\nVery creative!"
   },
   {
     "objectID": "slides/slides08.html#the-shark",
@@ -5084,177 +5084,177 @@
   {
     "objectID": "slides/slides08.html#mini-project-02---peer-feedback",
     "href": "slides/slides08.html#mini-project-02---peer-feedback",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "STA 9750 Mini-Project #02 - Peer Feedback",
-    "text": "STA 9750 Mini-Project #02 - Peer Feedback\nPeer feedback assigned on GitHub this morning\n\n\\(\\approx 4\\) feedbacks each\nTake this seriously: around 20% of this assignment is “meta-review”\nGoal: rigorous constructive critique\n\n. . .\nSubmissions may not map perfectly to rubric - use your best judgement\n. . .\nLearn from this! What can you adapt for MP#03?"
+    "text": "STA 9750 Mini-Project #02 - Peer Feedback\nPeer feedback assigned on GitHub this morning\n\n\\(\\approx 4\\) feedbacks each\nTake this seriously: around 20% of this assignment is “meta-review”\nGoal: rigorous constructive critique\n\n\nSubmissions may not map perfectly to rubric - use your best judgement\n\n\nLearn from this! What can you adapt for MP#03?"
   },
   {
     "objectID": "slides/slides08.html#mini-project-03",
     "href": "slides/slides08.html#mini-project-03",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "STA 9750 Mini-Project #03",
-    "text": "STA 9750 Mini-Project #03\nNow online\nDue November 13th\n\nGitHub post (used for peer feedback) AND Brightspace\nThree Weeks: don’t wait until the very end\nShould be less demanding than MP #01 and MP#02\n\nLots of little files. No big files!\nMaps and election retrodiction\n\n\n. . .\nPay attention to the rubric"
+    "text": "STA 9750 Mini-Project #03\nNow online - Due 2025-04-23 at 11:45pm ET\nTopic: Creating the Ultimate Playlist\n\nGitHub post (used for peer feedback) AND Brightspace\nThree Weeks: don’t wait until the very end\nShould be less demanding than MP #01 and MP#02\n\nLots of little files: practice data management\nSome data limitations, particularly after inner_join\n\n\n\nPay attention to the rubric"
   },
   {
     "objectID": "slides/slides08.html#thank-you-1",
     "href": "slides/slides08.html#thank-you-1",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Thank you!",
-    "text": "Thank you!\nA personal note, if you allow me:\n. . .\nI’m really enjoying this class - thank you all!\n. . .\nYour effort is not unnoticed - I know this class starts “pedal-to-the-metal” but hopefully you’ve seen just how powerful these tools R.\n. . .\nMore than that - I appreciate your good attitude and willingness to share your frustrations and triumphs. Reading comments on PA quiz this week was uplifting."
+    "text": "Thank you!\nA personal note, if you allow me:\n\n\nI’m really enjoying this class - thank you all!\n\n\n\n\nYour effort is not unnoticed - I know this class starts “pedal-to-the-metal” but hopefully you’ve seen just how powerful these tools R.\n\n\n\n\nMore than that - I appreciate your good attitude and willingness to share your frustrations and triumphs. Reading comments on PA quiz this week was uplifting."
   },
   {
     "objectID": "slides/slides08.html#continual-improvement",
     "href": "slides/slides08.html#continual-improvement",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Continual Improvement",
-    "text": "Continual Improvement\nI’ve set up a TODO file with everything I want to improve for next cohort.\nSuggestions welcome.\nI will also ask Charles to distribute an opportunity for anonymous feedback."
+    "text": "Continual Improvement\nI’ve set up a TODO file with everything I want to improve for next cohort.\nSuggestions welcome.\n\nEvery semester, I create new mini-projects. Ideas and suggestions very welcome\n\nTopics and data sets are both great"
   },
   {
     "objectID": "slides/slides08.html#upcoming-mini-projects",
     "href": "slides/slides08.html#upcoming-mini-projects",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Upcoming Mini-Projects",
-    "text": "Upcoming Mini-Projects\nTentative Topics\n\nMP#04: Something financial\n\nAny requests?"
+    "text": "Upcoming Mini-Projects\n\nMP#04:\n\nDeadline: 2025-05-07 at 11:45pm ET\nTopic: Exploring Recent US Political Shifts"
   },
   {
     "objectID": "slides/slides08.html#course-project",
     "href": "slides/slides08.html#course-project",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Course Project",
-    "text": "Course Project\nFeedback from Charles and from me - I’m behind on returning.\nProject should be your main focus for rest of course\n\nStill need to do mini-projects and pre-assignments"
+    "text": "Course Project\nProject should be your main focus for rest of course\n\nBut you still need to do mini-projects and pre-assignments"
   },
   {
     "objectID": "slides/slides08.html#pre-assignments",
     "href": "slides/slides08.html#pre-assignments",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Pre-Assignments",
-    "text": "Pre-Assignments\nBrightspace - Wednesdays at 11:45\n\nReading, typically on course website\nBrightspace auto-grades\n\nI have to manually change to completion grading\n\n\nNext pre-assignment is October 30th\n. . .\nThank you for FAQs and (honest) team feedback. Keep it coming!"
+    "text": "Pre-Assignments\nBrightspace - Wednesdays at 11:45\n\nReading, typically on course website\nThis week: getting data into R\n\nNext pre-assignment is 2025-04-02 at 11:45pm ET\n\nThank you for FAQs and (honest) team feedback. Keep it coming!"
   },
   {
     "objectID": "slides/slides08.html#course-support",
     "href": "slides/slides08.html#course-support",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Course Support",
-    "text": "Course Support\n\nSynchronous\n\nOffice Hours 4x / week\n\nMW Office Hours on Monday + Thursday for rest of semester\nCR Tuesday + Friday\nNo OH during Thanksgiving break\n\n\nAsynchronous\n\nPiazza (\\(&lt;50\\) minute average response time)"
+    "text": "Course Support\n\nSynchronous\n\nOffice Hours 2x / week\n\nMW Office Hours on Monday + Thursday for rest of semester\nNo OH during Spring Break\n\n\nAsynchronous\n\nPiazza (\\(&lt;25\\) minute average response time)"
   },
   {
     "objectID": "slides/slides08.html#upcoming-week",
     "href": "slides/slides08.html#upcoming-week",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Upcoming Week",
-    "text": "Upcoming Week\nDue Wednesday at 11:45pm:\n\nPre-Assignment #09 (Brightspace)\n\nData Import\n\nMP #02 Peer Feedback on GitHub AND Brightspace"
+    "text": "Upcoming Week\nDue Wednesday at 11:45pm:\n\nPre-Assignment #09 (Brightspace)\n\nData Import\n\nMP #02 Peer Feedback on GitHub AND Brightspace\n\n\nNext three weeks:\n\nReading ‘clean data’ into R\nReading and parsing HTML\nParsing messy (text) data\n\n\n\nTeaching Observation by Prof. Brandwein - Next Week"
   },
   {
     "objectID": "slides/slides08.html#faq-ggplot2---aes",
     "href": "slides/slides08.html#faq-ggplot2---aes",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "FAQ: ggplot2 - aes()",
-    "text": "FAQ: ggplot2 - aes()\nWhat is the aes function - stands between data and geom_\n\nEach geom_ takes a fixed set of “coordinates”\nEach data set has its own column names\naes ties these together\n\n\nlibrary(ggplot2); library(patchwork)\np1 &lt;- ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width)) + geom_point()\np2 &lt;- ggplot(iris, aes(y=Sepal.Length, x=Sepal.Width)) + geom_point()\np1 + p2"
+    "text": "FAQ: ggplot2 - aes()\nWhat is the aes function - stands between data and geom_\n\nEach geom_ takes a fixed set of “coordinates”\nEach data set has its own column names\naes ties these together"
   },
   {
     "objectID": "slides/slides08.html#faq-ggplot2---why-do-pie-charts-have-a-bad-reputation",
     "href": "slides/slides08.html#faq-ggplot2---why-do-pie-charts-have-a-bad-reputation",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "FAQ: ggplot2 - Why do Pie Charts have a bad reputation?",
-    "text": "FAQ: ggplot2 - Why do Pie Charts have a bad reputation?\n\nUse of area and angle over length: less accurate perception\nDepends on fill to convey category - limited categories\n\n. . .\nBut honestly - “insider smugness” and hate of Excel"
+    "text": "FAQ: ggplot2 - Why do Pie Charts have a bad reputation?\n\nUse of area and angle over length: less accurate perception\nDepends on fill to convey category - limited categories\n\n\nBut honestly - “insider smugness” and hate of Excel"
   },
   {
     "objectID": "slides/slides08.html#faq-ggplot2---plot-type-choice",
     "href": "slides/slides08.html#faq-ggplot2---plot-type-choice",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "FAQ: ggplot2 - Plot Type Choice",
     "text": "FAQ: ggplot2 - Plot Type Choice\nFor me:\n\nExploratory mode:\n\nSimple: line, scatter, bar, frequency\n\nPublication mode:\n\nVery context specific"
   },
   {
     "objectID": "slides/slides08.html#faq-ggplot2---font-sizing",
     "href": "slides/slides08.html#faq-ggplot2---font-sizing",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "FAQ: ggplot2 - Font Sizing",
-    "text": "FAQ: ggplot2 - Font Sizing\nTheme machinery!\n\nggplot(iris, aes(x=Sepal.Length, y=Sepal.Width)) + \n    geom_point() + theme(axis.text = element_text(size=24))"
+    "text": "FAQ: ggplot2 - Font Sizing\nTheme machinery!"
   },
   {
     "objectID": "slides/slides08.html#faq-ggplot2---overplotting-scatterblobs",
     "href": "slides/slides08.html#faq-ggplot2---overplotting-scatterblobs",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "FAQ: ggplot2 - Overplotting / ScatterBlobs",
-    "text": "FAQ: ggplot2 - Overplotting / ScatterBlobs\nStudent asked about “scatterblobs” - typo(?) but I love it!\n. . .\n\nDensity based plotting: hexbins, histograms, rugplots\nData reduction: summarization or sub-sampling"
+    "text": "FAQ: ggplot2 - Overplotting / ScatterBlobs\nStudent asked about “scatterblobs” - typo(?) but I love it!\n\n\nDensity based plotting: hexbins, histograms, rugplots\nData reduction: summarization or sub-sampling"
   },
   {
     "objectID": "slides/slides08.html#faq-ggplot2---optimizing-performance",
     "href": "slides/slides08.html#faq-ggplot2---optimizing-performance",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "FAQ: ggplot2 - Optimizing Performance",
     "text": "FAQ: ggplot2 - Optimizing Performance\nActive project of ggplot2 team - not much you can do\nPractical advice: plot less (see previous slide)"
   },
   {
     "objectID": "slides/slides08.html#faq-ggplot2---beyond-scatter-and-line",
     "href": "slides/slides08.html#faq-ggplot2---beyond-scatter-and-line",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "FAQ: ggplot2 - Beyond Scatter and Line",
     "text": "FAQ: ggplot2 - Beyond Scatter and Line\nSome favorite semi-advanced plot types:\n\nViolin plots: combination of boxplot and histogram\nRidgelines\nBeeswarms\n\nDeep rabbit hole"
   },
   {
     "objectID": "slides/slides08.html#faq-ggplot2---geospatial-visualizations",
     "href": "slides/slides08.html#faq-ggplot2---geospatial-visualizations",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "FAQ: ggplot2 - Geospatial Visualizations",
     "text": "FAQ: ggplot2 - Geospatial Visualizations\nThat’s our goal for today!"
   },
   {
     "objectID": "slides/slides08.html#faq-ggplot2---high-dimensional-data",
     "href": "slides/slides08.html#faq-ggplot2---high-dimensional-data",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "FAQ: ggplot2 - High-Dimensional Data",
-    "text": "FAQ: ggplot2 - High-Dimensional Data\nHigh-dimensional data: measure many variables per observation (“wide”)\nHigh-dimensional data is hard to visualize\n. . .\nApproaches:\n\nPair plots for “moderate” HDD\nPCA (or similar dimension reduction. Take 9890!)"
+    "text": "FAQ: ggplot2 - High-Dimensional Data\nHigh-dimensional data: measure many variables per observation (“wide”)\nHigh-dimensional data is hard to visualize\n\nApproaches:\n\nPair plots for “moderate” HDD\nPCA (or similar dimension reduction. Take 9890!)"
   },
   {
     "objectID": "slides/slides08.html#faq-ggplot2---creating-a-custom-theme",
     "href": "slides/slides08.html#faq-ggplot2---creating-a-custom-theme",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "FAQ: ggplot2 - Creating a Custom Theme",
-    "text": "FAQ: ggplot2 - Creating a Custom Theme\n\nmy_theme &lt;- theme_bw() + theme(panel.background = element_rect(fill = 'lightblue'))\nggplot(iris, aes(x=Sepal.Length, y = Sepal.Width)) + geom_point() + my_theme\n\n\n\n\n\n\n\n\nAdvanced:\n\ntheme_set() - change ggplot2 defaults\n.Rprofile - set code to run every time you start R"
+    "text": "FAQ: ggplot2 - Creating a Custom Theme\n\nAdvanced:\n\ntheme_set() - change ggplot2 defaults\n.Rprofile - set code to run every time you start R"
   },
   {
     "objectID": "slides/slides08.html#faq-ggplot2---when-not-to-use",
     "href": "slides/slides08.html#faq-ggplot2---when-not-to-use",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "FAQ: ggplot2 - When Not to Use",
     "text": "FAQ: ggplot2 - When Not to Use\nggplot2 is designed to make good statistical graphics. Sub-par for:\n\nAdvanced interactivity\nReally big data\nHardcore customization / “infographics”"
   },
   {
     "objectID": "slides/slides08.html#faq-git-wtf",
     "href": "slides/slides08.html#faq-git-wtf",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "FAQ: git WTF",
     "text": "FAQ: git WTF\nReference: Happy Git with R"
   },
   {
     "objectID": "slides/slides08.html#warm-up",
     "href": "slides/slides08.html#warm-up",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Warm-Up",
     "text": "Warm-Up\n“Datasaurus Dozen”:\n\ninstall.packages(\"datasauRus\") (Note capital R)\nlibrary(datasauRus); data(datasaurus_dozen)\n\nCreate an animated (gganimate) plot:\n\n\\(x, y\\) scatterplot\nAnimate different values of dataset\n\nIf you are having trouble with gganimate, facet instead."
   },
   {
     "objectID": "slides/slides08.html#warm-up-1",
     "href": "slides/slides08.html#warm-up-1",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Warm-Up",
     "text": "Warm-Up"
   },
   {
     "objectID": "slides/slides08.html#diving-deeper-with-ggplot2",
     "href": "slides/slides08.html#diving-deeper-with-ggplot2",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Diving Deeper with ggplot2",
     "text": "Diving Deeper with ggplot2\nToday: maps!\nInstall the sf package: Simple Features for Spatial Data\nExercise: Lab #08"
   },
   {
     "objectID": "slides/slides08.html#breakout-rooms",
     "href": "slides/slides08.html#breakout-rooms",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Breakout Rooms",
-    "text": "Breakout Rooms\n\n\n\nRoom\nTeam\n\nRoom\nTeam\n\n\n\n\n1\nRat Pack\n\n6\nCa$h VZ\n\n\n2\nSubway Surfers\n\n7\nListing Legends\n\n\n3\nChart Toppers\n\n8\nTDSSG\n\n\n4\nMetro Mindset\n\n9\nBroker T’s\n\n\n5\nApple Watch\n\n10\nEVengers"
+    "text": "Breakout Rooms\n\n\n\nRoom\nTeam\n\nRoom\nTeam\n\n\n\n\n1\nTeam Mystic\n\n5\nMoney Team + CWo.\n\n\n2\nSubway Metrics\n\n6\nLit Group\n\n\n3\nNoise Busters\n\n7\nCinephiles + VG\n\n\n4\nAI Imp. Coll."
   },
   {
     "objectID": "slides/slides02.html#week-2-update",
@@ -7009,21 +7009,21 @@
   {
     "objectID": "slides/slides08.html#life-tip-of-the-week",
     "href": "slides/slides08.html#life-tip-of-the-week",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Life Tip of the Week",
-    "text": "Life Tip of the Week\nDon’t confuse an explanation with an excuse\n\nExplanation is neutral: why?\nExcuse presumes forgiveness"
+    "text": "Life Tip of the Week\nGet Inspired!\nThe tools of this course are powerful and flexible\nTo learn more ways to apply them, check out ‘Galleries’:\n\n\nThe R Graph Gallery\nThe shiny Gallery\nThe bokeh Gallery (Python)"
   },
   {
     "objectID": "slides/slides08.html#explanation-vs-excuse",
     "href": "slides/slides08.html#explanation-vs-excuse",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Explanation vs Excuse",
-    "text": "Explanation vs Excuse\nAs a speaker: If you failed at achieving a task, just say why.\n\nDon’t ‘impose’ forgiveness on your listener - they will give it or they won’t.\n\n. . .\n\nAs a receiver: All reasons are not necessarily valid reasons.\n. . .\n As a consumer of media content:\n\nI often find myself getting annoyed at various political commentators for reacting in a way I feel is not strong enough.\nThey are doing their job - explaining the world; dispassion is not approval."
+    "text": "Explanation vs Excuse\nAs a speaker: If you failed at achieving a task, just say why.\n\nDon’t ‘impose’ forgiveness on your listener - they will give it or they won’t.\n\n\n\nAs a receiver: All reasons are not necessarily valid reasons.\n\n\n As a consumer of media content:\n\nI often find myself getting annoyed at various political commentators for reacting in a way I feel is not strong enough.\nThey are doing their job - explaining the world; dispassion is not approval."
   },
   {
     "objectID": "slides/slides08.html#explanation-vs-excuse-1",
     "href": "slides/slides08.html#explanation-vs-excuse-1",
-    "title": "STA 9750 - Week 8",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
     "section": "Explanation vs Excuse",
     "text": "Explanation vs Excuse\nSeparating these concepts will make you:\n\nmore responsible in your own actions;\nmore just in your treatment of others; and\nmore understanding of the views of those whom you may disagree with"
   },
@@ -7033,5 +7033,803 @@
     "title": "ANOVA-PCA Cartesian Block ADMM",
     "section": "Composite Algorithm",
     "text": "Composite Algorithm\n\nInitialize:\n\n\\(\\bU^{(0)}_n = \\proj{n}(\\bA)\\) for all \\(n=1, \\dots, N\\)\n\\(\\bZ^{(0)}_n = \\mathbf{0}\\in\\R^{n_1^i \\times n_2^i}\\) for all \\(n=1, \\dots, N\\)\n\\(k=0\\)\n\nRepeat Until Convergence\n\n\\(\\bX^{(k+1)} = \\frac{\\bA + \\sum_{n=1}^N \\textsf{pad}_{\\R^{m^1_n \\times m^2_n} \\to \\R^{m^1 \\times m^2}}[\\bZ^{(k)}_n - \\bU^{(k)}_n] }{1+\\rho\\mathbf{C}}\\)\nIn parallel, for \\(n=1, \\dots, N\\):\n\n\\(\\bU^{(k+1)}_n = \\text{SVD-SoftThresh}_{\\lambda_n / \\rho}\\left[\\proj{n}(\\bX^{(k+1)}) + \\bZ^{(k)}_n\\right]\\)\n\\(\\bZ^{(k+1)}_n = \\bZ^{(k)}_n + \\proj{n}(\\bX^{(k+1)}) - \\bU_n^{(k+1)}\\)\n\n\\(k \\leftarrow k+1\\)\n\nReturn: \\[ \\hat{\\bX} = \\frac{\\bA + \\sum_{n=1}^N \\textsf{pad}_{\\R^{m^1_n \\times m^2_n} \\to \\R^{m^1 \\times m^2}}[\\bZ^{(k)}_n - \\bU^{(k)}_n] }{1+\\rho\\mathbf{C}}\\]\n\nUnder the reasonable assumption that \\(\\bU^{(k+1)}_n \\approx \\bU^{(k)}_n\\), clever warm-start and caching techniques can be used for the soft-threshold SVD operator."
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#introduction",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#introduction",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Introduction",
+    "text": "Introduction\nIn this video:\n\n\nIntroduce the concept of Tidy Data\nIdentify Key Aspects of Tidy Data\nLearn to Diagnose Non-Tidy Data\n\n\n\nLater:\n\nManipulation of Tidy Data\n\n\n\nBut first - review!"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#data-frames",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#data-frames",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Data Frames",
+    "text": "Data Frames\ndata.frame - R’s tabular data storage\n\n\n  Sepal.Length Sepal.Width Petal.Length Petal.Width Species\n1          5.1         3.5          1.4         0.2  setosa\n2          4.9         3.0          1.4         0.2  setosa\n3          4.7         3.2          1.3         0.2  setosa"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#data-frames-1",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#data-frames-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Data Frames",
+    "text": "Data Frames\nKey features:\n\n\nTabular (rows and columns) structure\nEntries in the same column are all of the same type\nColumns may be different types"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#data-frames-2",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#data-frames-2",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Data Frames",
+    "text": "Data Frames\nCan be manipulated using standard R syntax:\n\ntable(iris[iris$Petal.Length &gt; 5,\"Species\"])\n\n\n    setosa versicolor  virginica \n         0          1         41 \n\n\n\n\n$ extracts a column as a vector\nname[row index, column index]\n\nLogical row indexing to select rows where Petal Length &gt; 5\nColumn indexing by name to select a single column"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#what-is-tidy-data",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#what-is-tidy-data",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "What is Tidy Data?",
+    "text": "What is Tidy Data?\n“Tidy Data”: Organizational principles to make data manipulation easy and safe\n\n“Best practices”\nTidy data will decrease chance of errors and increase productivity\n\n\nWhat does it mean to be tidy?\n\n\nEverything in its proper place"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#tidy-data-1",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#tidy-data-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Tidy Data",
+    "text": "Tidy Data\n\n\n  species bill_length_mm flipper_length_mm body_mass_g    sex\n1  Adelie           39.1               181        3750   male\n2  Adelie           39.5               186        3800 female\n3  Adelie           40.3               195        3250 female\n\n\n\nKey features:\n\n\nEach row is one observation (🐧)\nEach column has one and only one fact\nAll values are in the table - not hiding in row and column names"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#tidy-data-2",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#tidy-data-2",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Tidy Data",
+    "text": "Tidy Data\n\n\nFigure from R for Data Science by H. Wickham"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#why-tidy-data",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#why-tidy-data",
+    "title": "STA 9750  Tidy Data",
+    "section": "Why Tidy Data?",
+    "text": "Why Tidy Data?"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#who-tidy-data",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#who-tidy-data",
+    "title": "STA 9750  Tidy Data",
+    "section": "Who Tidy Data?",
+    "text": "Who Tidy Data?"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#when-tidy-data",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#when-tidy-data",
+    "title": "STA 9750  Tidy Data",
+    "section": "When Tidy Data?",
+    "text": "When Tidy Data?"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#where-tidy-data",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#where-tidy-data",
+    "title": "STA 9750  Tidy Data",
+    "section": "Where Tidy Data?",
+    "text": "Where Tidy Data?"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#some-untidy-examples",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#some-untidy-examples",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Some Untidy Examples",
+    "text": "Some Untidy Examples\nBaruch college business core enrollment:\n\n\n# A tibble: 6 × 4\n  Semester Course     Enrollment   Cap\n  &lt;chr&gt;    &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;\n1 Fall     Accounting        200   250\n2 Fall     Law               100   125\n3 Fall     Statistics        200   200\n4 Spring   Accounting        300   350\n5 Spring   Law                50   100\n6 Spring   Statistics        400   400"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#tidy-data---why",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#tidy-data---why",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Tidy Data - Why?",
+    "text": "Tidy Data - Why?\nWhy emphasize tidy data?\n\nMinimize distractions:\n\nFree to focus on analysis not code\n\n\n\nOnce data is “tidy”, you can focus on the real questions\n“Tidying up” - goal of pre-processing"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#tidy-data---who-and-when",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#tidy-data---who-and-when",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Tidy Data - Who (and When)?",
+    "text": "Tidy Data - Who (and When)?\nThe name and principles of “tidy data” were popularized by H. Wickham (2014)\n\nCore ideas are much older, dating back to (at least) Codd’s Relational Model in the 1970s, now ubiquitous in relational databases\n\n\nNow found in Python (pandas), Julia (DataFrames), Rust (polars) and more"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#tidy-data---how-and-where",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#tidy-data---how-and-where",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Tidy Data - How (and Where)?",
+    "text": "Tidy Data - How (and Where)?\ntidyverse - Packages for Manipulating Tidy Data:\n\n\nggplot2: Visualization\ndplyr: SQL-like operations\ntidyr: Reshaping and cleaning data\nreadr: Ingest tidy data into R\nstringr, forcats, lubridate: Tidy manipulation of different data types\ntidymodels: Tidy manipulation of statistical models\n\n\n\nMore helpers in the background (tibble, vctrs, …)"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#looking-ahead-1",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#looking-ahead-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nFor now, we’ll provide you with tidy data\n\nUpcoming topics:\n\n\nVisualizing Tidy Data (Week 3)\nStatistical Models of Tidy Data (Week 4)\nManipulating Tidy Data (Week 5)\nTaking Untidy Web Data and Making it Tidy (Week 7)"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#some-untidy-examples-1",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#some-untidy-examples-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Some Untidy Examples",
+    "text": "Some Untidy Examples\nMultiple pieces of information in a single cell:\n\n\n# A tibble: 6 × 3\n  Semester Course     Enrollment  \n  &lt;chr&gt;    &lt;chr&gt;      &lt;chr&gt;       \n1 Fall     Accounting \"200 of 250\"\n2 Fall     Law        \"100 of 125\"\n3 Fall     Statistics \"200 of 200\"\n4 Spring   Accounting \"300 of 350\"\n5 Spring   Law        \" 50 of 100\"\n6 Spring   Statistics \"400 of 400\""
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#some-untidy-examples-2",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#some-untidy-examples-2",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Some Untidy Examples",
+    "text": "Some Untidy Examples\nMixing distinct facts in a single column:\n\n\n# A tibble: 12 × 4\n   Semester Course     Number Type      \n   &lt;chr&gt;    &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;     \n 1 Fall     Accounting    200 Enrollment\n 2 Fall     Accounting    250 Cap       \n 3 Fall     Law           100 Enrollment\n 4 Fall     Law           125 Cap       \n 5 Fall     Statistics    200 Enrollment\n 6 Fall     Statistics    200 Cap       \n 7 Spring   Accounting    300 Enrollment\n 8 Spring   Accounting    350 Cap       \n 9 Spring   Law            50 Enrollment\n10 Spring   Law           100 Cap       \n11 Spring   Statistics    400 Enrollment\n12 Spring   Statistics    400 Cap"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#some-untidy-examples-3",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#some-untidy-examples-3",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Some Untidy Examples",
+    "text": "Some Untidy Examples\nSpread across two tables:\n\n\n# A tibble: 6 × 3\n  Semester Course     Enrollment\n  &lt;chr&gt;    &lt;chr&gt;           &lt;dbl&gt;\n1 Fall     Accounting        200\n2 Fall     Law               100\n3 Fall     Statistics        200\n# ℹ 3 more rows\n\n\nand\n\n\n# A tibble: 6 × 3\n  Semester Course       Cap\n  &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt;\n1 Fall     Accounting   250\n2 Fall     Law          125\n3 Fall     Statistics   200\n# ℹ 3 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#introduction",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#introduction",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Introduction",
+    "text": "Introduction\nIn this video:\n\n\nSelecting Columns\nSelecting Rows\nModifying Columns and Creating New Columns\n\n\n\nLater:\n\nComputing Summary Statistics with Tidy Tools\n\n\n\nBut first - review!"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#tidy-data",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#tidy-data",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Tidy Data",
+    "text": "Tidy Data\nTidy data - everything in its proper place:\n\nOne and only one type of information per column\nOne and only one observation per row\nNo values ‘hiding’ in column or row names\n\n\n\n\n# A tibble: 3 × 8\n  species island    bill_length_mm bill_depth_mm flipper_length_mm body_mass_g\n  &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt;\n1 Adelie  Torgersen           39.1          18.7               181        3750\n2 Adelie  Torgersen           39.5          17.4               186        3800\n3 Adelie  Torgersen           40.3          18                 195        3250\n# ℹ 2 more variables: sex &lt;fct&gt;, year &lt;int&gt;"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#tidyverse",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#tidyverse",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "tidyverse",
+    "text": "tidyverse\ntidyverse - Tools for manipulating tidy data\n\nMake sure to load the tidyverse package before using\n\nlibrary(tidyverse)\n\nWill print some messages about conflicts - safe to ignore"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#tidyverse-1",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#tidyverse-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "tidyverse",
+    "text": "tidyverse\nTidyverse tools have excellent documentation\n\nVisit tidyverse.org for overall information\nIndividual packages: ggplot2.tidyverse.org, dplyr.tidyverse.org, etc.\n\n\n\nFunction Reference - Detailed information on specific functions\nVignettes / Articles - Big picture tutorials"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#dplyr",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#dplyr",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "dplyr",
+    "text": "dplyr\nYou have already seen one tidyverse package: ggplot2\n\nToday we start with dplyr - ‘grammar of data manipulation’"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nThe select function can be used to select certain columns\n\nselect(penguins, species, bill_length_mm, body_mass_g, sex)\n\n# A tibble: 344 × 4\n   species bill_length_mm body_mass_g sex   \n   &lt;fct&gt;            &lt;dbl&gt;       &lt;int&gt; &lt;fct&gt; \n 1 Adelie            39.1        3750 male  \n 2 Adelie            39.5        3800 female\n 3 Adelie            40.3        3250 female\n 4 Adelie            NA            NA &lt;NA&gt;  \n 5 Adelie            36.7        3450 female\n 6 Adelie            39.3        3650 male  \n 7 Adelie            38.9        3625 female\n 8 Adelie            39.2        4675 male  \n 9 Adelie            34.1        3475 &lt;NA&gt;  \n10 Adelie            42          4250 &lt;NA&gt;  \n# ℹ 334 more rows\n\n\n\nFirst argument is data\nOther arguments are columns to be selected"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#put-that-in-your-pipe",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#put-that-in-your-pipe",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "|> - Put that in your Pipe",
+    "text": "|&gt; - Put that in your Pipe\nR supports piped operations - feeding the output of one function into another\n\nselect(penguins, species, bill_length_mm, body_mass_g, sex)\n\nis equivalent to\n\npenguins |&gt; select(species, bill_length_mm, body_mass_g, sex)\n\n\nRead |&gt; as “and then”\ndplyr plays very nicely with pipes"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-1",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nContrast\n\nselect(penguins, species, bill_length_mm, body_mass_g, sex)\n\nand\n\npenguins[,c(\"species\", \"bill_length_mm\", \"body_mass_g\", \"sex\")]\n\nNo quotes around column names"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-2",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-2",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nLike vector indexing, negative sign drops columns:\n\npenguins |&gt; select(-species)\n\n# A tibble: 344 × 7\n   island bill_length_mm bill_depth_mm flipper_length_mm body_mass_g sex    year\n   &lt;fct&gt;           &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt; &lt;fct&gt; &lt;int&gt;\n 1 Torge…           39.1          18.7               181        3750 male   2007\n 2 Torge…           39.5          17.4               186        3800 fema…  2007\n 3 Torge…           40.3          18                 195        3250 fema…  2007\n 4 Torge…           NA            NA                  NA          NA &lt;NA&gt;   2007\n 5 Torge…           36.7          19.3               193        3450 fema…  2007\n 6 Torge…           39.3          20.6               190        3650 male   2007\n 7 Torge…           38.9          17.8               181        3625 fema…  2007\n 8 Torge…           39.2          19.6               195        4675 male   2007\n 9 Torge…           34.1          18.1               193        3475 &lt;NA&gt;   2007\n10 Torge…           42            20.2               190        4250 &lt;NA&gt;   2007\n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-3",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-3",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\n: operator selects a range of columns\n\npenguins |&gt; select(bill_length_mm:body_mass_g)\n\n# A tibble: 344 × 4\n   bill_length_mm bill_depth_mm flipper_length_mm body_mass_g\n            &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt;\n 1           39.1          18.7               181        3750\n 2           39.5          17.4               186        3800\n 3           40.3          18                 195        3250\n 4           NA            NA                  NA          NA\n 5           36.7          19.3               193        3450\n 6           39.3          20.6               190        3650\n 7           38.9          17.8               181        3625\n 8           39.2          19.6               195        4675\n 9           34.1          18.1               193        3475\n10           42            20.2               190        4250\n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-4",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-4",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nselect also supports several “smart” helpers to pick columns\n\npenguins |&gt; select(contains(\"bill\"))\n\n# A tibble: 344 × 2\n   bill_length_mm bill_depth_mm\n            &lt;dbl&gt;         &lt;dbl&gt;\n 1           39.1          18.7\n 2           39.5          17.4\n 3           40.3          18  \n 4           NA            NA  \n 5           36.7          19.3\n 6           39.3          20.6\n 7           38.9          17.8\n 8           39.2          19.6\n 9           34.1          18.1\n10           42            20.2\n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-5",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-5",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\n\npenguins |&gt; select(ends_with(\"mm\"))\n\n# A tibble: 344 × 3\n   bill_length_mm bill_depth_mm flipper_length_mm\n            &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;\n 1           39.1          18.7               181\n 2           39.5          17.4               186\n 3           40.3          18                 195\n 4           NA            NA                  NA\n 5           36.7          19.3               193\n 6           39.3          20.6               190\n 7           38.9          17.8               181\n 8           39.2          19.6               195\n 9           34.1          18.1               193\n10           42            20.2               190\n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-6",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-6",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nHelpers can be combined using & (intersection) and | (union) operations:\n\npenguins |&gt; select(contains(\"bill\") | ends_with(\"g\"))\n\n# A tibble: 344 × 3\n   bill_length_mm bill_depth_mm body_mass_g\n            &lt;dbl&gt;         &lt;dbl&gt;       &lt;int&gt;\n 1           39.1          18.7        3750\n 2           39.5          17.4        3800\n 3           40.3          18          3250\n 4           NA            NA            NA\n 5           36.7          19.3        3450\n 6           39.3          20.6        3650\n 7           38.9          17.8        3625\n 8           39.2          19.6        4675\n 9           34.1          18.1        3475\n10           42            20.2        4250\n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-7",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-7",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nPredicate operator can select columns based on properties of values\n\npenguins |&gt; select(where(is.numeric))"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-8",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#select-8",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nwhere combines very nicely with other selectors\n\npenguins |&gt; select(where(is.numeric) & ends_with(\"mm\"))"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter",
+    "text": "filter\nWhile select is used for column selection, filter is used for row selection\n\npenguins |&gt; filter(bill_length_mm &gt; 40)\n\n\nSimilar syntax to select:\n\nNo need to quote column names\nData is first (piped) argument\nLater arguments specify action"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-1",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter",
+    "text": "filter\nContrast\n\npenguins |&gt; filter(bill_length_mm &gt; 40)\n\nwith\n\npenguins[penguins$bill_length_mm &gt; 40, ]"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-2",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-2",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter",
+    "text": "filter\nMultiple filters give the intersection:\n\npenguins |&gt; filter(bill_length_mm &gt; 40, sex == \"female\")\n\n\nUse logical operators to get the union:\n\npenguins |&gt; filter(bill_length_mm &gt; 40 | sex == \"female\")"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-3",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-3",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter",
+    "text": "filter\nPipes are very useful for multi-step operations\n\npenguins |&gt; filter(bill_length_mm &gt; 40) |&gt; select(species)\n\n\nCompare to\n\nselect(filter(penguins, bill_length_mm &gt; 40), species)\n\nPiped form lets us read left to right instead of inside out"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-4",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-4",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter",
+    "text": "filter\nCan use more complex comparisons in filter:\n\nfilter(penguins, body_mass_g &gt; mean(body_mass_g, na.rm=TRUE))\n\n\nWhat would happen without na.rm=TRUE?\nYou will explore much more complicated examples in the accompanying activity."
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-5",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-5",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter",
+    "text": "filter\nCommon mistake - using only a single equals sign for equality\n\npenguins |&gt; filter(sex = \"female\")\n\nError in `filter()`:\n! We detected a named input.\nℹ This usually means that you've used `=` instead of `==`.\nℹ Did you mean `sex == \"female\"`?"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#mutate",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#mutate",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "mutate",
+    "text": "mutate\nSo far we have only done subsetting. What about creating new columns?\n\n\npenguins |&gt; \n    mutate(body_mass_lb = body_mass_g / 453) |&gt;\n    select(contains(\"body\"))\n\n# A tibble: 344 × 2\n   body_mass_g body_mass_lb\n         &lt;int&gt;        &lt;dbl&gt;\n 1        3750         8.28\n 2        3800         8.39\n 3        3250         7.17\n 4          NA        NA   \n 5        3450         7.62\n 6        3650         8.06\n 7        3625         8.00\n 8        4675        10.3 \n 9        3475         7.67\n10        4250         9.38\n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#mutate-1",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#mutate-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "mutate",
+    "text": "mutate\n\npenguins |&gt; \n    mutate(body_mass_lb = body_mass_g / 453) |&gt;\n    select(contains(\"body\"))\n\nSimilar syntax to select and filter\n\nTo name the new column, put name on the left of the =.\nIf you leave it out, you get an unhelpful default:\n\npenguins |&gt; mutate(body_mass_g / 453) |&gt; select(contains(\"body\"))\n\n\n\n# A tibble: 344 × 2\n  body_mass_g `body_mass_g/453`\n        &lt;int&gt;             &lt;dbl&gt;\n1        3750              8.28\n2        3800              8.39\n3        3250              7.17\n# ℹ 341 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#mutate-2",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#mutate-2",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "mutate",
+    "text": "mutate\nCan change columns “in place” by careful renaming:\n\npenguins |&gt; \n    select(where(is.character) | where(is.factor)) |&gt;\n    mutate(species = toupper(species))\n\n# A tibble: 344 × 3\n   species island    sex   \n   &lt;chr&gt;   &lt;fct&gt;     &lt;fct&gt; \n 1 ADELIE  Torgersen male  \n 2 ADELIE  Torgersen female\n 3 ADELIE  Torgersen female\n 4 ADELIE  Torgersen &lt;NA&gt;  \n 5 ADELIE  Torgersen female\n 6 ADELIE  Torgersen male  \n 7 ADELIE  Torgersen female\n 8 ADELIE  Torgersen male  \n 9 ADELIE  Torgersen &lt;NA&gt;  \n10 ADELIE  Torgersen &lt;NA&gt;  \n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-extensions",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-extensions",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter extensions",
+    "text": "filter extensions\nFunctions implementing extensions of filter:\n\nslice_min\nslice_max\nslice_head\nslice_tail"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-extensions-1",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#filter-extensions-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter extensions",
+    "text": "filter extensions\nslice_sample is useful for getting a random subset of your data.\n\nUseful if exploring a large data set\n\n\npenguins |&gt; slice_sample(n=10)\n\n# A tibble: 10 × 8\n   species   island bill_length_mm bill_depth_mm flipper_length_mm body_mass_g\n   &lt;fct&gt;     &lt;fct&gt;           &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt;\n 1 Gentoo    Biscoe           50            15.3               220        5550\n 2 Chinstrap Dream            46.2          17.5               187        3650\n 3 Adelie    Biscoe           35            17.9               190        3450\n 4 Adelie    Biscoe           39            17.5               186        3550\n 5 Chinstrap Dream            51.3          19.9               198        3700\n 6 Adelie    Biscoe           35.9          19.2               189        3800\n 7 Chinstrap Dream            50            19.5               196        3900\n 8 Chinstrap Dream            52            18.1               201        4050\n 9 Gentoo    Biscoe           44.9          13.8               212        4750\n10 Gentoo    Biscoe           48.8          16.2               222        6000\n# ℹ 2 more variables: sex &lt;fct&gt;, year &lt;int&gt;"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#mutate-3",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#mutate-3",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "mutate",
+    "text": "mutate\nCan do arbitrary vectorized operations and access recently created columns:\n\npenguins |&gt; \n    select(where(is.numeric)) |&gt;\n    mutate(weight_kg = body_mass_g / 1000,\n           height_m = body_height_mm / 1000, \n           bmi = weight_kg / height_m^2)\n\n(Sadly, don’t actually have height data)"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#mutate-4",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#mutate-4",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "mutate",
+    "text": "mutate\n?mutate has several helpful functions:\n\ncumsum, cummean\nlead, lag\nif_else, case_when"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#rename",
+    "href": "STA9750_ONLINE_SLIDES/selecting_and_filtering.html#rename",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "rename",
+    "text": "rename\nUse of mutate to rename:\n\npenguins |&gt; mutate(Year = year) |&gt; select(-year)\n\n\nrename combines both steps:\n\npenguins |&gt; rename(Year = year) \n\nNo new functionality - clearer intent"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#introduction-1",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#introduction-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Introduction",
+    "text": "Introduction\nIn this video:\n\n\nSelecting Columns\nSelecting Rows\nModifying Columns and Creating New Columns\n\n\n\nLater:\n\nComputing Summary Statistics with Tidy Tools\n\n\n\nBut first - review!"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#tidy-data-3",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#tidy-data-3",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "Tidy Data",
+    "text": "Tidy Data\nTidy data - everything in its proper place:\n\nOne and only one type of information per column\nOne and only one observation per row\nNo values ‘hiding’ in column or row names\n\n\nlibrary(palmerpenguins); head(penguins, 3)"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#tidyverse",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#tidyverse",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "tidyverse",
+    "text": "tidyverse\ntidyverse - Tools for manipulating tidy data\n\nMake sure to load the tidyverse package before using\n#| echo: true\n#| message: false\n#| warning: false\nlibrary(tidyverse)\nWill print some messages about conflicts - safe to ignore"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#tidyverse-1",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#tidyverse-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "tidyverse",
+    "text": "tidyverse\nTidyverse tools have excellent documentation\n\nVisit tidyverse.org for overall information\nIndividual packages: ggplot2.tidyverse.org, dplyr.tidyverse.org, etc.\n\n\n\nFunction Reference - Detailed information on specific functions\nVignettes / Articles - Big picture tutorials"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#dplyr",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#dplyr",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "dplyr",
+    "text": "dplyr\nYou have already seen one tidyverse package: ggplot2\n\nToday we start with dplyr - ‘grammar of data manipulation’"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#select",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#select",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nThe select function can be used to select certain columns\n#| echo: true\nselect(penguins, species, bill_length_mm, body_mass_g, sex)\n\nFirst argument is data\nOther arguments are columns to be selected"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#select-1",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#select-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nContrast\n#| echo: true\n#| eval: false\nselect(penguins, species, bill_length_mm, body_mass_g, sex)\nand\n#| eval: false\n#| echo: true\npenguins[,c(\"species\", \"bill_length_mm\", \"body_mass_g\", \"sex\")]\nNo quotes around column names"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#put-that-in-your-pipe",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#put-that-in-your-pipe",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "|> - Put that in your Pipe",
+    "text": "|&gt; - Put that in your Pipe\nR supports piped operations - feeding the output of one function into another\n#| eval: false\n#| echo: true\nselect(penguins, species, bill_length_mm, body_mass_g, sex)\nis equivalent to\n#| eval: false\n#| echo: true\npenguins |&gt; select(species, bill_length_mm, body_mass_g, sex)\n\nRead |&gt; as “and then”\ndplyr plays very nicely with pipes"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#select-2",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#select-2",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nLike vector indexing, negative sign drops columns:\n#| echo: true\npenguins |&gt; select(-species)"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#select-3",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#select-3",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\n: operator selects a range of columns\n#| echo: true\npenguins |&gt; select(bill_length_mm:body_mass_g)"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#select-4",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#select-4",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nselect also supports several “smart” helpers to pick columns\n#| echo: true\npenguins |&gt; select(contains(\"bill\"))"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#select-5",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#select-5",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\n#| echo: true\npenguins |&gt; select(ends_with(\"mm\"))"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#select-6",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#select-6",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nHelpers can be combined using & (intersection) and | (union) operations:\n#| echo: true\npenguins |&gt; select(contains(\"bill\") | ends_with(\"g\"))"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#select-7",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#select-7",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nPredicate operator can select columns based on properties of values\n#| echo: true\n#| eval: false\npenguins |&gt; select(where(is.numeric))"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#select-8",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#select-8",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "select",
+    "text": "select\nwhere combines very nicely with other selectors\n#| echo: true\n#| eval: false\npenguins |&gt; select(where(is.numeric) & ends_with(\"mm\"))"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#filter",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#filter",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter",
+    "text": "filter\nWhile select is used for column selection, filter is used for row selection\n#| echo: true\n#| eval: false\npenguins |&gt; filter(bill_length_mm &gt; 40)\n\nSimilar syntax to select:\n\nNo need to quote column names\nData is first (piped) argument\nLater arguments specify action"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#filter-1",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#filter-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter",
+    "text": "filter\nContrast\n#| echo: true\n#| eval: false\npenguins |&gt; filter(bill_length_mm &gt; 40)\nwith\n#| echo: true\n#| eval: false\npenguins[penguins$bill_length_mm &gt; 40, ]"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#filter-2",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#filter-2",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter",
+    "text": "filter\nMultiple filters give the intersection:\n#| echo: true\n#| eval: false\npenguins |&gt; filter(bill_length_mm &gt; 40, sex == \"female\")\n\nUse logical operators to get the union:\n#| echo: true\n#| eval: false\npenguins |&gt; filter(bill_length_mm &gt; 40 | sex == \"female\")"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#filter-3",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#filter-3",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter",
+    "text": "filter\nPipes are very useful for multi-step operations\n#| echo: true\n#| eval: false\npenguins |&gt; filter(bill_length_mm &gt; 40) |&gt; select(species)\n\nCompare to\n#| echo: true\n#| eval: false\nselect(filter(penguins, bill_length_mm &gt; 40), species)\nPiped form lets us read left to right instead of inside out"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#filter-4",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#filter-4",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter",
+    "text": "filter\nCan use more complex comparisons in filter:\n#| echo: true\n#| eval: false\nfilter(penguins, body_mass_g &gt; mean(body_mass_g, na.rm=TRUE))\n\nWhat would happen without na.rm=TRUE?\nYou will explore much more complicated examples in the accompanying activity."
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#filter-5",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#filter-5",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter",
+    "text": "filter\nCommon mistake - using only a single equals sign for equality\n#| error: true\n#| echo: true\npenguins |&gt; filter(sex = \"female\")"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#filter-extensions",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#filter-extensions",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter extensions",
+    "text": "filter extensions\nFunctions implementing extensions of filter:\n\nslice_min\nslice_max\nslice_head\nslice_tail"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#filter-extensions-1",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#filter-extensions-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "filter extensions",
+    "text": "filter extensions\nslice_sample is useful for getting a random subset of your data.\n\nUseful if exploring a large data set\n\n#| echo: true\npenguins |&gt; slice_sample(n=10)"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#mutate",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#mutate",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "mutate",
+    "text": "mutate\nSo far we have only done subsetting. What about creating new columns?\n\n#| echo: true\npenguins |&gt; \n    mutate(body_mass_lb = body_mass_g / 453) |&gt;\n    select(contains(\"body\"))"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#mutate-1",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#mutate-1",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "mutate",
+    "text": "mutate\n#| echo: true\n#| eval: false\npenguins |&gt; \n    mutate(body_mass_lb = body_mass_g / 453) |&gt;\n    select(contains(\"body\"))\nSimilar syntax to select and filter\n\nTo name the new column, put name on the left of the =.\nIf you leave it out, you get an unhelpful default:\n#| echo: true\n#| eval: false\npenguins |&gt; mutate(body_mass_g / 453) |&gt; select(contains(\"body\"))\npenguins |&gt; mutate(body_mass_g / 453) |&gt; select(contains(\"body\")) |&gt; print(n=3)"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#mutate-2",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#mutate-2",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "mutate",
+    "text": "mutate\nCan change columns “in place” by careful renaming:\n#| echo: true\npenguins |&gt; \n    select(where(is.character) | where(is.factor)) |&gt;\n    mutate(species = toupper(species))"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#mutate-3",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#mutate-3",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "mutate",
+    "text": "mutate\nCan do arbitrary vectorized operations and access recently created columns:\n#| echo: true\n#| eval: false\npenguins |&gt; \n    select(where(is.numeric)) |&gt;\n    mutate(weight_kg = body_mass_g / 1000,\n           height_m = body_height_mm / 1000, \n           bmi = weight_kg / height_m^2)\n(Sadly, don’t actually have height data)"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#mutate-4",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#mutate-4",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "mutate",
+    "text": "mutate\n?mutate has several helpful functions:\n\ncumsum, cummean\nlead, lag\nif_else, case_when"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/tidy1.html#rename",
+    "href": "STA9750_ONLINE_SLIDES/tidy1.html#rename",
+    "title": "STA 9750  Selecting, Filtering, and Modifying with Tidy Data Tools",
+    "section": "rename",
+    "text": "rename\nUse of mutate to rename:\n#| echo: true\n#| eval: false\npenguins |&gt; mutate(Year = year) |&gt; select(-year)\n\nrename combines both steps:\n#| echo: true\n#| eval: false\npenguins |&gt; rename(Year = year) \nNo new functionality - clearer intent"
+  },
+  {
+    "objectID": "slides/slides08.html#mp02---peer-feedback",
+    "href": "slides/slides08.html#mp02---peer-feedback",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
+    "section": "STA 9750 MP#02 - Peer Feedback",
+    "text": "STA 9750 MP#02 - Peer Feedback\nPeer feedback assigned on GitHub + email this morning\n\n\\(\\approx 4\\) feedbacks each\nTake this seriously: around 20% of this assignment is “meta-review”\nGoal: rigorous constructive critique\n\n\nSubmissions may not map perfectly to rubric - use your best judgement\n\n\nLearn from this! What can you adapt for MP#03?"
+  },
+  {
+    "objectID": "slides/slides08.html#diving-deeper-into-ggplot2",
+    "href": "slides/slides08.html#diving-deeper-into-ggplot2",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
+    "section": "Diving Deeper into ggplot2",
+    "text": "Diving Deeper into ggplot2\nFirst topic: maps!\nInstall the sf package: Simple Features for Spatial Data\nExercise: Lab #08"
+  },
+  {
+    "objectID": "slides/slides08.html#topic-interactive-tools-for-data-analysis",
+    "href": "slides/slides08.html#topic-interactive-tools-for-data-analysis",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
+    "section": "Topic Interactive Tools for Data Analysis",
+    "text": "Topic Interactive Tools for Data Analysis"
+  },
+  {
+    "objectID": "slides/slides08.html#looking-ahead-1",
+    "href": "slides/slides08.html#looking-ahead-1",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
+    "section": "Looking Ahead",
+    "text": "Looking Ahead\nDue Wednesday at 11:45pm:\n\nPre-Assignment #09 (Brightspace)\n\nData Import\n\nMP #02 Peer Feedback on GitHub AND Brightspace\n\n\nNext three weeks:\n\nReading ‘clean data’ into R\nReading and parsing HTML\nParsing messy (text) data\n\n\n\nTeaching Observation by Prof. Brandwein - Next Week"
+  },
+  {
+    "objectID": "slides/slides08.html#life-tip-of-the-week-1",
+    "href": "slides/slides08.html#life-tip-of-the-week-1",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
+    "section": "Life Tip of the Week",
+    "text": "Life Tip of the Week\nDon’t confuse an explanation with an excuse\n\nExplanation is neutral: why?\nExcuse presumes forgiveness"
+  },
+  {
+    "objectID": "slides/slides08.html#sta-9750-hall-of-fame",
+    "href": "slides/slides08.html#sta-9750-hall-of-fame",
+    "title": "STA 9750  Week 8 Update  2025-03-27",
+    "section": "STA 9750 Hall of Fame",
+    "text": "STA 9750 Hall of Fame\nMy current side-project: STA 9750 Hall of Frame\n\nGallery of excellent STA 9750 submissions\n\n‘Signal-boost’ individual portfolios\nDemonstrate the high quality of Baruch students\nInspiration for future semesters\n2-3 per mini-project\n\n\n\nTrying to launch next week - will share a ‘sign up’ if you’re interested"
+  },
+  {
+    "objectID": "labs/lab08.html#exercise-3---building-a-shiny-tool-for",
+    "href": "labs/lab08.html#exercise-3---building-a-shiny-tool-for",
+    "title": "STA 9750 Week 8 In-Class Activity: More ggplot2 + Tools for Interactive Data Analysis",
+    "section": "Exercise 3 - Building a shiny tool for STA 9750",
+    "text": "Exercise 3 - Building a shiny tool for STA 9750\nUse the course helper functions to build a shiny tool that can be used to verify that your mini-projects and peer feedback have been appropriately formatted and submitted.\n\nStep 0: Run shiny\nTake the following prototype and confirm that it runs on your computer. Note that this is the “single-file” format for shiny apps. It is somewhat more common to split shiny apps across two files - backend and frontend - but we are using a single file structure here for convenience.\n\nif(!require(\"shiny\")) install.packages(\"shiny\")\nlibrary(shiny)\n\nif(!require(\"glue\")) install.packages(\"glue\")\nlibrary(glue)\n\nif(!require(\"yaml\")) install.packages(\"yaml\")\nlibrary(yaml)\n\n\n# Create global variables here\nvariables &lt;- read_yaml(\"https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml\")\ncourse_repo  &lt;- variables$course$repo\ncourse_short &lt;- variables$course$short\n\n# Define the UI\nui &lt;- bootstrapPage(\n    textInput('github_id', \n              'What is your GitHub ID?', \n              placeholder=\"Type your GitHub ID here\"),\n    htmlOutput('gh_link')\n)\n\n# Define the server code\nserver &lt;- function(input, output) {\n    output$gh_link &lt;- renderText({\n        markdown(glue(\"My code for this course found on [GitHub](https://github.com/{input$github_id}/{course_repo})\"))\n    })\n}\n\n# Return a Shiny app object\nshinyApp(ui = ui, server = server)\n\n\n\nStep 1: Add a Link to your profile\nAdd a second output to link to the homepage you created in MP#00. Copying the treatment of gh_link in the example, you will need to\n\nAdd a second output renderText component in the server\nAdd a second output htmlOutput component in the UI\n\n\n\nStep 2: Parameterize the Mini-Project Number\nNext, extend your app to handle the mini-projects. Modify the above example to do three things:\n\nAdd a numericInput that takes a number between 1 and 4 inclusive to select a mini-project.\nAdd an output htmlOutput element that adds a link to the relevant mini-project instructions.\nThe glue function can be used to easily substitute values in URLs (as in the example).\nAdd an output htmlOutput element that adds a link to your mini-project submission. This URL should take both the numericInput and the textInput user inputs to construct the URL. (That is, if you change the GitHub name used the URL should point to a different repo)\n\n\n\nStep 3: Confirm Mini-Project Submission\nTake one of the course helper scripts and use it to determine whether a given MP submission is properly formatted. To do so:\n\nLoad the helpers by adding source(\"https://michael-weylandt.com/STA9750/load_helpers.R\") to the top of your file (outside both the UI and the server).\nAdd a reactive input that runs mp_submission_verify and captures the output. The following code snippet will be useful:\n\n\nO &lt;- capture.output({\n    E &lt;- tryCatch(mp_submission_verify(N, github_id), \n                  error=function(e) e)\n})\n\nif(isTRUE(E)){\n    MESSAGE &lt;- \"Mini-Project properly submitted.\"\n} else {\n    MESSAGE &lt;- \"Mini-Project not properly submitted. Issue appears to be:\\n\"\n    MESSAGE &lt;- paste(c(MESSAGE, O[1:2]), collapse=\"\\n\")\n}\n\nwhere you use MESSAGE in creating your output.\n\n\nStep 4: Extensions\nTime allowing, do one or more of the following:\n\nAdapt mp_feedback_locate to provide links to all peer feedback issues. Note that you will need to handle the case of later MPs, who haven’t been assigned yet (i.e., MPs #03 and #04).\nAdapt mp_feedback_verify to check whether your peer feedback has been properly formatted. This will require a new input for the peer’s GitHub ID."
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "",
+    "text": "In this video:\n\n\nSelecting Columns\nSelecting Rows\nModifying Columns and Creating New Columns\n\n\n. . .\nLater:\n\nComputing Summary Statistics with Tidy Tools\n\n. . .\nBut first - review!"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#introduction",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#introduction",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "",
+    "text": "In this video:\n\n\nSelecting Columns\nSelecting Rows\nModifying Columns and Creating New Columns\n\n\n. . .\nLater:\n\nComputing Summary Statistics with Tidy Tools\n\n. . .\nBut first - review!"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#tidy-data",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#tidy-data",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "Tidy Data",
+    "text": "Tidy Data\nTidy data - everything in its proper place:\n\nOne and only one type of information per column\nOne and only one observation per row\nNo values ‘hiding’ in column or row names\n\n. . .\n\nlibrary(palmerpenguins); head(penguins, 3)\n\n# A tibble: 3 × 8\n  species island    bill_length_mm bill_depth_mm flipper_length_mm body_mass_g\n  &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt;\n1 Adelie  Torgersen           39.1          18.7               181        3750\n2 Adelie  Torgersen           39.5          17.4               186        3800\n3 Adelie  Torgersen           40.3          18                 195        3250\n# ℹ 2 more variables: sex &lt;fct&gt;, year &lt;int&gt;"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#tidyverse",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#tidyverse",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "tidyverse",
+    "text": "tidyverse\ntidyverse - Tools for manipulating tidy data\n. . .\nMake sure to load the tidyverse package before using\n\nlibrary(tidyverse)\n\nWill print some messages about conflicts - safe to ignore"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#tidyverse-1",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#tidyverse-1",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "tidyverse",
+    "text": "tidyverse\nTidyverse tools have excellent documentation\n\nVisit tidyverse.org for overall information\nIndividual packages: ggplot2.tidyverse.org, dplyr.tidyverse.org, etc.\n\n. . .\n\nFunction Reference - Detailed information on specific functions\nVignettes / Articles - Big picture tutorials"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#dplyr",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#dplyr",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "dplyr",
+    "text": "dplyr\nYou have already seen one tidyverse package: ggplot2\n. . .\nToday we start with dplyr - ‘grammar of data manipulation’"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "select",
+    "text": "select\nThe select function can be used to select certain columns\n\nselect(penguins, species, bill_length_mm, body_mass_g, sex)\n\n# A tibble: 344 × 4\n   species bill_length_mm body_mass_g sex   \n   &lt;fct&gt;            &lt;dbl&gt;       &lt;int&gt; &lt;fct&gt; \n 1 Adelie            39.1        3750 male  \n 2 Adelie            39.5        3800 female\n 3 Adelie            40.3        3250 female\n 4 Adelie            NA            NA &lt;NA&gt;  \n 5 Adelie            36.7        3450 female\n 6 Adelie            39.3        3650 male  \n 7 Adelie            38.9        3625 female\n 8 Adelie            39.2        4675 male  \n 9 Adelie            34.1        3475 &lt;NA&gt;  \n10 Adelie            42          4250 &lt;NA&gt;  \n# ℹ 334 more rows\n\n\n. . .\nFirst argument is data\nOther arguments are columns to be selected"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-1",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-1",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "select",
+    "text": "select\nContrast\n\nselect(penguins, species, bill_length_mm, body_mass_g, sex)\n\nand\n\npenguins[,c(\"species\", \"bill_length_mm\", \"body_mass_g\", \"sex\")]\n\nNo quotes around column names"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#put-that-in-your-pipe",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#put-that-in-your-pipe",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "|> - Put that in your Pipe",
+    "text": "|&gt; - Put that in your Pipe\nR supports piped operations - feeding the output of one function into another\n\nselect(penguins, species, bill_length_mm, body_mass_g, sex)\n\nis equivalent to\n\npenguins |&gt; select(species, bill_length_mm, body_mass_g, sex)\n\n. . .\nRead |&gt; as “and then”\ndplyr plays very nicely with pipes"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-2",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-2",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "select",
+    "text": "select\nLike vector indexing, negative sign drops columns:\n\npenguins |&gt; select(-species)\n\n# A tibble: 344 × 7\n   island bill_length_mm bill_depth_mm flipper_length_mm body_mass_g sex    year\n   &lt;fct&gt;           &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt; &lt;fct&gt; &lt;int&gt;\n 1 Torge…           39.1          18.7               181        3750 male   2007\n 2 Torge…           39.5          17.4               186        3800 fema…  2007\n 3 Torge…           40.3          18                 195        3250 fema…  2007\n 4 Torge…           NA            NA                  NA          NA &lt;NA&gt;   2007\n 5 Torge…           36.7          19.3               193        3450 fema…  2007\n 6 Torge…           39.3          20.6               190        3650 male   2007\n 7 Torge…           38.9          17.8               181        3625 fema…  2007\n 8 Torge…           39.2          19.6               195        4675 male   2007\n 9 Torge…           34.1          18.1               193        3475 &lt;NA&gt;   2007\n10 Torge…           42            20.2               190        4250 &lt;NA&gt;   2007\n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-3",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-3",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "select",
+    "text": "select\n: operator selects a range of columns\n\npenguins |&gt; select(bill_length_mm:body_mass_g)\n\n# A tibble: 344 × 4\n   bill_length_mm bill_depth_mm flipper_length_mm body_mass_g\n            &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt;\n 1           39.1          18.7               181        3750\n 2           39.5          17.4               186        3800\n 3           40.3          18                 195        3250\n 4           NA            NA                  NA          NA\n 5           36.7          19.3               193        3450\n 6           39.3          20.6               190        3650\n 7           38.9          17.8               181        3625\n 8           39.2          19.6               195        4675\n 9           34.1          18.1               193        3475\n10           42            20.2               190        4250\n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-4",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-4",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "select",
+    "text": "select\nselect also supports several “smart” helpers to pick columns\n\npenguins |&gt; select(contains(\"bill\"))\n\n# A tibble: 344 × 2\n   bill_length_mm bill_depth_mm\n            &lt;dbl&gt;         &lt;dbl&gt;\n 1           39.1          18.7\n 2           39.5          17.4\n 3           40.3          18  \n 4           NA            NA  \n 5           36.7          19.3\n 6           39.3          20.6\n 7           38.9          17.8\n 8           39.2          19.6\n 9           34.1          18.1\n10           42            20.2\n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-5",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-5",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "select",
+    "text": "select\n\npenguins |&gt; select(ends_with(\"mm\"))\n\n# A tibble: 344 × 3\n   bill_length_mm bill_depth_mm flipper_length_mm\n            &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;\n 1           39.1          18.7               181\n 2           39.5          17.4               186\n 3           40.3          18                 195\n 4           NA            NA                  NA\n 5           36.7          19.3               193\n 6           39.3          20.6               190\n 7           38.9          17.8               181\n 8           39.2          19.6               195\n 9           34.1          18.1               193\n10           42            20.2               190\n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-6",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-6",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "select",
+    "text": "select\nHelpers can be combined using & (intersection) and | (union) operations:\n\npenguins |&gt; select(contains(\"bill\") | ends_with(\"g\"))\n\n# A tibble: 344 × 3\n   bill_length_mm bill_depth_mm body_mass_g\n            &lt;dbl&gt;         &lt;dbl&gt;       &lt;int&gt;\n 1           39.1          18.7        3750\n 2           39.5          17.4        3800\n 3           40.3          18          3250\n 4           NA            NA            NA\n 5           36.7          19.3        3450\n 6           39.3          20.6        3650\n 7           38.9          17.8        3625\n 8           39.2          19.6        4675\n 9           34.1          18.1        3475\n10           42            20.2        4250\n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-7",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-7",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "select",
+    "text": "select\nPredicate operator can select columns based on properties of values\n\npenguins |&gt; select(where(is.numeric))"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-8",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#select-8",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "select",
+    "text": "select\nwhere combines very nicely with other selectors\n\npenguins |&gt; select(where(is.numeric) & ends_with(\"mm\"))"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "filter",
+    "text": "filter\nWhile select is used for column selection, filter is used for row selection\n\npenguins |&gt; filter(bill_length_mm &gt; 40)\n\n. . .\nSimilar syntax to select:\n\nNo need to quote column names\nData is first (piped) argument\nLater arguments specify action"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-1",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-1",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "filter",
+    "text": "filter\nContrast\n\npenguins |&gt; filter(bill_length_mm &gt; 40)\n\nwith\n\npenguins[penguins$bill_length_mm &gt; 40, ]"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-2",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-2",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "filter",
+    "text": "filter\nMultiple filters give the intersection:\n\npenguins |&gt; filter(bill_length_mm &gt; 40, sex == \"female\")\n\n. . .\nUse logical operators to get the union:\n\npenguins |&gt; filter(bill_length_mm &gt; 40 | sex == \"female\")"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-3",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-3",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "filter",
+    "text": "filter\nPipes are very useful for multi-step operations\n\npenguins |&gt; filter(bill_length_mm &gt; 40) |&gt; select(species)\n\n. . .\nCompare to\n\nselect(filter(penguins, bill_length_mm &gt; 40), species)\n\nPiped form lets us read left to right instead of inside out"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-4",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-4",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "filter",
+    "text": "filter\nCan use more complex comparisons in filter:\n\nfilter(penguins, body_mass_g &gt; mean(body_mass_g, na.rm=TRUE))\n\n. . .\nWhat would happen without na.rm=TRUE?\nYou will explore much more complicated examples in the accompanying activity."
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-5",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-5",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "filter",
+    "text": "filter\nCommon mistake - using only a single equals sign for equality\n\npenguins |&gt; filter(sex = \"female\")\n\nError in `filter()`:\n! We detected a named input.\nℹ This usually means that you've used `=` instead of `==`.\nℹ Did you mean `sex == \"female\"`?"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-extensions",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-extensions",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "filter extensions",
+    "text": "filter extensions\nFunctions implementing extensions of filter:\n\nslice_min\nslice_max\nslice_head\nslice_tail"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-extensions-1",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#filter-extensions-1",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "filter extensions",
+    "text": "filter extensions\nslice_sample is useful for getting a random subset of your data.\n\nUseful if exploring a large data set\n\n\npenguins |&gt; slice_sample(n=10)\n\n# A tibble: 10 × 8\n   species   island   bill_length_mm bill_depth_mm flipper_length_mm body_mass_g\n   &lt;fct&gt;     &lt;fct&gt;             &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt;\n 1 Gentoo    Biscoe             53.4          15.8               219        5500\n 2 Chinstrap Dream              46.6          17.8               193        3800\n 3 Adelie    Biscoe             38.2          20                 190        3900\n 4 Gentoo    Biscoe             48.7          15.7               208        5350\n 5 Adelie    Torgers…           39            17.1               191        3050\n 6 Chinstrap Dream              43.2          16.6               187        2900\n 7 Adelie    Torgers…           35.1          19.4               193        4200\n 8 Adelie    Dream              39.6          18.1               186        4450\n 9 Adelie    Dream              42.3          21.2               191        4150\n10 Chinstrap Dream              49.5          19                 200        3800\n# ℹ 2 more variables: sex &lt;fct&gt;, year &lt;int&gt;"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#mutate",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#mutate",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "mutate",
+    "text": "mutate\nSo far we have only done subsetting. What about creating new columns?\n. . .\n\npenguins |&gt; \n    mutate(body_mass_lb = body_mass_g / 453) |&gt;\n    select(contains(\"body\"))\n\n# A tibble: 344 × 2\n   body_mass_g body_mass_lb\n         &lt;int&gt;        &lt;dbl&gt;\n 1        3750         8.28\n 2        3800         8.39\n 3        3250         7.17\n 4          NA        NA   \n 5        3450         7.62\n 6        3650         8.06\n 7        3625         8.00\n 8        4675        10.3 \n 9        3475         7.67\n10        4250         9.38\n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#mutate-1",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#mutate-1",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "mutate",
+    "text": "mutate\n\npenguins |&gt; \n    mutate(body_mass_lb = body_mass_g / 453) |&gt;\n    select(contains(\"body\"))\n\nSimilar syntax to select and filter\n. . .\nTo name the new column, put name on the left of the =.\nIf you leave it out, you get an unhelpful default:\n\npenguins |&gt; mutate(body_mass_g / 453) |&gt; select(contains(\"body\"))\n\n\npenguins |&gt; mutate(body_mass_g / 453) |&gt; select(contains(\"body\")) |&gt; print(n=3)\n\n# A tibble: 344 × 2\n  body_mass_g `body_mass_g/453`\n        &lt;int&gt;             &lt;dbl&gt;\n1        3750              8.28\n2        3800              8.39\n3        3250              7.17\n# ℹ 341 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#mutate-2",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#mutate-2",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "mutate",
+    "text": "mutate\nCan change columns “in place” by careful renaming:\n\npenguins |&gt; \n    select(where(is.character) | where(is.factor)) |&gt;\n    mutate(species = toupper(species))\n\n# A tibble: 344 × 3\n   species island    sex   \n   &lt;chr&gt;   &lt;fct&gt;     &lt;fct&gt; \n 1 ADELIE  Torgersen male  \n 2 ADELIE  Torgersen female\n 3 ADELIE  Torgersen female\n 4 ADELIE  Torgersen &lt;NA&gt;  \n 5 ADELIE  Torgersen female\n 6 ADELIE  Torgersen male  \n 7 ADELIE  Torgersen female\n 8 ADELIE  Torgersen male  \n 9 ADELIE  Torgersen &lt;NA&gt;  \n10 ADELIE  Torgersen &lt;NA&gt;  \n# ℹ 334 more rows"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#mutate-3",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#mutate-3",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "mutate",
+    "text": "mutate\nCan do arbitrary vectorized operations and access recently created columns:\n\npenguins |&gt; \n    select(where(is.numeric)) |&gt;\n    mutate(weight_kg = body_mass_g / 1000,\n           height_m = body_height_mm / 1000, \n           bmi = weight_kg / height_m^2)\n\n(Sadly, don’t actually have height data)"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#mutate-4",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#mutate-4",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "mutate",
+    "text": "mutate\n?mutate has several helpful functions:\n\ncumsum, cummean\nlead, lag\nif_else, case_when"
+  },
+  {
+    "objectID": "STA9750_ONLINE_SLIDES/statistical_modeling.html#rename",
+    "href": "STA9750_ONLINE_SLIDES/statistical_modeling.html#rename",
+    "title": "STA 9750  Statistical Modeling",
+    "section": "rename",
+    "text": "rename\nUse of mutate to rename:\n\npenguins |&gt; mutate(Year = year) |&gt; select(-year)\n\n. . .\nrename combines both steps:\n\npenguins |&gt; rename(Year = year) \n\nNo new functionality - clearer intent"
   }
 ]

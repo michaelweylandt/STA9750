@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>STA 9750 Week 8 In-Class Activity: Advanced ggplot2 – STA 9750</title>
+<title>STA 9750 Week 8 In-Class Activity: More ggplot2 + Tools for Interactive Data Analysis – STA 9750</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -175,10 +175,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#spatial-visualization-with-ggplot2" id="toc-spatial-visualization-with-ggplot2" class="nav-link active" data-scroll-target="#spatial-visualization-with-ggplot2">Spatial Visualization with <code>ggplot2</code></a></li>
+  <li><a href="#spatial-visualization-with-ggplot2" id="toc-spatial-visualization-with-ggplot2" class="nav-link active" data-scroll-target="#spatial-visualization-with-ggplot2">Spatial Visualization with <code>ggplot2</code></a>
+  <ul class="collapse">
   <li><a href="#exercises-1---geospatial-visualizations" id="toc-exercises-1---geospatial-visualizations" class="nav-link" data-scroll-target="#exercises-1---geospatial-visualizations">Exercises 1 - Geospatial Visualizations</a></li>
   <li><a href="#limitations-and-extensions-of-chloropleths" id="toc-limitations-and-extensions-of-chloropleths" class="nav-link" data-scroll-target="#limitations-and-extensions-of-chloropleths">Limitations and Extensions of Chloropleths</a></li>
   <li><a href="#exercises-2---cartograms-of-nyc" id="toc-exercises-2---cartograms-of-nyc" class="nav-link" data-scroll-target="#exercises-2---cartograms-of-nyc">Exercises 2 - Cartograms of NYC</a></li>
+  </ul></li>
+  <li><a href="#shiny-creating-interactive-tools-for-data-analysis" id="toc-shiny-creating-interactive-tools-for-data-analysis" class="nav-link" data-scroll-target="#shiny-creating-interactive-tools-for-data-analysis"><code>shiny</code>: Creating Interactive Tools for Data Analysis</a>
+  <ul class="collapse">
+  <li><a href="#exercise-3---building-a-shiny-tool-for" id="toc-exercise-3---building-a-shiny-tool-for" class="nav-link" data-scroll-target="#exercise-3---building-a-shiny-tool-for">Exercise 3 - Building a <code>shiny</code> tool for STA 9750</a>
+  <ul class="collapse">
+  <li><a href="#step-0-run-shiny" id="toc-step-0-run-shiny" class="nav-link" data-scroll-target="#step-0-run-shiny">Step 0: Run <code>shiny</code></a></li>
+  <li><a href="#step-1-add-a-link-to-your-profile" id="toc-step-1-add-a-link-to-your-profile" class="nav-link" data-scroll-target="#step-1-add-a-link-to-your-profile">Step 1: Add a Link to your profile</a></li>
+  <li><a href="#step-2-parameterize-the-mini-project-number" id="toc-step-2-parameterize-the-mini-project-number" class="nav-link" data-scroll-target="#step-2-parameterize-the-mini-project-number">Step 2: Parameterize the Mini-Project Number</a></li>
+  <li><a href="#step-3-confirm-mini-project-submission" id="toc-step-3-confirm-mini-project-submission" class="nav-link" data-scroll-target="#step-3-confirm-mini-project-submission">Step 3: Confirm Mini-Project Submission</a></li>
+  <li><a href="#step-4-extensions" id="toc-step-4-extensions" class="nav-link" data-scroll-target="#step-4-extensions">Step 4: Extensions</a></li>
+  </ul></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab08.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab08.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -187,7 +200,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">STA 9750 Week 8 In-Class Activity: Advanced <code>ggplot2</code></h1>
+<h1 class="title">STA 9750 Week 8 In-Class Activity: More <code>ggplot2</code> + Tools for Interactive Data Analysis</h1>
 </div>
 
 
@@ -205,8 +218,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <p><a href="../slides/slides08.html">Week 8 Slides</a></p>
-<section id="spatial-visualization-with-ggplot2" class="level2">
-<h2 class="anchored" data-anchor-id="spatial-visualization-with-ggplot2">Spatial Visualization with <code>ggplot2</code></h2>
+<section id="spatial-visualization-with-ggplot2" class="level1">
+<h1>Spatial Visualization with <code>ggplot2</code></h1>
 <p>Today, we’re going to dive deeper into <code>ggplot2</code>, with a focus on visualizing spatial data. Spatial data can be <a href="https://postgis.net/">quite complex</a>, but we can get pretty far with the <strong>simple features</strong> (<code>sf</code>) paradigm. Also, if we focus on relatively small regions, we can avoid the complexities that come from Earth not being planar.</p>
 <div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/vVX-PrBRtTY" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
 <p>Key to this approach is a <em>shapefile</em>. A <em>shapefile</em>, conventionally stored with a <code>shp</code> extension, gives precise coordinates outlining spatial regions. By plotting a polygon with those points at its boundaries, we can visualize spatial regions.</p>
@@ -347,7 +360,6 @@ Adding Points on Chloropleths
 </div>
 </div>
 </div>
-</section>
 <section id="exercises-1---geospatial-visualizations" class="level2">
 <h2 class="anchored" data-anchor-id="exercises-1---geospatial-visualizations">Exercises 1 - Geospatial Visualizations</h2>
 <ol type="1">
@@ -421,8 +433,104 @@ Adding Points on Chloropleths
 <li><p>Modify your plot of NYC to adjust city council districts by area.</p></li>
 <li><p>Next, modify your analysis to use the Dorling cartogram (<code>cartogram_dorling</code>) which gives a more regular cartogram representation.</p></li>
 </ol>
+</section>
+</section>
+<section id="shiny-creating-interactive-tools-for-data-analysis" class="level1">
+<h1><code>shiny</code>: Creating Interactive Tools for Data Analysis</h1>
+<p>We now turn our attention to creating interactive tools (web applications and dashboards) for data analysis. By learning these tools, you won’t necessarily enable yourself to do analysis, but you will enable colleagues and clients to more fully explore the results of your analyses. The main tool we will use to do is <code>shiny</code>, a <strong>reactive</strong> framework for <code>R</code>.</p>
+<p>“Reactive” programmingrefers to an architecture that changes only in response to user input. You have almost certainly worked with a reactive piece of software in the form of Microsoft Excel (or Google Sheets or similar). The values in the spreadsheet do not change <em>sua sponte</em>, but when you make an input all related cells are updated. (Conceptually, all cells are updated, but Excel is smart and tracks only those cells that actually need to be updated.)</p>
+<section id="exercise-3---building-a-shiny-tool-for" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-3---building-a-shiny-tool-for">Exercise 3 - Building a <code>shiny</code> tool for STA 9750</h2>
+<p>Use the <a href="../tips.html">course helper functions</a> to build a <code>shiny</code> tool that can be used to verify that your mini-projects and peer feedback have been appropriately formatted and submitted.</p>
+<section id="step-0-run-shiny" class="level3">
+<h3 class="anchored" data-anchor-id="step-0-run-shiny">Step 0: Run <code>shiny</code></h3>
+<p>Take the following prototype and confirm that it runs on your computer. Note that this is the “single-file” format for <code>shiny</code> apps. It is somewhat more common to split <code>shiny</code> apps across two files - backend and frontend - but we are using a single file structure here for convenience.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"shiny"</span>)) <span class="fu">install.packages</span>(<span class="st">"shiny"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"glue"</span>)) <span class="fu">install.packages</span>(<span class="st">"glue"</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glue)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"yaml"</span>)) <span class="fu">install.packages</span>(<span class="st">"yaml"</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(yaml)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Create global variables here</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>variables <span class="ot">&lt;-</span> <span class="fu">read_yaml</span>(<span class="st">"https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml"</span>)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>course_repo  <span class="ot">&lt;-</span> variables<span class="sc">$</span>course<span class="sc">$</span>repo</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>course_short <span class="ot">&lt;-</span> variables<span class="sc">$</span>course<span class="sc">$</span>short</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the UI</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>ui <span class="ot">&lt;-</span> <span class="fu">bootstrapPage</span>(</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">textInput</span>(<span class="st">'github_id'</span>, </span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>              <span class="st">'What is your GitHub ID?'</span>, </span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>              <span class="at">placeholder=</span><span class="st">"Type your GitHub ID here"</span>),</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">htmlOutput</span>(<span class="st">'gh_link'</span>)</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the server code</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output) {</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>gh_link <span class="ot">&lt;-</span> <span class="fu">renderText</span>({</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>        <span class="fu">markdown</span>(<span class="fu">glue</span>(<span class="st">"My code for this course found on [GitHub](https://github.com/{input$github_id}/{course_repo})"</span>))</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Return a Shiny app object</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="fu">shinyApp</span>(<span class="at">ui =</span> ui, <span class="at">server =</span> server)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="step-1-add-a-link-to-your-profile" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-add-a-link-to-your-profile">Step 1: Add a Link to your profile</h3>
+<p>Add a second output to link to the homepage you created in <a href="../miniprojects/mini00.html">MP#00</a>. Copying the treatment of <code>gh_link</code> in the example, you will need to</p>
+<ol type="1">
+<li>Add a second output <a href="https://shiny.posit.co/r/reference/shiny/0.11/rendertext.html"><code>renderText</code></a> component in the server</li>
+<li>Add a second output <a href="https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html"><code>htmlOutput</code></a> component in the UI</li>
+</ol>
+</section>
+<section id="step-2-parameterize-the-mini-project-number" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-parameterize-the-mini-project-number">Step 2: Parameterize the Mini-Project Number</h3>
+<p>Next, extend your app to handle the mini-projects. Modify the above example to do three things:</p>
+<ul>
+<li><p>Add a <a href="https://rstudio.github.io/shiny/reference/numericInput.html"><code>numericInput</code></a> that takes a number between <code>1</code> and <code>4</code> inclusive to select a mini-project.</p></li>
+<li><p>Add an output <a href="https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html"><code>htmlOutput</code></a> element that adds a link to the relevant <a href="https://michael-weylandt.com/STA9750/miniprojects.html">mini-project instructions</a>.</p>
+<p>The <code>glue</code> function can be used to easily substitute values in URLs (as in the example).</p></li>
+<li><p>Add an output <a href="https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html"><code>htmlOutput</code></a> element that adds a link to <em>your</em> mini-project submission. This URL should take both the <code>numericInput</code> and the <code>textInput</code> user inputs to construct the URL. (That is, if you change the <code>GitHub</code> name used the URL should point to a different repo)</p></li>
+</ul>
+</section>
+<section id="step-3-confirm-mini-project-submission" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-confirm-mini-project-submission">Step 3: Confirm Mini-Project Submission</h3>
+<p>Take one of the course helper scripts and use it to determine whether a given MP submission is properly formatted. To do so:</p>
+<ol type="1">
+<li>Load the helpers by adding <code>source("https://michael-weylandt.com/STA9750/load_helpers.R")</code> to the top of your file (outside both the UI and the server).</li>
+<li>Add a reactive input that runs <code>mp_submission_verify</code> and captures the output. The following code snippet will be useful:</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>O <span class="ot">&lt;-</span> <span class="fu">capture.output</span>({</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    E <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>(<span class="fu">mp_submission_verify</span>(N, github_id), </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">error=</span><span class="cf">function</span>(e) e)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">isTRUE</span>(E)){</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    MESSAGE <span class="ot">&lt;-</span> <span class="st">"Mini-Project properly submitted."</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    MESSAGE <span class="ot">&lt;-</span> <span class="st">"Mini-Project not properly submitted. Issue appears to be:</span><span class="sc">\n</span><span class="st">"</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    MESSAGE <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="fu">c</span>(MESSAGE, O[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]), <span class="at">collapse=</span><span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>where you use <code>MESSAGE</code> in creating your output.</p>
+</section>
+<section id="step-4-extensions" class="level3">
+<h3 class="anchored" data-anchor-id="step-4-extensions">Step 4: Extensions</h3>
+<p>Time allowing, do one or more of the following:</p>
+<ul>
+<li>Adapt <code>mp_feedback_locate</code> to provide links to all peer feedback issues. Note that you will need to handle the case of later MPs, who haven’t been assigned yet (<em>i.e.</em>, MPs #03 and #04).</li>
+<li>Adapt <code>mp_feedback_verify</code> to check whether your peer feedback has been properly formatted. This will require a new input for the peer’s GitHub ID.</li>
+</ul>
 
 
+</section>
+</section>
 </section>
 
 

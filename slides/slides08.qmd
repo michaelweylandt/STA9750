@@ -1,52 +1,24 @@
 ---
-title: "{{< var course.short >}} - Week 8"
+session: "`r session <- 8; next_session <- session + 1; session`"
+class_date: 
+  "`r library(tidyverse); read_csv('key_dates.csv', name_repair='universal') |> filter(Course.Element == 'Class Session', Item.Number==session) |> pull(Date)`"
+title: "{{< var course.short >}} </br> Week {{< meta session >}} Update </br> {{< meta class_date >}}"
 author: "Michael Weylandt"
 format: revealjs
-echo: true
 ---
-
 ## {{< var course.short >}} Mini-Project #02
 
 Submission due _yesterday_ at 11:45pm
 
-. . .
+. . . 
 
-Y'all have it out for *The Shawshank Redemption*...
+*Very* creative!
 
-. . .
+![](https://jlopez-6.github.io/STA9750-2025-SPRING/gtaiv_cover.jpeg){fig-align="center" width=500}
 
-- Very entertained by fake posters
-- Impressive graphics and analysis - very nice. 
+## {{< var course.short >}} MP#02 - Peer Feedback
 
-## The Shark!
-
-{{< video https://www.youtube.com/watch?v=Tk_y_r5cXZs start="71" width="800" height="600" >}}
-
-## {{< var course.short >}} Mini-Project #02
-
-Add the following to your `.gitignore` file: 
-
-```
-/.quarto/
-.Rproj.user
-*/*_cache/*
-*tsv*
-*csv*
-*xlsx*
-*zip
-*gz
-.DS_Store
-.Rhistory
-```
-
-This instructs `git` to ignore matching files - less chance of 
-accidental "super commits."
-
-(Possible to override if you necessary)
-
-## {{< var course.short >}} Mini-Project #02 - Peer Feedback
-
-Peer feedback assigned on GitHub this morning
+Peer feedback assigned on GitHub + email this morning
 
 - $\approx 4$ feedbacks each 
 - Take this seriously: around 20\% of this assignment is "meta-review"
@@ -62,16 +34,57 @@ Learn from this! What can you adapt for MP#03?
 
 ## {{< var course.short >}} Mini-Project #03
 
-Now [online](https://michael-weylandt.com/STA9750/miniprojects/mini03.html)
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(glue)
+library(rlang)
+library(yaml)
+get_mp_title <- function(N){
+    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_text <- readLines(mp_file, n=50)
+    
+    header_end <- which(grepl("---", mp_text))[2]
+    
+    header_info <- yaml.load(readLines(mp_file, n=header_end))
+    
+    header_info$mp_title %||% "TBD"
+}
 
-**Due November 13th**
+get_mp_deadline <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Mini-Projects", 
+               `Item Number`== N, 
+               str_detect(Details, "Due"), 
+               !str_detect(Details, "Peer")) |>
+        mutate(due = paste(Date, "at", Time)) |>
+        pull(due)
+}
+
+
+get_pa_deadline <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Pre-Assignments", 
+               `Item Number`== N, 
+               str_detect(Details, "Due"), 
+               !str_detect(Details, "Peer")) |>
+        mutate(due = paste(Date, "at", Time)) |>
+        pull(due)
+}
+```
+
+
+Now [online](https://michael-weylandt.com/STA9750/miniprojects/mini03.html) - Due **`r get_mp_deadline(3)`**
+
+Topic: `r get_mp_title(3)`
 
 - GitHub post (used for peer feedback) AND Brightspace
 - Three Weeks: don't wait until the very end
 
-- Should be less demanding than MP #01 and MP#02
-  - Lots of little files. **No big files!**
-  - Maps and election retrodiction
+- *Should be* less demanding than MP #01 and MP#02
+  - Lots of little files: practice data management
+  - Some data limitations, particularly after `inner_join`
   
 . . .
 
@@ -85,15 +98,19 @@ A personal note, if you allow me:
 
 . . . 
 
-I'm really enjoying this class - thank you all!
+> I'm really enjoying this class - thank you all!
 
 . . . 
 
-Your effort is not unnoticed - I know this class starts "pedal-to-the-metal" but hopefully you've seen just how powerful these tools `R`. 
+> Your effort is not unnoticed - I know this class starts
+> "pedal-to-the-metal" but hopefully you've seen just 
+> how powerful these tools `R`. 
 
 . . . 
 
-More than that - I appreciate your good attitude and willingness to share your frustrations and triumphs. Reading comments on PA quiz this week was uplifting. 
+> More than that - I appreciate your good attitude and willingness to
+> share your frustrations and triumphs. Reading comments on PA quiz
+> this week was uplifting. 
 
 ## Continual Improvement
 
@@ -101,36 +118,36 @@ I've set up a [TODO file](https://github.com/michaelweylandt/STA9750/blob/main/T
 
 Suggestions welcome. 
 
-I will also ask Charles to distribute an opportunity for anonymous feedback. 
+. . . 
+
+Every semester, I create new mini-projects.  Ideas and suggestions very
+welcome
+
+- Topics and data sets are both great
 
 # Going Forward
 
 ## Upcoming Mini-Projects
 
-Tentative Topics
-
-- MP#04: Something financial
-
-Any requests? 
+- MP#04: 
+  - Deadline: `r get_mp_deadline(4)`
+  - Topic: `r get_mp_title(4)`
 
 ## Course Project
-
-Feedback from Charles and from me - I'm behind on returning. 
 
 [Project](../project.html) should be your *main focus* 
 for rest of course
 
-- Still need to do mini-projects and pre-assignments
+- But you still need to do mini-projects and pre-assignments
 
 ## Pre-Assignments
 
 Brightspace - Wednesdays at 11:45
 
--   Reading, typically on course website
--   Brightspace auto-grades
-    -   I have to manually change to completion grading
+- Reading, typically on course website
+- This week: getting data into `R`
 
-Next pre-assignment is **October 30th**
+Next pre-assignment is **`r get_pa_deadline(next_session)`**
 
 . . .
 
@@ -139,22 +156,80 @@ Thank you for FAQs and (honest) team feedback. Keep it coming!
 ## Course Support
 
 - Synchronous
-  - Office Hours 4x / week
+  - Office Hours 2x / week
     - MW Office Hours on **Monday** + **Thursday** for rest of semester
-    - CR **Tuesday** + **Friday**
-    - No OH during Thanksgiving break
+    - No OH during Spring Break
 - Asynchronous
-  - Piazza ($<50$ minute average response time)
+  - Piazza ($<25$ minute average response time)
 
-## Upcoming Week
+# Today
+
+## Warm-Up
+
+"Datasaurus Dozen": 
+
+- `install.packages("datasauRus")` (Note capital `R`)
+- `library(datasauRus); data(datasaurus_dozen)`
+
+Create an _animated_ (`gganimate`) plot: 
+
+- $x, y$ scatterplot
+- Animate different values of `dataset`
+
+If you are having trouble with `gganimate`, facet instead. 
+
+## Warm-Up
+
+![](https://blog.revolutionanalytics.com/downloads/DataSaurus%20Dozen.gif)
+
+## Diving Deeper into `ggplot2`
+
+First topic: maps!
+
+Install the [`sf` package](https://r-spatial.github.io/sf/): 
+**S**imple **F**eatures for Spatial Data 
+
+Exercise: [Lab #08](../labs/lab08.html)
+
+## Breakout Rooms
+
+| Room | Team           |  | Room | Team              |
+|------|----------------|--|------|-------------------|
+| 1    | Team Mystic    |  | 5    | Money Team + CWo. |
+| 2    | Subway Metrics |  | 6    | Lit Group         |
+| 3    | Noise Busters  |  | 7    | Cinephiles + VG   |
+| 4    | AI Imp. Coll.  |  |      |                   |
+
+## Topic Interactive Tools for Data Analysis 
+
+
+# Looking Ahead
+
+## Looking Ahead {.smaller}
 
 Due Wednesday at 11:45pm:
 
-- Pre-Assignment #09 (Brightspace)
+- Pre-Assignment #0`r next_session` (Brightspace)
   - Data Import
 - MP #02 Peer Feedback on GitHub AND Brightspace
 
-# Pre-Assignment #08 FAQs
+. . . 
+
+Next three weeks: 
+
+- Reading 'clean data' into `R`
+- Reading and parsing HTML
+- Parsing messy (text) data
+
+. . . 
+
+Teaching Observation by Prof. Brandwein - Next Week
+
+{{< include ../advice/galleries.qmd >}}
+
+
+
+# Just FYI: </br> Old Pre-Assignment #08 FAQs
 
 ## FAQ: `ggplot2` - `aes()`
 
@@ -266,41 +341,3 @@ Advanced:
 ## FAQ: `git` WTF
 
 Reference: [Happy Git with R](https://happygitwithr.com/)
-
-# Today
-
-## Warm-Up
-
-"Datasaurus Dozen": 
-
-- `install.packages("datasauRus")` (Note capital `R`)
-- `library(datasauRus); data(datasaurus_dozen)`
-
-Create an _animated_ (`gganimate`) plot: 
-
-- $x, y$ scatterplot
-- Animate different values of `dataset`
-
-If you are having trouble with `gganimate`, facet instead. 
-
-## Warm-Up
-
-![](https://blog.revolutionanalytics.com/downloads/DataSaurus%20Dozen.gif)
-
-## Diving Deeper with `ggplot2`
-
-Today: maps!
-
-Install the [`sf` package](https://r-spatial.github.io/sf/): **S**imple **F**eatures for Spatial Data 
-
-Exercise: [Lab #08](../labs/lab08.html)
-
-## Breakout Rooms
-
-| Room | Team           |  | Room | Team            |
-|------|----------------|--|------|-----------------|
-| 1    | Rat Pack       |  | 6    | Ca\$h VZ        |
-| 2    | Subway Surfers |  | 7    | Listing Legends |
-| 3    | Chart Toppers  |  | 8    | TDSSG           |
-| 4    | Metro Mindset  |  | 9    | Broker T's      |
-| 5    | Apple Watch    |  | 10   | EVengers        |
