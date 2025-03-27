@@ -1,11 +1,11 @@
 ---
-title: "{{< var course.short >}} Week 8 In-Class Activity: Advanced `ggplot2`"
+title: "{{< var course.short >}} Week 8 In-Class Activity: More `ggplot2` + Tools for Interactive Data Analysis"
 engine: knitr
 ---
 
 [Week 8 Slides](../slides/slides08.html)
 
-## Spatial Visualization with `ggplot2`
+# Spatial Visualization with `ggplot2`
 
 Today, we're going to dive deeper into `ggplot2`, with a focus on
 visualizing spatial data. Spatial data can be [quite
@@ -216,8 +216,6 @@ down-weighted in accordance with its population.
 2. Next, modify your analysis to use the Dorling cartogram
    (`cartogram_dorling`) which gives a more regular cartogram representation.
    
-   
-
 [^1]: If you get an error reading "`stat_sf()` requires the following
 missing aesthetics: geometry", make sure you include `geometry=geometry`
 in your `aes`   (5 points)
@@ -228,4 +226,136 @@ in your `aes`   (5 points)
 how to extract the `shp` file from a `zip` archive automatically, 
 but for now you can do so "by hand" by opening the zip file as
 if it were a regular file. 
-    
+
+
+# `shiny`: Creating Interactive Tools for Data Analysis
+
+We now turn our attention to creating interactive tools (web applications and
+dashboards) for data analysis. By learning these tools, you won't necessarily
+enable yourself to do analysis, but you will enable colleagues and clients to
+more fully explore the results of your analyses. The main tool we will use to
+do is `shiny`, a **reactive** framework for `R`. 
+
+"Reactive" programmingrefers to an architecture that changes only in response
+to user input. You have almost certainly worked with a reactive piece of
+software in the form of Microsoft Excel (or Google Sheets or similar). The
+values in the spreadsheet do not change *sua sponte*, but when you make an input
+all related cells are updated. (Conceptually, all cells are updated, but
+Excel is smart and tracks only those cells that actually need to be updated.)
+
+## Exercise 3 - Building a `shiny` tool for {{< var course.short >}}
+
+Use the [course helper functions](../tips.html) to build a `shiny` tool that
+can be used to verify that your mini-projects and peer feedback have been 
+appropriately formatted and submitted. 
+
+### Step 0: Run `shiny`
+
+Take the following prototype and confirm that it runs on your computer. Note
+that this is the "single-file" format for `shiny` apps. It is somewhat more
+common to split `shiny` apps across two files - backend and frontend - but
+we are using a single file structure here for convenience. 
+
+```{r}
+#| eval: false
+if(!require("shiny")) install.packages("shiny")
+library(shiny)
+
+if(!require("glue")) install.packages("glue")
+library(glue)
+
+if(!require("yaml")) install.packages("yaml")
+library(yaml)
+
+
+# Create global variables here
+variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+course_repo  <- variables$course$repo
+course_short <- variables$course$short
+
+# Define the UI
+ui <- bootstrapPage(
+    textInput('github_id', 
+              'What is your GitHub ID?', 
+              placeholder="Type your GitHub ID here"),
+    htmlOutput('gh_link')
+)
+
+# Define the server code
+server <- function(input, output) {
+    output$gh_link <- renderText({
+        markdown(glue("My code for this course found on [GitHub](https://github.com/{input$github_id}/{course_repo})"))
+    })
+}
+
+# Return a Shiny app object
+shinyApp(ui = ui, server = server)
+```
+
+### Step 1: Add a Link to your profile
+
+Add a second output to link to the homepage you created in
+[MP#00](../miniprojects/mini00.html). Copying the treatment of `gh_link` in 
+the example, you will need to 
+
+1) Add a second output
+   [`renderText`](https://shiny.posit.co/r/reference/shiny/0.11/rendertext.html)
+   component in the server
+2) Add a second output [`htmlOutput`](https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html) 
+  component in the UI
+
+### Step 2: Parameterize the Mini-Project Number
+
+Next, extend your app to handle the mini-projects. 
+Modify the above example to do three things: 
+
+- Add a [`numericInput`](https://rstudio.github.io/shiny/reference/numericInput.html) 
+  that takes a number between `1` and `4` inclusive to select a mini-project.
+- Add an output [`htmlOutput`](https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html) 
+  element that adds a link to the relevant 
+  [mini-project instructions](https://michael-weylandt.com/STA9750/miniprojects.html). 
+ 
+  The `glue` function can be used to easily substitute values in URLs (as in
+  the example). 
+- Add an output [`htmlOutput`](https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html) 
+  element that adds a link to *your* mini-project submission. This URL should
+  take both the `numericInput` and the `textInput` user inputs to construct
+  the URL. (That is, if you change the `GitHub` name used the URL should point
+  to a different repo)
+  
+### Step 3: Confirm Mini-Project Submission
+
+Take one of the course helper scripts and use it to determine whether a given 
+MP submission is properly formatted. To do so: 
+
+1) Load the helpers by adding `source("https://michael-weylandt.com/STA9750/load_helpers.R")`
+   to the top of your file (outside both the UI and the server). 
+2) Add a reactive input that runs `mp_submission_verify` and captures the output. 
+   The following code snippet will be useful:
+   
+```{r}
+#| eval: false
+O <- capture.output({
+    E <- tryCatch(mp_submission_verify(N, github_id), 
+                  error=function(e) e)
+})
+
+if(isTRUE(E)){
+    MESSAGE <- "Mini-Project properly submitted."
+} else {
+    MESSAGE <- "Mini-Project not properly submitted. Issue appears to be:\n"
+    MESSAGE <- paste(c(MESSAGE, O[1:2]), collapse="\n")
+}
+```
+
+   where you use `MESSAGE` in creating your output. 
+
+### Step 4: Extensions
+
+Time allowing, do one or more of the following: 
+
+- Adapt `mp_feedback_locate` to provide links to all peer feedback issues. 
+  Note that you will need to handle the case of later MPs, who haven't been
+  assigned yet (*i.e.*, MPs #03 and #04). 
+- Adapt `mp_feedback_verify` to check whether your peer feedback has been
+  properly formatted. This will require a new input for the peer's GitHub ID. 
