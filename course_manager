@@ -1624,7 +1624,7 @@ def peer_collect(project_id, rearchive, skip_pdf, force):
         # Save the issue number for later just in case
         ALL_PEER_FEEDBACK[student]["issue_num"] = KEY_ISSUE["number"]
         ALL_PEER_FEEDBACK[student]["submission_penalty"] = (
-            INSTRUCTOR in KEY_ISSUE["title"]
+            "INSTRUCTOR" in KEY_ISSUE["title"]
         )
 
     click.echo(f"All peer feedback processed for MP#0{project_id}")
@@ -1668,11 +1668,32 @@ def peer_grade(project_id):
         for student, feedback in bar:
             real_name = ROSTER[ROSTER["github"] == student]["name"].item()
             safe_name = real_name.lower().replace(" ", "_")
-            evaluators = [e for e in feedback.keys() if e != "issue_num"]
+            evaluators = [e for e in feedback.keys()]
+            
+            try:
+                penalty = feedback["submission_penalty"]
+            except KeyError:
+                penalty = click.confirm(f"Should a submission penalty be applied to {student} on MP#0{project_id}?")
+            
+            try:
+                issue_num = feedback["issue_num"]
+            except KeyError: 
+                click.echo(f"I somehow lost the issue number for {student} on MP#0{project_id}.")
+                issue_num = click.prompt("What issue number should I use?", type=int)
+            
+            if "submission_penalty" in evaluators:
+                evaluators.remove("submission_penalty")
+            if "issue_num" in evaluators:
+                evaluators.remove("issue_num")
 
-            penalty = feedback["submission_penalty"]
-
-            CATEGORIES = feedback[evaluators[0]]["scores"].keys()
+            CATEGORIES = [
+                'Written Communication', 
+                'Project Skeleton', 
+                'Formatting & Display', 
+                'Code Quality', 
+                'Data Preparation', 
+                'Extra Credit'
+            ]
 
             SCORE_DICT = {c: [] for c in CATEGORIES}
             COMMENTS_DICT = {c: [] for c in CATEGORIES}
@@ -1681,9 +1702,14 @@ def peer_grade(project_id):
                 e_feedback = feedback[evaluator]
 
                 for c in CATEGORIES:
+                    try: 
+                        e_feedback["scores"][c]
+                    except TypeError:
+                        import pdb; pdb.set_trace()
+                    
                     if is_nan(e_feedback["scores"][c]):
                         continue
-
+                    
                     SCORE_DICT[c].append(e_feedback["scores"][c])
                     COMMENTS_DICT[c].append((evaluator, e_feedback["comments"][c]))
 
@@ -1695,6 +1721,9 @@ def peer_grade(project_id):
 
             if penalty:
                 TOTAL = TOTAL - 5
+                
+            if TOTAL < 0:
+                TOTAL = 0
 
             grade_text = template.render(
                 project_id=project_id,
@@ -1706,7 +1735,7 @@ def peer_grade(project_id):
                 total=TOTAL,
                 penalty=penalty,
                 course_dir=course_dir(),
-                issue_num=feedback["issue_num"],
+                issue_num=issue_num,
             )
 
             grade_file = op.join(grade_dir(project_id), f"{safe_name}.txt")
