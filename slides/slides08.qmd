@@ -1,11 +1,14 @@
 ---
-session: "`r session <- 8; next_session <- session + 1; session`"
-class_date: 
-  "`r library(tidyverse); read_csv('key_dates.csv', name_repair='universal') |> filter(Course.Element == 'Class Session', Item.Number==session) |> pull(Date)`"
-title: "{{< var course.short >}} </br> Week {{< meta session >}} Update </br> {{< meta class_date >}}"
-author: "Michael Weylandt"
-format: revealjs
+session: "`r session <- 8; session`"
+class_date:
+  "`r library(tidyverse); 
+    read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', Item.Number==session) |>
+    pull(Date)`"
 ---
+
+{{< include _setup.qmd >}}
+
 ## {{< var course.short >}} Mini-Project #02
 
 Submission due _yesterday_ at 11:45pm
@@ -33,47 +36,6 @@ Submissions may not map perfectly to rubric - use your best judgement
 Learn from this! What can you adapt for MP#03? 
 
 ## {{< var course.short >}} Mini-Project #03
-
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-library(glue)
-library(rlang)
-library(yaml)
-get_mp_title <- function(N){
-    mp_file <- glue("miniprojects/mini0{N}.qmd")
-    mp_text <- readLines(mp_file, n=50)
-    
-    header_end <- which(grepl("---", mp_text))[2]
-    
-    header_info <- yaml.load(readLines(mp_file, n=header_end))
-    
-    header_info$mp_title %||% "TBD"
-}
-
-get_mp_deadline <- function(N){
-    read_csv("key_dates.csv") |> 
-        filter(`Course Element` == "Mini-Projects", 
-               `Item Number`== N, 
-               str_detect(Details, "Due"), 
-               !str_detect(Details, "Peer")) |>
-        mutate(due = paste(Date, "at", Time)) |>
-        pull(due)
-}
-
-
-get_pa_deadline <- function(N){
-    read_csv("key_dates.csv") |> 
-        filter(`Course Element` == "Pre-Assignments", 
-               `Item Number`== N, 
-               str_detect(Details, "Due"), 
-               !str_detect(Details, "Peer")) |>
-        mutate(due = paste(Date, "at", Time)) |>
-        pull(due)
-}
-```
-
 
 Now [online](https://michael-weylandt.com/STA9750/miniprojects/mini03.html) - Due **`r get_mp_deadline(3)`**
 
