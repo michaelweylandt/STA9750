@@ -20,6 +20,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -136,8 +170,20 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#httr2" id="toc-httr2" class="nav-link active" data-scroll-target="#httr2"><code>httr2</code></a>
+  <ul class="collapse">
+  <li><a href="#build-a-request" id="toc-build-a-request" class="nav-link" data-scroll-target="#build-a-request">Build a Request</a></li>
+  <li><a href="#execute-a-request-to-get-a-response" id="toc-execute-a-request-to-get-a-response" class="nav-link" data-scroll-target="#execute-a-request-to-get-a-response">Execute a Request to get a Response</a></li>
+  <li><a href="#process-the-response-for-use-in-r" id="toc-process-the-response-for-use-in-r" class="nav-link" data-scroll-target="#process-the-response-for-use-in-r">Process the Response for Use in <code>R</code></a></li>
+  </ul></li>
+  <li><a href="#your-turn" id="toc-your-turn" class="nav-link" data-scroll-target="#your-turn">Your Turn!</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab09.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab09.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -161,11 +207,882 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <p><a href="../slides/slides09.html">Week 9 Slides</a></p>
+<p>This week, we are going to practice accessing data from a nice API using <code>httr2</code>. Specifically, we are going to interact with the <code>cranlogs</code> server, which keeps records of the most popular <code>R</code> packages based on download frequency.</p>
+<p>Documentation for <code>cranlogs</code> can be found <a href="https://github.com/r-hub/cranlogs.app">in its GitHub <code>README</code></a> with a very small example at <a href="https://cranlogs.r-pkg.org/#jsonapi">here</a>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>The <code>cranlogs</code> documentation give the following example of how the <code>curl</code> program can call the API from the command line:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100    82  100    82    0     0    294      0 --:--:-- --:--:-- --:--:--   294
+[{"start":"2025-03-27","end":"2025-04-02","downloads":421451,"package":"ggplot2"}]</code></pre>
+</div>
+</div>
+<p>Even though this is not <code>R</code> code, we can emulate this action in <code>R</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(jsonlite)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fromJSON</span>(<span class="st">"https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       start        end downloads package
+1 2025-03-27 2025-04-02    421451 ggplot2</code></pre>
+</div>
+</div>
+<p>And if we want to get download information for other packages, we can simply modify the URL:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(jsonlite)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fromJSON</span>(<span class="st">"https://cranlogs.r-pkg.org/downloads/total/last-week/dplyr"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       start        end downloads package
+1 2025-03-27 2025-04-02    373318   dplyr</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(jsonlite)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fromJSON</span>(<span class="st">"https://cranlogs.r-pkg.org/downloads/total/last-week/readr"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       start        end downloads package
+1 2025-03-27 2025-04-02    200738   readr</code></pre>
+</div>
+</div>
+<p>and so on. But this quickly becomes repetitive and we would prefer a <em>programmatic</em> interface. This is where the <code>httr2</code> package comes in.</p>
+<section id="httr2" class="level2">
+<h2 class="anchored" data-anchor-id="httr2"><code>httr2</code></h2>
+<p><code>httr2</code> takes a “three-stage” approach to handling HTTP requests:</p>
+<ol type="1">
+<li>First, we <em>build</em> a <em>request</em>, specifying the URL to be queried, the mode of that query, and any relevant information (data, passwords, <em>etc.</em>)</li>
+<li>Then, we <em>execute</em> that request to get a <em>response</em></li>
+<li>Finally, we <em>handle</em> that response, transforming its contents into <code>R</code> as appropriate</li>
+</ol>
+<p>Let’s look at these one at a time.</p>
+<section id="build-a-request" class="level3">
+<h3 class="anchored" data-anchor-id="build-a-request">Build a Request</h3>
+<p>We can build a request using the <code>request</code> function:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>request</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>function (base_url) 
+{
+    new_request(base_url)
+}
+&lt;bytecode: 0x1155519e8&gt;
+&lt;environment: namespace:httr2&gt;</code></pre>
+</div>
+</div>
+<p>As seen here, we start a request by putting in a “base URL” - this is the unchanging part of the URL that won’t really depend on what query we are making.</p>
+<p>For the <code>cranlogs</code> API, we can take the base URL to be</p>
+<blockquote class="blockquote">
+<p><code>https://cranlogs.r-pkg.org</code></p>
+</blockquote>
+<p>so our base request is:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>my_req <span class="ot">&lt;-</span> <span class="fu">request</span>(<span class="st">"https://cranlogs.r-pkg.org"</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(my_req)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>&lt;httr2_request&gt;</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>GET https://cranlogs.r-pkg.org</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Body: empty</code></pre>
+</div>
+</div>
+<p>We see here that this is a <code>GET</code> request by default, indicating we would like a response from the server, but we are not</p>
+<p>We then modify the <em>path</em> of the request to point to the specific <em>resource</em> or <em>endpoint</em> we want to query. For example, if we want to get the “top” <code>R</code> packages for the last day, we can run the following:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>my_req <span class="ot">&lt;-</span> my_req <span class="sc">|&gt;</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path_append</span>(<span class="st">"top"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path_append</span>(<span class="st">"last-day"</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(my_req)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>&lt;httr2_request&gt;</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>GET https://cranlogs.r-pkg.org/top/last-day</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Body: empty</code></pre>
+</div>
+</div>
+</section>
+<section id="execute-a-request-to-get-a-response" class="level3">
+<h3 class="anchored" data-anchor-id="execute-a-request-to-get-a-response">Execute a Request to get a Response</h3>
+<p>Now that we have built our request, we pass it to <code>req_perform</code><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> to execute (perform) the request:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>my_resp <span class="ot">&lt;-</span> <span class="fu">req_perform</span>(my_req)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(my_resp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>&lt;httr2_response&gt;</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>GET https://cranlogs.r-pkg.org/top/last-day</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Status: 200 OK</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Content-Type: application/json</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Body: In memory (451 bytes)</code></pre>
+</div>
+</div>
+<p>The result of performing this request is a <em>response</em> object. We see several things in this response:</p>
+<ol type="1">
+<li>We received back a “200 OK” response, indicating that our query worked perfectly</li>
+<li>We received back data in a <code>json</code> format</li>
+<li>Our results are currently in memory (as opposed to be saved to a file)</li>
+</ol>
+</section>
+<section id="process-the-response-for-use-in-r" class="level3">
+<h3 class="anchored" data-anchor-id="process-the-response-for-use-in-r">Process the Response for Use in <code>R</code></h3>
+<p>Since we know our response is in <code>JSON</code> format, we can use the <code>resp_body_json</code> to get the “body” (content) of the response and parse it as <code>json</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>downloads_raw <span class="ot">&lt;-</span> <span class="fu">resp_body_json</span>(my_resp)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(downloads_raw)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$start
+[1] "2025-04-02T00:00:00.000Z"
+
+$end
+[1] "2025-04-02T00:00:00.000Z"
+
+$downloads
+$downloads[[1]]
+$downloads[[1]]$package
+[1] "ggplot2"
+
+$downloads[[1]]$downloads
+[1] "97172"
+
+
+$downloads[[2]]
+$downloads[[2]]$package
+[1] "tibble"
+
+$downloads[[2]]$downloads
+[1] "80421"
+
+
+$downloads[[3]]
+$downloads[[3]]$package
+[1] "rlang"
+
+$downloads[[3]]$downloads
+[1] "71966"
+
+
+$downloads[[4]]
+$downloads[[4]]$package
+[1] "cli"
+
+$downloads[[4]]$downloads
+[1] "69508"
+
+
+$downloads[[5]]
+$downloads[[5]]$package
+[1] "dplyr"
+
+$downloads[[5]]$downloads
+[1] "62663"
+
+
+$downloads[[6]]
+$downloads[[6]]$package
+[1] "lifecycle"
+
+$downloads[[6]]$downloads
+[1] "58518"
+
+
+$downloads[[7]]
+$downloads[[7]]$package
+[1] "tidyverse"
+
+$downloads[[7]]$downloads
+[1] "57524"
+
+
+$downloads[[8]]
+$downloads[[8]]$package
+[1] "glue"
+
+$downloads[[8]]$downloads
+[1] "57178"
+
+
+$downloads[[9]]
+$downloads[[9]]$package
+[1] "vctrs"
+
+$downloads[[9]]$downloads
+[1] "54492"</code></pre>
+</div>
+</div>
+<p>This gives us the type of data we were looking for!</p>
+<p>Note that <code>httr2</code> is designed for “piped” work, so we can write the entire process as</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">"https://cranlogs.r-pkg.org"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path_append</span>(<span class="st">"top"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path_append</span>(<span class="st">"last-day"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">resp_body_json</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$start
+[1] "2025-04-02T00:00:00.000Z"
+
+$end
+[1] "2025-04-02T00:00:00.000Z"
+
+$downloads
+$downloads[[1]]
+$downloads[[1]]$package
+[1] "ggplot2"
+
+$downloads[[1]]$downloads
+[1] "97172"
+
+
+$downloads[[2]]
+$downloads[[2]]$package
+[1] "tibble"
+
+$downloads[[2]]$downloads
+[1] "80421"
+
+
+$downloads[[3]]
+$downloads[[3]]$package
+[1] "rlang"
+
+$downloads[[3]]$downloads
+[1] "71966"
+
+
+$downloads[[4]]
+$downloads[[4]]$package
+[1] "cli"
+
+$downloads[[4]]$downloads
+[1] "69508"
+
+
+$downloads[[5]]
+$downloads[[5]]$package
+[1] "dplyr"
+
+$downloads[[5]]$downloads
+[1] "62663"
+
+
+$downloads[[6]]
+$downloads[[6]]$package
+[1] "lifecycle"
+
+$downloads[[6]]$downloads
+[1] "58518"
+
+
+$downloads[[7]]
+$downloads[[7]]$package
+[1] "tidyverse"
+
+$downloads[[7]]$downloads
+[1] "57524"
+
+
+$downloads[[8]]
+$downloads[[8]]$package
+[1] "glue"
+
+$downloads[[8]]$downloads
+[1] "57178"
+
+
+$downloads[[9]]
+$downloads[[9]]$package
+[1] "vctrs"
+
+$downloads[[9]]$downloads
+[1] "54492"</code></pre>
+</div>
+</div>
+<p>This data is not super helpful for us, since it’s in a “list of lists” format. This is not uncommon with <code>json</code> responses and it is usually at this point that we have a bit of work to do in order to make the data useable. Thankfully, API data is typically well-structured, so this doesn’t wind up being too hard. I personally find this type of complex <code>R</code> output a bit hard to parse, so I instead print it as a “string” (the ‘raw text’ of the unparsed JSON) and use the <code>prettify()</code> function from the <code>jsonlite</code> package to make it extra readable:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(jsonlite)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'jsonlite'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:purrr':
+
+    flatten</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>my_resp <span class="sc">|&gt;</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">resp_body_string</span>() <span class="sc">|&gt;</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">prettify</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{
+    "start": "2025-04-02T00:00:00.000Z",
+    "end": "2025-04-02T00:00:00.000Z",
+    "downloads": [
+        {
+            "package": "ggplot2",
+            "downloads": "97172"
+        },
+        {
+            "package": "tibble",
+            "downloads": "80421"
+        },
+        {
+            "package": "rlang",
+            "downloads": "71966"
+        },
+        {
+            "package": "cli",
+            "downloads": "69508"
+        },
+        {
+            "package": "dplyr",
+            "downloads": "62663"
+        },
+        {
+            "package": "lifecycle",
+            "downloads": "58518"
+        },
+        {
+            "package": "tidyverse",
+            "downloads": "57524"
+        },
+        {
+            "package": "glue",
+            "downloads": "57178"
+        },
+        {
+            "package": "vctrs",
+            "downloads": "54492"
+        }
+    ]
+}
+ </code></pre>
+</div>
+</div>
+<p>This is the same data as before, but much easier to read. At this point, we should pause and make an ‘attack plan’ for our analysis. I see several things here:</p>
+<ol type="1">
+<li>I really only want the <code>"downloads"</code> part of the response.</li>
+<li>Each element inside <code>downloads</code> has the same flat structure, so they can be easily built into a one-row data frame.</li>
+<li>The column names are the same for each <code>downloads</code> element, so we will be able to put them into one big easy-to-use data frame.</li>
+</ol>
+<p>To do these steps, we will need to use functionality from the <code>purrr</code> package, which we will discuss in more detail next week. For now, it suffices to run:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>downloads_df <span class="ot">&lt;-</span> downloads_raw <span class="sc">|&gt;</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pluck</span>(<span class="st">"downloads"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(as_tibble) <span class="sc">|&gt;</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here, we see we</p>
+<ol type="1">
+<li>Pulled out the <code>"downloads"</code> portion of the JSON (<code>pluck</code>)</li>
+<li>Converted each row to a data frame (<code>map(as_tibble)</code>)</li>
+<li>Combined the results rowwise (<code>list_rbind</code>)</li>
+</ol>
+<p>The result is a very nice little data frame:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>downloads_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 2
+  package   downloads
+  &lt;chr&gt;     &lt;chr&gt;    
+1 ggplot2   97172    
+2 tibble    80421    
+3 rlang     71966    
+4 cli       69508    
+5 dplyr     62663    
+6 lifecycle 58518    
+7 tidyverse 57524    
+8 glue      57178    
+9 vctrs     54492    </code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="your-turn" class="level2">
+<h2 class="anchored" data-anchor-id="your-turn">Your Turn!</h2>
+<p>Now it’s your turn! In your breakout rooms, try the following:</p>
+<ol type="1">
+<li><p>Make sure you can run all of the code above.</p></li>
+<li><p>Modify the above code to get the top 100 <code>R</code> packages.</p>
+<p>This is a minor change to the request only, but you will need to read the <a href="https://github.com/r-hub/cranlogs.app">documentation</a> to see where and how the request needs to be changed.</p></li>
+</ol>
+<div class="callout callout-style-default callout-note callout-titled" title="Solution">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">"https://cranlogs.r-pkg.org"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path_append</span>(<span class="st">"top"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path_append</span>(<span class="st">"last-day"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path_append</span>(<span class="dv">100</span>) <span class="sc">|&gt;</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">resp_body_json</span>() <span class="sc">|&gt;</span></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pluck</span>(<span class="st">"downloads"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(as_tibble) <span class="sc">|&gt;</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 100 × 2
+   package   downloads
+   &lt;chr&gt;     &lt;chr&gt;    
+ 1 ggplot2   97172    
+ 2 tibble    80421    
+ 3 rlang     71966    
+ 4 cli       69508    
+ 5 dplyr     62663    
+ 6 lifecycle 58518    
+ 7 tidyverse 57524    
+ 8 glue      57178    
+ 9 vctrs     54492    
+10 jsonlite  54381    
+# ℹ 90 more rows</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<ol start="3" type="1">
+<li><p>Modify your query to get the daily downloads for the <code>ggplot2</code> package over the last month. This will require changes to how you process the response, so be sure to look at the raw JSON first.</p>
+<p><em>Hint: The <code>pluck</code> function can also take a number as input. This will say which list item (by position) to return.</em></p></li>
+</ol>
+<div class="callout callout-style-default callout-note callout-titled" title="Solution">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">"https://cranlogs.r-pkg.org"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path_append</span>(<span class="st">"downloads"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path_append</span>(<span class="st">"daily"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path_append</span>(<span class="st">"last-month"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path_append</span>(<span class="st">"ggplot2"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">resp_body_json</span>() <span class="sc">|&gt;</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pluck</span>(<span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$downloads
+$downloads[[1]]
+$downloads[[1]]$day
+[1] "2025-03-04"
+
+$downloads[[1]]$downloads
+[1] 68641
+
+
+$downloads[[2]]
+$downloads[[2]]$day
+[1] "2025-03-05"
+
+$downloads[[2]]$downloads
+[1] 69055
+
+
+$downloads[[3]]
+$downloads[[3]]$day
+[1] "2025-03-06"
+
+$downloads[[3]]$downloads
+[1] 71064
+
+
+$downloads[[4]]
+$downloads[[4]]$day
+[1] "2025-03-07"
+
+$downloads[[4]]$downloads
+[1] 59153
+
+
+$downloads[[5]]
+$downloads[[5]]$day
+[1] "2025-03-08"
+
+$downloads[[5]]$downloads
+[1] 37164
+
+
+$downloads[[6]]
+$downloads[[6]]$day
+[1] "2025-03-09"
+
+$downloads[[6]]$downloads
+[1] 37480
+
+
+$downloads[[7]]
+$downloads[[7]]$day
+[1] "2025-03-10"
+
+$downloads[[7]]$downloads
+[1] 68376
+
+
+$downloads[[8]]
+$downloads[[8]]$day
+[1] "2025-03-11"
+
+$downloads[[8]]$downloads
+[1] 73772
+
+
+$downloads[[9]]
+$downloads[[9]]$day
+[1] "2025-03-12"
+
+$downloads[[9]]$downloads
+[1] 72439
+
+
+$downloads[[10]]
+$downloads[[10]]$day
+[1] "2025-03-13"
+
+$downloads[[10]]$downloads
+[1] 70576
+
+
+$downloads[[11]]
+$downloads[[11]]$day
+[1] "2025-03-14"
+
+$downloads[[11]]$downloads
+[1] 61456
+
+
+$downloads[[12]]
+$downloads[[12]]$day
+[1] "2025-03-15"
+
+$downloads[[12]]$downloads
+[1] 39683
+
+
+$downloads[[13]]
+$downloads[[13]]$day
+[1] "2025-03-16"
+
+$downloads[[13]]$downloads
+[1] 40356
+
+
+$downloads[[14]]
+$downloads[[14]]$day
+[1] "2025-03-17"
+
+$downloads[[14]]$downloads
+[1] 68526
+
+
+$downloads[[15]]
+$downloads[[15]]$day
+[1] "2025-03-18"
+
+$downloads[[15]]$downloads
+[1] 72816
+
+
+$downloads[[16]]
+$downloads[[16]]$day
+[1] "2025-03-19"
+
+$downloads[[16]]$downloads
+[1] 71516
+
+
+$downloads[[17]]
+$downloads[[17]]$day
+[1] "2025-03-20"
+
+$downloads[[17]]$downloads
+[1] 71192
+
+
+$downloads[[18]]
+$downloads[[18]]$day
+[1] "2025-03-21"
+
+$downloads[[18]]$downloads
+[1] 59108
+
+
+$downloads[[19]]
+$downloads[[19]]$day
+[1] "2025-03-22"
+
+$downloads[[19]]$downloads
+[1] 37789
+
+
+$downloads[[20]]
+$downloads[[20]]$day
+[1] "2025-03-23"
+
+$downloads[[20]]$downloads
+[1] 37987
+
+
+$downloads[[21]]
+$downloads[[21]]$day
+[1] "2025-03-24"
+
+$downloads[[21]]$downloads
+[1] 66001
+
+
+$downloads[[22]]
+$downloads[[22]]$day
+[1] "2025-03-25"
+
+$downloads[[22]]$downloads
+[1] 71551
+
+
+$downloads[[23]]
+$downloads[[23]]$day
+[1] "2025-03-26"
+
+$downloads[[23]]$downloads
+[1] 71879
+
+
+$downloads[[24]]
+$downloads[[24]]$day
+[1] "2025-03-27"
+
+$downloads[[24]]$downloads
+[1] 69295
+
+
+$downloads[[25]]
+$downloads[[25]]$day
+[1] "2025-03-28"
+
+$downloads[[25]]$downloads
+[1] 57190
+
+
+$downloads[[26]]
+$downloads[[26]]$day
+[1] "2025-03-29"
+
+$downloads[[26]]$downloads
+[1] 36177
+
+
+$downloads[[27]]
+$downloads[[27]]$day
+[1] "2025-03-30"
+
+$downloads[[27]]$downloads
+[1] 34255
+
+
+$downloads[[28]]
+$downloads[[28]]$day
+[1] "2025-03-31"
+
+$downloads[[28]]$downloads
+[1] 58583
+
+
+$downloads[[29]]
+$downloads[[29]]$day
+[1] "2025-04-01"
+
+$downloads[[29]]$downloads
+[1] 68779
+
+
+$downloads[[30]]
+$downloads[[30]]$day
+[1] "2025-04-02"
+
+$downloads[[30]]$downloads
+[1] 97172
 
 
 
-</main> <!-- /main -->
+$start
+[1] "2025-03-04"
+
+$end
+[1] "2025-04-02"
+
+$package
+[1] "ggplot2"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pluck</span>(<span class="st">"downloads"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map</span>(as_tibble) <span class="sc">|&gt;</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 1
+  value    
+  &lt;chr&gt;    
+1 downloads</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<ol start="4" type="1">
+<li><p>‘Functionize’ your daily downloads query as a function which takes an arbitrary package name and gets its daily downloads.</p>
+<p><em>Hint: Use a <code>mutate</code> command to add the package name as a new column to the resulting data frame and to convert the <code>day</code> column to a <code>Date</code> object (<code>day=as.Date(day)</code>)</em>.</p></li>
+</ol>
+<div class="callout callout-style-default callout-note callout-titled" title="Solution">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>get_downloads <span class="ot">&lt;-</span> <span class="cf">function</span>(pkg){</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">request</span>(<span class="st">"https://cranlogs.r-pkg.org"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_url_path_append</span>(<span class="st">"downloads"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_url_path_append</span>(<span class="st">"daily"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_url_path_append</span>(<span class="st">"last-month"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_url_path_append</span>(pkg) <span class="sc">|&gt;</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">resp_body_json</span>() <span class="sc">|&gt;</span></span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>        <span class="fu">pluck</span>(<span class="dv">1</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">pluck</span>(<span class="st">"downloads"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">map</span>(as_tibble) <span class="sc">|&gt;</span></span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span></span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">package=</span>pkg, </span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>               <span class="at">day=</span><span class="fu">as.Date</span>(day))</span>
+<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a>gg_downloads <span class="ot">&lt;-</span> <span class="fu">get_downloads</span>(<span class="st">"ggplot2"</span>)</span>
+<span id="cb44-19"><a href="#cb44-19" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(gg_downloads)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 30 × 3
+   day        downloads package
+   &lt;date&gt;         &lt;int&gt; &lt;chr&gt;  
+ 1 2025-03-04     68641 ggplot2
+ 2 2025-03-05     69055 ggplot2
+ 3 2025-03-06     71064 ggplot2
+ 4 2025-03-07     59153 ggplot2
+ 5 2025-03-08     37164 ggplot2
+ 6 2025-03-09     37480 ggplot2
+ 7 2025-03-10     68376 ggplot2
+ 8 2025-03-11     73772 ggplot2
+ 9 2025-03-12     72439 ggplot2
+10 2025-03-13     70576 ggplot2
+# ℹ 20 more rows</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<ol start="5" type="1">
+<li>Use your function to get daily downloads for the following <code>R</code> packages:
+<ul>
+<li><code>ggplot2</code></li>
+<li><code>dplyr</code></li>
+<li><code>httr2</code></li>
+<li><code>tibble</code></li>
+<li><code>purrr</code></li>
+<li><code>tidyr</code> and combine your results into a single data frame. Then plot the download trends for each package using <code>ggplot2</code>.</li>
+</ul>
+You can do this by calling your function in a loop, but you should also try to apply the <code>map() |&gt; list_rbind()</code> idiom here as well.</li>
+</ol>
+<div class="callout callout-style-default callout-note callout-titled" title="Solution">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>PACKAGES <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"ggplot2"</span>, <span class="st">"dplyr"</span>, <span class="st">"httr2"</span>, <span class="st">"tibble"</span>, <span class="st">"purrr"</span>, <span class="st">"tidyr"</span>)</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a><span class="fu">map</span>(PACKAGES, get_downloads) <span class="sc">|&gt;</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>day, </span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">y=</span>downloads, </span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">color=</span>package, </span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">group=</span>package)) <span class="sc">+</span></span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_date</span>() <span class="sc">+</span></span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">xlab</span>(<span class="st">"Date of Download"</span>) <span class="sc">+</span></span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ylab</span>(<span class="st">"Number of Package Downloads"</span>) <span class="sc">+</span></span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">caption=</span><span class="st">"Data from cranlogs.r-pkg.org"</span>) <span class="sc">+</span></span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"bottom"</span>) <span class="sc">+</span></span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">type=</span><span class="st">"qual"</span>, </span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a>                         <span class="at">palette=</span><span class="dv">2</span>, </span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>                         <span class="at">name=</span><span class="st">"Package Name"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lab09_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>In this case, there is a <code>cranlogs</code> package for interacting with this API. This type of package is commonly called a “wrapper” because it shields the user from the details of the API and exposes a more idiomatic (and more useful) interface. In general, when you can find an <code>R</code> package that wraps an API, it is a good idea to use it. For certain very complex APIs, <em>e.g.</em>, the <a href="https://www.bloomberg.com/professional/support/api-library/">API that powers Bloomberg</a> Financial Information Services, use of the associated <a href="https://cran.r-project.org/web/packages/Rblpapi/vignettes/rblpapi-intro.html"><code>R</code> package</a> is almost mandatory because the underlying API is so complicated. For this in-class exercise, we will use the “raw” API as practice since you can’t always assume a nice <code>R</code> package will exist.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>We will only use the basic <code>req_perform</code> for now, but <code>httr2</code> provides options for parallel execution, delayed execution, <em>etc.</em>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -588,4 +1505,4 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab09.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab09.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab09.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab09.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

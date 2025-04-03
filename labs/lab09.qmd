@@ -3,4 +3,335 @@ title: "{{< var course.short >}} Week 9 In-Class Activity: Data Import"
 engine: knitr
 ---
 
+```{r}
+#| message: false
+#| warning: false
+library(tidyverse)
+```
+
 [Week 9 Slides](../slides/slides09.html)
+
+This week, we are going to practice accessing data from a nice 
+API using `httr2`. Specifically, we are going to interact with the
+`cranlogs` server, which keeps records of the most popular `R` packages
+based on download frequency. 
+
+Documentation for `cranlogs` can be found [in its GitHub
+`README`](https://github.com/r-hub/cranlogs.app) with a very small
+example at [here](https://cranlogs.r-pkg.org/#jsonapi).[^rpkg]
+
+[^rpkg]: In this case, there is a `cranlogs` package for interacting with
+this API. This type of package is commonly called a "wrapper" because it
+shields the user from the details of the API and exposes a more idiomatic
+(and more useful) interface. In general, when you can find an `R` package
+that wraps an API, it is a good idea to use it. For certain very complex
+APIs, *e.g.*, the [API that powers Bloomberg](https://www.bloomberg.com/professional/support/api-library/) 
+Financial Information Services, use of the associated 
+[`R` package](https://cran.r-project.org/web/packages/Rblpapi/vignettes/rblpapi-intro.html) 
+is almost mandatory because the underlying API is so complicated. For this
+in-class exercise, we will use the "raw" API as practice since you can't
+always assume a nice `R` package will exist. 
+
+The `cranlogs` documentation give the following example of how the `curl` program
+can call the API from the command line: 
+
+```{bash}
+#| cache: true
+#| message: false
+curl https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2
+```
+
+Even though this is not `R` code, we can emulate this action in `R`. 
+
+```{r}
+#| cache: true
+library(jsonlite)
+fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2")
+```
+
+And if we want to get download information for other packages, we can simply
+modify the URL: 
+
+```{r}
+#| cache: true
+library(jsonlite)
+fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/dplyr")
+```
+
+```{r}
+#| cache: true
+library(jsonlite)
+fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/readr")
+```
+
+and so on. But this quickly becomes repetitive and we would prefer a 
+*programmatic* interface. This is where the `httr2` package comes in. 
+
+## `httr2`
+
+`httr2` takes a "three-stage" approach to handling HTTP requests: 
+
+1. First, we _build_ a _request_, specifying the URL to be queried, the mode of 
+   that query, and any relevant information (data, passwords, *etc.*)
+2. Then, we _execute_ that request to get a _response_
+3. Finally, we _handle_ that response, transforming its contents into `R` as
+   appropriate
+   
+Let's look at these one at a time. 
+
+### Build a Request
+
+We can build a request using the `request` function: 
+
+```{r}
+library(httr2)
+request
+```
+
+As seen here, we start a request by putting in a "base URL" - this is 
+the unchanging part of the URL that won't really depend on what query we are making. 
+
+For the `cranlogs` API, we can take the base URL to be 
+
+> `https://cranlogs.r-pkg.org`
+
+so our base request is: 
+
+```{r}
+my_req <- request("https://cranlogs.r-pkg.org")
+print(my_req)
+```
+
+We see here that this is a `GET` request by default, indicating we would like
+a response from the server, but we are not 
+
+We then modify the _path_ of the request to point to the specific _resource_ or
+_endpoint_ we want to query. For example, if we want to get the "top" `R` 
+packages for the last day, we can run the following: 
+
+```{r}
+my_req <- my_req |> 
+    req_url_path_append("top") |>
+    req_url_path_append("last-day")
+print(my_req)
+```
+
+### Execute a Request to get a Response
+
+Now that we have built our request, we pass it to `req_perform`[^adv1] to execute 
+(perform) the request: 
+
+[^adv1]: We will only use the basic `req_perform` for now, but `httr2` 
+provides options for parallel execution, delayed execution, *etc.*.
+
+```{r}
+my_resp <- req_perform(my_req)
+print(my_resp)
+```
+
+The result of performing this request is a _response_ object. We see several
+things in this response: 
+
+1. We received back a "200 OK" response, indicating that our query worked perfectly
+2. We received back data in a `json` format
+3. Our results are currently in memory (as opposed to be saved to a file)
+
+### Process the Response for Use in `R`
+
+Since we know our response is in `JSON` format, we can use the `resp_body_json`
+to get the "body" (content) of the response and parse it as `json`: 
+
+```{r}
+downloads_raw <- resp_body_json(my_resp)
+print(downloads_raw)
+```
+
+This gives us the type of data we were looking for!
+
+Note that `httr2` is designed for "piped" work, so we can write the entire
+process as
+
+```{r}
+request("https://cranlogs.r-pkg.org") |>
+    req_url_path_append("top") |>
+    req_url_path_append("last-day") |>
+    req_perform() |>
+    resp_body_json()
+```
+
+This data is not super helpful for us, since it's in a "list of lists" format. 
+This is not uncommon with `json` responses and it is usually at this point that 
+we have a bit of work to do in order to make the data useable. Thankfully, API
+data is typically well-structured, so this doesn't wind up being too hard. 
+I personally find this type of complex `R` output a bit hard to parse, so I
+instead print it as a "string" (the 'raw text' of the unparsed JSON) and use
+the `prettify()` function from the `jsonlite` package to make it extra readable: 
+
+```{r}
+library(jsonlite)
+my_resp |>
+    resp_body_string() |>
+    prettify()
+```
+
+This is the same data as before, but much easier to read. At this point, we
+should pause and make an 'attack plan' for our analysis. I see several things here:
+
+1) I really only want the `"downloads"` part of the response. 
+2) Each element inside `downloads` has the same flat structure, so they can
+   be easily built into a one-row data frame. 
+3) The column names are the same for each `downloads` element, so we will be
+   able to put them into one big easy-to-use data frame. 
+   
+To do these steps, we will need to use functionality from the `purrr` package, 
+which we will discuss in more detail next week. For now, it suffices to run: 
+
+```{r}
+library(purrr)
+library(tibble)
+downloads_df <- downloads_raw |>
+    pluck("downloads") |>
+    map(as_tibble) |>
+    list_rbind()
+```
+
+Here, we see we
+
+1) Pulled out the `"downloads"` portion of the JSON (`pluck`)
+2) Converted each row to a data frame (`map(as_tibble)`)
+3) Combined the results rowwise (`list_rbind`)
+
+The result is a very nice little data frame: 
+
+```{r}
+downloads_df
+```
+
+## Your Turn!
+
+Now it's your turn! In your breakout rooms, try the following: 
+
+1. Make sure you can run all of the code above. 
+2. Modify the above code to get the top 100 `R` packages. 
+
+   This is a minor change to the request only, but you will need to read the 
+   [documentation](https://github.com/r-hub/cranlogs.app) to see where and how
+   the request needs to be changed. 
+   
+::: {.callout-note collapse="true" title="Solution"}
+   
+```{r}
+#| cache: true
+request("https://cranlogs.r-pkg.org") |>
+    req_url_path_append("top") |>
+    req_url_path_append("last-day") |>
+    req_url_path_append(100) |>
+    req_perform() |>
+    resp_body_json() |>
+    pluck("downloads") |>
+    map(as_tibble) |>
+    list_rbind()
+```
+
+:::
+3. Modify your query to get the daily downloads for the `ggplot2` package over
+   the last month. This will require changes to how you process the response, so
+   be sure to look at the raw JSON first. 
+   
+   *Hint: The `pluck` function can also take a number as input. This will say
+   which list item (by position) to return.*
+   
+
+::: {.callout-note collapse="true" title="Solution"}
+   
+```{r}
+#| cache: true
+request("https://cranlogs.r-pkg.org") |>
+    req_url_path_append("downloads") |>
+    req_url_path_append("daily") |>
+    req_url_path_append("last-month") |>
+    req_url_path_append("ggplot2") |>
+    req_perform() |>
+    resp_body_json() |>
+    pluck(1)
+    pluck("downloads") |>
+    map(as_tibble) |>
+    list_rbind()
+```
+
+:::
+4. 'Functionize' your daily downloads query as a function which takes an arbitrary
+    package name and gets its daily downloads.
+    
+    *Hint: Use a `mutate` command to add the package name
+    as a new column to the resulting data frame and to
+    convert the `day` column to a `Date` object (`day=as.Date(day)`)*. 
+    
+::: {.callout-note collapse="true" title="Solution"}
+   
+```{r}
+#| cache: true
+library(dplyr)
+get_downloads <- function(pkg){
+    request("https://cranlogs.r-pkg.org") |>
+        req_url_path_append("downloads") |>
+        req_url_path_append("daily") |>
+        req_url_path_append("last-month") |>
+        req_url_path_append(pkg) |>
+        req_perform() |>
+        resp_body_json() |>
+        pluck(1) |> 
+        pluck("downloads") |>
+        map(as_tibble) |>
+        list_rbind() |>
+        mutate(package=pkg, 
+               day=as.Date(day))
+}
+
+gg_downloads <- get_downloads("ggplot2")
+print(gg_downloads)
+```
+
+:::
+5. Use your function to get daily downloads for the following `R` packages: 
+   - `ggplot2`
+   - `dplyr`
+   - `httr2`
+   - `tibble`
+   - `purrr`
+   - `tidyr`
+   and combine your results into a single data frame. Then plot the download
+   trends for each package using `ggplot2`.
+   
+   You can do this by calling your function in a loop, but you should
+   also try to apply the `map() |> list_rbind()` idiom here as well. 
+   
+::: {.callout-note collapse="true" title="Solution"}
+   
+
+```{r}
+#| cache: true
+library(ggplot2)
+
+PACKAGES <- c("ggplot2", "dplyr", "httr2", "tibble", "purrr", "tidyr")
+
+map(PACKAGES, get_downloads) |>
+  list_rbind() |>
+  ggplot(aes(x=day, 
+             y=downloads, 
+             color=package, 
+             group=package)) +
+    geom_point() +
+    geom_line() +
+    scale_x_date() +
+    xlab("Date of Download") +
+    ylab("Number of Package Downloads") +
+    theme_bw() +
+    labs(caption="Data from cranlogs.r-pkg.org") +
+    theme(legend.position="bottom") +
+    scale_color_brewer(type="qual", 
+                         palette=2, 
+                         name="Package Name")
+```
+
+:::
