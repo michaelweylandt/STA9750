@@ -1,7 +1,7 @@
 Hi {{ name }},
 
 For MP#0{{ project_id }} (https://michael-weylandt.com/STA9750/miniprojects/mini0{{ project_id }}.html), you received an
-overall score of {{ total }} out of 50 ({{ 2*total }}%). Your submission and peer feedback can be found at https://github.com/michael-weylandt/{{course_repo}}/issues/{{issue_num}}.
+overall score of {{ total }} out of 50 ({{ 2*total }}%). Your submission and peer feedback can be found at https://github.com/michaelweylandt/{{course_repo}}/issues/{{issue_num}}.
 
 This score was obtained by summing the following: 
 {% for c in categories %}
