@@ -225,9 +225,11 @@ one each for Mark Ronson and Bruno Mars.
 library(tidyr)
 library(stringr)
 clean_artist_string <- function(x){
-    str_replace_all(x, "\\['", "") |> 
-        str_replace_all("'\\]", "") |>
-        str_replace_all(" '", "")
+    x |>
+    str_replace_all("\\['", "") |>
+    str_replace_all("'\\]", "") |>
+    str_replace_all("[ ]?'", "") |>
+    str_replace_all("[ ]*,[ ]*", ",") 
 }
 SONGS |> 
   separate_longer_delim(artists, ",") |>
