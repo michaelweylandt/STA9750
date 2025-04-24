@@ -180,8 +180,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#exercise-1-cuny-map" id="toc-exercise-1-cuny-map" class="nav-link active" data-scroll-target="#exercise-1-cuny-map">Exercise 1: CUNY Map</a></li>
+  <li><a href="#exercise-2-cocktails-data" id="toc-exercise-2-cocktails-data" class="nav-link" data-scroll-target="#exercise-2-cocktails-data">Exercise 2: Cocktails Data</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab11.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab11.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -206,17 +213,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <p><a href="../slides/slides11.html">Week 11 Slides</a></p>
-<div class="callout callout-style-default callout-tip callout-titled" title="CUNY Mapping Code">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<p>In today’s class, we’re going to work through <strong>two</strong> web scraping exercises:</p>
+<ol type="1">
+<li>Extending our ‘CUNY Map’ from <a href="./lab01.html">Lab #01</a></li>
+<li>Scraping Cocktail Recipes 🍸 from Hadley Wickham</li>
+</ol>
+<section id="exercise-1-cuny-map" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-1-cuny-map">Exercise 1: CUNY Map</h2>
+<p>In this exercise, we’re going to take our Baruch map from <a href="./lab01.html">Lab #01</a> and extend it to pull <em>all</em> CUNY campuses. This exercise is intended to help you practice scraping data from Wikipedia.</p>
+<ol type="1">
+<li>Adapt the HTML parsing code from Lab #01 to take a single URL and pull out the GPS coordinates.</li>
+<li>Investigate the <a href="https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions">Wikipedia List of CUNYs</a> and identify which table can be used to get links to each page.</li>
+</ol>
+<div class="callout callout-style-default callout-caution callout-titled" title="Wikipedia Table Scraping">
+<div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-CUNY Mapping Code
+Wikipedia Table Scraping
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Wikipedia has tons of excellent data tables which have been collected by incredible volunteers. It can be an incredibly useful source, but there are a few difficulties in getting data out of Wikipedia. In particular, Wikipedia uses a rich JavaScript library to make tables slightly interactive (column sorting, <em>etc.</em>) that modifies the page HTML. <code>R</code> will get the “raw” HTML of the page, so you will need to either disable JavaScript temporarily (tricky) or make sure you are looking at the actual page source that <code>R</code> will see (“View Source”).</p>
+</div>
+</div>
+<ol start="3" type="1">
+<li>Parse the table to pull links to each CUNY’s individual Wikipedia page.</li>
+<li>Apply your HTML parsing function from Step 1 to each CUNY page using the <code>map</code> function or similar.</li>
+<li>Combine your results into a <code>data.frame</code> and use that <code>data.frame</code> to build a CUNY-wide map</li>
+</ol>
+<div class="callout callout-style-default callout-tip callout-titled" title="CUNY Mapping Code - Solution">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+CUNY Mapping Code - Solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rvest)</span>
@@ -254,15 +291,69 @@ CUNY Mapping Code
 <span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>MAP</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="leaflet html-widget html-fill-item" id="htmlwidget-dc978b9333d5799f0ff2" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-dc978b9333d5799f0ff2">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org/copyright/\">OpenStreetMap<\/a>,  <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL<\/a>"}]},{"method":"addMarkers","args":[[40.740159,40.8194,40.7485,40.79972,40.7529,40.768538,40.7703,40.774,40.71768,40.75523,40.754894,40.8194,40.748386,40.85806,40.8175,40.8725,40.63111,40.6958,40.57806,40.6663083,40.6,40.74361,40.737,40.75556,40.7477,40.702],[-73.98338,-73.95,-73.9836,-73.93889,-73.9841,-73.964741,-73.9883,-73.9802,-74.01188,-73.988827,-73.98185599999999,-73.95,-73.99008499999999,-73.91249999999999,-73.92722000000001,-73.89389,-73.9525,-73.988,-73.93306,-73.95664720000001,-74.15000000000001,-73.93444,-73.81699999999999,-73.75667,-73.94369,-73.795],null,null,null,{"maxWidth":300,"minWidth":50,"autoPan":true,"keepInView":false,"closeButton":true,"closeOnClick":false,"className":""},["Baruch College","The City College","Graduate Center","Graduate School of Public Health & Health Policy","Guttman Community College","Hunter College","John Jay College of Criminal Justice","Macaulay Honors College","Manhattan Community College","Newmark Graduate School of Journalism","School of Labor and Urban Studies","School of Medicine","School of Professional Studies","Bronx Community College","Hostos Community College","Lehman College","Brooklyn College","College of Technology","Kingsborough Community College","Medgar Evers College","College of Staten Island","LaGuardia Community College","Queens College","Queensborough Community College","School of Law","York College"],null,null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[40.57806,40.8725],"lng":[-74.15000000000001,-73.75667]}},"evals":[],"jsHooks":[]}</script>
+<div class="leaflet html-widget html-fill-item" id="htmlwidget-4164a70982de441c6f6c" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-4164a70982de441c6f6c">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org/copyright/\">OpenStreetMap<\/a>,  <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL<\/a>"}]},{"method":"addMarkers","args":[[40.740159,40.8194,40.7485,40.79972,40.7529,40.768538,40.7703,40.774,40.71768,40.75523,40.754894,40.8194,40.748386,40.85806,40.8175,40.8725,40.63111,40.6958,40.57806,40.6663083,40.6,40.74361,40.737,40.75556,40.7477,40.702],[-73.98338,-73.95,-73.9836,-73.93889,-73.9841,-73.964741,-73.9883,-73.9802,-74.01188,-73.988827,-73.98185599999999,-73.95,-73.99008499999999,-73.91249999999999,-73.92722000000001,-73.89389,-73.9525,-73.988,-73.93306,-73.95664720000001,-74.15000000000001,-73.93444,-73.81699999999999,-73.75667,-73.94369,-73.795],null,null,null,{"maxWidth":300,"minWidth":50,"autoPan":true,"keepInView":false,"closeButton":true,"closeOnClick":false,"className":""},["Baruch College","The City College","Graduate Center","Graduate School of Public Health & Health Policy","Guttman Community College","Hunter College","John Jay College of Criminal Justice","Macaulay Honors College","Manhattan Community College","Newmark Graduate School of Journalism","School of Labor and Urban Studies","School of Medicine","School of Professional Studies","Bronx Community College","Hostos Community College","Lehman College","Brooklyn College","College of Technology","Kingsborough Community College","Medgar Evers College","College of Staten Island","LaGuardia Community College","Queens College","Queensborough Community College","School of Law","York College"],null,null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[40.57806,40.8725],"lng":[-74.15000000000001,-73.75667]}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </div>
 </div>
 </div>
+</section>
+<section id="exercise-2-cocktails-data" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-2-cocktails-data">Exercise 2: Cocktails Data</h2>
+<p><a href="https://hadley.nz/">Hadley Wickham</a> is the author of many of the “tidy tools” we use in this course. He is also an excellent bartender and chef. In this exercise, we are going to web scrape his cocktail recipe book which can be found at <a href="https://cocktails.hadley.nz/">https://cocktails.hadley.nz/</a>.</p>
+<p>Our goal is to create a data frame that records all 150+ recipes on this site (as rows) and the different ingredients (as columns). This week, we are going to pull the different recipes into <code>R</code>: next week we are going to process the text and create our final data frame (so stay tuned!).</p>
+<p>Working with your project team, go through the following steps to build a scraping strategy:</p>
+<ol type="1">
+<li>Poke around the website to see how it is organized. Is there a single page listing all of the cocktails? If not, how else can you make sure that you’ve explored the entire site.</li>
+<li>Once you know how you’re going to explore the whole site, use your browser tools to see if you can identify an HTML element that corresponds to a single recipe. (This element will occur several times per page) Remember that you want to select “as small as possible” but no smaller.</li>
+<li>Once you have found the right HTML element for a recipe, identify an HTML element that corresponds to i) the title; and ii) individual ingredients.</li>
+</ol>
+<p>For this task, you will likely see several recipes more than once. Don’t worry about this for now - we can <code>distinct</code> out the duplicates later in our analysis. It’s better to be over-inclusive than under-inclusive.</p>
+<p>After you have built your plan, it’s time to start putting this all to code.</p>
+<ol type="1">
+<li><p>Write code to download all needed <em>pages</em> locally. As with your Mini-Projects, make sure to ‘cache’ your results so you don’t waste time (yours or the webserver’s) re-downloading unnecessarily.</p>
+<p>You will likely need to hit <a href="https://cocktails.hadley.nz/">the landing page</a> at least once to get a list of additional pages to download.</p>
+<p>I recommend structuring your code to:</p>
+<ol type="i">
+<li>Download the home page</li>
+<li>Extract relevant links to other pages</li>
+<li>Go through the list of other pages and download those</li>
+</ol></li>
+<li><p>Write code to parse <em>all</em> of your downloaded <code>HTML</code> files and pull out the HTML elements for each recipe</p></li>
+<li><p>Do some basic ‘rectangling’ of each HTML element to get a ‘small’ data frame of the following format for each individual ingredient</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Ingredient</th>
+<th>Amount</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Daiquiri</td>
+<td>Rum</td>
+<td>2 oz</td>
+</tr>
+<tr class="even">
+<td>Daiquiri</td>
+<td>Lime Juice</td>
+<td>1 oz</td>
+</tr>
+<tr class="odd">
+<td>Daiquiri</td>
+<td>Simple Syrup</td>
+<td>0.75 oz</td>
+</tr>
+</tbody>
+</table>
+<p>For now, the <code>Amount</code> column can just be a string (raw HTML element text).</p></li>
+<li><p>Save your results and code - we’ll pick this up next week!</p></li>
+</ol>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -687,4 +778,4 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab11.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab11.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab11.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab11.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
