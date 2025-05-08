@@ -1467,6 +1467,9 @@ def peer_collect(project_id, rearchive, skip_pdf, force, github):
     with open(pf_file, "r") as f:
         try:
             ALL_PEER_FEEDBACK = json.loads(f.read())
+            
+            if not ALL_PEER_FEEDBACK:
+                raise ValueError # Bail to make new feedback file
         except ValueError:
             ALL_PEER_FEEDBACK = {
                 s: {vv: dcopy(PEER_FEEDBACK_SKELETON) for vv in v}
@@ -1481,8 +1484,6 @@ def peer_collect(project_id, rearchive, skip_pdf, force, github):
         STUDENT_LIST = github
 
     for student in STUDENT_LIST:
-        
-        import pdb; pdb.set_trace()
         if "issue_num" in ALL_PEER_FEEDBACK[student]:
             if not force:
                 continue
@@ -1571,13 +1572,14 @@ def peer_collect(project_id, rearchive, skip_pdf, force, github):
         else:
             KEY_ISSUE = RELEVANT_ISSUES[0]
             
-        import pdb; pdb.set_trace()
         EVALUATORS = ALL_STUDENTS.intersection(ALL_PEER_FEEDBACK[student].keys())
 
         for evaluator in EVALUATORS:
-            if not is_nan(ALL_PEER_FEEDBACK[student][evaluator]["posts"]):
-                if not force:
-                    continue
+            current_posts = ALL_PEER_FEEDBACK[student][evaluator]["posts"]
+            has_posts = current_posts and not is_nan(current_posts)
+            
+            if has_posts and not force:
+                continue
 
             POSTS = "\n----NEW POST----\n".join(
                 [
@@ -1653,7 +1655,6 @@ def peer_collect(project_id, rearchive, skip_pdf, force, github):
 
                 ALL_PEER_FEEDBACK[student][evaluator]["comments"][k] = comment.strip()
 
-            import pdb; pdb.set_trace()
             ALL_PEER_FEEDBACK[student][evaluator]["formatted_properly"] = ALL_FORMATTING
             ALL_PEER_FEEDBACK[student][evaluator]["posts"] = POSTS
 
@@ -1692,7 +1693,7 @@ def peer_grade(project_id):
 
     with open(pf_file, "r") as f:
         try:
-            ALL_PEER_FEEDBACK = json.loads(f.read())
+            ALL_PEER_FEEDBACK = json.loads(f.read() or '{}')
         except ValueError:
             click.echo(
                 "ERROR: Feedback file appears to be empty. Run 'peer collect' first."
@@ -1845,6 +1846,8 @@ def peer_meta(project_id, rearchive, skip_pdf, force):
             ALL_PEER_FEEDBACK = json.loads(f.read())
         except ValueError:
             raise click.Abort("Peer feedback appears to be empty. Run `peer collect -N {project_id}` to create feedback file at {pf_file}")
+        
+    NUM_PEER_FEEDBACK = sum([isinstance(v, dict) for f in ALL_PEER_FEEDBACK.values() for v in f.values()])
 
     ROSTER   = current_roster()
     STUDENTS = set(ROSTER["github"])
@@ -1858,18 +1861,21 @@ def peer_meta(project_id, rearchive, skip_pdf, force):
     for submittor in STUDENTS: 
         FEEDBACK   = ALL_PEER_FEEDBACK[submittor]
         EVALUATORS = STUDENTS.intersection(FEEDBACK.keys())
+        RUBRIC = None
         
         for evaluator in EVALUATORS:
             has_feedback = submittor in META_GRADES[evaluator]
-            
+
             if has_feedback and not force:
                 continue
                 
-            peer_comments = FEEDBACK[evaluator]["posts"].strip()
-            
-            if peer_comments:
+            peer_comments = FEEDBACK[evaluator]["posts"]
+
+            if not is_nan(peer_comments) and peer_comments:
+                peer_comments = peer_comments.strip()
+                SCORES_ASSIGNED = sum([len(v.keys()) for v in META_GRADES.values()])
                 click.clear()
-                click.echo(f"{evaluator} left the following comments on {submittor}'s {mp_str}")
+                click.echo(f"Meta {SCORES_ASSIGNED}/{NUM_PEER_FEEDBACK}:: {evaluator} left the following comments on {submittor}'s {mp_str}")
                 click.echo("---===---")
                 click.echo(peer_comments)
                 click.echo("---===---")
@@ -1880,7 +1886,9 @@ def peer_meta(project_id, rearchive, skip_pdf, force):
                                         type=click.Choice(SCORES_STR + ['r', 's']))
                                         
                     if score == "r":
-                        import pdb; pdb.set_trace()
+                        if not RUBRIC:
+                            RUBRIC = pd.read_html("https://michael-weylandt.com/STA9750/miniprojects.html")[0]
+                        click.echo(RUBRIC)
                     elif score == "s":
                         latest_pdf = op.join(course_dir(), "latest", "pdfs", f"{submittor}_mp{project_id}.pdf")
                         if op.exists(latest_pdf):
@@ -1889,7 +1897,33 @@ def peer_meta(project_id, rearchive, skip_pdf, force):
                             import pdb; pdb.set_trace()
                     else: 
                         score = int(score)
-                        comment = click.prompt(f"Any comments for {evaluator}?", type=str, default="")
+                        STANDARD_COMMENTS = [
+                            "NO COMMENTS ON THIS TOPIC FOUND", 
+                            "Missing submission - no penalty to evaluator.",
+                            "This is really above and beyond - thank you for making the effort.",
+                            "Great suggestions - really actionable and will certainly make a difference.",
+                            "Comments are directionally correct, but would be better if there was more specificity.",
+                            "Solid comments - but there's always some room for constructive cricitism even on the strongest projects, so think about if there's anything you would recommend improving upon.",
+                            "Really useful comments. I think your scores are well-calibrated here, but try to be a bit more clear about _why_ you took off a few points in certain sections.",
+                            "Good comments, focusing on just a few actionable items - thank you"
+                        ]
+                        
+                        click.echo("Pre-canned comments:")
+                        for n, txt in enumerate(STANDARD_COMMENTS):
+                            click.echo(f"- {n}: {txt}")
+                            
+                        comment = click.prompt(f"Any comments for {evaluator}?", type=str)
+                        
+                        try: 
+                            comment = STANDARD_COMMENTS[int(comment)]
+                        except ValueError:
+                            pass
+                        
+                        format_check = click.confirm("Was the submission appropriately formatted?", default=True)
+                        
+                        if not format_check:
+                            comment += "\nPlease not that your submission was not formatted according to the provided template: https://michael-weylandt.com/STA9750/miniprojects.html#peer-feedback-template Please attempt to do so in the future or a penalty may be assessed."
+                        
                         break
             else:
                 score = 0
