@@ -677,7 +677,7 @@ def project_list():
 @project.command(name="grade")
 @click.option(
     "--element",
-    type=click.Choice(["Proposal", "Check-In", "Final"], case_sensitive=False),
+    type=click.Choice(["Proposal", "Check-In", "Final", "Summary-Report"], case_sensitive=False),
     help="Which project element to assign grades for?",
     prompt="Which project element should grades be assigned for?",
 )
@@ -744,8 +744,15 @@ def project_grade(element, number, skip_email):
         )
 
         TEMPLATE = TEMPLATES.get_template(f"project_{element.lower()}.md")
+        
+        if element == "Summary-Report":
+            report_url = click.prompt("What URL was used for the graded report?")
+        else: 
+            report_url = None
 
-        SKELETON = TEMPLATE.render(team_name=TEAM_NAME, members=TEAM.itertuples())
+        SKELETON = TEMPLATE.render(team_name=TEAM_NAME, 
+                                   members=TEAM.itertuples(), 
+                                   report_url=report_url)
 
         FEEDBACK = click.edit(text=SKELETON, editor="/usr/bin/nano")
 
