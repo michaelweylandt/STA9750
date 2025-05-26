@@ -287,6 +287,33 @@ def mapping_index_file():
     filename.touch(exist_ok=True)
     return filename
 
+def number_to_letter(score):
+    if score >= 97:   # 97-100
+        return "A+"
+    elif score >= 93: # 94-97
+        return "A"
+    elif score >= 90: # 90-92
+        return "A-"
+    elif score >= 87: # 87-89 
+        return "B+"
+    elif score >= 83: # 83-86
+        return "B"
+    elif score >= 80: # 80-82
+        return "B-"
+    elif score >= 77: # 77-79
+        return "C+"
+    elif score >= 73: # 73-76
+        return "C"
+    elif score >= 70: # 70-72
+        return "C-"
+    elif score >= 67: # 67-69
+        return "D+"
+    elif score >= 63: # 63-66
+        return "D"
+    elif score >= 60: # 60-62
+        return "D-"
+    else:
+        return "F"
 
 def get_pf_mapping(project_id):
     """Load peer feedback mapping for MP#N.
@@ -791,6 +818,120 @@ def project_grade(element, number, skip_email):
     )
 
 
+@project.command(name="report")
+@click.option(
+    "-g",
+    "--github",
+    multiple=True,
+    help="GitHub ID to archive. Can be given multiple times. If blank, all active students in roster.",
+)
+def project_report(github):
+    "Assign grades to individual final reports"
+    
+    ROSTER = current_roster()
+    
+    if not github:
+        process_all = True
+        github = ROSTER.github.to_list()
+    else: 
+        process_all = False
+        
+    feedback_dir = op.join(course_dir(), "final_report_grades")
+    os.makedirs(feedback_dir, exist_ok=True)
+    
+    template = Environment(loader=FileSystemLoader("_cissoid/templates"), autoescape=select_autoescape()).get_template("project_final_report.md")
+    
+    random.shuffle(github)
+
+    for g in github: 
+        feedback_file = op.join(feedback_dir, f"final_report_{g}.txt")
+
+        if op.exists(feedback_file):
+            if process_all: 
+                continue # Just assume we're skipping if name not explicitly asked for
+            
+            if not click.confirm(f"Final report feedback already found for {g}. Are you sure you want to overwrite?"):
+                continue
+        
+        report_url = click.prompt(f"What URL was used for {g}'s final report?", default='Not Submitted')
+        
+        if report_url == 'Not Submitted': 
+            continue
+        
+        if click.confirm("Would you like me to open the report now?", default=True):
+            webbrowser.open(report_url)
+        
+        try: 
+            resp = r.get(report_url)
+            bs = BS(resp.text, features="lxml")
+            word_count = sum([len(p.text.split()) for p in bs.find("main").findAll("p")])
+        except: 
+            import pdb; pdb.set_trace()
+            
+        full_name = ROSTER[ROSTER.github == g].name.item()
+    
+        code_quality = click.prompt("What grade should be assigned for Code Quality?", 
+                                    type=click.IntRange(min=0, max=100))
+                                    
+        code_quality_txt = click.prompt("Any particular feedback on Code Quality?", type=str, default=None)
+        code_quality_txt = f"({number_to_letter(code_quality)}) {code_quality_txt}"
+        
+        data_acquisition = click.prompt("What grade should be assigned for Data Acquisition and Processing?", 
+                                    type=click.IntRange(min=0, max=100))
+                                    
+        data_acquisition_txt = click.prompt("Any particular feedback on Data Acquisition and Processing?", type=str, default=None)
+        data_acquisition_txt = f"({number_to_letter(data_acquisition)}) {data_acquisition_txt}"
+        
+        data_analysis = click.prompt("What grade should be assigned for Data Analysis?", 
+                                    type=click.IntRange(min=0, max=100))
+                                    
+        data_analysis_txt = click.prompt("Any particular feedback on Data Analysis?", type=str, default=None)
+        data_analysis_txt = f"({number_to_letter(data_analysis)}) {data_analysis_txt}"
+        
+        communication = click.prompt("What grade should be assigned for Communication and Presentation of Results?", 
+                                    type=click.IntRange(min=0, max=100))
+                                    
+        communication_txt = click.prompt("Any particular feedback on Communication and Presentation of Results?", type=str, default=None)
+        communication_txt = f"({number_to_letter(communication)}) {communication_txt}"
+        
+        overall_grade = round(0.2 * code_quality + 0.2 * data_acquisition + 0.3 * data_analysis + 0.3 * communication, 2)
+                                    
+        click.echo(f"{g} currently has an overall grade of {overall_grade}.")
+        other = click.prompt("Should any other adjustments be applied?", 
+                             type=click.IntRange(min=-100, max=100), 
+                             default=0)
+                             
+        if other: 
+            other_reason = click.prompt(f"Why is this adjustment ({other}) being applied?")
+            overall_grade += other
+        else: 
+            other_reason = None
+            
+        skeleton = template.render(
+            github_id = g, 
+            full_name = full_name, 
+            overall_grade = overall_grade,
+            report_url = report_url,
+            other = other, 
+            other_reason = other_reason, 
+            code_quality = code_quality, 
+            data_acquisition = data_acquisition, 
+            data_analysis = data_analysis, 
+            code_quality_txt = code_quality_txt, 
+            data_acquisition_txt = data_acquisition_txt, 
+            data_analysis_txt = data_analysis_txt, 
+            communication = communication, 
+            communication_txt = communication_txt, 
+            word_count = word_count
+        )
+
+        final_text = click.edit(text=skeleton, editor="/usr/bin/nano")
+        
+        with open(feedback_file, "w") as f:
+            f.write(final_text)
+
+    click.echo("All individual reports graded. You are now ready to return feedback to students.")
+        
 @course_manager.group()
 def mini():
     """Mini-Project Management
