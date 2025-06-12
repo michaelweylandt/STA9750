@@ -18,7 +18,7 @@ filters:
 #### Lecture / Lab Sessions
 
 -   Virtual (Synchronous Online)
--   Thursdays 6:05pm-9:00pm
+-   Tuesdays / Thursdays 6:05pm-9:00pm
     -   Zoom link provided via Brightspace
 
 #### Office Hours
@@ -26,10 +26,9 @@ filters:
 -   In-Person
     -   [Baruch Main Campus (1 Bernard Baruch Way)](https://www.baruch.cuny.edu/campus-map-and-directions/)
     -   Newman Vertical Campus (NVC) 11-246
-    -   Tuesdays 4:30-5:30pm
-    -   Subject to periodic cancellation (communicated via Brightspace)
+    -   By appointment only
 -   Virtual:
-    -   Thursdays 4:30pm-5:30pm
+    -   Tuesdays and Thursdays 4:30pm-5:30pm
     -   Zoom link provided via Brightspace
 
 ### Grading
@@ -108,8 +107,9 @@ be accepted. Specifically, late submission slows down the
 peer review cycle used in this course. All assignments can
 be submitted multiple times on Brightspace, so you are
 **strongly** encouraged to submit early and to submit often.
-Students are also encouraged to load the [course deadlines
-file](./key_dates_students_gcal.csv) into their personal
+Students are also encouraged to load the course deadlines
+file ([Tuesday section](./key_dates_students_gcal_tuesday.csv), [Thursday
+section](./key_dates_students_gcal_thursday.csv)) into their personal
 calendar to better track key course dates.
 
 Please note that work **must be submitted on Brightspace** unless *specifically*
@@ -160,7 +160,7 @@ that, in particular:
 #| warning: false
 library(tidyverse)
 class_date <- function(n){
-    read_csv("key_dates.csv") |>
+    read_csv(date_file) |>
         filter(`Course Element` == "Class Session") |>
         filter(`Item Number` == n) |>
         pull(Date) |>
@@ -173,8 +173,8 @@ class_date <- function(n){
 #| message: false
 library(tidyverse)
 holiday_date <- function(n, details=FALSE){
-    h <- read_csv("key_dates.csv") |>
-            filter(`Course Element` == "Holiday") |>
+    h <- read_csv(date_file) |>
+            filter(`Course Element` == "No Class") |>
             filter(`Item Number` == n)
     
     if(details){
@@ -193,7 +193,7 @@ library(tidyverse)
 due_date_mini <- function(n, submission=TRUE, feedback=!submission){
     details <- if(feedback) "Mini-Project Peer Feedback Due" else "Mini-Project Due"
     
-    read_csv("key_dates.csv") |>
+    read_csv(date_file) |>
         filter(`Course Element` == "Mini-Projects",
                `Details` == details) |>
         filter(`Item Number` == n) |>
@@ -205,7 +205,176 @@ due_date_mini <- function(n, submission=TRUE, feedback=!submission){
 
 
 
+::: {.panel-tabset}
 
+## Tuesday Section
+
+```{r}
+#| echo: false
+date_file <- "key_dates_tuesday.csv"
+```
+
+::: {.list-table width="1,1,1,1,1,1,1" aligns="c,c,l,l,l,l,l" header-rows=1 .hover}
+
+   * - Week 
+     - Lecture Date
+     - Topics
+     - Pre-Assignment
+     - In-Class Lab
+     - Mini-Projects
+     - Additional Notes
+     
+   * - 1
+     - `r class_date (01)`
+     - Course Overview and Key Infrastructure:
+       1. `R` and `RStudio`
+       2. `git` and GitHub
+     - None
+     - [Lab #01](./labs/lab01.html)
+     - [Mini-Project #00](./miniprojects/mini00.html) assigned. 
+       Due `r due_date_mini(0)`
+       
+   * - 2
+     - `r class_date (02)`
+     - 1. Introduction to Reproducible Research:
+          - Markdown and Quarto
+          - GitHub Pages
+       2. Getting Help
+       3. Interactive Use of `R`
+          a. Use of the REPL
+          b. Installing and Loading Packages
+     - [PA #02](./preassigns/pa02.html)
+     - [Lab #02](./labs/lab02.html)
+
+   * - 3
+     - `r class_date (03)`
+     - Basic Data and Control Structures in `R`:
+       1. Vectors
+       2. Subsetting
+       3. Control Flow
+       4. Function Calls
+       5. Data Frames
+       
+       Introduction to Course Project
+     - [PA #03](./preassigns/pa03.html)
+     - [Lab #03](./labs/lab03.html)
+     - [Mini-Project #01](./miniprojects/mini01.html) assigned. 
+       Due `r due_date_mini(1)`
+     - Peer Feedback on Mini Project #00 due 
+       `r due_date_mini(0, feedback=TRUE)`
+
+   * - 4
+     - `r class_date (04)`
+     - Tidy Data Manipulation I:
+       1. Single Table Operations
+       2. Factors
+       3. Dates & Times
+       
+       Review of `git` fundamentals.
+     - [PA #04](./preassigns/pa04.html)
+     - [Lab #04](./labs/lab04.html)
+
+   * - 
+     - `r holiday_date(1)`
+     <td colspan="5" style="text-align:center"> ***`r holiday_date(1, details=TRUE)`*** </td>
+
+   * - 5
+     - `r class_date (05)`
+     - Tidy Data Manipulation II:
+       1. Multi-Table Operations (Joins)
+       2. Pivots
+       3. Working with Missing Data
+       
+       Debugging Techniques
+     - [PA #05](./preassigns/pa05.html)
+     - [Lab #05](./labs/lab05.html)
+     - [Mini-Project #02](./miniprojects/mini02.html) assigned. 
+       Due `r due_date_mini(2)`
+     - Peer Feedback on Mini Project #01 due 
+       `r due_date_mini(1, feedback=TRUE)`
+
+   * - 6
+     - `r class_date (06)`
+     <td colspan="5" style="text-align:center"> **In-Class Project Proposal Presentations** <br> *Optional Enrichment Topic: SQL* </td>
+
+   * - 
+     - `r holiday_date(2)`
+     <td colspan="5" style="text-align:center"> ***`r holiday_date(2, details=TRUE)`*** </td>
+
+   * - 7
+     - `r class_date (07)`
+     - Plotting I:
+       - Introduction to `ggplot2`
+       - Customizing Formatting
+       - Maps
+     - [PA #07](./preassigns/pa07.html)
+     - [Lab #07](./labs/lab07.html)
+
+   * - 8
+     - `r class_date (08)`
+     - Tools for Interactive Data Analysis
+       - `shiny`
+       - `ggplot2` Extensions for Animated and Interactive Plots
+     - [PA #08](./preassigns/pa08.html)
+     - [Lab #08](./labs/lab08.html)
+     - [Mini-Project #03](./miniprojects/mini03.html) assigned. 
+       Due `r due_date_mini(3)`
+     - Peer Feedback on Mini Project #02 due 
+       `r due_date_mini(2, feedback=TRUE)`
+     
+   * - 9
+     - `r class_date (09)`
+     - Data Import
+     - [PA #09](./preassigns/pa09.html)
+     - [Lab #09](./labs/lab09.html)
+     
+   * - 10
+     - `r class_date (10)`
+     <td colspan="5" style="text-align:center"> **Mid-Semester Check-In Presentations** <br> *Optional Enrichment Topic: Functional Programming Tools* </td>
+
+   * - 11
+     - `r class_date (11)`
+     - Elements of Web Scraping
+       - Introduction to HTTP and HTML
+       - `httr2`
+       - `rvest`
+       - JSON
+     - [PA #11](./preassigns/pa11.html)
+     - [Lab #11](./labs/lab11.html)
+     - [Mini-Project #04](./miniprojects/mini04.html) assigned. 
+       Due `r due_date_mini(4)`
+     - Peer Feedback on Mini Project #03 due 
+       `r due_date_mini(3, feedback=TRUE)`
+
+   * - 12
+     - `r class_date (12)`
+     - 
+       - Strings & Regular Expressions
+       - Classical Statistical Modeling in `R`
+     - [PA #12](./preassigns/pa12.html)
+     - [Lab #12](./labs/lab12.html)
+    
+   * - 13
+     - `r class_date (13)`
+     - Predictive Modeling in `R`
+     - [PA #13](./preassigns/pa13.html)
+     - [Lab #13](./labs/lab13.html)
+     - 
+     - Peer Feedback on Mini Project #04 due 
+       `r due_date_mini(4, feedback=TRUE)`
+
+   * - 14
+     - `r class_date(14)`
+     <td colspan="5" style="text-align:center"> **Final Presentations** <br> **Course Wrap-Up** </td>
+::: 
+
+
+## Thursday Section
+
+```{r}
+#| echo: false
+date_file <- "key_dates_thursday.csv"
+```
 
 ::: {.list-table width="1,1,1,1,1,1,1" aligns="c,c,l,l,l,l,l" header-rows=1 .hover}
 
@@ -321,10 +490,6 @@ due_date_mini <- function(n, submission=TRUE, feedback=!submission){
      - `r class_date (10)`
      <td colspan="5" style="text-align:center"> **Mid-Semester Check-In Presentations** <br> *Optional Enrichment Topic: Functional Programming Tools* </td>
 
-   * - 
-     - `r holiday_date(2)`
-     <td colspan="5" style="text-align:center"> ***`r holiday_date(2, details=TRUE)`*** </td>
-
    * - 11
      - `r class_date (11)`
      - Elements of Web Scraping
@@ -346,7 +511,11 @@ due_date_mini <- function(n, submission=TRUE, feedback=!submission){
        - Classical Statistical Modeling in `R`
      - [PA #12](./preassigns/pa12.html)
      - [Lab #12](./labs/lab12.html)
-    
+
+   * - 
+     - `r holiday_date(2)`
+     <td colspan="5" style="text-align:center"> ***`r holiday_date(2, details=TRUE)`*** </td>
+
    * - 13
      - `r class_date (13)`
      - Predictive Modeling in `R`
@@ -360,6 +529,8 @@ due_date_mini <- function(n, submission=TRUE, feedback=!submission){
      - `r class_date(14)`
      <td colspan="5" style="text-align:center"> **Final Presentations** <br> **Course Wrap-Up** </td>
 ::: 
+
+:::
 
 
 ### Workload Expectations
