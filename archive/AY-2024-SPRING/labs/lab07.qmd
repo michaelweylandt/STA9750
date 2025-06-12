@@ -1,0 +1,130 @@
+---
+title: "{{< var course.short >}} Week 7 In-Class Activity: More Thoughts on Plots"
+engine: knitr
+---
+
+Update Slides: [Slides 07](../slides/slides07.html)
+
+This week, we're going to break into project groups and do three 
+`ggplot2` exercises of increasing difficulty. As you work through these with your
+teammates, be sure to reflect on what plots and what tools you will need to best
+present your mini-project and course project findings. 
+
+## Exercise 1: Basic `ggplot2` (15 minutes)
+
+In this exercise, you will create `ggplot2` graphics to analyze the `diamonds`
+data from the `ggplot2` package. This data contains pricing and measurements
+for 50,000 diamonds sold in the US. (Note that these prices are rather out of date.) Before beginning this exercise, you might want to read about the 
+["4 C's of Diamonds"](https://www.tiffany.com/engagement/the-tiffany-guide-to-diamonds/) 
+commonly used to measure quality.
+
+1. Make a scatter plot of price vs carat and facet it by cut. 
+2. Use `geom_smooth` to see how the price-carat relationship changes by color. 
+3. Create a [frequency polygon](https://ggplot2.tidyverse.org/reference/geom_histogram.html) plot of price, broken out by different diamond cuts.
+4. Create a scatter plot of color by clarity. Why is this plot not useful? 
+
+   - *Stretch Goal*: Make a better plot to visualize this relationship using the `ggmosaic` package.
+   
+## Exercise 2: Trend Analysis with `ggplot2` (30 minutes)
+
+The [Carbon Dioxide Information and Analysis Center](https://www.esd.ornl.gov/iab/iab2-15.htm) studies the effect of carbon
+dioxide on global and local temperature trends. A key tool in their analysis is
+the temperature "anomaly". An anomaly is the difference between observed
+temperature (in a world with anthropogenic atmospheric CO2) and 'natural'
+temperature (from a world without anthropogenic gases). Note that these anomalies
+require significant analysis to compute and are not "simple observational" data.
+
+Politicians have adopted the tools of temperature anomaly to set national and international emissions targets, *e.g.*, the [2 Degree
+Target](https://en.wikipedia.org/wiki/2_degree_climate_target). 
+Note that 2 degrees is calculated as a _global_ average: in practice, some regions
+will experience a much larger change in temperature, while others may experience
+a smaller change or even a negative change. 
+
+The [`CVXR`](https://www.cvxgrp.org/CVXR/) package includes the `cdiac` dataset, 
+capturing CDIAC's estimated global temperature anomalies from 1850 to 2015. In 
+this question, you will explore these estimated anomalies. Note that you may
+need to install the `CVXR` package before beginning this question.[^1]
+
+```{r}
+#| eval: false
+#| echo: true
+install.packages("CVXR")
+```
+
+```{r}
+#| warning: false
+#| message: false
+library(CVXR)
+library(tidyverse)
+data(cdiac)
+glimpse(cdiac)
+```
+1. Plot the estimated annual global mean temperature (GMT) anomaly from 1850 to 2015. 
+  - Use `scale_x_date` to improve the $x$-axis
+2. Plot the GMT anomaly for each month on the same plot (as different lines). 
+  - Before starting this, you may need to use the `pivot_` functionality
+      to get this data in the right shape. Recall that `ggplot2` expects
+      "data point" per row.
+3. Plot the monthly GMT anomaly series as one long line (with a point for each month).
+4. Now focus only on July: plot the July GMT anomaly series. Use the `runmed()`   
+   function to add a second series to the plot giving the median July GMT anomaly
+   of the previous 5 years. Is there evidence of an increasing warming trend? 
+5. For each year, identify the warmest month (as measured by GMT anomaly); create a    histogram showing the probability a given month was the hottest (largest
+   anomaly) in its year.   
+  - Make sure your $x$-axis is in reasonable (chronological) order - not alphabetical.
+  - You will need to use `dplyr` tools to find the warmest month in a given year.
+
+[^1]: `CVXR` is actually an incredible piece of software and super-useful for
+developing and implementing statistical and machine learning techniques. We, sadly,
+will not explore it in this course. 
+
+## Exercise 3: Animated Graphics (1 hour)
+
+In this question, you will use the `gganimate` extension to `ggplot2` to create animated graphics. We will use the famous `gapminder` data set from the `gapminder` package. Install the `gganimate`, `gapminder`, `gifski`, and `av` packages before attempting attempting this problem.
+
+1. For background, watch [Hans Rosling's talk on human prosperity.](https://www.youtube.com/watch?v=jbkSRLYSojo)
+2. Create a scatter plot of the relationship between GDP and Life Expectancy in the year 1952. 
+  - Color points by continent and use the size aesthetic to represent population.
+  - You might want to put quantities on a log-scale. 
+3. There is an outlier country in this data with very high GDP. 
+  - What is it? 
+  - Identify and remove it.
+4. Using the `transition_time` function, make this an animated plot showing how this data changes over time.
+5. Using the theme machinery, labels, *etc.* make this a "publication ready" plot.
+  - Note that you can use `{frame_time}` in the title to get a dynamically changing year. 
+6. Use the `country_colors` data from the `gapminder` plot to color the points using Dr. Rosling's perferred color scheme. 
+  - This is a different color scale than `ggplot2` uses by default, so you will need to override the `scale_color_*` functionality. 
+  - The help page for `?country_colors` will be helpful here. 
+  
+```{r}
+#| echo: false
+#| warning: false
+#| cache: true
+library(gganimate)
+library(gapminder)
+library(ggrepel)
+library(ggplot2)
+gapminder |>
+    mutate(label = case_when(
+        country %in% c("United States", "China", "United Kingdom", "Kenya") ~ country, 
+        TRUE ~ NA
+    )) |>
+    ggplot(
+       aes(x=lifeExp, y=gdpPercap, 
+           color=country, size=pop, 
+           label=label)) + 
+    geom_point() +
+    geom_label_repel() + 
+    scale_y_log10(labels=scales::dollar) + 
+    scale_size_continuous(transform=scales::transform_log10()) + 
+    guides(color="none", 
+           size="none") + 
+    xlab("Life Expectancy at Birth (Years)") + 
+    ylab("GDP Per Capita (US$, Inflation-Adjusted)") + 
+    theme_bw() + 
+    transition_time(year) + 
+    ggtitle("GDP vs Life Expectancy in {frame_time}") +
+    labs(caption="Data from the GapMinder Project") +
+    scale_color_manual(values=country_colors) + 
+    facet_wrap(~continent)
+```

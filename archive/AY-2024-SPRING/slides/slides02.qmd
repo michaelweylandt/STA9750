@@ -1,0 +1,494 @@
+---
+session: "`r session <- 2; session`"
+class_date:
+  "`r library(tidyverse); 
+    read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', Item.Number==session) |>
+    pull(Date)`"
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES   <- read_csv("key_dates.csv")
+SESSION <- 2
+TODAY   <- DATES |> filter(`Course Element` == "Class Session", 
+                           `Item Number` == SESSION) |>
+                    pull(Date)
+PROJ_RELEASE <- DATES |> 
+    filter(Details == "Course Project Description Released") |>
+    pull(Date)
+
+ROSTERS <- DATES |> 
+    filter(Details == "Team Roster Submission") |>
+    pull(Date)
+```
+    
+
+## {{< var course.short >}} Week {{< meta session >}} Update 
+
+Today: `r TODAY`
+
+- Weekly feature
+- Brief updates and reminders about course logistics
+- Syllabus and Brightspace are binding
+  - If something is left out of here, it still happens!
+  
+## Course Enrollment
+
+Final enrollment: 28
+
+- $\approx 8$ final project teams (3-4 each)
+- Approx 4 MPs to review per peer-feedback cycle
+  
+## Course Administration: Course Project Draft Released
+
+Course project *draft* description is now
+[online](https://michael-weylandt.com/STA9750/project.html) 
+
+Detailed discussion of:
+
+- Project structure
+- Key deadlines
+- Grading rubrics
+
+Will be finalized next week - `r PROJ_RELEASE`. 
+
+Please send me questions in advance!
+
+First step: by `r ROSTERS`, email me your group members.
+
+## Graduate Teaching Assistant (GTA)
+
+No GTA this semester. 
+
+## Piazza 
+
+- 11 sign-ups: 17 still need to sign up
+- Thank you for those of you who already posted questions!
+- Post #05 - Search for Teammates
+
+> *Instructor Tip: Before committing a team with someone, you can
+  look up their GitHub and see how they did on MP#00 and MP#01.
+  This might be helpful to find teammates whose standards are
+  calibrated to your own.*
+  
+Special thanks to JLL for finding and reporting issues 
+with MP#00 instructions
+
+## Pre-Assignments {.smaller}
+
+Pre-Assignment 02:
+
+  - 20 / 28 submitted 
+  - Ignore Brightspace's Grading
+    - Brightspace automatically marks all short answers as wrong
+    - Look at "Grades" tab to see actual sub-totals
+      (12.5 / 100 = 1/8 = full credit on 1 of 8 graded PAs)
+  - I will often give feedback through Brightspace, so make
+    sure to go back and see if I've left you any comments. 
+    (I might not give comments on every question though.)
+
+. . .
+  
+Pre-Assignment 03:
+
+  - Before midnight nextweek : 
+  - Available on course website + Brightspace after 9pm
+
+## Mini-Project #00
+
+[Mini-Project #00](../miniprojects/mini00.html)
+
+- Due in (slightly less than) a week
+- Possible tech issues, so start early
+- 1 GitHub tag + 0 Piazza Messages so far
+
+*Verification of Enrollment* - Required to stay enrolled in class
+
+## Today
+
+- Review of Questions from Pre-Assign #02
+- Introduction to Markdown and Quarto
+- Introduction to GitHub pages
+- How to ask for help
+- Interactive Use of `R` and `RStudio`
+
+# FAQs from PA#02
+
+## Q1
+
+> What is Markdown? 
+
+Per Wikipedia: "Markdown is a light-weight, plain-text, 
+markup language specification"
+
+:::: {.incremental}
+- Light-weight: relatively simple, focus on content than formatting
+- Plain-text: accessible using almost any text editor (RStudio, GitHub, VS Code, *etc*)
+  - Not locked into specific software (*e.g.*, MS Word)
+  - Easily incorporated into a variety of technologies
+::::
+
+
+## Q1
+
+> What is Markdown? 
+
+:::: {.incremental}
+- Markup language: a 'mini-coding language' for text documents
+  - Other famous examples: HTML, XML
+- Specification:
+  - [CommonMark](https://commonmark.org/) defines 'standard' Markdown
+  - Some software allows _extensions_
+  - [Pandoc](https://pandoc.org/) often powers under the hood
+::::
+
+## Q2
+
+> Other than text formatting, does Markdown ha[ve] 
+  any other us[]es?
+
+On its own, Markdown is just text formatting (but that's a lot!)
+
+. . .
+
+We will use _Quarto_ which augments markdown for 
+_reproducible research_. We can embed code-*and its 
+output*-inside Markdown documents.
+
+## Q3 
+
+> [W]hat documents use[] Markdown? 
+
+So much! Markdown is used by Bitbucket, GitHub, OpenStreetMap,
+Reddit, Stack Exchange, Drupal, ChatGPT, Discord, MS Teams 
+and many more!
+
+. . .
+
+With tools like Pandoc/Quarto, Markdown can be _rendered_ to:
+
+:::: {.columns}
+
+::: {.column width="50%"}
+- HTML
+- PDF
+- Web Slides
+- EBooks
+
+:::
+
+::: {.column width="50%"}
+- Research Papers
+- Word Documents
+- PowerPoint slides
+- and so much more!
+:::
+
+:::: 
+
+## Q4 
+
+> [What is] the difference between [a] Code section and [a] Nested List[? A]re they just different ways of indenting?
+
+No. Nested lists are 'just' text
+
+Code formatting enables much more if rendering engine supports it:
+
+. . .
+
+
+```{.python code-line-numbers="6-8"}
+import numpy as np
+import matplotlib.pyplot as plt
+
+r = np.arange(0, 2, 0.01)
+theta = 2 * np.pi * r
+fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+ax.plot(theta, r)
+ax.set_rticks([0.5, 1, 1.5, 2])
+ax.grid(True)
+plt.show()
+```
+
+## Q5
+
+> [H]ow are we going to use Markdown?
+
+All written work (mini-projects and final project) 
+in this course will be submitted using Markdown (by way of
+[Quarto](https://quarto.org)). 
+
+. . .
+
+Specifically:
+
+- Submission pages for 5 mini-projects
+- Individual reports for course project
+- Summary (team) report for final project
+
+You are also encouraged (but not required) to use Markdown for
+presentation slides (like these!)
+
+## Q6
+
+> How can I create Tables in Markdown? 
+
+Markdown has two table syntaxes:
+
+- an easy one with minimal control
+- a hard one which allows fine grained control (alignment, 
+  column widths, etc.) - "pipe tables"
+  
+If you are making complex tables, I recommend using the 
+[list-table](https://github.com/pandoc-ext/list-table) extension. 
+
+(See [`syllabus.qmd`]({{< var course.repo-url >}}/blob/main/syllabus.qmd) in course repo for examples.) 
+
+## Q7
+
+> How to create images and links? 
+
+Basic hyperlinks look like this: 
+
+```
+[link text](https://the.url/goes/here)
+```
+
+. . .
+
+If you want to _embed_ the contents of a link, prepend it with an exclamation point. This is most useful for _images_:
+
+```
+![Image Caption](https://the.url/goes/here.png)
+```
+
+. . .
+
+
+You can even put a link inside an image to be fancy: 
+
+```
+[![Elephant](elephant.png)](https://en.wikipedia.org/wiki/Elephant)
+```
+
+## Q7
+
+> How to create images and links? 
+
+Quarto automatically embeds the results of plotting code: 
+
+```{r}
+#| echo: true
+#| fig-align: "center"
+plot(1:5, main="Behold, a Plot!", col=2:6, cex=5, 
+     pch=16, xlab="", cex.main=5)
+```
+
+Here, Quarto handles all the file creation and link targeting for
+us. If I change the code, the figure will change automatically.
+
+
+# Introduction to `R` REPL and `RStudio`
+
+## Life on the Command Line
+
+## `R` REPL
+
+## Terminal
+
+## RStudio - A Useful IDE
+
+Official Cheat Sheets: 
+
+- [RStudio Cheat Sheet](https://rstudio.github.io/cheatsheets/html/rstudio-ide.html)
+- [Quarto Cheat Sheet](https://rstudio.github.io/cheatsheets/html/quarto.html)
+
+[Data Camp RStudio Tutorial (Free)](https://www.datacamp.com/tutorial/r-studio-tutorial)
+
+- For today, first ~half 
+
+# Markdown and Quarto
+
+## Markdown and Quarto
+
+- Quarto _implements_ Markdown with data-analytic extensions
+- Seamless (ideally!) integration of code and text
+- No more copy and paste
+
+[Quarto user guide](https://quarto.org/docs/guide) is fantastic!
+
+See also [source for course materials](https://github.com/michaelweylandt/STA9750).
+
+## Lab Activity: Part 0
+
+If you haven't already, [install Quarto](https://quarto.org/docs/get-started/).
+
+## Lab Activity: Part 1
+
+Create a simple PDF quarto document using the RStudio wizard. 
+
+(Note that you may need to install `tinytex` for this to work properly, but Quarto should install it for you automatically.)
+
+## Lab Activity: Part 2
+
+Create a 5 slide presentation showing the Houston housing market. This should include: 
+
+- A title slide
+- Three body slides with a figure and some text
+- A conclusion slide
+
+You may use the following code snippets: 
+
+--- 
+
+```
+if(!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+txhousing |> filter(city=="Houston") |> 
+             group_by(year) |> 
+             summarize(sales=sum(sales)) |> 
+             ggplot(aes(x=year, y=sales)) + 
+                geom_line() + 
+                ggtitle("Annual Houses Sold in Houston, TX")
+```
+
+Recall that this code needs to be between three backticks on each end (and start with `r` in curly braces as well.) 
+
+--- 
+
+```
+if(!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+txhousing |> filter(city=="Houston") |> 
+    group_by(month) |> 
+    summarize(avg_price=sum(volume) / sum(sales)) |> 
+    mutate(month=factor(month.abb[month], 
+                 levels=month.abb, ordered=TRUE)) |>
+    ggplot(aes(x=month, y=avg_price)) + 
+    geom_bar(stat="identity") + 
+    ggtitle("Average Price of Houses Sold in Texas by Month") + 
+    xlab("Month") + 
+    ylab("Average Sale Price") + 
+    scale_y_continuous(labels = scales::dollar)
+```
+
+Recall that this code needs to be between three backticks on each end (and start with `r` in curly braces as well.) 
+
+---
+
+```
+if(!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+txhousing |> filter(year==2015) |> 
+    group_by(city) |> 
+    summarize(avg_price=sum(volume) / sum(sales),
+              num_sales=sum(sales)) |> 
+    slice_max(num_sales, n=10) |>
+    ggplot(aes(x=city, y=avg_price)) + 
+    geom_bar(stat="identity") + 
+    ggtitle("Average Price of Houses Sold in 2015 by City in Texas") + 
+    xlab("City") + 
+    ylab("Average Sale Price") + 
+    scale_y_continuous(labels = scales::dollar)
+```
+
+Recall that this code needs to be between three backticks on each end (and start with `r` in curly braces as well.) 
+
+## Lab Activity: Part 3
+
+View the [Quarto Demo Slides](https://quarto.org/docs/presentations/revealjs/demo/#/title-slide) and add one new element to your slides from the previous section. 
+
+# GitHub Pages
+
+## GitHub Pages
+
+In-class discussion of what a static web page is and the role of GitHub Pages as a static web server. 
+
+# How to Ask for Help
+
+## How to Ask for Help
+
+Professional programming is at least half _looking things up_; 
+at beginning stages, the fraction is even higher. 
+
+So it's important to know how to see help _the smart way_:
+
+1. Official documentation. Free software almost never becomes
+   famous without great documentation: `R` and its packages
+   are no exception. Everything we will use in this class has
+   solid documentation. 
+
+- [Tidyverse.org](https://tidyverse.org)
+
+--- 
+
+2. Search Engine. 
+
+Most programming challenges have been faced by somebody 
+before, so Google it!
+
+Tips: 
+
+- Include `R` or `rstats` in your search query
+- It's better to search _what you want to do_ rather 
+  than _how you think you should do it_.
+- Search programming Q&A sites like `StackOverflow` for specific
+  code questions; blogs and course materials are better for "big
+  picture" questions
+
+--- 
+
+3. Ask on a Forum with a Reproducible Example
+
+Programming fora, like `StackOverflow`, are full of great
+resources. Most of what you need is already there. But if
+you need to ask a new question, make sure to create a [_minimal reproducible example_](https://stackoverflow.com/questions/5963269/how-to-make-a-great-r-reproducible-example/16532098)
+
+Make it easy for your helper to help you. 
+
+- Minimal: narrow down to as few lines of code as possible
+- Reproducible: self-contained without dependencies on libraries
+  (if can be avoided); load all packages needed; use standard data
+
+*Pro-Tip*: You'll solve over 50% of your problems in
+trying to create an MRE.
+
+---
+
+Tips: 
+
+- Show the code, even if it doesn't work
+- Send code as text, not screenshot (so your helper can run it)
+- Smaller examples help narrow down problems
+- Avoid IO (file input and output) unless specifically 
+  relevant to problem
+- Remove everything you can
+
+The _reprex_ `R` package helps with this: see [this talk](https://www.youtube.com/watch?v=5gqksthQ0cM).
+
+For this class, rely on Piazza!
+
+# After Class
+
+## Next Week 
+
+- [Pre-Assignment #03](../preassigns/pa03.html) due
+- [Mini-Project #00](../miniprojects/mini00.html) due
+- [Mini-Project #00](../miniprojects/mini00.html) peer feedback
+  assigned
+- [Mini-Project #01](../miniprojects/mini01.html) released
+- [Course Project](../project.html) officially released
+  - Special presentation on Baruch data resources
+
+## Looking Ahead
+
+Course Project: 
+
+- Start looking for teammates and topics
+- No in-person office hours on 2025-02-18 (MW on travel)
+
+{{< include ../advice/taxes.qmd >}}

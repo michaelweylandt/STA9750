@@ -1,0 +1,63 @@
+---
+title: "{{< var course.short >}} Week {{< meta pa_num >}} Pre Assignment: {{< meta pa_title >}}"
+engine: knitr
+pa_num: 2
+pa_title: "Getting Started with Markdown"
+---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+NUMBER <- as.integer(rmarkdown::metadata$pa_num)
+due_date_str <- read_csv("key_dates.csv") |> 
+    filter(`Course Element` == "Pre-Assignments", 
+           `Item Number` == NUMBER, 
+           str_detect(Details, "Due")) |> 
+    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
+    pull(dt) |>
+    format("%Y-%m-%d (%A) at %I:%M%P")
+```
+
+**Due Date**: `{r} due_date_str`
+
+**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
+
+This week, we are going to learn to use `quarto`, a data science publishing
+platform. `quarto` documents are written using **Markdown**, a light-weight
+mark-up language.[^1][^2]
+
+For this week's pre-assignment, complete [this interactive 
+Markdown tutorial](https://commonmark.org/help/tutorial/), which should take you
+about 10 minutes. Once you've familiarized yourself with Markdown, take a look
+at the source code [for this website](https://github.com/michaelweylandt/STA9750)
+and see how certain [Markdown documents](https://github.com/michaelweylandt/STA9750/blob/main/miniprojects.qmd) 
+are rendered as [web pages](../miniprojects.html).
+
+During this week's lab session, we will take particular advantage of:
+
+- Headings and sectioning
+- Emphasis formatting (bold and italics)
+- Links
+
+so make sure to pay attention to those parts of the tutorial.
+
+After you are done with the introduction to Markdown, log in to
+[CUNY Brightspace](https://brightspace.cuny.edu/) and complete the Pre-Assignment
+02 "Getting to Know You" quiz. As part of this quiz, you will be asked to
+attest that you successfully completed the Markdown tutorial.
+
+[^1]: Get it? If you learn nothing else in this class, you will certainly learn
+that programmers _love_ terrible puns. `R` itself is actually a pun as it was
+originally a free 'knock-off' of the `S` programming language developed by **R**oss
+and **R**ob.
+
+[^2]: A mark-up language is a way of specifying the formatting applied to given
+text. It exists somewhere between "plain text" and a full document format like a
+`.docx` file. Other markup languages include HTML (hyper text markup language), 
+rST (reStructured Text), LaTeX (used for scientific typesetting), and many others.
+Markdown is the simplest of these and the only one you will be required to _write_
+in this course. You will need to learn a bit of how HTML is structured and, if you
+are including math in your mini-project or final project submissions, a bit of LaTeX
+will go a long way.

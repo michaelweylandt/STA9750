@@ -1,0 +1,358 @@
+---
+title: "{{< var course.short >}} - Mini Projects"
+format: 
+  html: 
+    code-copy: true
+execute:
+  freeze: true # Done with AY-2024-SPRING offering
+---
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+library(tidyverse)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, Time)))
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(glue)
+library(rlang)
+library(yaml)
+get_mp_title <- function(N){
+    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_text <- readLines(mp_file, n=50)
+    
+    header_end <- which(grepl("---", mp_text))[2]
+    
+    header_info <- yaml.load(readLines(mp_file, n=header_end))
+    
+    header_info$mp_title %||% "TBD"
+}
+```
+
+In lieu of traditional homework, {{< var course.short >}} has a series of
+**mini-projects** designed to achieve several interlocking goals: 
+
+1. Improve your skills at data analysis
+2. Improve your ability to give feedback on data analysis work
+3. Seed a 'portfolio' of data science work you can demonstrate 
+   to potential employers
+
+Each Mini-Project will be submitted via `GitHub`, an industry-standard code 
+management platform, as both raw analysis code and as a HTML document 
+hosted on GitHub pages.
+
+After each Mini-Project is submitted, 2-3 peer reviewers will 
+be assigned to give feedback and to assign an initial grade following
+an instructor provided rubric. This feedback will be given *via* GitHub Issues. 
+
+In order to ensure good peer feedback, the peer feedback will be evaluated by 
+the instructor in a "meta-review" worth a small fraction of the overall grade. 
+
+If you believe your mini-project has received inaccurate peer feedback, please
+contact the instructor directly within **48 hours** of the peer feedback
+deadline. No student-initiated requests for re-grading will be accepted
+after that time, though the instructor may re-grade the work during the
+meta-review stage.
+
+### Mini-Projects
+
+#### Mini-Project #00: `r get_mp_title(0)`
+
+```{r}
+#| echo: false
+mp <-  DATES |> filter(element == "Mini-Projects", item == 0)
+```
+
+**Due Dates:**
+
+  - Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+  - **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)`**
+  - **Peer Feedback:**
+    - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
+    - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
+
+In the ungraded [Mini-Project #00](./miniprojects/mini00.html), there is no data
+analysis required, but you will set up the basic web tooling used to submit projects
+#01 to #04. 
+
+Note that, even though ungraded, Mini-Project #00 must be completed to remain
+enrolled in this course and before any other Mini-Projects can be submitted. 
+
+#### Mini-Project #01: `r get_mp_title(1)`
+
+```{r}
+#| echo: false
+mp <-  DATES |> filter(element == "Mini-Projects", item == 1)
+```
+
+**Due Dates:**
+
+  - Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+  - **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)`**
+  - **Peer Feedback:**
+    - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
+    - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
+    
+In [Mini-Project #01](./miniprojects/mini01.html), students are assigned as
+technical staff to the (hypothetical) NYC Commission to Analyze Taxpayer Spending
+(CATS). In this role, they are tasked with preparing an analysis of three policy
+proposals designed to reduce the city's total payroll expenses. 
+
+Students will gain experience working with [NYC Open
+Data](https://opendata.cityofnewyork.us/) and applying important "single table" `dplyr` verbs: `filter`, `group_by`, `summarize`, `select`, `mutate`, *etc.* 
+
+Students will also practice communication skills, writing a miniature "white
+paper" to share the results of their analyses. In this assignment, students
+should focus on giving clear-eyed and unbiased analyses of several policies,
+with special attention paid to conveying key analytical steps to non-technical
+readers. (*E.g.*, saying "By comparing average salaries of IT Specialists across
+NYC Agencies, we see that..." instead of "We grouped by agency and then
+summarized the salary column using a mean reduction to see that...")
+
+#### Mini-Project #02: `r get_mp_title(2)`
+
+```{r}
+#| echo: false
+mp <-  DATES |> filter(element == "Mini-Projects", item == 2)
+```
+
+**Due Dates:**
+
+  - Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+  - **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)`**
+  - **Peer Feedback:**
+    - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
+    - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
+    
+
+In [Mini-Project #02](./miniprojects/mini02.html), students are appointed as
+senior staff of a 'Green Transit' non-profit and are tasked with identifying winners
+of the annual 'Greenest Transit' awards. 
+
+Students will gain experience working with Federal data sources from multiple
+agencies (the Department of Transit's National Transit Database and several 
+reports from the Energy Information Agency) and will practice combining data from
+multiple sources to create novel insights. 
+
+Students will also practice communication skills, writing a miniature "press
+release" to share the results of their analyses. In this exercise, students
+are encouraged to explore the tension between creating an easily-understood
+(press-release-friendly) metric on which to assign winners and one which captures
+the full complexity of the data being analyzed. Submissions should be "punchy"
+and "informative" without being misleading in their brevity. 
+
+#### Mini-Project #03: `r get_mp_title(3)`
+
+```{r}
+#| echo: false
+mp <-  DATES |> filter(element == "Mini-Projects", item == 3)
+```
+
+**Due Dates:**
+
+  - Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+  - **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)`**
+  - **Peer Feedback:**
+    - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
+    - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
+    
+In [Mini-Project #03](./miniprojects/mini03.html), students use Spotify
+analytics data to create a music playlist. In this project, students explore
+how quantitative analytics can be used to i) identify lesser-known tracks that
+fit a user's taste; ii) identify structural similarities (*e.g.* tempo and key)
+among different tracks. 
+
+#### Mini-Project #04: `r get_mp_title(4)`
+
+```{r}
+#| echo: false
+mp <-  DATES |> filter(element == "Mini-Projects", item == 4)
+```
+
+**Due Dates:**
+
+  - Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+  - **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)`**
+  - **Peer Feedback:**
+    - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
+    - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
+
+
+In [Mini-Project #04](./miniprojects/mini04.html), students will apply 
+web-scraping techniques to acquire the data necessary to reproduce a recent
+influential NYT analysis piece. They will then adopt the persona of a
+shameless partisan hack who builds on the NYT analysis to advance their
+own political agenda. 
+
+Students will gain experience extracting and cleaning data from
+unstructured sources, such as Wikipedia entries, and working with
+geospatial data. Students will also get to further develop their political
+skills, here employing the tools of obfuscation and numeric prestidigitation
+that make statisticians the most beloved of all professions. 
+
+### Mini-Project Submission
+
+All Mini-Projects must be submitted in two formats: 
+
+1) As a suitable HTML page hosted on the student's course repository. 
+   (See [Mini-Project #00](./miniprojects/mini00.html) for details on
+   setting this up.)
+2) As a PDF on the course Brightspace page. 
+
+**Both** submissions must be completed _on time_ for the work to be considered
+properly submitted. 
+
+- If the work is submitted on Brightspace by the deadline, but not on GitHub,
+  the instructor will apply a 5-point penalty (10% deduction). Additionally,
+  work not submitted on GitHub will not be eligible for peer review, but
+  will instead by evaluated by the course staff. (Note that, historically,
+  the instructor and TAs have been more stringent graders than student peers.)
+
+  GitHub submission will be confirmed when the instructor assigns peer
+  feedback reviewers. The [course helper
+  functions](./tips.html#mp-submission-verify) include a script.
+  to confirm that a GitHub submission has been properly formatted. You 
+  are encouraged to use it. 
+  
+  For example, if I wanted to confirm *my* MP03 was properly submitted,
+  I would run: 
+  
+  ```{r}
+#| eval: false
+source("https://michael-weylandt.com/STA9750/load_helpers.R")
+mp_submission_verify(3, "michaelweylandt")
+  ```
+  
+  Submissions that do not pass these automated checks will have a
+  penalty applied. 
+  
+- If the work is submitted on GitHub, but not on Brightspace, the instructor
+  will assign a 5 point (10%) penalty. Note that this will be applied by
+  the instructor when loading grades into Brightspace; peer evalutors will
+  not need to confirm correct Brightspace submission. 
+  
+- If the work is not submitted on time on either platform, the course
+  [late work policy](./resources.html#late-work-policy) applies and no
+  credit will be given. 
+  
+Note that students are still expected to participate in the peer feedback
+cycle even if their own submission was not completed on time. Difficulty
+with the technologies used (Brightspace, `quarto`, GitHub, *etc.*) is not
+a recognized excuse for late submission.
+
+### Mini-Project Peer Feedback {#peer-feedback}
+
+The *peer feedback cycle* is an important element of the {{< var course.short >}}
+learning goals. In particular, the peer feedback activities are used to help
+students learn to _read code written by others_ and to _compare and contrast 
+alternative approach to the same analytic aims_. As emphasized throughout this 
+course, there is rarely a single **right** way to perform a particular piece of
+analysis, but there are **better** and **worse**; seeing a variety of approaches
+helps students experience a variety of approaches and begin developing a sense of
+elegance and efficiency in code. 
+
+Mini-Project peer feedback is submitted as comment on the GitHub issue used to
+submit individual projects. Once the mini-project submission deadline passes, 
+the instructor will tag multiple students in the same issue and request peer
+feedback. Tagged students ("evaluators") should give their feedback in that same
+issue, **not** opening a new issue. (This is important to keep course materials
+organized.) 
+
+Peer feedback comments should use the following format:
+
+::: {#peer-feedback-template}
+
+```{md}
+## Scores 
+
+- Written Communication: NN 
+- Project Skeleton: NN
+- Formatting & Display: NN
+- Code Quality: NN
+- Data Preparation: NN
+- Extra Credit: NN
+
+## Comments
+
+### Written Communication
+
+TEXT TEXT TEXT
+
+### Project Skeleton
+
+TEXT TEXT TEXT
+
+### Formatting & Display
+
+TEXT TEXT TEXT
+
+### Code Quality
+
+TEXT TEXT TEXT
+
+### Data Preparation
+
+TEXT TEXT TEXT
+
+### Extra Credit
+
+TEXT TEXT TEXT
+```
+
+:::
+
+For each element, the `NN` should be replaced by a numerical value
+between 0 and 10. (It is not necessary to provide a sum; the instructor will
+calculate this.) Similarly, the `TEXT TEXT TEXT` should be replaced by comments
+justifying the assigned score. Not all mini-projects have opportunities for Extra
+Credit, but please leave those blocks in place (perhaps saying "No extra credit available" for the comment) so the course backend automation works properly. 
+
+The [course helper functions](./tips.html) can be used to verify that you
+have submitted a comment with the correct formatting.[^1]
+
+::: {.callout-caution title="Peer Grade Required for **All** Assigned Work"}
+
+Please note that you are *required* to provide a peer grade
+for *all* mini-projects to which you have been assigned, even
+those where no submission can be found. Please use the template
+above and assign 0s for all elements. Text feedback should also
+be included, but it can be as simple as "No submission found."
+
+:::
+
+[^1]: As of now, GitHub does not allow pre-filling a comment body via URL, so
+I can't provide a helper script to template the peer review comment for you.
+
+After the peer feedback cycle, the instructor will collect peer feedback grades
+and assign "meta-review" feedback to each student. Meta-review feedback refers 
+a grade based on the quality of your commentary. The following rubric will guide
+assessment of meta-review grades, but the instructor may deviate as appropriate.
+
+Note that the rubric is a bit *asymmetric*: students need more detailed 
+feedback on poor work -- giving them an opportunity to improve -- than on 
+strong work. Here the rough "strong" *vs* "weak" distinction is qualitative and 
+will be assessed by the instructor independently as part of meta-review grades.
+
+| Score | Quality of Submitted Work | Quality of Feedback | Comments |
+|--------|----------------------|----------------------|----------------------|
+| 9-10 | Strong | Quality Positive Feedback |  |
+| TBD | Strong | Quality Negative Feedback | Addressed on a case-by-case basis. |
+| 7-8 | Strong | Minimal Positive Feedback |  |
+| 5-6 | Strong | Minimal Negative Feedback |  |
+| 4 | Strong | No Feedback |  |
+| 4-5 | Weak | Quality Positive Feedback |  |
+| 9-10 | Weak | Quality Negative Feedback |  |
+| 4-5 | Weak | Minimal Positive Feedback |  |
+| 6-8 | Weak | Minimal Negative Feedback |  |
+| 3 | Weak | No Feedback |  |
+
+: Meta-Review Rubric

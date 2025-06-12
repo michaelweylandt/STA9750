@@ -1,0 +1,450 @@
+---
+echo: true
+mp_num: "04"
+mp_title: "Exploring Recent US Political Shifts"
+mp_skills: "Web Scraping, Geospatial"
+mp_application: "Politics"
+mp_rhetoric: "Advocacy"
+execute:
+  freeze: true # Done with AY-2024-SPRING offering
+title: "{{< var course.short >}} Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}"
+---
+
+$$\newcommand{\P}{\mathbb{P}} \newcommand{\E}{\mathbb{E}}$$
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+library(dplyr)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, Time)))
+```
+
+```{r}
+#| echo: false
+#| warning: false
+library(glue)
+mp_id <- as.integer(rmarkdown::metadata$mp_num)
+mp_id_s <- glue("MP #0{mp_id}")
+mp <-  DATES |> filter(element == "Mini-Projects", 
+                       item == mp_id)
+mp_file <- list(qmd=glue("`mp0{mp_id}.qmd`"), 
+                html=glue("`mp0{mp_id}.html`"),
+                html_long=glue("`docs/mp0{mp_id}.html`"))
+```
+
+### Due Dates
+
+-   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+-   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
+-   **Peer Feedback:**
+    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
+    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
+
+
+*Estimated Time to Complete: 5 Hours*
+
+*Estimated Time for Peer Feedback: 1 Hour*
+
+------------------------------------------------------------------------
+
+::: {.callout-caution title="Assignment Modification 2025-04-24"}
+
+Recognizing the busy end of the semester, I am going to rein in the scope of
+this mini-project. In particular, 
+
+> **You are no longer required to complete Task 6 or the "in character" write-up.**
+
+Reports that complete all elements up to Task 5 (re-creation of county shift map)
+will be eligible for full credit. For Task 4 (preliminary EDA), you may simply
+state your findings without any particular writing style.
+
+Up to 10 points of *Extra Credit* may be assigned for completion of Task 6, as follows:
+
+- up to 2 points for each computationally-intensive statistical test (4 total)
+- up to 2 points for each "talking point" (6 total)
+
+:::
+
+
+## Introduction
+
+Welcome to Mini-Project #{{< meta mp_num >}}! Following the 2024 US Presidential
+election, the New York Times published a [highly influential
+map](https://www.nytimes.com/interactive/2024/11/06/us/politics/presidential-election-2024-red-shift.html)
+depicting a national political shift to the right. This map, and associated 
+commentary, portended a national "vibe shift", which has already (arguably) been
+reflected throughout corporate, educational, and government sectors. In this
+mini-project, you will explore this national political shift, determining 
+the extent (if any) it may have been over- or under-exaggerated and developing 
+appropriate visualizations. 
+
+For this mini-project, you will pay the roll of a partisan "Talking Head" aligned
+with one of the two major US political parties. You will find facts supporting
+your party's narrative and prepare related visualizations. For this project, you
+are encouraged (but not required) to adopt the opposite side of your own
+political beliefs.[^side] For example, if you adopt a Republican perspective,
+you may choose to highlight the fact that 89% of counties nationwide voted more
+Republican than in 2020; if you adopt a Democratic perspective, you may retort
+that "land doesn't vote" and that a population weighted measure of national
+shift shows a far smaller effect. 
+
+[^side]: It is well-documented that political partisans subject their opponents
+to far more rigorous critique than their co-partisans. By adopting a point-of-view
+opposite your own, you will not only (hopefully) become more sympathetic to 
+and informed about alternative political views, but you will also perform a more
+rigorous analysis. Still, since I do not know and do not want to know your true
+political views, this is only a suggestion and cannot be enforced. 
+ 
+Note that, compared to previous mini-projects, the scope of this project
+is relatively smaller: in light of this, and the more advanced skills you have
+spent the past 3 months developing, this mini-project should be the least
+difficult of the course. At this point in the course, you should be spending the majority of your out-of-class hours on your [Course Project](../project.html). 
+
+This mini-project completes our whirlwind tour of several different
+forms of data-driven writing: 
+
+- White-Papers and Policy Briefs ([MP#01](./mini01.html))
+- Quantifying Successful Public Policy Endeavors ([MP#02](./mini02.html))
+- Using Data to Supplement the Creative Process ("assistive intelligence",
+  [MP#03](./mini03.html))
+- Using Data to Support a Pre-Ordained Conclusion (this mini-project)
+
+There are, of course, many other ways that data can be used to generate and
+communicate insights, but hopefully this "hit parade" has exposed you
+to many of the ways that you can use data to evaluate complex qualitative
+and quantitative claims outside of a binary classroom "correct/incorrect"
+structure. The tools of quantitative analysis and communication you have
+developed in this course can be used in essentially infinite contexts--
+we have only scratched the surface--and I'm excited to see what you do
+in the remainder of this course, in your remaining time at Baruch, and
+in your future careers. 
+
+### Student Responsbilities
+
+Recall our basic analytic workflow and table of student responsibilities:
+
+-   Data Ingest and Cleaning: Given a single data source, read it into `R` and transform it to a reasonably useful standardized format.
+-   Data Combination and Alignment: Combine multiple data sources to enable insights not possible from a single source.
+-   Descriptive Statistical Analysis: Take a data table and compute informative summary statistics from both the entire population and relevant subgroups
+-   Data Visualization: Generate insightful data visualizations to spur insights not attainable from point statistics
+-   Inferential Statistical Analysis and Modeling: Develop relevant predictive models and statistical analyses to generate insights about the *underlying population* and not simply the data at hand.
+
++----------------------+---------------------+---------------------------+----------------------------------+---------------+
+|                      | Ingest and Cleaning | Combination and Alignment | Descriptive Statistical Analysis | Visualization |
++:====================:+:===================:+:=========================:+:================================:+:=============:+
+| **Mini-Project #01** |                     |                           | **✓**                            |               |
++----------------------+---------------------+---------------------------+----------------------------------+---------------+
+| **Mini-Project #02** |                     | **✓**                     | **✓**                            | **½**         |
++----------------------+---------------------+---------------------------+----------------------------------+---------------+
+| **Mini-Project #03** | **½**               | **✓**                     | **✓**                            | **✓**         |
++----------------------+---------------------+---------------------------+----------------------------------+---------------+
+| **Mini-Project #04** | **✓**               | **✓**                     | **✓**                            | **✓**         |
++----------------------+---------------------+---------------------------+----------------------------------+---------------+
+
+: Students' Responsibilities in Mini-Project Analyses {.hover}
+
+In this mini-project, you are in charge of the whole pipeline, from TBD to TBD. 
+The rubric below evaluates your work on all aspects of this project. 
+
+### Rubric
+
+{{< var course.short >}} Mini-Projects are evaluated using *peer grading* with *meta-review* by the course GTAs. Specifically, variants of the following rubric will be used for the mini-projects:
+
++-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Course Element        | Excellent (9-10)                                                                                                                                                                            | Great (7-8)                                                                                                                                                     | Good (5-6)                                                                                            | Adequate (3-4)                                                                                                                                             | Needs Improvement (1-2)                                                                             | Extra Credit                                                                                   |
++=======================+=============================================================================================================================================================================================+=================================================================================================================================================================+=======================================================================================================+============================================================================================================================================================+=====================================================================================================+================================================================================================+
+| Written Communication | Report is well-written and flows naturally. Motivation for key steps is clearly explained to reader without excessive detail. Key findings are highlighted and appropriately given context. | Report has no grammatical or writing issues. Writing is accessible and flows naturally. Key findings are highlighted, but lack suitable motivation and context. | Report has no grammatical or writing issues. Key findings are present but insufficiently highlighted. | Writing is intelligible, but has some grammatical errors. Key findings are obscured.                                                                       | Report exhibits significant weakness in written communication. Key points are difficult to discern. | Report includes extra context beyond instructor provided information.                          |
++-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Project Skeleton      | Code completes all instructor-provided tasks correctly. Responses to open-ended tasks are particularly insightful and creative.                                                             | Code completes all instructor-provided tasks satisfactorially.                                                                                                  | Response to one instructor provided task is skipped, incorrect, or otherwise incomplete.              | Responses to two instructor provided tasks are skipped, incorrect, or otherwise incomplete.                                                                | Response to three or ore instructor provided tasks are skipped, incorrect, or otherwise incomplete. | Report exhibits particularly creative insights drawn from thorough student-initiated analyses. |
++-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Formatting & Display  | Tables and figures are full 'publication-quality'.                                                                                                                                          | Tables have well-formatted column names, suitable numbers of digits, and attractive presentation.                                                               | Tables are well-formatted, but still have room for improvement.                                       | Tables lack significant 'polish' and need improvement in substance (filtering and down-selecting of presented data) or style.                              | Unfiltered 'data dump' instead of curated table.                                                    | Report includes interactive (not just animated) visual elements.                               |
+|                       |                                                                                                                                                                                             |                                                                                                                                                                 |                                                                                                       |                                                                                                                                                            |                                                                                                     |                                                                                                |
+|                       | Report includes at least one animated visualization designed to effectively communicate findings.                                                                                           | Figures are 'publication-quality', with suitable axis labels, well-chosen structure, attractive color schemes, titles, subtitles, and captions, *etc.*          | Figures are above 'exploratory-quality', but do not reach full 'publication-quality'.                 | Figures are suitable to support claims made, but are 'exploratory-quality', reflecting minimal effort to customize and 'polish' beyond `ggplot2` defaults. | Baseline figures that do not fully support claims made.                                             |                                                                                                |
++-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Code Quality          | Code is (near) flawless.                                                                                                                                                                    | Comments give context of the analysis, not simply defining functions used in a particular line.                                                                 | Code has well-chosen variable names and basic comments.                                               | Code executes properly, but is difficult to read.                                                                                                          | Code fails to execute properly.                                                                     | Code takes advantage of advanced `Quarto` features to improve presentation of results.         |
+|                       |                                                                                                                                                                                             |                                                                                                                                                                 |                                                                                                       |                                                                                                                                                            |                                                                                                     |                                                                                                |
+|                       | Code passes all `styler` and `lintr` type analyses without issue.                                                                                                                           |                                                                                                                                                                 |                                                                                                       |                                                                                                                                                            |                                                                                                     |                                                                                                |
++-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Data Preparation      | Data import is fully-automated and efficient, taking care to only download from web-sources if not available locally.                                                                       | Data is imported and prepared effectively, in an automated fashion with minimal hard-coding of URLs and file paths.                                             | Data is imported and prepared effectively, though source and destination file names are hard-coded.   | Data is imported in a manner likely to have errors.                                                                                                        | Data is hard-coded and not imported from an external source.                                        | Report uses additional data sources in a way that creates novel insights.                      |
++-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------+
+
+: Mini-Project Grading Rubric
+
+Note that this rubric is designed with copious opportunities for extra credit 
+if students go *above and beyond* the instructor-provided scaffolding. Students
+pursuing careers in data analytics are strongly encouraged to go beyond the
+strict ambit of the mini-projects to i) further refine their skills; ii) learn
+additional techniques that can be used in the final course project; and iii)
+develop a more impressive professional portfolio.
+
+Because students are encouraged to use {{< var course.short >}} mini-projects as
+the basis for a professional portfolio, the basic skeleton of each project will
+be released under a fairly permissive usage license. Take advantage of it!
+
+### Submission Instructions
+
+After completing the analysis, write up your findings, *showing all of 
+your code*, using a dynamic `quarto` document and post it to your course 
+repository. The `qmd` file should be named `{r} I(mp_file$qmd)` so the rendered 
+document can be found at `{r} I(mp_file$html_long)` in the student's repository 
+and served at the URL:[^sub]
+
+> `https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp{{< meta mp_num >}}.html`
+
+Once you confirm this website works (substituting `<GITHUB_ID>` for the actual 
+GitHub username provided to the professor in [MP#00](./mini00.html) of course), 
+open a new issue at
+
+> `https://github.com/michaelweylandt/{{< var course.repo >}}/issues/new` .
+
+Title the issue `{{< var course.short >}} <GITHUB_ID> MiniProject #{{< meta mp_num >}}` and 
+fill in the following text for the issue:
+
+::: {#submission-text}
+
+```
+Hi @michaelweylandt!
+
+I've uploaded my work for MiniProject #**{{< meta mp_num >}}** - check it out!
+
+https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp{{< meta mp_num >}}.html
+```
+
+:::
+
+
+Once the submission deadline passes, the instructor will tag classmates for 
+peer feedback in this issue thread.
+
+*Additionally*, a PDF export of this report should be submitted on Brightspace. 
+To create a PDF from the uploaded report, simply use your browser's 'Print to PDF'
+functionality.
+
+**NB**: The analysis outline below specifies key *tasks* you need to perform
+within your write up. Your peer evaluators will check that you complete these. 
+You are encouraged to do extra analysis, but the bolded **Tasks** are *mandatory*.
+
+**NB**: Your final submission should look like a *report*, not simply a list of
+facts answering questions. Add introductions, conclusions, and your own
+commentary. You should be practicing both raw *coding* skills and written
+*communication* in all mini-projects. There is little value in data points stated
+without context or motivation.
+
+[^sub]: Throughout this section, replace `<GITHUB_ID>` with your GitHub ID from
+[Mini-Project #00](./mini00.html), making sure to remove the angle brackets. Note
+that the automated course infrastructure will be looking for precise formatting,
+so follow these instructions closely. 
+
+## Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}
+
+For this project, we are going to need to collect election result data. As
+of the time I'm writing this project, it's surprisingly hard to find free, clean
+county-level election data, so we are going to use our new web-scraping skills
+to extract this data from Wikipedia. 
+
+::: {.callout-danger title="Do Not Use Alternative Data Sources or `R` Packages"}
+
+High-quality `R` packages exist to help work with some of the data providers
+used in this mini-project. Despite this, you **may not** use these packages: the
+learning goal of this mini-project is to practice scraping and importing data
+from various web based services. Using `R` packages instead of scraping the data
+"by hand" will not provide this practice. By the same token, do not use 
+alternative data sources. (That said, if you find better county level records of
+the 2024 election, please let me know. I found this surprisingly difficult data
+to locate.)
+
+:::
+
+### County Shapes: US Census Bureau
+
+Begin by downloading a **shapefile** containing US county (and equivalent) 
+boundaries from the [US Census
+Bureau](https://www.census.gov/geographies/mapping-files/2023/geo/carto-boundary-file.html). Note that this file is available in three resolutions. I recommend 
+the finest resolution you can to produce the most accurate graphics, but if
+your compute is struggling with high levels of detail, you should consider
+falling back to the coarser resolutions. 
+
+::: {.callout-tip title="Task 1: US County Shapefiles"}
+
+Write code to download an appropriate US County shapefile from the Census Bureau
+website. To be responsible, your download code should: 
+
+1) Only download the file if it is not already present
+2) Create a directory titled `data/mp04` if one is not already present
+3) Save the file in `data/mp04` and, if necessary, decompress it. 
+4) Use built-in `R` functions like `download.file`
+
+See previous mini-projects for guidance.
+
+:::
+
+### 2024 County-Level Election Results
+
+We will next obtain *county-level* election results for each of the 50 US states. 
+While most states make this data available via the Secretary of State or an 
+Election Board, these sites are non-uniform and tricky to use in an automated
+fashion. Instead, we will take our results from Wikipedia. For each state, 
+there is a Wikipedia page describing the 2024 US Presidential Election results
+in that state; *e.g.*, [New
+York](https://en.wikipedia.org/wiki/2024_United_States_presidential_election_in_New_York). 
+
+Each of these pages has a table of county-level results which we need to extract. 
+
+::: {.callout-tip title="Task 2: Acquire 2024 US Presidential Election Results"}
+
+Using `httr2` and `rvest` download county-level election results from Wikipedia
+for each of the 50 US States. 
+
+This is a moderately advanced web-scraping exercise, so I recommend you approach
+it by writing a function which does the following. 
+
+- Take a US state name as input
+- Construct an appropriate request using `httr2::request` and
+  `req_url_path()`[^spaces]
+- Performs the request, saving the result locally to avoid unnecessary repeated
+  downloads
+- Extracts all tables into a list object
+- Selects only the table with a column titled `County`
+- Appropriately cleans and parses the table
+- Adds a column with the state name
+
+Note that you will have to deal with various additional minor irregularities
+not described above. For instance, at least one US State uses a term other than
+"county" to describe the relevant unit of government.
+
+[^spaces]: Note that Wikipedia allows spaces in URLs here, so you can use
+`https://en.wikipedia.org/wiki/2024 United States presidential election in New York`
+and it will be automatically corrected to 
+`https://en.wikipedia.org/wiki/2024_United_States_presidential_election_in_New_York`. 
+:::
+
+The code used to extract EIA State Energy Profiles in an early mini-project may
+be somewhat helpful here. 
+
+### 2020 County-Level Election Results
+
+Next, modify your code to extract results for the 2020 election. 
+
+::: {.callout-tip title="Task 3: Acquire 2020 US Presidential Election Results"}
+
+Modify your code from Task 2 to acquire 2020 US Presidential Election Results.
+
+:::
+
+### Combine Data and Perform Initial Analyses
+
+At this point, we have all of the data needed to complete this mini-project 
+(though you are, as always, welcome to download additional data you find helpful.)
+Combine the three data files (county shapes, 2020 results, 2024 results) and
+use them to answer the following questions. 
+
+::: {.callout-tip title="Task 4: Initial Analysis Questions"}
+
+Answer the following questions using the combined data sources. As always, as
+you do this initial analysis, use it as an opportunity to verify that your data
+import and cleaning was accurate. 
+
+1. Which county or counties cast the most votes for Trump (in absolute terms) 
+   in 2024? 
+2. Which county or counties cast the most votes for Biden (as a fraction of
+   total votes cast) in 2020? 
+3. Which county or counties had the largest shift towards Trump (in absolute 
+   terms) in 2024? 
+4. Which state had the largest shift towards Harris (or smallest shift towards 
+   Trump) in 2024? (Note that the total votes for a state can be obtained by
+   summing all counties in that state.)
+5. What is the largest county, by area, in this data set? 
+6. Which county has the highest voter density (voters per unit of area) in 2020?
+7. Which county had the largest increase in voter turnout in 2024? 
+
+:::
+
+### Reproduce NYT Figure
+
+Having confirmed our data is mainly reliable, we are now ready to reproduce
+the [NYT 
+Figure](https://www.nytimes.com/interactive/2024/11/06/us/politics/presidential-election-2024-red-shift.html)
+that initially motivated this project. 
+
+To do so, you need to: 
+
+1) Compute the shift (as a percentage of votes cast) rightwards for each county. 
+2) Modify the geometry file to put Hawaii and Alaska in a more reasonable position
+   for visualization. This [StackOverflow
+   Answer](https://stackoverflow.com/a/78867955) has useful suggestions. 
+3) Draw a map of the US with the modified geometry. [^lines]
+4) Compute the center point ("centroid") of each county. 
+5) Add an arrow for each county, located at its centroid. The length of the 
+   arrow should be proportional to the shift and the direction should indicate
+   whether that shift was rightward or leftward. 
+
+You may need to play around with the parameters defining each arrow to create 
+an attractive plot. 
+
+::: {.callout-tip title="Task 5: Reproduce NYT Figure"}
+
+Reproduce the NYT County Shift figure using the Census shapefiles and
+Wikipedia-extracted election results.
+
+:::
+
+[^lines]: A map with lines for each county may be a bit too dense to read. You
+might find it more visually appealing to take the
+"[union](https://r-spatial.github.io/sf/reference/geos_combine.html)" of
+counties to get  states for creating the base map layer. 
+
+### Additional Data Analysis
+
+::: {.callout-tip title="Task 6: Additional Analysis and Figure Creation"}
+
+Further analyze this data and come up with three partisan "talking points" 
+(and associated figures) to support "your side".
+
+Your analysis should include at least two *computationally-intensive*
+statistical tests, *e.g.*, "did the median county shift by more than 5%?". 
+You may implement these directly or with help of the [`infer`
+package](https://infer.netlify.app/).
+
+:::
+
+## Deliverable: Partisan Talking Points
+
+Taking the position of a "partisan hack", analyze the 2024 election and argue
+that Trump's victory was either a nationwide seismic shift portending a new era
+in American politics (if you adopt a Republican persona) or a narrow win made
+to look more meaningful than it actually was by accidents of geometry and
+political organization (if you adopt a Democratic persona). 
+
+You should write in the style of an "op-ed" or a television commercial script 
+(your choice) attempting to influence national post-election discourse in support
+of your chosen side. 
+
+Have some fun with this! You can be as shameless and over-the-top as you want. 
+After all, it was a politician who (anecdotally) gave us the phrase: 
+
+> ["Lies, Damned Lies, and Statistics"](https://en.wikipedia.org/wiki/Lies%2C_damned_lies%2C_and_statistics)
+
+and a (rather controversial) journalist who gave us
+
+> [*How to Lie with Statistics*](https://en.wikipedia.org/wiki/How_to_Lie_with_Statistics)
+
+## Extra Credit Opportunities
+
+There are no structured opportunities for extra credit on this mini-project
+beyond those stated in the rubric. As always, evaluators should assign
+appropriate extra credit (no more than 5 points total) for particularly creative
+insights, use of additional data sources, attractive figures, *etc.*
+
+------------------------------------------------------------------------
+
+This work ©2025 by [Michael Weylandt](https://michael-weylandt.com) is licensed
+under a [Creative Commons BY-NC-SA 
+4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en) license.
+![](http://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png){width="10%"}
+

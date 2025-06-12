@@ -1,0 +1,680 @@
+---
+title: "{{< var course.short >}} - Final Project"
+editor: 
+  markdown: 
+    wrap: 72
+filters:
+  - list-table
+execute:
+  freeze: true # Done with AY-2024-SPRING offering
+---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, "at", Time)))
+```
+
+In lieu of exams, [{{< var course.short >}}](./index.html) has an end-of-semester
+project, worth **40%** of your final grade. This project is intended to
+showcase the data analysis technologies covered in this course,
+including - but not limited to:
+
+-   Acquisition of "messy" real world data
+-   Import and cleaning of "messy" data
+-   SQL-like analysis of tabular data
+-   Computer-driven inference
+-   Effective visualization and communication of results
+
+The project will be graded out of a total 400 points, divided as
+follows:
+
+-   Project proposal presentation (50 points)
+-   Mid-semester check-in presentation (50 points)
+-   Final presentation (100 points)
+-   Final report (75 points)
+-   Individual evaluation (125 points)
+
+Projects can be completed in groups of 3-4 students.[^0] All group members
+are responsible for all portions of the work and will receive the same
+grade, except on the individual evaluation.
+
+[^0]: If desired, students can work in pairs or even individually. That "team"
+is still responsible for a minimum of three specific questions, so you will
+have to do extra work if you have a team of fewer than 3 people.
+
+Group Membership: By
+`{r} DATES |> filter(str_detect(Details, "Team Roster Submission")) |> pull(dt)`,
+email the instructor with a list of group members, `cc`-ing all group
+members. Once the original email is sent, other group members must reply
+acknowledging their intention to work with this group. After this date,
+group membership may only be changed for *extraordinary* circumstances.
+
+### Project Proposal Presentations
+
+On
+`{r} DATES |> filter(str_detect(Details, "Project Proposal Presentation")) |> pull(Date) |> format("%A %B %d, %Y")`,
+project teams will present a 6 minute *project proposal* in the form of
+an in-class presentation. This presentation must cover:
+
+-   The animating or overarching question of the project: *e.g.*, "Is
+    MTA subway and bus service less reliable in poorer areas of NYC?"
+
+-   Public data sources you intend to analyze (at least two): *e.g.*,
+    MTA on-time arrival statistics by station and household income data
+    by ZIP code.[^1] The presentation should include a brief discussion
+    of what relevant data elements these sources provide; note that this
+    discussion should be *selective* and *informative*, not simply a
+    list of column names.
+
+-   Specific questions you hope to answer in your analysis: *e.g.*
+
+    i)  average arrival delay by station;
+    ii) average household income for families nearest to each station;
+        and
+    iii) which routes are busiest at which time of day.
+
+    There should be (at least) one specific question per group member. 
+    (This forms part of your individual evaluation.) Regardless of the
+    size of your group, there need to be **at least** three specific
+    questions.
+
+-   Rough analytical plan: *e.g.*, we plan to divide NY up into regions
+    based on nearest subway station and to compute average household
+    income within those regions; we will correlate those income
+    statistics with average MTA service delays *in the direction of
+    work-day travel*; finally, we will use arrival data to identify
+    portions of the MTA network where delays tend to occur.
+
+-   Anticipated challenges: *e.g.* how to disentangle the effect of
+    being further away from the central business district (and delays
+    accumulating) from specific socioeconomic effects; or lack of
+    historical data going back further than 1 year.
+
+-   List of team members
+
+[^1]: More properly, you would want to use Zip Code Tabulation Areas
+    (ZCTAs) for this sort of analysis. The distinction is subtle, but
+    while all ZCTAs have geographic extents, not all zip codes do. For
+    example, there are dedicated zip codes for the IRS and the
+    Department of Defense that have no associated geographic boundaries.
+    Most open data sources will omit this distinction, but if you see
+    it, you should be aware of it.
+
+This presentation will be graded out of 50 points, divided as:
+
+-   Quality of presentation (10 points): Are slides clearly designed
+    making effective use of visual elements? Does oral presentation
+    supplement the slides or simply read text on slide?
+
+-   Clarity of motivating question (15 points): Is the key question
+    clearly stated and fully motivated? Is the question designed with
+    sufficient specificity to both:
+
+    i)  be feasible within the project scope; and
+    ii) be of genuine interest?
+
+-   Quality of proposed data sources (5 points): are the data sources
+    proposed sufficient to answer the question?
+
+-   Quality of specific questions (10 points): how well do the specific
+    questions support the motivating question? Do they take full
+    advantage of the proposed data sources?
+
+-   Timing of presentation (10 points): Does the project proposal
+    actually take 6 minutes (not going over!)? Presentations that are
+    too short (less than 5.5 minutes) or too long (more than 6.5
+    minutes) will be penalized in proportion to violation of the 6
+    minute limit.
+    
+Points will be *roughly* awarded according to the following rubric: 
+
+
+::: {.list-table width="1,1,1,1,1,1" aligns="c,l,l,l,l,l" header-rows=1 .hover #rubric-proposal}
+
+  * - Rubric Element
+    - Needs Improvement
+    - Poor 
+    - Fair
+    - Good 
+    - Great
+  * - **Quality of Presentation**
+    - (0-2/10) Weak presentation, evidencing little preparation. Fails to discuss all required elements.
+    - (3-4/10) Weak presentation, but covers all required elements, at least 
+      nominally.
+    - (5-6/10) Moderate presentation quality; slides have either too much or 
+      too little text.
+    - (7-8/10) Presentation clearly addresses all required elements. Slides have
+      a good balance of text and images.
+    - (9-10/10) Excellent, compelling and dynamic presentation covering all 
+      required elements. May include preliminary results.
+  * - **Clarity of Motivating Question** 
+    - (0-3/15) Project domain and motivating question are not well identified. 
+    - (4-6/15) Project lacks sufficient motivation. Domain identified, but 
+      question needs further refinement. (Example, "We want to do something about X.")
+    - (7-9/15) Motivating question not well-formed or not suitable to quantitative analysis.
+    - (10-12/15) Good motivating question. Well-motivated. Project will answer 
+      some, but not all, important questions in domain. 
+    - (13-15/15) Excellent motivating question. Strong motivation, suitability 
+      for quantitative analysis, and high potential impact.
+  * - **Quality of Proposed Data Sources** 
+    - (1/5) Data sources not clearly identified or inappropriate to questions 
+      asked.
+    - (2/5) Data sources clearly identified, but not well-suited to questions. 
+    - (3/5) Data sources well-suited to question, but of questionable quality 
+      and reliability. 
+    - (4/5) Quality relevant data sources; no concerns about usability for 
+      project.
+    - (5/5) Excellent data source identified. Well-targeted to question and 
+      not extensively previously analyzed.
+  * - **Quality of Specific Questions**
+    - (1-2/10) Presentation does not clearly state sufficient number of distinct 
+      specific questions (at least 1 per group member). 
+    - (3-4/10) Questions are poorly structured, lacking clear connections to 
+      motivating question and/or to project data.
+    - (5-6/10) Specific questions are acceptable, but do not fully address 
+      animating question. Questions are somewhat repetitive. 
+    - (7-8/10) Specific questions are well-designed and fully support motivating
+      question. Questions are not well-separated and/or may be difficult to 
+      address with data sources.
+    - (9-10/10) Specific questions are well-designed and fully support motivating 
+      question. Each question is clearly distinct and can be addressed with data
+      sources.
+  * - **Timing of Presentation** 
+    - (1-2/10) Presentation lasted more than 8 or less than 4:45 minutes (2/10) 
+    - (3-4/10) Presentation took between 7:30 and 8:00 or between 4:45 and 
+      5:00 minutes 
+    - (5-6/10) Presentation took between 7:00 and 7:30 minutes or between 5:00 
+      and 5:15 
+    - (7-8/10) Presentation took between 6:30 and 7:00 minutes or between 5:15 
+      and 5:30. 
+    - (9-10/10) Presentation took between 5:30 and 6:30.
+
+:::
+
+At this point, only the "animating question" and team roster are locked.
+If you discover alternate data sources, better specific questions, or
+superior analytical strategies that help better address the animating
+question, you may (and should!) change your project plan.
+
+**In the interest of time, it is not required that all team members
+present.**
+
+### Mid-Semester Check-In Presentations
+
+On
+`{r} DATES |> filter(str_detect(Details, "Mid-Semester Check-In Presentation")) |> pull(Date) |> format("%A %B %d, %Y")`,
+project teams will present a 6 minute *check-in* in the form of an
+in-class presentation. This presentation must cover:
+
+-   The animating or overarching question of the project.
+-   Public data sources you are in the process of analyzing (at least
+    two). At this point, the description of the used data sources should
+    include critical evaluation of both data quality and data relevance
+    to the overarching question. In particular, teams should be able to
+    describe relevant challenges and how, if possible, the team 
+    overcame those challenges.
+-   Specific questions you hope to answer in your analysis. At this
+    point, each specific question should be assigned to a single team
+    member. While the specific questions work together to answer the
+    overarching question, they should also be sufficiently distinct to
+    allow individual evaluation.
+-   Relevant prior art: what prior work has been done on this topic? How
+    does the project complement and contrast with this work?
+-   Anticipated challenges: *e.g.* how to disentangle the effect of
+    being further away from the central business district (and delays
+    accumulating) from specific socioeconomic effects; or lack of
+    historical data going back further than 1 year.
+
+This presentation will be graded out of 50 points, divided as:
+
+-   Quality of presentation (10 points): Are slides clearly designed
+    making effective use of visual elements? Does oral presentation
+    supplement the slides or simply read text on slide?
+-   Initial analysis of proposed data sources (15 points): are the data sources
+    proposed sufficient to answer the question? Has the team begun to
+    analyze the existing data in an exploratory fashion, determining the
+    degree to which it is comprehensive (representing an unbiased, and
+    ideally full, sample of a relevant population) and internally
+    consistent (are the data well recorded or do they have tell-tale
+    signs of inaccuracy)?
+-   Quality of specific questions (10 points): how well do the specific
+    questions support the motivating question? Do they take full
+    advantage of the proposed data sources?
+-   Engagement with Relevant Literature (10 points): how well does the
+    team ground their project in relevant academic publications and/or
+    reputable news media reports?
+-   Timing of presentation (5 points): Does the project proposal
+    actually take 6 minutes (not going over!)? Presentations that are
+    too short (less than 5.5 minutes) or too long (more than 6.5
+    minutes) will be penalized in proportion to violation of the 6
+    minute limit.
+
+
+Points will be *roughly* awarded according to the following rubric: 
+
+
+::: {.list-table width="1,1,1,1,1,1" aligns="c,l,l,l,l,l" header-rows=1 .hover #rubric-check-in}
+
+  * - Rubric Element
+    - Needs Improvement
+    - Poor 
+    - Fair
+    - Good 
+    - Great
+  * - **Quality of Presentation**
+    - (0-2/10) Weak presentation, evidencing little preparation. Fails to 
+      discuss all required elements.
+    - (3-4/10) Weak presentation, but covers all required elements, at least 
+      nominally.
+    - (5-6/10) Moderate presentation quality; slides have either too much or 
+      too little text.
+    - (7-8/10) Presentation clearly addresses all required elements. Slides have
+      a good balance of text and images.
+    - (9-10/10) Excellent, compelling and dynamic presentation covering all 
+      required elements.
+  * - **Initial Analysis of Proposed Data Sources** 
+    - (0-3/15) Minimal analysis of data sources. Team only provides cursory 
+      data description (sources and dimension) with no discussion of quality. 
+    - (4-6/15) Poor analysis of data sources: team describes data providers 
+      and evaluates quality OR demonstrates initial quality checks. 
+    - (7-9/15) Fair analysis of data sources: team describes data providers 
+      and evaluates quality AND demonstrates initial quality checks. 
+    - (10-12/15) Team assesses data quality thoroughly, evaluating both sampling
+      and recording quality. Potential issues (if any) are identified. 
+    - (13-15/15) Excellent analysis of data: full assessment of both sampling 
+      and reporting quality. identification of possible issues, and clear plan 
+      to remediate / supplement data sources in order to complete analysis. 
+  * - **Quality of Specific Questions** 
+    - (1-2/10) Presentation does not clearly state sufficient number of distinct 
+      specific questions (at least 1 per group member). 
+    - (3-4/10) Questions are poorly structured, lacking clear connections to 
+      motivating question and/or to project data.
+    - (5-6/10) Specific questions are acceptable, but do not fully address 
+      animating question. Questions are somewhat repetitive. 
+    - (7-8/10) Specific questions are well-designed and fully support motivating 
+      question. Questions are not well-separated and/or may be difficult to 
+      address with data sources. 
+    - (9-10/10) Specific questions are well-designed and fully support motivating
+      question. Each question is clearly distinct and can be addressed with 
+      data sources. 
+  * - **Engagement witih Relevant Literature**
+    - (1-2/10) Presentation does not engage with relevant literature. 
+    - (3-4/10) Engagement with prior literature is poor: only citations, without 
+      comparison to proposed project.
+    - (5-6/10) Acceptable engagement with prior literature: presentation compares 
+      proposed work with prior art.
+    - (7-8/10) Good engagement with prior work: team is able to contrast and 
+      compare with prior work. 
+    - (9-10/10) Excellent engagement with prior literature: team uses review of 
+      existing work to tailor project to fill a "gap" in the literatu
+  * - **Timing of Presentation** 
+    - (1/5) Presentation lasted more than 8 or less than 4:45 minutes. 
+    - (2/5) Presentation took between 7:30 and 8:00 or between 4:45 and 
+      5:00 minutes.
+    - (3/5) Presentation took between 7:00 and 7:30 minutes or between 5:00 
+      and 5:15.
+    - (4/5) Presentation took between 6:30 and 7:00 minutes or between 5:15 
+      and 5:30. 
+    - (5/5) Presentation took between 5:30 and 6:30.
+
+:::
+
+At this point, both the overarching and specific questions should be
+essentially "locked." While you may adjust the specific questions
+between now and the final report, you will be asked to justify
+deviation.
+
+**In the interest of time, it is not required that all team members
+present.**
+
+### Final Presentations
+
+On
+`{r} DATES |> filter(str_detect(Details, "Final Project Presentation")) |> pull(Date) |> format("%A %B %d, %Y")`,
+student teams will present a 10 minute **final presentation** describing
+their project. This presentation must cover:
+
+-   The animating question of the project: this is essentially a
+    restatement from the prior presentations, though it may be refined
+    in light of work performed.
+-   Prior art
+-   Data sources used: if you changed data - or used additional data -
+    explain what motivated the change from your original plan. Describe
+    any difficulties you encountered in working with this data.\
+-   Specific analytical questions (and answers) supporting the animating
+    question. Describe the major analytical stages of your project and
+    summarize the results.
+-   Summary of overall findings: relate your specific analytical
+    questions to your motivating question; describe limitations of the
+    approach used.
+-   Proposals for future work: if this work could be continued beyond
+    the end of the semester, what additional steps would you suggest to
+    a client / boss?
+
+**All team members must present part of this presentation and each team
+member must present on their specific question.**
+
+This presentation will be graded out of 100 points, divided as:
+
+-   Quality of presentation (20 points): are slides clearly designed to
+    make use of attractive and effective visual elements? Does the oral
+    presentation supplement the slides or simply read text on slide?
+-   Relationship of motivating and specific questions (10 points): Are
+    the specific questions well-suited for the motivating question? Does
+    the team address limitations of their analysis? Does the motivating
+    question lead naturally to the specific questions?
+-   Discussion of data sources (20 points): How well does the team
+    describe the data used for the analysis - its size, structure, and
+    provenance - and why it is suitable for their motivating question?
+-   Communication of findings (25 points): are the visualizations in the
+    presentation effective at communicating statistical findings? Does
+    the team effectively communicate limitations and uncertainties of
+    their approach?
+-   Contextualization of project (15 points): is the project well
+    situated in the existing literature? Are the findings of the
+    specific questions well integrated to answer the overarching
+    question?
+-   Timing of presentation (10 points): Does the project proposal
+    actually take 10 minutes (not going over!)? Presentations that are
+    too short (less than 9.5 minutes) or too long (more than 10.5
+    minutes) will be penalized.
+    
+
+Points will be *roughly* awarded according to the following rubric: 
+
+
+::: {.list-table width="1,1,1,1,1,1" aligns="c,l,l,l,l,l" header-rows=1 .hover #rubric-final}
+
+  * - Rubric Element
+    - Needs Improvement
+    - Poor 
+    - Fair
+    - Good 
+    - Great
+  * - **Quality of Presentation**
+    - (0-4/20) Weak presentation, evidencing little preparation. Fails to 
+      discuss all required elements.
+    - (5-8/20) Weak presentation, but covers all required elements, at least 
+      nominally.
+    - (9-12/20) Moderate presentation quality; slides have either too much or 
+      too little text.
+    - (13-16/20) Presentation clearly addresses all required elements. Slides have
+      a good balance of text and images.
+    - (17-20) Excellent, compelling and dynamic presentation covering all 
+      required elements.
+  * - **Relationship of Motivating and Specific Questions** 
+    - (0-2/10) Specific questions poorly address motivating question. 
+    - (3-4/10) Specific questions give some insight into motivating question but
+      leave major factors unaddressed. 
+    - (5-6/10) Specific questions give real insight into motivating question but
+      may leave minor factors unaddressed. 
+    - (7-8/10) Specific questions fully address motivating question and deliver
+      meaningful insights. 
+    - (9-10/10) Specific questions impressively address motivating question and
+      deliver novel and meaningful insights. Additionally, evidence is provided
+      supporting the idea that the specific questions considered are indeed the
+      most important and best questions that could be used to support the 
+      motivating question. (*I.e.*, you don't just find some factors that
+      matter; you find the *most important* factors.)
+  * - **Discussion of Data Sources** 
+    - (1-4/20) Data sources are of limited relevance or have meaningful and
+      obvious quality issues. Data structure and provenance are not discussed.
+    - (5-8/20) Data sources used are relevant to problem, but team does not
+      ensure quality. Presentation includes only cursory discussion of 
+      data structure OR provenance.
+    - (9-12/20) Data sources used are relevant to problem, but team performs
+      only cursory analysis to ensure quality. Presentation includes discussion
+      of data structure OR provenance.
+    - (13-16/20) Data sources used are relevant to problem; team performs
+      detailed analysis of sampling and reporting quality but fails to
+      addresses data limitations. Presentation includes discussion of data
+      structure AND provenance. 
+    - (17-20/20) Data sources used are relevant to problem; team performs
+      detailed analysis of sampling and reporting quality and actively addresses
+      any limitations. Presentation includes discussion of data
+      structure AND provenance.
+  * - **Communication of Findings** 
+    - (1-5/25) Poor communication of findings. Visualizations and tables are of
+      rough quality and are not 'publication ready', instead remaining close to
+      software defaults. Verbal discussion of methodology and data is muddled
+      or missing. Significant elements missing. 
+    - (6-10/25) Visualizations and tables evidence attempts at improvement, but
+      still have notable flaws. Script omits discussion of one or more key
+      analytical steps or findings. 
+    - (11-15/25) Communication includes attractive visualization and tables but
+      script does not successfully communicate key analytical steps and findings.
+    - (16-20/25) Strong communication throughout, with professional-grade
+      data visualization and tables. Script highlights key findings and broader
+      implications, but discussion of methodology is limited or confused in parts.
+    - (21-25/25) Excellent communication of findings. Visualizations, tables,
+      and script convey the essence of sophisticated analyses without getting
+      lost in details. Visualizations are compelling and attractive. Script
+      highlights key findings and clearly connects quantitative findings with
+      qualitative interpretation.
+  * - **Contextualization of Project** 
+    - (1-3/15) Project is not well situated in existing literature. 
+    - (4-6/15) Project addresses existing literature, but leaves significant
+      related work unaddressed. 
+    - (7-9/15) Project capably situates itself in existing literature, but does
+      not actively demonstrate novelty or impact. 
+    - (10-12/15) Project capably situates itself in existing literature and
+      has a non-trivial degree of novelty, but
+      is not naturally extended beyond the 'four corners' of the project. 
+    - (13-15/15) Project capably situates itself in existing literature and
+      answers a novel question or an important question in a novel way that can
+      be used to drive meaningful future research. 
+  * - **Timing of Presentation** 
+    - (1-2/10) Presentation lasted more than 12:30 or less than 8:30 minutes. 
+    - (3-4/10) Presentation took between 11:30 and 12:30 or between 8:30 and 
+      9 minutes.
+    - (5-6/10) Presentation took between 11:00 and 11:30 minutes or between 9:00 
+      and 9:15.
+    - (7-8/10) Presentation took between 10:30 and 11:00 minutes or between 9:15 
+      and 9:30. 
+    - (9-10/10) Presentation took between 9:30 and 10:30.
+
+:::
+
+::: {.callout-tip title="Final Presentation Structure" collapse="true"}
+
+In the past, I have recommended this outline for the final presentation.
+You **are not** required to follow this outline, but I provide it in case
+it may be helpful. 
+
+- Motivation and Context
+  - Why should I care about this problem?
+  - Hourglass structure: Big picture down to this question
+- Prior Art: 
+  - How does your work relate to other previous work?
+  - What *gap* are you filling in the literature?
+  - What is novel about your study?
+- Overarching Question
+  - What is your major question? 
+- Discussion of Data Sources
+  - What data sources did you use? 
+  - SWOT each data source: 
+    - What is good about it (Strengths)? 
+    - What is bad (Weaknesses)? 
+    - What novel insights does it let you generate (Opportunities)?
+    - What limitations or biases might it induce in your findings (Threats)?
+- Specific Questions
+  - What are each of your specific questions?
+  - How do they support and tie back overarching question?
+  - How did you answer each of them?  What did you find? 
+- Integration of Findings
+  - How do _quantitative_ specific findings 
+    provide _qualitative_ insights for overarching question?
+  - What can you see be combining specific questions 
+    that you can't see from a single specific question?
+  - What limits are there to your findings? 
+- Overarching Answer
+- Potential Future Work 
+  - What would you do with more time? 
+  - What additional data source would you like to access?
+  
+:::
+
+### Final Summary Report
+
+By the last day of the semester
+(`{r} DATES |> filter(str_detect(Details, "Summary Report")) |> pull(dt)`),
+the team will post a *summary project report* of no more than 2000 words
+summarizing their findings. This is a "non-technical" document, suitable
+for someone who cares about the motivating question, not for a data
+scientist. This document should focus on i) motivations and importance
+of analysis; ii) briefly how the specific analyses help to address the
+motivating question; iii) the choice of data used, including discussion
+of any limitations; iv) visualization of most important findings; v)
+relation to prior work ("the literature"); and vi) potential next steps.
+
+Furthermore, this document should link to *individual reports* (more
+detail below) which work through the project specific questions in
+detail. Students are responsible for ensuring stable links between
+postings throughout the grading window.
+
+This report should be written using `quarto` and formatted as a web
+page, submitted using the same process as the course mini-projects. This
+document is not required to be a "reproducible research" document since
+it is "non-technical". As a general rule, this is a "words and pictures"
+document-possibly including a few tables-not a "code" document. You are
+encouraged to re-use material from your final presentation. Students are
+encouraged to re-use one or two key figures from individual reports in
+this document; there is no "disadvantage" to not having one of your
+individual figures used here. It is more important to select the right
+figures *for the report*.
+
+For portfolio purposes, students are encouraged to each post a copy of
+the summary report to their own web presence, though this is not
+required.
+
+This summary document will be graded out of 75 points, divided as:
+
+-   Clarity of writing and motivation (50 points): is the report written
+    accessibly for a non-technical audience? Is the motivating question
+    well-posed and supported by the specific questions? Do the authors
+    engage with prior work on this topic well?
+-   Clarity of visuals (25 points): are visuals chosen to support the
+    overall narrative? Are they "basic static" plots or have the authors
+    gone "above and beyond" in formatting and structure? Do they clearly
+    convey relevant uncertainty and key analytic choices?
+
+### Final Individual Report
+
+By the last day of the semester
+(`{r} DATES |> filter(str_detect(Details, "Individual Report")) |> pull(dt)`),
+each team member will post an *individual project report* of no more
+than 2000 words summarizing their work on the individual specific
+question(s) for which they were responsible.[^3]
+
+[^3]: If students choose to take on multiple specific questions (perhaps
+because they were in a small group or if a classmate had to drop the course),
+they may submit multiple individual reports (one per question). If doing so,
+please modify the GitHub message template to link _all_ reports.
+
+This is a "technical" document and should be structured as a
+"reproducible research" document, including all code needed to acquire,
+process, visualize, and analyze data. (Code does not count towards word
+counts) This report should be written using `quarto` and formatted as a
+web page, submitted using the same process as the course mini-projects.
+
+Once both the summary and individual reports are submitted, students
+should open a new GitHub issue, tagging the instructor and linking to
+both reports using the template below:
+
+```         
+Hello @michaelweylandt!
+
+My team is ready to submit our {{< var course.short >}} course project reports. You can
+find mine at: 
+
+- Summary Report: [http://link.to.my/summary_report.html](http://link.to.my/summary_report.html)
+- Individual Report: [http://link.to.my/individual_report.html](http://link.to.my/individual_report.html)
+
+Thanks,
+@<MY_GITHUB_NAME>
+```
+
+Additionally, *each student* should submit a PDF copy of **both** 
+their group report and their individual report via CUNY Brightspace.
+
+The final individual report will be graded out of 125 points, with 100
+points dedicated to the report itself and 25 points based on peer
+evaluations meta-review of peer feedback. The 100 points will be divided
+roughly as follows:
+
+-   Code quality (20 points)
+-   Data acquisition and processing (20 points)
+-   Data analysis (30 points)
+-   Communication and presentation of results (30 points)
+
+Note that the individual reports may cross-reference each other and
+share code (suitably attributed) as appropriate. Students are encouraged
+to consider this project as a "series of posts" on a suitably technical
+blog.
+
+The following rubric will be used to assess the final individual report:
+
+::: {#rubric-individual}
+
++-------------------------------+----------------------------------------------+-----------------------------------------+--------------------------------------------------+-------------------------------------------+
+|                               | D                                            | C                                       | B                                                | A                                         |
++:=============================:+:=============================================+:========================================+:=================================================+:==========================================+
+| **Code Quality**              | -   The code runs on the instructor's        | Everything mentioned before and:        | Everything mentioned before and:                 | Everything mentioned before and:          |
+|                               |     machine without errors                   |                                         |                                                  |                                           |
+|                               |                                              | -   The code is well organized, with    | -   Code is organized into sub-routines that     | -   Code is suitable to be re-used for    |
+|                               |                                              |     good variable names and use of      |     could be easily adapted to support other     |     similar analyses without effort,      |
+|                               |                                              |     functions (subroutines) to avoid    |     analyses (not overly specific to the         |     *e.g.*, in an `R` package.            |
+|                               |                                              |     repeated code.                      |     particular data being analyzed               |                                           |
+|                               |                                              | -   The code is well- formatted         |                                                  |                                           |
+|                               |                                              | -    The code uses comments effectively |                                                  |                                           |
+|                               |                                              | -   Code is written efficiently, making |                                                  |                                           |
+|                               |                                              |     use of `R`'s vectorized semantics   |                                                  |                                           |
++-------------------------------+----------------------------------------------+-----------------------------------------+--------------------------------------------------+-------------------------------------------+
+| **Data Acquisition and        | -   The code loads data from a static file;  | Everything mentioned before and:        | Everything mentioned before and:                 | Everything mentioned before and:          |
+| Processing**                  |     or                                       |                                         |                                                  |                                           |
+|                               |                                              | -   The code uses a dynamic API or      | -   The code fully prepares and cleans the data, | -   The code acquires data using          |
+|                               | -   The code dynamically loads data from a   |     basic web-scraping techniques to    |     including properly handling any outliers,    |     techniques not presented in class,    |
+|                               |     static web-based data source             |     download data                       |     missing data, or other irregularities.       |     such as headless browsers, logging    |
+|                               |                                              |                                         |                                                  |     into to password protected resources  |
+|                               |                                              |                                         |                                                  |     using a `httr` session, or scraping   |
+|                               |                                              |                                         |                                                  |     data from non-tabular HTML            |
++-------------------------------+----------------------------------------------+-----------------------------------------+--------------------------------------------------+-------------------------------------------+
+| **Data Analysis**             | The analysis consists primarily of basic     | Everything mentioned before and:        | Everything mentioned before and:                 | Everything mentioned before and:          |
+|                               | descriptive statistics                       |                                         |                                                  |                                           |
+|                               |                                              | -   Advanced descriptive statistics     | -   A computer-based inference strategy such as  | -   Sophisticated computer-based          |
+|                               |                                              | -    Basic "pre-packaged tests" used    |     bootstrapping, permutation testing, or cross |     inference exceeding techniques        |
+|                               |                                              |     for all inferential statistics      |     validation is used                           |     presented in class                    |
++-------------------------------+----------------------------------------------+-----------------------------------------+--------------------------------------------------+-------------------------------------------+
+| **Communication and           | -   A static Markdown document or            | Everything mentioned before and:        | Everything mentioned before and:                 | Everything mentioned before and:          |
+| Presentation of Results**     |     presentation with basic graphics and     |                                         |                                                  |                                           |
+|                               |     tables                                   | -   Advanced/interactive graphics       | -   A basic interactive dashboard                | -   A fully-interactive "dashboard" type  |
+|                               | -   "Baseline" graphics that do not adapt    | -   "Publication quality" graphics      |                                                  |     product that reacts to data in        |
+|                               |     the default formatting or styling        |     using advanced plotting             |                                                  |     real-time and allows for customizable |
+|                               |                                              |     functionality                       |                                                  |     visualization and/or data export      |
++-------------------------------+----------------------------------------------+-----------------------------------------+--------------------------------------------------+-------------------------------------------+
+
+: Individual Report Rubric
+
+:::
+
+The final 25 points will be assigned based on anonymous peer feedback 
+collected through Brightspace. In particular, after completing a qualitative
+quiz designed to assess relative contributions, each teammate will be given
+100 "points" to distribute among teammates (not self). Peer feedback scores
+will be based upon the total amount of "points" received from teammates 
+adjusted by the instructor based on qualitative peer feedback. The Peer
+Feedback quiz will be made available on Brightspace only after submitting
+both the individual and group reports. Like the reports, the Peer Feedback
+quizzes are due on the last day of the semester 
+(`{r} DATES |> filter(str_detect(Details, "Peer Evaluations")) |> pull(dt)`). 
+
+*If the peer feedback quiz is not completed, you will receive 0
+points for this component of your final grade, even if you
+received high scores from your teammates.*

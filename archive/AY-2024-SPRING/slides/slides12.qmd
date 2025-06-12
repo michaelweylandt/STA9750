@@ -1,0 +1,592 @@
+---
+session: "`r session <- 12; session`"
+class_date:
+  "`r library(tidyverse); 
+    read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', Item.Number==session) |>
+    pull(Date)`"
+---
+
+{{< include _setup.qmd >}}
+
+
+# Agenda
+
+## Today
+
+- Administrative Business
+- Brief Review: String Manipulation
+- New Material: 
+  - Manipulating HTML Text into Data
+  - Statistical Inference
+- Wrap Up and Looking Ahead
+
+## Orientation
+
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R`  ✅
+- Data Visualization in `R`  ✅
+- Getting Data into `R`
+  - Flat Files and APIs  ✅
+  - Web Scraping ✅
+  - Cleaning and Processing Text ⬅️
+- Statistical Modeling in `R`
+
+# Administrative Business
+
+## {{< var course.short >}} Mini-Project #04
+
+[MP#04 online now](https://michael-weylandt.com/STA9750/miniprojects/mini04.html)
+
+- Due **`r get_mp_deadline(4)`** ($\approx$ 3 weeks - 2 remaining)
+- Topic: Political Maps
+  - Technical Subject: Table scraping from Wikipedia
+- Format: 
+  - Political Talking Head (Optional - see notes)
+  - GitHub post **AND Brightspace submission**
+  
+## {{< var course.short >}} Mini-Project #03
+
+[MP#03 peer feedback in process](https://michael-weylandt.com/STA9750/miniprojects/mini03.html)
+
+- Due Sunday evening
+- Evaluate [per rubric](https://michael-weylandt.com/STA9750/miniprojects/mini03.html#rubric)
+- Make sure to follow [feedback template](https://michael-weylandt.com/STA9750/miniprojects.html#peer-feedback)
+  
+
+# Going Forward
+
+
+## Pre-Assignments
+
+Brightspace - Wednesdays at 11:45
+
+-   Reading, typically on course website
+-   Brightspace auto-grades
+    -   I have to manually change to completion grading
+
+Next (and final!) pre-assignment is **`r get_pa_deadline(next_session)`**
+
+. . .
+
+I am behind on reading PA comments: 
+
+- For anything urgent, please contact me directly🙏
+
+## Grading
+
+I returned: 
+
+- Mid-Term Check-In Feedback
+
+I still owe you: 
+
+- MP#02 peer meta-review fixes
+
+I will owe you: 
+
+- MP#03 grades and meta-grades
+
+## Course Support
+
+- Synchronous
+  - Office Hours 2x / week
+    - MW Office Hours on **Tuesdays** + **Thursday**
+- Asynchronous
+  - Piazza ($\approx 20$ minute average response time)
+  
+## Upcoming
+
+Semester end is coming quickly!
+
+- MP#04
+- Final presentations
+- Final reports
+
+That's it!
+
+## Feedback Survey
+
+I have posted a course feedback survey at 
+
+[https://baruch.az1.qualtrics.com/jfe/form/SV_9uyZ4YFsrcRRPIG](https://baruch.az1.qualtrics.com/jfe/form/SV_9uyZ4YFsrcRRPIG)
+
+Comments very welcome (*but not required*)
+
+## Next Semester Topics
+
+Possible MP ideas:
+
+- NYC Open Data
+- Sports (Baseball?)
+- Spotify / Music
+- Healthcare / Pharmaceutical (might be tricky...)
+- Video Games
+- Quant Finance / Time Series?
+- Baruch Demographics
+- Job Market
+- Real Estate
+
+
+## Comments
+
+Bad - Trivial:
+
+```{r}
+#| eval: false
+# Set x to 3
+x <- 3
+```
+
+Bad - Opaque: 
+
+```{r}
+#| eval: false
+# Follow instructions
+x <- 3
+```
+
+Bad - Redundant / Explaining Code
+```{r}
+#| eval: false
+# Fit a model
+mod <- model(x, y)
+
+# Build a query
+query_build() |> query_add() |> query_formulate()
+```
+
+## Comments
+
+Good - Purpose ("Business Logic"):
+
+```{r}
+#| eval: false
+# Regulation XX.YY requires us to apply a risk multiplier to output
+# As of 2024-11-01, CFO says risk multiplier is 3
+# Cf. Email to risk group, subject "New Risk Multiplier"
+RISK_MULTIPLIER <- 3
+```
+
+Good - Higher Level Structure (Example from [`googledrive` package](https://github.com/tidyverse/googledrive/blob/main/R/utils-io.R#L18)): 
+
+```{r}
+#| eval: false
+# https://github.com/gaborcsardi/rencfaq#with-base-r
+write_utf8 <- function(text, path = NULL) {
+  # sometimes we use writeLines() basically to print something for a snapshot
+  if (is.null(path)) {
+    return(base::writeLines(text))
+  }
+
+  # step 1: ensure our text is utf8 encoded
+  utf8 <- enc2utf8(text)
+  upath <- enc2utf8(path)
+
+  # step 2: create a connection with 'native' encoding
+  # this signals to R that translation before writing
+  # to the connection should be skipped
+  con <- file(upath, open = "w+", encoding = "native.enc")
+  withr::defer(close(con))
+
+  # step 3: write to the connection with 'useBytes = TRUE',
+  # telling R to skip translation to the native encoding
+  base::writeLines(utf8, con = con, useBytes = TRUE)
+}
+```
+
+## Comments
+
+More Advice on [StackOverflow](https://stackoverflow.blog/2021/12/23/best-practices-for-writing-code-comments/)
+
+# Review: String Manipulation
+
+## Agenda
+
+- Unicode Discussion
+- Regex Discussion
+- Regex Exercises
+
+## Strings
+
+In `R`, strings and characters are basically interchangeable
+
+- Arbitrary "bits of text" that can be stored in a vector
+- Don't normally need to think about encoding
+
+. . . 
+
+`stringr` provides basic tools for string manipulation
+
+`stringi` provides advanced functionality
+
+## String Handling
+
+Easy to get 90% of the way correct - very hard to get 100% correct
+
+Human language is _messy_ - choices are _culturally-specific_
+
+. . . 
+
+Unicode standard exists to make it easy (easier...) to do the right thing
+
+## FAQ: Unicode Resources
+
+- Unicode Tables: [unicodeplus.com/](https://unicodeplus.com)
+- Taco Emoji [History](https://www.huffpost.com/entry/taco-bell-emoji-petition_n_6416798)
+- Taco Emoji [Controversy](https://www.vice.com/en/article/the-brief-history-of-the-taco-emoji-now-has-a-happy-ending/)
+
+## FAQ: Regular Expression Tools
+
+- Testing Regular Expressions Interactively: [regex101.com/](https://regex101.com/)
+- Alternative [regexr.com/](https://regexr.com/)
+- Automated Regular Expression Builder: [regex-generator](https://regex-generator.olafneumann.org) 
+- AI Regexp Builder: [hregexgo.com/](https://www.regexgo.com/)
+
+
+## FAQ: Substrings and String Splitting
+
+```{r}
+fruits <- c("apples and oranges and pears and bananas", 
+            "pineapples and mangos and guavas")
+
+stringr::str_split(fruits, " and ")
+```
+
+```{r}
+stringr::str_split_fixed(fruits, "and", n=2)
+```
+
+## Sub-Strings / Splitting
+
+```{r}
+x <- "Baruch College, CUNY"
+stringr::str_sub(x, end=6) # Includes endpoints
+```
+
+```{r}
+stringr::str_sub(x, start=-4) # Count from end
+```
+
+```{r}
+x <- c("Baruch College, CUNY", "Brooklyn College, CUNY")
+stringr::str_sub(x, end=-7) # Drop last _6_
+```
+
+## FAQ: Start and End Anchors
+
+> When to use the `^` and `$` anchors? 
+
+Start and end of a _line_. 
+
+- Very useful for _structured_ text (computer log outputs)
+- In data analysis, a bit less useful
+  - Applied to output of `str_split`
+
+## FAQ: Exclusion + Detection
+
+```{r}
+x <- c("10 blue fish", "three wet goats")
+stringr::str_detect(x, "[^0123456789]")
+```
+
+`str_detect` has a `negate` option:
+
+```{r}
+stringr::str_detect(x, "[0-9]", negate=TRUE)
+```
+
+
+## FAQ: `str_detect` vs `str_match` vs `str_extract`
+
+- `str_detect` is there a 'fit'?
+- `str_extract` extract the _whole_ 'fit'
+- `str_match` extract specific groups
+
+```{r}
+x <- "Baruch College, CUNY is a wonderful place to work!"
+stringr::str_detect(x, "(.*), CUNY")
+stringr::str_extract(x, "(.*), CUNY")
+stringr::str_match(x, "(.*), CUNY")
+```
+
+## FAQ: Subset Selection + Indexing
+
+`str_match(group=)` is useful for complex data extraction. 
+
+```{r}
+x <- c("Michael Weylandt teaches STA9750", "KRR teaches STA9891")
+pattern <- c("(.*) teaches (.*)")
+stringr::str_extract(x, pattern, group=1)
+stringr::str_extract(x, pattern, group=2)
+```
+(Not sure what negatives do here...)
+
+Also allows named groups: 
+
+```{r}
+x <- c("Michael Weylandt teaches STA9750 on Thursday", "KRR teaches STA9891 on Wednesday")
+pattern <- c("(?<instructor>.*) teaches (?<course>.*) on (?<weekday>.*)")
+stringr::str_match(x, pattern) |> as.data.frame()
+```
+
+## FAQ: Homoglyphs
+
+```{r}
+x <- c("Η", "H")
+tolower(x)
+```
+
+Why?
+
+. . . 
+
+```{r}
+uni_info <- Vectorize(function(x) Unicode::u_char_name(utf8ToInt(x)), "x")
+uni_info(x)
+```
+
+. . . 
+
+Particularly nasty with dashes - lean on `[[:punct::]]` where possible.
+
+```{r}
+x <- c("Em Dash —", "En Dash –", "Hyphen ‐")
+stringr::str_remove(x, "[[:punct:]]") # Works
+stringr::str_remove(x, "-")  # Keyboard minus = Fail
+```
+
+## FAQ: `?` Symbol (Quantifiers)
+
+Quantifiers (multiple matches): 
+
+- `.{a, b}`: anywhere from `a` to `b` copies (inclusive)
+- `.{, b}`: no more than `b` copies
+- `.{a,}`: at least `a` copies
+- `.?`: zero-or-one, same as `.{0,1}`
+- `.*`: zero-or-more, same as `.{0,}`
+- `.+`: one-or-more, same as `{1,}`
+
+## FAQ: `stringr` vs `grep` / `grepl`
+
+Ultimately the same functionality, but `stringr` has a more consistent interface. 
+
+Conversion table [online](https://stringr.tidyverse.org/articles/from-base.html)
+
+## FAQ: Working Columnwise
+
+All `stringr` functions work well in `dplyr` pipelines ("vectorized"): 
+
+```{r}
+library(dplyr); library(stringr)
+df <- data.frame(lower_letters = letters)
+df |> mutate(upper_letters = str_to_upper(lower_letters))
+```
+
+## FAQ: How to Convert to UTF-8
+
+If you know the source encoding: 
+
+```{r}
+#| eval: false
+inconv(STRING, from="latin1", to="UTF-8")
+```
+
+If you don't know the source, .... 
+
+## Review Activity
+
+[Regular Expression Practice](https://michael-weylandt.com/STA9750/labs/lab12.html#regular-expression-practice)
+
+As of Thursday morning, on the fritz so you likely need to copy exercises into local `RStudio`
+
+
+## Breakout Rooms
+
+
+| Room | Team           |  | Room | Team              |
+|------|----------------|--|------|-------------------|
+| 1    | Team Mystic    |  | 5    | Money Team + CWo. |
+| 2    | Subway Metrics |  | 6    | Lit Group         |
+| 3    | Noise Busters  |  | 7    | Cinephiles + VG   |
+| 4    | AI Impact Col  |  | 8    |                   |
+
+
+# New Material
+
+## Agenda
+
+- Completion of Cocktail Exercise
+- *Time Permitting*: More Scraping
+- *Time Permitting*: Statistical Inference
+
+## Cocktail Exercise
+
+First, we will complete the cocktail scraping exercise
+from last week. 
+
+Instructions and pointers can be found [here](https://michael-weylandt.com/STA9750/labs/lab12.html#scraping-practice-i-cocktail-recipies-part-2)
+
+
+## Breakout Rooms
+
+
+| Room | Team           |  | Room | Team              |
+|------|----------------|--|------|-------------------|
+| 1    | Team Mystic    |  | 5    | Money Team + CWo. |
+| 2    | Subway Metrics |  | 6    | Lit Group         |
+| 3    | Noise Busters  |  | 7    | Cinephiles + VG   |
+| 4    | AI Impact Col  |  | 8    |                   |
+
+
+## Additional Scraping Exercise
+
+Now, complete the [second scraping exercise](https://michael-weylandt.com/STA9750/labs/lab12.html#scraping-practice-ii-quotes) in your small groups
+
+## Breakout Rooms
+
+
+| Room | Team           |  | Room | Team              |
+|------|----------------|--|------|-------------------|
+| 1    | Team Mystic    |  | 5    | Money Team + CWo. |
+| 2    | Subway Metrics |  | 6    | Lit Group         |
+| 3    | Noise Busters  |  | 7    | Cinephiles + VG   |
+| 4    | AI Impact Col  |  | 8    |                   |
+
+## Statistical Inference
+
+Recall the basic theory of statistical tests - "goodness of fit"
+
+- Select a baseline model ('null hypothesis')
+- Select a quantity of interest ('test statistic')
+- Determine distribution of test statistic under null hypothesis
+- If _observed_ test statistic is extreme (vis-a-vis null distribution of test statistic):
+  - -> "doesn't fit" and reject null
+  
+## Statistical Theory
+
+_75+ Years of Theory_
+
+- Pick a null + test statistic
+  - Compute "null distribution"
+  
+$Z$-values, $t$-values, $p$-values, *etc.*
+
+Typically requires 'big math'
+
+. . . 
+
+Alternative: 
+
+- Let a computer do the hard work
+
+## Monte Carlo Simulation
+
+Using a computer's *pseudo-random number generator* (PRNG)
+
+Repeat: 
+
+- Generate $X_1, X_2, X_3, \dots$
+- Compute $f(X_1), f(X_2), f(X_3), \dots$
+
+Sample average (LLN) 
+
+$$\frac{1}{n} \sum_{i=1}^n f(X_i) \to \E[f(X)]$$
+
+Holds for arbitrary related quantities (quantiles, medians, variances)
+
+## Monte Carlo Simulation
+
+Example: suppose we have $X_i \sim\text{iid} \mathcal{N}(0, \sigma^2)$ and we want to test $H_0: \sigma=1$
+
+```{r}
+#| echo: true
+n <- 20
+X <- rnorm(n, mean=0, sd=1.25)
+
+sd(X)
+```
+
+How to test? 
+
+## The Math Way
+
+Per Cochran's theorem, $S \sim \sqrt{\frac{\chi^2_{n-1}}{n-1}} = \frac{1}{\sqrt{n-1}} \chi_{n-1}$ has a $\chi$ (not $\chi^2$) distribution
+
+```{r}
+#| echo: true
+library(chi)
+critical_value <- qchi(0.95, df=n-1) / sqrt(n-1)
+critical_value
+```
+
+So reject $H_0$ if $S$ above critical value (`r round(critical_value, 2)`)
+
+## The Computer Way
+
+To get a critical value
+
+```{r}
+gen_sample_sd <- function(..., n=25, sd=1){
+    sd(rnorm(n, mean=0, sd=sd))
+}
+
+tibble(simulation=1:1000) |>
+    mutate(test_statistic_null = map_dbl(simulation, gen_sample_sd)) |>
+    summarize(quantile(test_statistic_null, 0.95))
+```
+
+
+## The Computer Way
+
+To get a $p$-value: 
+
+```{r}
+gen_sample_sd <- function(..., n=25, sd=1){
+    sd(rnorm(n, mean=0, sd=sd))
+}
+
+tibble(simulation=1:1000) |>
+    mutate(test_statistic_null = map_dbl(simulation, gen_sample_sd)) |>
+    summarize(p_val = mean(test_statistic_null > sd(X)))
+```
+
+## `infer`
+
+The `infer` package automates much of this for common tests
+
+![](https://raw.githubusercontent.com/tidymodels/infer/main/figs/ht-diagram.png)
+
+[Many examples](https://infer.netlify.app/articles/observed_stat_examples)
+
+
+# Looking Ahead
+
+## Upcoming Mini-Projects
+
+- MP#04: `r get_mp_title(4)`
+
+Seeking suggestions for next semester
+
+- [Course Feedback Survey](
+https://baruch.az1.qualtrics.com/jfe/form/SV_9uyZ4YFsrcRRPIG
+)
+
+## Upcoming
+
+
+This Week:
+
+- MP#03 Peer Feedback
+- Pre Assignment
+
+. . . 
+
+Longer Term: 
+
+- MP#04
+- Final Presentations
+
+{{< include ../advice/register_to_vote.qmd >}}
+
