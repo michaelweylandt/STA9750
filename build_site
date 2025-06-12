@@ -1,5 +1,6 @@
 #!/usr/bin/env Rscript
 library(tidyverse)
+library(glue)
 
 ## Auto-generate key dates file
 system("soffice --convert-to csv key_dates.ods")
@@ -7,66 +8,78 @@ system("soffice --convert-to csv key_dates.ods")
 ## Generate Google Calendar Formatted CSV for Student Events
 DATES <- read_csv("key_dates.csv")
 
-### i) First get lectures
-LECTURES <- DATES |>
-    filter(`Course Element` == "Class Session") |>
-    mutate(Subject=paste("STA/OPR 9750 Lecture", `Item Number`),
-           `Start Date`=Date,
-           `Start Time`="6:05 PM",
-           `End Date`=Date,
-           `End Time`="9:00 PM",
-           `All Day Event`="False",
-           `Location`="Zoom [Link distributed via CUNY Brightspace]") |>
-    select(-`Course Element`,
-           -`Item Number`,
-           -`Action`,
-           -`Responsible Party`,
-           -`Date`,
-           -`Time`,
-           -`Details`)
+TUESDAY_DATES  <- DATES |> filter(Section %in% c("Tuesday", "Both"))
+THURSDAY_DATES <- DATES |> filter(Section %in% c("Thursday", "Both"))
 
-`%rep_na%` <- function(x, y) ifelse(is.na(x), y, x)
+write_csv(TUESDAY_DATES,  "key_dates_tuesday.csv")
+write_csv(THURSDAY_DATES, "key_dates_thursday.csv")
 
-ASSIGNMENTS <- DATES |>
-    filter(`Responsible Party` == "Student") |>
-    mutate(Subject = paste0("STA/OPR 9750 ",
-                           str_replace(`Course Element`, "s$", ""),
-                           " ",
-                           `Item Number` %rep_na% "",
-                           ": ",
-                           Details),
-           Subject = str_replace(Subject, " :", ":"),
-           dt = paste(Date, Time),
-           end = parse_date_time(dt, "%Y-%m-%d %H:%M%p"),
-           start = end - minutes(30),
-           `Start Date`=as_date(start),
-           `End Date`=as_date(end),
-           `Start Time`=format(start, "%I:%M %p"),
-           `End Time`=format(end, "%I:%M %p"),
-           `All Day Event`="False",
-           `Location`=case_when(
-               `Course Element` == "Mini-Projects" ~ "Submitted via GitHub and Brightspace",
-               `Course Element` == "Pre-Assignments" ~ "Submitted via Brightspace",
-               str_detect(Details, "Team Roster Submission") ~ "Direct Submission to Instructor",
-               str_detect(Details, "Presentation") ~ "In-Class Presentation",
-               str_detect(Details, "Teammate Peer Evaluations") ~ "Submitted via Brightspace",
-               str_detect(Details, "Report") ~ "Submitted via GitHub and Brightspace"
-           )) |>
-    select(-`Course Element`,
-           -`Item Number`,
-           -`Action`,
-           -`Responsible Party`,
-           -`Date`,
-           -`Time`,
-           -`Details`,
-           -dt,
-           -start,
-           -end
-           )
+for(section in c("tuesday", "thursday")){
+    SEC_DATES <- if(section == "tuesday") TUESDAY_DATES else THURSDAY_DATES
+    ### i) First get lectures
+    LECTURES <- SEC_DATES |>
+        filter(`Course Element` == "Class Session") |>
+        mutate(Subject=paste("STA/OPR 9750 Lecture", `Item Number`),
+               `Start Date`=Date,
+               `Start Time`="6:05 PM",
+               `End Date`=Date,
+               `End Time`="9:00 PM",
+               `All Day Event`="False",
+               `Location`="Zoom [Link distributed via CUNY Brightspace]") |>
+        select(-`Course Element`,
+               -`Item Number`,
+               -`Action`,
+               -`Responsible Party`,
+               -`Date`,
+               -`Time`,
+               -`Details`,
+               -`Section`)
 
-bind_rows(LECTURES, ASSIGNMENTS) |>
-    arrange(`Start Date`) |>
-    write_csv("key_dates_students_gcal.csv")
+    `%rep_na%` <- function(x, y) ifelse(is.na(x), y, x)
+
+    ASSIGNMENTS <- SEC_DATES |>
+        filter(`Responsible Party` == "Student") |>
+        mutate(Subject = paste0("STA/OPR 9750 ",
+                                str_replace(`Course Element`, "s$", ""),
+                                " ",
+                                `Item Number` %rep_na% "",
+                                ": ",
+                                Details),
+               Subject = str_replace(Subject, " :", ":"),
+               dt = paste(Date, Time),
+               end = parse_date_time(dt, "%Y-%m-%d %H:%M%p"),
+               start = end - minutes(30),
+               `Start Date`=as_date(start),
+               `End Date`=as_date(end),
+               `Start Time`=format(start, "%I:%M %p"),
+               `End Time`=format(end, "%I:%M %p"),
+               `All Day Event`="False",
+               `Location`=case_when(
+                   `Course Element` == "Mini-Projects" ~ "Submitted via GitHub and Brightspace",
+                   `Course Element` == "Pre-Assignments" ~ "Submitted via Brightspace",
+                   str_detect(Details, "Team Roster Submission") ~ "Direct Submission to Instructor",
+                   str_detect(Details, "Presentation") ~ "In-Class Presentation",
+                   str_detect(Details, "Teammate Peer Evaluations") ~ "Submitted via Brightspace",
+                   str_detect(Details, "Report") ~ "Submitted via GitHub and Brightspace"
+               )) |>
+        select(-`Course Element`,
+               -`Item Number`,
+               -`Action`,
+               -`Responsible Party`,
+               -`Date`,
+               -`Time`,
+               -`Details`,
+               -dt,
+               -start,
+               -end,
+               -Section
+        )
+
+    bind_rows(LECTURES, ASSIGNMENTS) |>
+        arrange(`Start Date`) |>
+        write_csv(glue("key_dates_students_gcal_{section}.csv"))
+
+}
 
 ## Build site
 
@@ -82,7 +95,9 @@ QMD_FILES <- list.files(recursive=TRUE,
                         pattern="*qmd",
                         full.names=TRUE)
 
-QMD_FILES <- QMD_FILES |> str_subset("(archive|_)", negate=TRUE)
+QMD_FILES <- QMD_FILES |>
+    str_subset("(archive|_)", negate=TRUE) |>
+    str_subset("(advice|_)", negate=TRUE)
 
 for(fname in QMD_FILES){
     cat("Rendering", fname, "\n")

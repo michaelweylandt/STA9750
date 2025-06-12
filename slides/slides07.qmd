@@ -2,9 +2,15 @@
 session: "`r session <- 7; session`"
 class_date:
   "`r library(tidyverse); 
-    read_csv('key_dates.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', Item.Number==session) |>
-    pull(Date)`"
+    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
 ---
 
 {{< include _setup.qmd >}}
