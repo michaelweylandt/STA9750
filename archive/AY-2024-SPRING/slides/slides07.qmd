@@ -1,0 +1,728 @@
+---
+session: "`r session <- 7; session`"
+class_date:
+  "`r library(tidyverse); 
+    read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', Item.Number==session) |>
+    pull(Date)`"
+---
+
+{{< include _setup.qmd >}}
+
+## {{< var course.short >}} Mini-Project #01
+
+Grades returned this afternoon.
+
+Review [regrade policy](https://michael-weylandt.com/STA9750/syllabus.html#regrading-policy) and [late work policy](https://michael-weylandt.com/STA9750/resources.html#late-work-policy) if you have questions.
+
+## {{< var course.short >}} Mini-Project #02
+
+
+[MP#02](../miniprojects/mini02.html) - `r get_mp_title(2)`
+
+**Due `r get_mp_deadline(2)`**
+
+-   GitHub post (used for peer feedback) AND Brightspace
+-   Start early to avoid Git issues
+
+. . .
+
+Pay attention to [the rubric](../miniprojects/mini02.html#rubric)
+
+-   Writing and presentation are about 50% of your grade
+-   Evaluated on *rigor* and *thoughtfulness*
+-   Use what you learned from MP#01
+- Turn in *something* - 20% 'free points' are nothing to scoff at
+
+## {{< var course.short >}} Mini-Project #02
+
+A few students have reported issues with rate-limiting on the EIA
+SEP site. Re-running the code seems to resolve issues. 
+
+My download code is written to save the files locally, so only needs
+to succeed once. 
+
+. . . 
+
+
+One student reported `NA` conversion warnings in processing the NTD
+data. These were harmless, but I've modified the provided code to 
+suppress these warnings. 
+
+In brief: update to NTD now uses dashes in a few places for missing
+data and `NA` warning came up when trying to conver these to numeric
+values
+
+## {{< var course.short >}} Mini-Project #02
+
+Remember that "non-standard" column names require use of backticks:
+
+```{r}
+#| eval: false
+#| echo: true
+NTD_ENERGY_RAW |> 
+    select(-c(`Reporter Type`, 
+              `Reporting Module`, 
+              `Other Fuel`, 
+              `Other Fuel Description`)) |>
+    mutate(`Bunker Fuel` = ...)
+```
+
+## Feedback
+
+- I've started to return Proposal Feedback (via email) - will finish 
+tomorrow
+
+- MP#01 grades to follow
+
+
+## Pre-Assignments
+
+Brightspace - Wednesdays at 11:45
+
+-   Reading, typically on course website
+-   Brightspace auto-grades
+    -   I have to manually change to completion grading
+
+Next pre-assignment is **`r get_pa_deadline(8)`**: 
+
+- Includes an optional (but really great) lecture on data
+  visualization from Di Cook (Monash B School (AUS))
+
+. . .
+
+Thank you for FAQs and (honest) team feedback. Keep it coming!
+
+## Course Support
+
+-   Synchronous
+    -   Office Hours 2x / week
+        -   MW Office Hours on **Tuesdays** + **Thursday** for rest of semester
+        -   No OH during Spring Break
+-   Asynchronous
+    -   Piazza ($<30$ minute average response time)
+    
+Thanks to DS for helping peers on Piazza!
+
+## Upcoming Week
+
+Due Wednesday at 11:45pm:
+
+- Pre-Assignment #08 (Brightspace)
+  - Interactive Tools for Data Visualization
+-   MP #02 on GitHub AND Brightspace
+
+## Teaching Observation
+
+On April 3rd, Prof. Brandwein will sit in and observe class
+
+- You don't need to do anything different - just an FYI
+
+## Additional Resources
+
+-   C. Wilke. [*Fundamentals of Data Visualization*](https://clauswilke.com/dataviz/)
+-   K. Healy. [*Data Visualization*](https://socviz.co/)
+-   H. Wickham [*`ggplot2`: Elegant Visualizations for Data Analysis*](https://ggplot2-book.org/)
+
+. . .
+
+-   B. Yu and R. Barter [*Veridical Data Science*](https://vdsbook.com/)
+
+# Pre-Assignment #07 FAQs
+
+## FAQ: `ggplot2` vs `Tableau`
+
+-   Tableau
+    -   \$\$\$
+    -   IT department automatically integrates with data sources
+    -   Easy, if it does what you want
+-   `ggplot2`
+    -   Free
+    -   Can use arbitrary data sources, with effort
+    -   Flexible / customizable
+
+## FAQ: `ggplot2` vs `matplotlib`
+
+-   `ggplot2`
+    -   *Data* visualizations
+    -   Enforces "good practice" via `gg`
+-   `matplotlib`
+    -   *Scientific* visualizations
+    -   More flexible for good or for ill
+    -   Inspired by `Matlab` plotting
+
+Closest Python analogue to `ggplot2` is `seaborn`
+
+## FAQ: Why use `+` instead of `|>`
+
+-   `ggplot2` is older than `|>`
+-   Per H. Wickham: if `ggplot3` ever gets made, will use `|>`
+-   Unlikely to change: too much code depends on it
+
+## FAQ: Performance
+
+> I tried an interactive plot with $n=132,000$ points, but it brought my computer to a halt. *\[Ed. Paraphrased\]*
+
+That's a lot of plots!!
+
+`ggplot2` is itself pretty fast, but it depends on (possibly slow) graphics backends
+
+- Different file types implement graphics differently.
+- You should also think about overplotting / pre-processing
+
+## FAQ: Overplotting
+
+Large data sets can lead to _overplotting_:
+
+  - Points "on top of" each other
+  - Can also occur with "designed" experiments / rounded data
+  
+Ways to address: 
+
+- `geom_jitter`
+- `geom_hex`
+  
+## FAQ: Overplotting
+
+Jitter: add a bit of random noise so points don't step on each other
+
+```{r}
+#| echo: true
+#| warning: false
+library(ggplot2); library(patchwork)
+p <- ggplot(mpg, aes(cyl, hwy))
+p1 <- p + geom_point() + ggtitle("geom_point")
+p2 <- p + geom_jitter() + ggtitle("geom_jitter")
+p1 + p2
+```
+
+## FAQ: Hexagonal Binning
+
+Little "heatmaps" of counts. Hexagons to avoid weird rounding artifacts
+
+```{r}
+#| echo: true
+library(ggplot2); library(patchwork)
+p <- ggplot(diamonds, aes(carat, price))
+p1 <- p + geom_point() + ggtitle("geom_point")
+p2 <- p + geom_hex() + ggtitle("geom_hex")
+p1 + p2
+```
+
+
+## FAQ: Inside vs. Outside `aes()`
+
+`aes` maps *data to values*. Outside of `aes`, set constant value
+
+```{r}
+#| echo: true
+library(ggplot2); library(palmerpenguins)
+ggplot(penguins, 
+       aes(x=bill_length_mm, y=bill_depth_mm, color=species))+ geom_point()
+```
+
+## FAQ: Inside vs. Outside `aes()`
+
+`aes` maps *data to values*. Outside of `aes`, set constant value
+
+```{r}
+#| echo: true
+library(ggplot2); library(palmerpenguins)
+ggplot(penguins, 
+       aes(x=bill_length_mm, y=bill_depth_mm))+ geom_point(color="blue")
+```
+
+## FAQ: Global vs `geom_` specific `aes()`
+
+-   Elements set in `ggplot()` apply to entire plot
+-   Elements set in specific `geom` apply there only
+    -   Override globals
+
+```{r}
+#| echo: true
+library(ggplot2); library(palmerpenguins)
+ggplot(penguins, 
+       aes(x=bill_length_mm, y=bill_depth_mm, color=species))+
+    geom_smooth() + 
+    geom_point(color="blue")
+```
+
+## FAQ: How to choose plot types
+
+Two "modes"
+
+- Exploratory data analysis. Quick, rapid iteration, for your eyes only
+  - Let the data tell you a story
+  - Low pre-processing: scatter plots, lines, histograms
+- "Publication quality". Polished, 
+  - You tell the reader a story
+  - More processing, more modeling: trends, line segments, ribbons
+
+## FAQ: Color Palettes
+
+Three types of color palettes: 
+
+- Sequential: ordered from 0 to "high"
+  - Example: rain forecast in different areas
+- Diverging: ordered from -X to +X with meaningful 0 in the middle
+  - Example: political leaning
+- Qualitative: no ordering
+
+. . . 
+
+When mapping quantitative variables to palettes (sequential/diverging), two approaches: 
+
+- Binned: $[0, 1)$ light green, $[1, 3)$ medium green; $[3, 5]$ dark green
+- Continuous
+
+## FAQ: Color Palettes
+
+```{r}
+#| echo: true
+library(ggplot2); library(palmerpenguins)
+ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + 
+    geom_point() + theme_bw() + 
+    scale_color_distiller(type="seq") # Continuous
+```
+
+## FAQ: Color Palettes
+
+```{r}
+#| echo: true
+library(ggplot2); library(palmerpenguins)
+ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + 
+    geom_point() + theme_bw() + 
+    scale_color_fermenter(type="seq") # Binned
+```
+
+## FAQ: Color Palettes
+
+```{r}
+#| echo: true
+library(ggplot2); library(palmerpenguins)
+ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + 
+    geom_point() + theme_bw() + 
+    scale_color_fermenter(type="seq") # Binned + Sequential
+```
+
+## FAQ: Color Palettes
+
+```{r}
+#| echo: true
+library(ggplot2); library(palmerpenguins)
+ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + 
+    geom_point() + theme_bw() +
+    scale_color_fermenter(type="qual") # Binned + Qualitative
+```
+
+## FAQ: Color Palettes
+
+```{r}
+#| echo: true
+library(ggplot2); library(palmerpenguins)
+ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + 
+    geom_point() + theme_bw() + 
+    scale_color_fermenter(type="div") # Binned + Diverging
+```
+
+## FAQ: How to "hard-code" colors
+
+```{r}
+#| echo: true
+library(dplyr)
+data <- data.frame(x = rnorm(5), 
+                   y = rnorm(5), 
+                   group = c("a", "a", "b", "b", "b"))
+
+data |> 
+    group_by(group) |>
+    mutate(n_count = n()) |>
+    ungroup() |>
+    mutate(color = ifelse(n_count == max(n_count), "red", "black")) |>
+    ggplot(aes(x=x, y=y, shape=group, color=color)) + 
+    geom_point() + 
+    scale_color_identity()
+```
+
+
+## FAQ: How to Customize Themes
+
+Built-in themes + `ggthemes` package: 
+
+```{r}
+#| echo: true
+#| warning: false
+library(ggplot2); library(ggthemes); 
+library(palmerpenguins); library(ggpmisc)
+p <- ggplot(penguins, 
+       aes(x=flipper_length_mm, 
+           y=body_mass_g, 
+           color=species)) + 
+    geom_point() + 
+    stat_poly_line(se=FALSE, 
+                   color="black") +
+    stat_poly_eq() + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Species") + 
+    facet_wrap(~species)
+```
+
+## FAQ: Themes
+
+Default theme (`ggplot2::theme_grey()`):
+
+```{r}
+p
+```
+
+## FAQ: Themes
+
+Black and White theme (`ggplot2::theme_bw()`):
+
+```{r}
+p + theme_bw()
+```
+
+## FAQ: Themes
+
+Minimal theme (`ggplot2::theme_minimal()`):
+
+```{r}
+p + theme_minimal()
+```
+
+## FAQ: Themes
+
+Light theme (`ggplot2::theme_light()`):
+
+```{r}
+p + theme_light()
+```
+
+## FAQ: Themes
+
+Dark theme (`ggplot2::theme_dark()`):
+
+```{r}
+p + theme_dark()
+```
+
+## FAQ: Themes
+
+Excel theme (`ggthemes::theme_excel()`):
+
+```{r}
+p + theme_excel()
+```
+
+## FAQ: Themes
+
+Google Docs theme (`ggthemes::theme_gdocs()`):
+
+```{r}
+p + theme_gdocs()
+```
+
+## FAQ: Themes
+
+*The Economist* theme (`ggthemes::theme_economist()`):
+
+```{r}
+p + theme_economist()
+```
+
+## FAQ: Themes
+
+*The Economist* theme (`ggthemes::theme_economist()`):
+
+```{r}
+p + theme_economist()
+```
+
+## FAQ: Themes
+
+*Solarized* theme (`ggthemes::theme_solarized()`):
+
+```{r}
+p + theme_solarized()
+```
+
+## FAQ: Themes
+
+*Solarized2* theme (`ggthemes::theme_solarized_2()`):
+
+```{r}
+p + theme_solarized_2()
+```
+
+
+## FAQ: Themes
+
+Stata theme (`ggthemes::theme_stata()`):
+
+```{r}
+p + theme_stata()
+```
+
+## FAQ: Themes
+
+Tufte theme (`ggthemes::theme_tufte()`):
+
+```{r}
+p + theme_tufte()
+```
+
+## FAQ: Themes
+
+*Wall Street Journal* theme (`ggthemes::theme_wsj()`):
+
+```{r}
+p + theme_wsj()
+```
+
+## FAQ: Themes
+
+Many more online:
+
+- [ThemePark](https://github.com/MatthewBJane/ThemePark) for movie themes
+
+## FAQ: Order of Layers
+
+Order of layers _technically_ matters, but the effect is small
+
+```{r}
+#| echo: true
+p1 <- ggplot(penguins, aes(x=bill_length_mm, y=flipper_length_mm)) +
+        geom_point(color="black") + 
+        geom_smooth(color="blue", method="lm") + ggtitle("Line on points")
+p2 <- ggplot(penguins, aes(x=bill_length_mm, y=flipper_length_mm)) +
+        geom_smooth(color="blue", method="lm") + 
+        geom_point(color="black") + ggtitle("Points on line")
+p1 + p2
+```
+
+## FAQ: Order of layers
+
+Order matters more with theme. Adding a `theme_*()` will override any
+`theme()` customization you did: 
+
+```{r}
+#| echo: true
+p1 <- p + theme_bw() + theme(legend.position="bottom")
+p2 <- p + theme(legend.position="bottom") + theme_bw() 
+p1 + p2
+```
+
+## FAQ: `stat_poly_{line,eq}` vs `geom_smooth`
+
+By default `geom_smooth` fits a _generalized additive model_ (GAM)
+
+`ggpmisc::stat_poly_{line,eq}` fit linear models, so they can expose more machinery. 
+
+. . . 
+
+What is a GAM?
+
+- Take 9890 with me (typically Spring semester) to find out!
+- Free Course: ["GAMs in R"](https://noamross.github.io/gams-in-r-course/) from
+  Noam Ross
+
+
+
+## FAQ: Titles and Captions
+
+```{r}
+#| echo: true
+ggplot() + 
+    labs(title="Title", subtitle="Subtitle", caption="Caption",
+         tag="Tag", alt="Alt-Text", alt_insight="Alt-Insight")
+```
+
+`+ggtitle("text")` is just shorthand for `+labs(title="text")`
+
+## FAQ: Relative Importance of Aesthetics
+
+Perceptually: 
+
+- Location > Color > Size > Shape
+
+Humans are better at: 
+
+- Length > Area > Volume
+
+## FAQ: When to Use Facets?
+
+Facets are `group_by` for plots. Useful for
+
+- Distinguishing intra- vs inter-group trends
+- Avoiding overplotting
+
+## FAQ: Simpson's Paradox
+
+```{r}
+#| code-fold: true
+#| warning: false
+#| label: "Create Data"
+library(datasauRus)
+library(dplyr)
+simpsons_paradox <- datasauRus::simpsons_paradox %>%
+  filter(dataset == "simpson_2") %>%
+  mutate(group = cut(x + y, c(0, 55, 80, 120, 145, 200), 
+       labels = LETTERS[1:5])) %>%
+  select(- dataset)
+```
+
+```{r}
+ggplot(simpsons_paradox, aes(x=x, y=y)) + 
+    geom_point() + geom_smooth(method="lm")
+```
+
+## FAQ: Simpson's Paradox
+
+```{r}
+ggplot(simpsons_paradox, aes(x=x, y=y, color=group)) + 
+    geom_point() + geom_smooth(method="lm") + facet_grid(~group)
+```
+
+## FAQ: UCB Graduate Admissions {.smaller}
+
+1973: UC Berkeley was concerned about bias in Grad School Admissions
+
+- Higher fraction of men admitted than women
+- Bickel, Hammell, O'Connell asked to study
+  - When they try to find the source of this bias, there is none!
+  - Each department admits women at a higher rate than men
+  - Women applied to more selective programs at a higher rate
+  
+
+This phenomenon occurs _throughout_ the social sciences: the best doctors have
+the worst patient outcomes
+
+. . . 
+  
+BHO note: 
+
+> Women are shunted by their socialization and education
+toward fields of graduate study that are generally more
+crowded, less productive of completed degrees, and less
+well funded, and that frequently offer poorer professional
+employment prospects.
+
+. . . 
+
+## FAQ: Twin Axes Plots
+
+> How can I implement a dual (twin) axis plot in `ggplot2`?
+
+Disfavored. But if you must ...
+
+[sec.axis](https://r-graph-gallery.com/line-chart-dual-Y-axis-ggplot2.html)
+
+Doesn't allow *arbitrary* secondary axes; allows *transformed* axes 
+(e.g., Celsius and Fahrenheit)
+
+
+## FAQ: Embedding images in `ggplot`
+
+See the `ggimage` or `ggflags` package for images as "points":
+
+```{r}
+#| echo: true
+#devtools::install_github("jimjam-slam/ggflags"); 
+library(ggflags)
+d <- data.frame(x=rnorm(50), y=rnorm(50), 
+                country=sample(c("ar","fr", "nz", "gb", "es", "ca"), 50, TRUE), 
+                stringsAsFactors = FALSE)
+ggplot(d, aes(x=x, y=y, country=country, size=x)) + 
+  geom_flag() + 
+  scale_country()
+```
+
+## FAQ: Embedding Images
+
+See `cowplot::draw_image()` for image background: 
+
+```{r}
+#| echo: true
+library(cowplot)
+p <- ggplot(iris, aes(x = Sepal.Length, fill = Species)) +
+  geom_density(alpha = 0.7) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  theme_half_open(12)
+
+logo_file <- system.file("extdata", "logo.png", package = "cowplot")
+ggdraw() +
+  draw_image(
+    logo_file, scale = .7
+  ) +
+  draw_plot(p)
+```
+
+# Today
+
+## Diving Deeper with `ggplot2`
+
+Data Sets: 
+
+- [`diamonds`](https://ggplot2.tidyverse.org/reference/diamonds.html) from the `ggplot2` package
+- `cdiac` from the `CVXR` package
+- `gapminder` from the `gapminder` package
+
+You need to install `CVXR` and `gapminder` now.
+
+Exercise: [Lab #07](../labs/lab07.html)
+
+## Diving Deeper: Learning Goals
+
+Today: 
+
+- Fluency with basic `geom`s
+- Animation (Just a bit)
+
+Next Week: 
+
+- Interactive graphics
+- Dashboards
+- Spatial Data (time allowing)
+
+## Breakout Rooms
+
+| Room | Team                     |   | Room | Team                |
+|-------|-------------------------|---|------|---------------------|
+| 1     | VH + SG + DS + DL       |   | 5    | GB + RJ + FS + MH   |  
+| 2     | HZ + JLL + CA           |   | 6    | EM + AK + GMdS + JL |
+| 3     | MT + CW + VG + GS + CWo.|   | 7    | SJB + JC + SB + ZS  |
+| 4     | SD + GO + CFGF          |   |      |                     |
+
+# Wrap-Up
+
+## Looking Ahead
+
+Course Structure: 
+
+- One more week on analyzing data you already have
+- Then 3 weeks on getting data into `R`
+- One brief week on statistical modeling
+
+. . . 
+
+Course Projects: 
+
+- Very excited by your proposals! 
+- Please send me questions anytime - my goal is to help you achieve your goals
+
+## Looking Ahead
+
+My Learning Goals: 
+
+- (IMO) Most 'practical' course we offer
+  - Exposure to tools and, more importantly, _techniques_ for data analysis
+- My goal is to give you tools to achieve your goals in 3, 6, 12, 48 months
+- Biggest failure for me is catching up with you in 2-3 years and hearing you
+  feel held back by lack of skills. 
+- Investment of time now, but payoff throughout your career
+
+{{< include ../advice/amazon.qmd >}}

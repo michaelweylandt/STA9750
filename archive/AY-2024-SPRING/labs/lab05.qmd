@@ -1,0 +1,408 @@
+---
+title: "{{< var course.short >}} Week 5 In-Class Activity: Let us `JOIN` Our Tables Together"
+engine: knitr
+---
+
+```{r}
+#| include: false
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("nycflights13")) install.packages("nycflights13")
+library(tidyverse)
+library(nycflights13)
+```
+
+# Welcome!
+
+[Slides](../slides/slides05.html)
+
+# Review Practice
+
+The file ["births.csv"](https://github.com/michaelweylandt/STA9750/blob/main/births.csv) 
+in the course repository contains daily US birth counts for 20 years from 1969
+to 1988, obtained from the US Social Security Administration. Download this file
+and read it into `R` and answer the following review questions with your group. 
+
+The following code may be useful: 
+
+```{r}
+#| eval: false
+#| echo: true
+if(!file.exists("births.csv")){
+    download.file("https://raw.githubusercontent.com/michaelweylandt/STA9750/main/births.csv", 
+                  destfile="births.csv")
+}
+library(readr)
+library(dplyr)
+
+births <- read_csv("births.csv")
+glimpse(births)
+```
+
+The columns here are:
+
+- `id` : The day in the entire time series (going up to $\approx 365 * 20$ plus a few for leap day)
+- `day_of_year`: the day in the year (1 to 365/366)
+- `day_of_week`: the day of the week, coded as an integer
+- `day`, `month`, `year`: the parts of the date as we normally think of them
+- `births`: the number of births that day. 
+
+
+1. How many children were born on January 1st, 1984? 
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| eval: false
+births |> filter(day==1, month==1, year==1984)
+```
+
+:::
+
+2. How many total children were born in 1984? 
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| eval: false
+births |> filter(year==1984) |> summarize(sum(births))
+```
+
+:::
+
+3. How many children were born each year? (Print a 20 row table)
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| eval: false
+births |> group_by(year) |> summarize(n_births = sum(births))
+```
+
+:::
+
+4. How many more children were born each year than the preceeding? 
+(The `lag` function will be useful here!)
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| eval: false
+births |> 
+    group_by(year) |>
+    summarize(n_births = sum(births)) |>
+    mutate(increase_births = n_births - lag(n_births))
+```
+
+:::
+
+5. On average, in what month are the most children born? 
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| eval: false
+births |> 
+    group_by(month) |>
+    summarize(avg_births = mean(births)) |>
+    slice_max(avg_births)
+```
+
+:::
+
+After completing these, work with your group to formulate and answer three more
+advanced questions with your group.
+
+# Multi Table Operations
+
+This week, we are going to dive into the most useful "multi-table" `dplyr`
+operations, the `join` family. We will focus on the "big three" joins: 
+
+- `inner_join`
+- `full_join`
+- `left_join`
+
+These inspired by the `SQL` joins, `INNER JOIN`, `FULL [OUTER] JOIN`, and
+`LEFT JOIN`.[^1] We will apply them to the various tables in the
+`nycflights13` data set. Recall the structure of each of these tables: 
+
+```{r}
+library(nycflights13)
+glimpse(flights)
+```
+
+```{r}
+glimpse(airlines)
+```
+
+```{r}
+glimpse(airports)
+```
+
+```{r}
+glimpse(planes)
+```
+
+```{r}
+glimpse(weather)
+```
+
+From here, we can see that there are many relationships between these tables. For
+example, the `origin` and `dest` columns of the `flights` table, representing
+the origin and destination airport respectively, both correspond to the FAA
+identifiers used by the `faa` column of the `airports` table. These "commonalities"
+form the basis of join specifications. 
+
+## Join Specifications
+
+`dplyr` specifies joins using the `join_by` function. The output of the `join_by`
+function, also known as a "join specification" is a series of logical tests
+applied to pairs of rows. The results of these logical tests are used to identify
+"matches" between rows. Joins differ primarily on how they use the outputs of
+these logical tests to construct their output. 
+
+The simplest and most useful logical test to use in a join is an equality test. 
+In `dplyr`, these are simply written as
+
+```{r}
+#| eval: false
+join_by(left_name == right_name)
+```
+
+This type of test checks whether the value in the `left_name` column of the 
+first (left) argument matches the value in the `right_name` column of the second
+(right) argument. 
+
+For example, if I wanted to join the `origin` column of `flights` table to the
+`faa` column of the `airports` table, I might use something like the following: 
+
+```{r}
+#| eval: true
+inner_join(flights, airports, join_by(origin == faa))
+```
+
+Here `origin` is taken to be a column from the first (left) table and `faa`
+is taken to be a column from the second (right) table. As with other `dplyr`
+functions, there is a bit of programming magic used to allow column names
+to be used as variables and interpreted correctly. 
+
+For the airport identifiers, we only need to match on the single unique ID. (We
+can assume the FAA assigns unique IDs to each airport.) In other circumstances,
+we need to combine several logical tests to get a true match. 
+
+For example, suppose we want to align our flights with the weather at their 
+origin airport at scheduled take off time. Here, we'd need to combine the `flights`
+and `weather` table on _many_ columns: 
+
+- `origin` to `origin`
+- `year` to `year`
+- `month` to `month`
+- `day` to `day`
+- `hour` to `hour`
+
+In this case, we'd pass 5 equality conditions to `join_by`: 
+
+```{r}
+#| eval: true
+inner_join(flights, 
+           weather, 
+           join_by(origin == origin,
+                   year == year,
+                   month == month,
+                   day == day,
+                   hour == hour))
+```
+
+Here we look only at those rows which match on _all 5_ tests. In this way,
+`join_by` behaves like `filter`: it "passes" the _intersection_ of positive
+results. 
+
+Note that it is relatively common for matched columns to have the same name in
+both tables: to support this case, `dplyr` reads a single column name as "self-equality". So the above code can be more concisely written as: 
+
+```{r}
+#| eval: true
+inner_join(flights, 
+           weather, 
+           join_by(origin, 
+                   year, 
+                   month, 
+                   day, 
+                   hour))
+```
+
+I recommend _against_ using this short-cut. It takes hardly more time to write
+your intent explicitly and it's far more robust. _Measure twice, cut once_. 
+
+Unfortunately, it is not easy to perform an "OR" in `join_by`. We may cover this
+below, time allowing. 
+
+We now turn to specific joins. All of these joins use the `join_by` operator
+but they construct results differently based on its output.
+
+## Inner Joins
+
+The most common and most important join in data analysis is the `inner_join`.
+The inner join returns _matches_ between two tables. Conceptually, the inner join
+constructs all possible pairs of rows between the two tables (so 
+`{r eval=FALSE} NROW(x) * NROW(y)` total rows) and then filters down to 
+those which pass the `join_by` test. In practice, more efficient algorithms 
+are used to prevent wasteful computation. 
+
+Inner joins are used when seeking matches between two tables. They are particularly
+useful when both tables are "comprehensive" and we are sure that there are matches. 
+For instance, we can use an `inner_join` to combine most of the tables in
+`nycflights13` because they come from a comprehensive government data source.
+(*E.g.*, No flights going to secret "unauthorized" airports.)
+
+Let's start by asking what the _average_ arrival delay of flights going to
+west coast airports is. We do not have enough information to answer this using
+the `flights` table alone. To identify west coast airports, let's filter
+`airports` on `tzone`: 
+
+```{r}
+west_coast_airports <- airports |> filter(tzone == "America/Los_Angeles")
+```
+
+We can now join this to the original flights table to find only those flights
+with destination matches in `west_coast_airports`:
+
+```{r}
+inner_join(flights, west_coast_airports, join_by(dest == faa))
+```
+
+Here, we have only a subset of our original `flights` table. From this, we
+can compute our relevant summary statistic: 
+
+```{r}
+inner_join(flights, west_coast_airports, join_by(dest == faa)) |>
+    summarize(mean(arr_delay, na.rm=TRUE))
+```
+
+Is this any better than the following alternative approach: 
+
+```{r}
+inner_join(flights, airports, join_by(dest == faa)) |>
+    filter(tzone == "America/Los_Angeles") |>
+    drop_na() |>
+    summarize(mean(arr_delay, na.rm=TRUE))
+```
+
+Formally, these are basically equivalent. (`filter` and `inner_join` _commute_). 
+As usual, it's a matter of _communicating intent_. Here the single line 
+`filter(tzone == "America/Los_Angeles")` is simple enough it probably doesn't
+need a separate variable. But if, instead of a one line operation, we performed
+a very complex set of filtering options, we may benefit from giving it a separate
+name as opposed to trying to shoe-horn the complex filtering into a pipeline. 
+
+Performance-wise, it is a bit better to perform `filter` before `inner_join` 
+(Why? Think about the size of the result of each step.) but the difference is
+rarely material. _Clarity of intent_, not _optimizing performance_, should dictate
+the order in which you perform steps. 
+
+Both approaches are also equivalent to: 
+
+```{r}
+inner_join(flights, 
+           airports |> filter(tzone == "America/Los_Angeles"), 
+           join_by(dest == faa)) |>
+    drop_na() |>
+    summarize(mean(arr_delay, na.rm=TRUE))
+```
+
+But I find this sort of "`filter` inside `join` argument" to be terribly
+difficult to read: it mixes standard (inside-out) and piped (left to right)
+evaluation orders in a confusing manner. Avoid this!
+
+Work with your group to answer the following questions using `inner_join`. 
+
+1. What is the name of the airline with the longest average departure delay?
+2. What is the name of the origin airport with the longest average departure delay?
+3. What is the name of the destination airport with the longest average departure delay?
+4. Are average delays longer for East-coast destinations or West-coast destinations?
+5. Which plane (`tailnum`) flew the most times leaving NYC? Who manufactured it?
+6. Which manufacturer has the most planes flying out of NYC airports? 
+7. Which manufacturer has the longest average flight? 
+8. What model of plane has the smallest average delay leaving NYC?
+
+## Left Join
+
+Left joins are useful when you don't want to dropped unmatched columns
+in one table. For instance, suppose we misplace some rows from our
+`airlines` table: 
+
+```{r}
+airlines_major <- airlines |>
+    filter(carrier %in% c("AA", "DL", "UA", "WN", "B6", "AS"))
+```
+
+If we inner join on `airlines_major`, we _loose_ many of the rows
+in `flights`. 
+
+```{r}
+NROW(flights)
+inner_join(flights, 
+           airlines_major, 
+           join_by(carrier == carrier)) |>
+    NROW()
+```
+
+Sometimes this is what we want, but not always. If we instead use
+a left join, we keep all of the rows in `flights`: 
+
+```{r}
+NROW(flights)
+left_join(flights, 
+          airlines_major, 
+          join_by(carrier == carrier)) |>
+    NROW()
+```
+
+Rows lacking a pair in `airlines_major` fill the missing columns with
+`NA`. This fits our mental model of missing values in `R`: in theory,
+these flights should have some carrier name, but given the data at hand, 
+we don't know what it is. 
+
+```{r}
+NROW(flights)
+left_join(flights, 
+          airlines_major, 
+          join_by(carrier == carrier)) |>
+    filter(carrier %in% c("MQ", "OO", "VX")) |>
+    glimpse() # Look at 'name' column
+```
+
+`left_join`s are useful if we want to join two tables, but want to avoid
+dropping any rows from a 'gold standard' table.
+
+## Outer Join
+
+## Advanced Join Specifications
+
+# Multi-Column Operations
+
+# Analytical Functions
+
+## Cumulative Operators
+
+## `*_rank`
+
+# Other `dplyr` functionality
+
+## Advanced Joins
+
+### `cross_join`
+
+### `semi_join`
+
+### `anti_join`
+
+### `nest_join`
+
+## `bind_rows` and `bind_columns`
+
+
+[^1]: Note that some `SQL` engines use `LEFT OUTER JOIN` than `LEFT JOIN`. 
+Because `OUTER` is a bit ambiguous, `dplyr` emphasizes `full_` vs `left_` in
+its function naming. Also note the convention of `dplyr` names - lower case, 
+underscore separated - and that it differs from `SQL` syntax. 
+

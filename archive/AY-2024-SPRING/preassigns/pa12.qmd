@@ -1,0 +1,471 @@
+---
+title: "{{< var course.short >}} Week {{< meta pa_num >}} Pre Assignment: {{< meta pa_title >}}"
+format: live-html
+engine: knitr
+pa_num: 12
+pa_title: "Strings and Things"
+---
+
+{{< include _gradethis_init.qmd >}}
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+NUMBER <- as.integer(rmarkdown::metadata$pa_num)
+due_date_str <- read_csv("key_dates.csv") |> 
+    filter(`Course Element` == "Pre-Assignments", 
+           `Item Number` == NUMBER, 
+           str_detect(Details, "Due")) |> 
+    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
+    pull(dt) |>
+    format("%Y-%m-%d (%A) at %I:%M%P")
+```
+
+**Due Date**: `{r} due_date_str`
+
+**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
+
+This week, we begin to study the world of text data. While numerical data is 
+reasonably straight-forward to deal with, text data is remarkably complex. A 
+full discussion of text data requires understanding the vast world of human written
+language, but we will discuss enough of the major points to hopefully solve 95% 
+of the challenges you will face in your career.
+
+
+## Goals
+
+In our quest to understand text data, we have two major goals:
+
+- Understanding String Encodings and Unicode
+- Manipulating Strings with Regular Expressions
+
+Before we get into these, let's begin with a basic review of the _character_ data
+type in _R_. 
+
+## String Vectors
+
+Recall that _R_ works by default on _vectors_ - ordered collections of the "same sort" 
+of thing. _R_ supports the following vector types:
+
+- **Raw** for pure access to bytes without any additional meaning: rarely useful
+  for pure data-analytic work, but commonly used to interact with binary file
+  formats and with non-`R` software
+- **Integer**: 32-bit signed integers, ranging from $-2^{30}$ to $2^{30}-1$. (If you
+  have done low-level work before, you might ask where the extra bit went: it's used
+  for encoding _NA_ values.)
+- **Numeric**: 64-bit (double precision) floating point values, ranging from (approximately)
+  $\pm 10^{308}$. The detailed behavior of numeric (often called double) data is beyond
+  this course, but it is well documented elsewhwere.
+- **Character**: the topic of today's discussion. 
+
+*R* makes no difference between a *character* - in the sense of a single letter -
+and a *string*: in particular, each *element* of a *character vector* is an 
+(arbitrary length) string. Specialized functions are required for work at the
+true "single letter" scale. If you come from other languages, this behavior might
+be surprising, but it allows *R* to handle much of the complexity associated with 
+characters automagically, which greatly simplifies data analysis.
+
+When speaking, we refer to *R* as using _strings_, even if *R* itself calls them
+character elements for historical reasons.
+
+## Encoding
+
+How are strings represented on a computer? The answer has evolved over time, but
+the current state of the art - used by almost all non-legacy software - is based
+on the *Unicode system* and the *UTF-8* encoding. 
+
+The *Unicode system* is comprised of two essential parts: 
+- A numbered list of "letter-like" elements
+- Rules for manipulating those elements
+
+While this seems simple, it is anything but. The history of string representations
+in computers is a long and painful story of programmers repeatedly underestimating
+the complexity of the seemingly simple task of listing "all the letters." 
+
+The Unicode consortium makes a long list of characters that computers should be able
+to represent: the most recent version of the Unicode standard includes 149,813 characters
+divided into 161 scripts. These include everything from the basic (Anglo-American)
+Latin alphabet to the Greek and Cyrillic alphabets to Chinese and Japanese characters
+to the undeciphered Linear A alphabet and Tengwar, the fictional script used in the
+Lord of the Rings novels. The Unicode standard also includes a wide set of Emoji
+(approximately 4000) and many "modifying" characters. 
+
+To each of these, the Unicode consortium assigns a _code point_ : a numerical identifier. 
+Even superficially similar characters may be assigned different code points to distinguish them: 
+for example, "H" is code point U+0048 with the official description "Latin Capital Letter H"
+while "Η" is U+0397, "Greek Capital Letter Eta." 
+
+The difference between these characters is essential to know how to manipulate them: 
+
+```{webr}
+x <- "H"
+y <- "Η"
+```
+
+Use the `tolower` function to lower-case each of these:
+
+```{webr}
+#| exercise: e1_Hlatin
+x <- "H"
+y <- "Η"
+tolower(x)
+```
+
+
+```{webr}
+#| exercise: e1_Hgreek
+x <- "H"
+y <- "Η"
+tolower(y)
+```
+
+The Unicode standard defines the lower case mapping of U+0048 as the Latin lower case
+h, while the lower case mapping of U+0397 as the Greek lower case eta, which looks
+something like a _streched_ n. 
+
+In general, these mappings are _incredibly_ complicated and depend not only on the 
+specific code point, but also the set of translation rules being used. (Certain languages
+have different lower/upper mappings for what are otherwise the same letter.)
+
+While you don't need to know all of this complexity, it is essential to know that 
+it's out there and to rely on battle-tested libraries to perform these mappings. 
+
+Unicode is supplemented by the `UTF-8` encodings, which controls how 0/1-bit strings
+are actually translated to code points. (Fonts then map code points to what you see
+on the screen.) UTF-8 is more-or-less back-compatible with other major encodings, 
+so it's a good default. When dealing with modern websites or public data sources, they
+almost always present their contents in a `UTF-8` compatible encoding (if not `UTF-8` proper)
+so you should be ok. 
+
+A well-formatted website will state its encoding near the top of the page: 
+
+```{r}
+library(rvest)
+read_html("http://www.baruch.cuny.edu") |>
+    html_elements("meta[charset]") |>
+    html_attr("charset")
+```
+
+**Advice**: Whenever possible, make sure you are using *UTF-8* strings: if your data
+is not *UTF-8*, reencode it to *UTF-8* as soon as possible. This will save you much
+pain. 
+
+## String Manipulation
+
+Once data is in _R_ and encoded as UTF-8 Unicode points, we have several tools
+for dealing with strings. Your first port of call should be the [`stringr`](https://stringr.tidyverse.org) 
+package. 
+
+All the functions of the `stringr` package start with `str_` and take a vector
+of strings as the first argument, making them well suited for chained analysis. 
+
+Let's start with `str_length` which simply computes the length of each element. 
+For the basic Latin alphabet, this more or less matches our intuition: 
+
+```{r}
+library(stringr)
+x <- c("I", "am", "a", "student", "at", "Baruch.")
+str_length(x)
+```
+
+but it can be tricky for strings that involve Unicode _combining characters_. 
+
+```{r}
+str_length("X̅")
+```
+
+Here the "overbar" is a combining character which we add on to the `X`. This is
+commonly (though not always) used for languages with accents (*e.g.* French) or for
+languages where vowels are written above and below the main script (Arabic or Hebrew). 
+This same idea is used for certain Emoji constructs: 
+
+```{r}
+str_length("👨🏿")
+```
+
+Here, "Man with Dark Skin Tone" is the combination of "Man" and "Dark Skin Tone."
+(Compare how this appears in the rendered document to how RStudio prints it.)
+
+While there is complexity in all of Unicode, `str_length` will behave as you might 
+expect for "regular" text. I'm going to stop showing the "scary case" of Unicode, 
+but you should be aware of it for the remainder of these exercises.
+
+### Concatenation
+
+You have already seen the base `paste` and `paste0` functions for combining
+two string vectors together. 
+
+```{r}
+x <- c("Michael", "Mary", "Gus")
+y <- c("Son", "Daughter", "Dog")
+
+paste(x, y)
+```
+
+By default, `paste` combines strings with a space between them, while `paste0` omits
+the space. `paste` is typically what you want for strings for human reading, while `paste0`
+is a better guess for computer-oriented text (*e.g.*, putting together a URL).
+
+You can change the separator by passing a `sep` argument to paste:
+
+```{r}
+paste(x, y, sep = " is my ")
+```
+
+You can also combine together multiple elements of a vector using the `collapse`
+argument:
+
+```{r}
+paste(x, collapse = " and ")
+```
+
+#### Exercises:
+
+Using the `paste` function, make a vector of strings like "John's favorite color is blue":
+
+```{webr}
+#| exercise: ex_paste1
+people <- c("John", "Jane", "Randy", "Tammi")
+colors <- c("blue", "orange", "grey", "chartreuse")
+```
+
+Modify your answer to write a (run-on) sentence of favorite colors: "John's favorite color is blue and Jane's favorite color is orange and ..."
+
+```{webr}
+#| exercise: ex_paste2
+people <- c("John", "Jane", "Randy", "Tammi")
+colors <- c("blue", "orange", "grey", "chartreuse")
+```
+
+
+### Substring Selection
+
+When cleaning up data for analysis, it is common to need to take _substrings_ from larger text.
+The `str_sub` function will do this: 
+
+```{r}
+x <- c("How", "much", "is", "that", "puppy", "in", "the", "window?")
+str_sub(x, 1, 2)
+```
+
+If you want to go all the way to the end, set the end element to `-1`: 
+
+```{r}
+str_sub(x, 2, -1)
+```
+
+#### Exercises
+
+Using `str_sub`, remove the system name (CUNY or UC) and return only the campus name:
+
+```{webr}
+#| exercise: ex3
+library(stringr)
+uc_schools <- c("UC Berkeley", "UC San Diego", "UC Santa Cruz", "UC Davis")
+cuny_schools <- c("Baruch College, CUNY", "City College, CUNY", 
+                  "La Guardia Community College, CUNY")
+str_sub(uc_schools)
+```
+
+### Detect and Matching
+
+Often we only need to know whether a particular substring is present in a larger string. 
+We can use `str_detect` to do this: 
+
+```{r}
+library(stringr)
+dogs <- c("basset hound", "greyhound", "labrador retreiver", "border collie", "Afgahn hound")
+str_detect(dogs, "hound")
+```
+
+The `str_match` function will return the *text* of the match. Here it's useless, but we'll 
+see that it becomes more powerful when we allow more flexible pattern specifications.
+
+```{r}
+library(stringr)
+dogs <- c("basset hound", "greyhound", "labrador retreiver", "border collie", "Afgahn hound")
+str_match(dogs, "hound")
+```
+
+#### Exercises
+
+Use `str_detect` to find the CUNY schools:
+
+```{webr}
+#| exercise: ex_detect
+library(stringr)
+schools <- c("UC Davis", 
+             "UC Santa Cruz", 
+             "City College, CUNY", 
+             "UC Berkeley", 
+             "La Guardia Community College, CUNY", 
+             "Baruch College, CUNY", 
+             "UC San Diego")
+str_sub(uc_schools)
+```
+
+### Specifying Patterns
+
+While working by individual characters is sometimes useful (for very regular data), we
+generally need more powerful tools: _regular expressions_ (RE) provide a compact language
+for specifying patterns in strings. We'll introduce the basics here to help with 
+string functions and then explore some more advanced RE features. 
+
+The most basic pattern is a set of elements in brackets: this means "any of these". 
+
+For example, we want to see which names have an "A" in them: 
+
+```{r}
+names <- c("Jane", "Rhonda", "Reggie", "Bernie", "Walter", "Arthur")
+str_detect(names, "a") ## Wrong!
+str_detect(names, "A") ## Wrong!
+str_detect(names, "[Aa]") ## Right!
+```
+
+Alternatively, we can see which strings contain numbers: 
+```{r}
+x <- c("73 cows", "47 chickens", "a dozen eggs")
+str_detect(x, "[0123456789]")
+```
+
+If we use `str_match` we can pull out the matching element: 
+
+```{r}
+x <- c("2 burgers", "3 soups", "5 fish")
+str_match(x, "[0123456789]")
+```
+
+By default, this only finds _one_ appearance of the pattern: 
+
+```{r}
+x <- c("23 burgers", "34 soups", "56 fish")
+
+# Why is this wrong?
+str_match(x, "[0123456789]")
+```
+
+
+We can modify the pattern specifier to include count information. The basic behavior
+is to add explicit count bounds:
+
+```{r}
+x <- c("2 burgers", "34 soups", "567 fish")
+str_match(x, "[0123456789]{2}")
+str_match(x, "[0123456789]{3}")
+str_match(x, "[0123456789]{2,3}")
+str_match(x, "[0123456789]{2,}")
+```
+
+Here a single number is an exact count (`{2}`), while pairs (`{2,3}`) specify a range. 
+If one end of the range is left empty, it is 0 or infinite (depending on the direction). 
+
+Certain count specifications are sufficiently useful to get their own syntax:
+
+- One or more: `+` is equivalent to `{1,}`
+- Zero or more: `*` is equivalent to `{0,}` 
+- One or zero: `?` is equivalent to `{0,1}`.
+
+Use these specifications for the next set of exercises.
+
+#### Exercises
+
+Which strings contain a three digit number? 
+```{webr}
+#| exercise: ex_quant
+#| setup: true
+library(stringr)
+x <- c("2 burgers", "34 soups", "567 fish")
+```
+
+```{webr}
+#| exercise: ex_quant
+print(x)
+str_detect(x, ______)
+```
+
+::: {.solution exercise="ex_1"}
+
+```{webr}
+#| exercise: ex_quant
+#| solution: true
+str_detect(x, "\\d{3}")
+```
+:::
+
+```{webr}
+#| exercise: ex_quant
+#| check: true
+gradethis::grade_this_code()
+```
+
+### Combining patterns
+
+You can combine REs to make more complex patterns: 
+
+- `(a|b)` means `a` or `b`. This is like `[]` notation but `a`, `b` can be more complex
+  than single characters
+```{r}
+x <- c("Baruch College, CUNY", "UC Berkeley", "Harvard University")
+str_detect(x, "(CUNY|UC)")
+```
+
+- `[^abc]` means _anything other than_ `a`, `b`, `c`. You can often achieve a similar
+  effect using the `negate` argument to `str_detect`, but you need this specifically for 
+  `str_match`
+
+```{r}
+x <- c("10 blue fish", "three wet goats", "15 otters in hats")
+str_detect(x, "[^0123456789]")
+```
+
+- `^` outside of a bracket denotes the start of a line: 
+```{r}
+x <- c("rum", "white rum", "flavored rum")
+str_detect(x, "^rum")
+```
+
+- `$` denotes the end of a line: 
+```{r}
+x <- c("bourbon whiskey", "scotch whisky", "whiskey liqueurs")
+str_detect(x, "whisk[e]?y$")
+```
+
+See [the stringr RE docs](https://stringr.tidyverse.org/articles/regular-expressions.html) for
+more examples of regular expressions. 
+
+#### Exercises
+
+1. Use a regular expression to find which of these are fish species:
+
+```{webr}
+#| exercise: ex1_sum
+x <- c("clownfish", "goldfish", "fish food")
+str_detect(x, _______)
+```
+
+2. Use a regular expression to find words with three or more vowels in a row:
+
+```{webr}
+#| exercise: ex2_sum
+x <- c("haaar", "xjjejeje", "youins", "exigent")
+str_detect(x, ______)
+```
+
+3. Find the words where "q" is not followed by a "u"
+
+```{webr}
+#| exercise: ex3_sum
+x <- c("queen", "quiet", "qipao", "coq au vin")
+str_detect(x, _______)
+```
+
+### Replacement
+
+The `str_replace` function allows us to replace a string with something else. 
+This is particularly useful when cleaning up text: 
+```{r}
+x <- c("Manhattan, NY", "Bronx, New York", "Brooklyn, ny", "Queens, nY")
+str_replace(x, "([nN][yY]|New York)", "NY")
+```

@@ -1,0 +1,277 @@
+---
+session: "`r session <- 3; session`"
+class_date:
+  "`r library(tidyverse); 
+    read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', Item.Number==session) |>
+    pull(Date)`"
+---
+
+{{< include _setup.qmd >}}
+
+# Today
+
+## Today
+
+- Introduction to Course Project
+- Special Presentation
+- Course Administration
+- `R`: Data Frames, Functions, Packages and Control Flow
+
+# Course Project Overview
+
+## Course Project
+
+- Teams: 3-4 classmates
+- Stages: 
+  - Proposal (in class presentation)
+  - Mid-semester check-in (in class presentation)
+  - Final: in class presentation, individual report, summary report
+- Structure:
+  - Shared "Overarching Question"
+  - Individual "Specific Question" (one per teammate)
+  
+Full description [online](https://michael-weylandt.com/STA9750/project.html)
+
+## Finding Data
+
+- Start early!
+- [NYC Open Data](https://opendata.cityofnewyork.us/) is great
+  - See also: [FRED](https://fred.stlouisfed.org/), [Federal Open Data](https://data.gov), [Nasa EarthData](https://search.earthdata.nasa.gov), [Kaggle](https://www.kaggle.com/datasets)
+  - Ask on Piazza for pointers
+  - Lots of data hidden in Wikipedia
+- Nothing paid or private without express instructor submission
+- Everyone loves _spatial_ data!
+
+## Presentation Hints
+
+- Longest time $\neq$ most important
+- Story, story, story! _Why_ are you making these choices? 
+- Hourglass Structure
+  - Start big
+  - Motivate _your_ overarching question
+  - Specific questions
+  - Tie specific to overarching
+  - From overarching back to big motivation
+- No less than one figure every other slide
+
+# Special Presentation</br> Jason Amey </br> Newman Library
+
+# Course Administration
+
+## MP#00 Submissions
+
+I now have GitHub IDs for 22 of you. 
+
+- If you are in the 6 who have not sent me your GitHub ID
+  **and received my acknowledgement** please do so immediately. 
+  
+- Will follow up with a few of you for VoE directly
+
+- Great submissions: Resumes, Bios, Flowcharts (creative!), Headshots
+
+## MP#00 Goals
+
+MP#00 is ungraded to: 
+
+i)   Sort out tech trouble
+ii)  Show danger of waiting to the last minute
+iii) Demonstrate importance of closely following instructions 
+Hopefully lessons learned will be helpful in future assignments
+
+## MP#00 Peer Feedback
+
+Due to a constraint of GitHub's API, need to do issue
+creation and tagging on _my_ 
+`{{< var course.repo >}}` repository.
+
+. . .
+
+Instructions updated for MP#01-#04 already. 
+
+- Helper scripts to be updated as well
+
+For MP#00, I am hand-copying all issues to my repo and
+assigning peer feedback there (done by noon tomorrow) 
+
+## MP#00 Peer Feedback
+
+3 evaluators per submission
+
+
+Goals: 
+
+- Practice commenting on GitHub and reviewing code
+  (ungraded assignment)
+- Learn tricks to improve your own site
+
+> "Good artists copy; great artists steal." -- Steve Jobs
+
+## MP#01 Extended Deadlines
+
+- Released: today (unchanged)
+- Due: **2025-03-05** (extend one week)
+- Peer Feedback Assigned: **2025-03-06** (shift one week)
+- Peer Feedback Due: **2025-03-12** (shift one week)
+
+MP#01 Peer Feedback is day before Project Proposals
+
+- No Pre-Assignment that week
+
+## {{< var course.short >}} Mini-Project #01
+
+- MP#01 released
+- **Start early**
+  - Not too hard if everything is working (post-MP#00)
+  - Tech support takes time
+  
+Found on [Course
+Site](https://michael-weylandt.com/STA9750/miniprojects/mini01.html)
+
+## Piazza Participation
+
+- Average time to response: 15 minutes
+- 154 posts
+
+Thanks to those of you who are helping classmates!
+
+## Upcoming Week
+
+Next Wednesday at 11:45pm: 
+
+- Next Pre-Assignment
+- MP#00 Peer Feedback due
+
+# Pre-Assignment #03 FAQs
+
+## FAQ: Vector Index Printout Rules
+
+Default vector printing: 
+```{r}
+#| echo: true
+1:10
+```
+
+Each line gets a new index:
+```{r}
+#| echo: true
+sqrt(1:10)
+```
+
+More complex objects have alternate print styles:
+```{r}
+#| echo: true
+matrix(1:9, nrow=3, ncol=3)
+```
+
+Print width is controlled by `getOption("width")`.
+
+## FAQ: Recycling Rules
+
+Alignment by default: 
+```{r}
+#| echo: true
+x <- 1:3
+y <- 4:6
+x + y
+```
+
+Recycling by default: 
+```{r}
+#| echo: true
+x <- 1
+y <- 4:6
+x + y
+```
+
+Recycle warning when vectors don't fit together cleanly: 
+```{r}
+#| echo: true
+#| warning: true
+x <- 1:2
+y <- 4:6
+x + y
+```
+
+## FAQ: Recycling Warning
+
+```{r}
+#| echo: true
+#| warning: true
+x <- 1:2
+y <- 4:6
+x + y
+```
+
+Not a problem _per se_, but often a sign that something has gone wrong.
+
+- scalar + vector is usually safe
+- 2 vectors of same size is usually safe
+- vectors of different size is usually a programming mistake
+
+## FAQ: Warnings vs Errors
+
+- _Warnings_: heuristics pointing at typical problem
+  - Code still executed without a problem
+  - Try to fix these unless you're **certain** it's not a problem
+- _Errors_: code failed to execute
+  - You have to fix these to run your code
+
+## FAQ: Changing built-in functions
+
+Most built-in functions can't / shouldn't be changed. 
+
+Some allow alternate behavior via additional arguments:
+
+```{r}
+#| echo: true
+log(10) # Default is natural (base e) logarithm
+log(10, base=10)
+```
+
+If you want different behavior, write your own function: 
+
+```{r}
+#| echo: true
+cosd <- function(x){
+    ## Cosine in degrees
+    cos(x * pi / 180)
+}
+cosd(90)
+```
+
+Always try `?name` to see documentation.
+
+## FAQ: Git Workflow
+
+Three key commands: 
+
+- `git add`: add some changes to a 'box'
+- `git commit`: seal the 'box'
+- `git push`: send the 'box' to GitHub
+
+`Git` pane in `RStudio` shows _uncommited changes_, not files. 
+
+If a file 'vanishes' after a commit, that's good!
+
+# `R`: Data Frames, Functions, Packages and Control Flow
+
+## Data Frames
+
+## Function Calls
+
+## Packages
+
+## Control Flow
+
+# Wrap-Up
+
+## Looking Ahead
+
+Course Project: 
+
+- Start looking for teammates and topics
+- No in-person office hours on 2025-02-18 (MW on travel)
+
+{{< include ../advice/professor_recs.qmd >}}
+

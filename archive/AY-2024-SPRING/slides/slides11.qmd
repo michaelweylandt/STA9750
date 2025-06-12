@@ -1,0 +1,299 @@
+---
+session: "`r session <- 11; session`"
+class_date:
+  "`r library(tidyverse); 
+    read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', Item.Number==session) |>
+    pull(Date)`"
+---
+
+{{< include _setup.qmd >}}
+
+
+# Agenda
+
+## Today
+
+- Administrative Business
+- Review: Identifying HTML Elements
+- New Material: Extracting HTML with `rvest`
+- Looking Ahead
+
+# Administrative Business
+
+## {{< var course.short >}} Mini-Project #03
+
+First few submissions look great! 
+
+For the rest of you, extension until tomorrow midnight
+
+Will assign PF on Saturday
+
+- Extended until _next Sunday_ (May 4th) at 11:45pm
+
+Pay attention to [the rubric](../miniprojects/mini03.html#rubric)
+
+
+## {{< var course.short >}} Mini-Project #04
+
+[MP#04 released **today**](https://michael-weylandt.com/STA9750/miniprojects/mini04.html)
+
+- Due **`r get_mp_deadline(4)`** ($\approx$ 3 weeks)
+- Topic: Political Mapping
+  - Recreation of NYT "county shift" map
+- Format: 
+  - *Political Hack* - Play the role of a TV "Talking Head"
+  - GitHub post AND Brightspace submission
+  
+  
+## {{< var course.short >}} Mini-Project #04
+
+**Assignment Modification**
+
+- I'm going to make the 'writing' parts of this assignment 
+  _extra credit_
+- Task 6 is not required (Task 4 still is)
+
+If you don't want to write propoganda, just write Task 4 as
+straight answers
+ 
+ 
+
+# Going Forward
+
+
+## Pre-Assignments
+
+Brightspace - Wednesdays at 11:45
+
+-   Reading, typically on course website
+-   Brightspace auto-grades
+    -   I have to manually change to completion grading
+
+Next pre-assignment is **`r get_pa_deadline(next_session)`**
+
+. . .
+
+I am behind on reading PA comments: 
+
+- For anything urgent, please contact me directly🙏
+
+## Grading
+
+I owe you: 
+
+- MP#02 peer meta-review fixes
+- Mid-Term Check-In Feedback
+
+## Course Support
+
+- Synchronous
+  - Office Hours 2x / week
+    - MW Office Hours on **Tuesdays** + **Thursday**
+- Asynchronous
+  - Piazza ($\approx 20$ minute average response time)
+  
+## Upcoming
+
+Semester end is coming quickly!
+
+- MP#04
+- Final presentations
+- Final reports
+
+That's it!
+
+## Observation Comments
+
+> Thank you!
+
+## Large Files
+
+Several of you have reported issues with `git` complaining about large files
+
+> `git ls-tree -r -t -l --full-name HEAD | sort -n -k 4 | tail -n 10`
+
+[SO on Removing Large Files](https://stackoverflow.com/questions/43762338/how-to-remove-file-from-git-history#52643437):
+
+> `git filter-branch --index-filter 'git rm -rf --cached --ignore-unmatch data/**' HEAD`
+
+⚠️This is dangerous! I can help with it after class.⚠️
+
+# Review: Identifying HTML Elements
+
+# Pre-Assignment #11 FAQs
+
+## FAQ: HTML vs CSS
+
+> What is the difference between HTML and CSS?
+
+HTML is _substance_; CSS is _style_ 
+
+Distinction can be a bit blurry \& CSS can live "inside" HTML
+
+[Example](view-source:https://michael-weylandt.com/STA9750/miniprojects/mini04.html)
+
+## FAQ: `a` in SelectorGadget
+
+> Why does [SelectorGadget] display "a" in the selector when selecting a web link?
+
+`a` is for anchor. 
+
+Confusingly, anchors are both links and destinations.
+
+Anchors can reference: 
+
+- Another page (`http://URL`)
+- A particular part of another page (`http://URL#place`)
+- A particular part of the same page (`#place`)
+
+Quarto supports [cross-linking](https://quarto.org/docs/authoring/cross-references.html) with anchors
+
+## FAQ: SelectorGadget - Multiple Clicks
+
+> Why does SelectorGadget go "unique" when I click multiple 
+  elements of interest?
+  
+Can't find a common structure: 
+
+- Typically a problem within lists or common element types
+
+## FAQ: Selectors - Nesting
+
+> How to avoid unwanted elements such as headers or 
+  sidebars, focusing only on the main content I need?
+  
+Nest your selectors! 
+
+`thing1 thing2` will select only `thing2`s inside a `thing1`
+
+[StarWars page](https://rvest.tidyverse.org/articles/starwars.html)
+
+. . .
+
+Try `main h2`
+
+## FAQ: Relationship to Markdown
+
+> Is [HTML] similar to Markdown ?
+
+Markdown is an easier way to write (a subset of) HTML
+
+Name is a bad joke: Markup (`M` in `HTML`) vs Markdown
+
+HTML can (theoretically) do more, but painful to write by hand
+
+## FAQ: Messy HTML
+
+> How can we target data with CSS Selectors in messy HTML?
+
+Pain and suffering - depends how messy. 
+
+Worst case: a little bit of HTML selection + text processing (next week)
+
+## HTML Review
+
+- HTML Structure
+- CSS Selectors (SelectorGadget)
+- Introduction `rvest`
+
+## Pre-Assignment Exercises
+
+- [Star Wars](https://rvest.tidyverse.org/articles/starwars.html)
+
+. . . 
+
+`main h2`
+
+. . . 
+
+- [CUNY Table](https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions)
+
+. . . 
+
+`table` or `tbody`
+
+. . . 
+
+- [Baruch GPS](https://en.wikipedia.org/wiki/Baruch_College)
+
+. . . 
+
+`.geo`
+
+# New Material: `rvest`
+
+## Live Demo: `rvest`
+
+
+## Exercise 1: CUNY Map
+
+Recall [Lab 1](../labs/lab01.html). Goal: extend map to all CUNYs
+
+Steps: 
+
+1. Read CUNY table and extract links
+2. Follow links and pull coordinates
+   - To read `geo` class, use this: 
+```{r}
+#| eval: false
+COORDS <- html_element(".geo") |> html_text() |> str_split_1(";")
+LAT <- as.numeric(COORDS[1])
+LON <- as.numeric(COORDS[2])
+```
+3. Adapt Lab 1 `leaflet` to show all locations
+
+## Breakout Rooms
+
+| Room | Team           |  | Room | Team              |
+|------|----------------|--|------|-------------------|
+| 1    | Team Mystic    |  | 5    | Money Team + CWo. |
+| 2    | Subway Metrics |  | 6    | Lit Group         |
+| 3    | Noise Busters  |  | 7    | Cinephiles + VG   |
+| 4    | AI Impact Col  |  | 8    |                   |
+
+
+## Exercise 2: Cocktails
+
+Goal: create a cocktail _data frame_ from [Hadley's
+Recipies](https://cocktails.hadley.nz/)
+
+Today: 
+
+- How to find them all? 
+- How to extract individual recepies? 
+- How to pull items from each recipie? 
+
+Next time: 
+
+- How to convert text to numeric values + column info
+- Data wrangling
+
+
+# Looking Ahead
+
+## Upcoming Mini-Projects
+
+- MP#04: `r get_mp_title(4)`
+
+Seeking suggestions for next semester
+
+- Course Feedback Survey
+
+## Upcoming
+
+
+Next Week (After Spring Break): 
+
+- MP#03 Peer Feedback
+- Pre Assignment
+
+. . . 
+
+Longer Term: 
+
+- MP#04
+- Final Presentations
+
+{{< include ../advice/semester_end.qmd >}}
+

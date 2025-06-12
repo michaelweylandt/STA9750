@@ -1,0 +1,152 @@
+---
+title: "{{< var course.short >}} Week 11 In-Class Activity: HTML Import"
+engine: knitr
+---
+
+[Week 11 Slides](../slides/slides11.html)
+
+In today's class, we're going to work through **two** web scraping exercises: 
+
+1) Extending our 'CUNY Map' from [Lab #01](./lab01.html)
+2) Scraping Cocktail Recipes 🍸 from Hadley Wickham
+
+## Exercise 1: CUNY Map
+
+In this exercise, we're going to take our Baruch map from 
+[Lab #01](./lab01.html) and extend it to pull _all_ CUNY campuses. 
+This exercise is intended to help you practice scraping data from 
+Wikipedia. 
+
+1) Adapt the HTML parsing code from Lab #01 to take a single URL and
+   pull out the GPS coordinates. 
+2) Investigate the [Wikipedia List of
+   CUNYs](https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions) and identify which table can be used to get links
+   to each page. 
+   
+   
+::: {.callout-caution title="Wikipedia Table Scraping"}
+
+Wikipedia has tons of excellent data tables which have been collected
+by incredible volunteers. It can be an incredibly useful source, but
+there are a few difficulties in getting data out of Wikipedia. In
+particular, Wikipedia uses a rich JavaScript library to make tables
+slightly interactive (column sorting, *etc.*) that modifies the page
+HTML. `R` will get the "raw" HTML of the page, so you will need to
+either disable JavaScript temporarily (tricky) or make sure you are
+looking at the actual page source that `R` will see ("View Source"). 
+
+:::
+
+3) Parse the table to pull links to each CUNY's individual Wikipedia
+   page. 
+4) Apply your HTML parsing function from Step 1 to each CUNY page
+   using the `map` function or similar. 
+5) Combine your results into a `data.frame` and use that `data.frame`
+   to build a CUNY-wide map
+
+
+::: {.callout-tip title="CUNY Mapping Code - Solution" collapse="true"}
+
+```{r}
+#| warning: false
+#| message: false
+library(rvest)
+library(tidyverse)
+library(leaflet)
+
+CUNYs <- read_html("https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions") |> 
+    html_element("tbody") |>
+    html_elements("tr td:nth-child(2)") |>
+    html_elements("a")
+
+CUNYs <- data.frame(name = CUNYs |> html_text(),
+                    link = CUNYs |> html_attr("href")
+)
+
+get_cuny_gps <- function(url){
+    COORDS <- read_html(url) |> html_element(".geo") |> html_text() |> str_split_1(";")
+    LAT <- as.numeric(COORDS[1])
+    LON <- as.numeric(COORDS[2])
+    list(LAT=LAT, LON=LON)
+}
+
+CUNYs <- CUNYs |> 
+    mutate(link = paste0("https://en.wikipedia.org/", link)) |>
+    rowwise() |>
+    mutate(gps = list(get_cuny_gps(link))) |>
+    unnest_wider(gps)
+
+MAP <- leaflet() |> 
+    addTiles() |>
+    addMarkers(CUNYs$LON, 
+               CUNYs$LAT, 
+               popup=CUNYs$name, 
+              options = popupOptions(closeOnClick=FALSE))
+
+MAP
+```
+
+:::
+
+## Exercise 2: Cocktails Data
+
+[Hadley Wickham](https://hadley.nz/) is the author of many of the 
+"tidy tools" we use in this course. He is also an excellent bartender
+and chef. In this exercise, we are going to web scrape his cocktail
+recipe book which can be found at [https://cocktails.hadley.nz/](https://cocktails.hadley.nz/). 
+
+Our goal is to create a data frame that records all 150+ recipes on this site (as rows) and the different ingredients (as columns). This
+week, we are going to pull the different recipes into `R`: next week
+we are going to process the text and create our final data frame (so
+stay tuned!). 
+
+Working with your project team, go through the following steps to build
+a scraping strategy:
+
+1) Poke around the website to see how it is organized. Is there a
+   single page listing all of the cocktails? If not, how else can
+   you make sure that you've explored the entire site. 
+2) Once you know how you're going to explore the whole site, use
+   your browser tools to see if you can identify an HTML element that
+   corresponds to a single recipe. (This element will occur several
+   times per page) Remember that you want to select "as small as
+   possible" but no smaller.
+3) Once you have found the right HTML element for a recipe, identify
+   an HTML element that corresponds to i) the title; and ii) individual
+   ingredients. 
+   
+For this task, you will likely see several recipes more than once.
+Don't worry about this for now - we can `distinct` out the duplicates
+later in our analysis. It's better to be over-inclusive than
+under-inclusive.
+   
+After you have built your plan, it's time to start putting this all to
+code. 
+
+1) Write code to download all needed _pages_ locally. As with your
+   Mini-Projects, make sure to 'cache' your results so you don't 
+   waste time (yours or the webserver's) re-downloading unnecessarily.
+   
+   You will likely need to hit [the landing
+   page](https://cocktails.hadley.nz/) at least once to get a list of
+   additional pages to download. 
+   
+   I recommend structuring your code to: 
+   
+   i) Download the home page
+   ii) Extract relevant links to other pages
+   iii) Go through the list of other pages and download those
+2) Write code to parse _all_ of your downloaded `HTML` files and 
+   pull out the HTML elements for each recipe
+3) Do some basic 'rectangling' of each HTML element to get a 'small'     data frame of the following format for each individual ingredient
+
+   | Name     | Ingredient   | Amount  |
+   |----------|--------------|---------|
+   | Daiquiri | Rum          | 2 oz    |
+   | Daiquiri | Lime Juice   | 1 oz    |
+   | Daiquiri | Simple Syrup | 0.75 oz |
+   
+   For now, the `Amount` column can just be a string 
+   (raw HTML element text). 
+   
+4) Save your results and code - we'll pick this up next week!

@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>STA 9750 Week 8 In-Class Activity: More ggplot2 + Tools for Interactive Data Analysis – STA 9750</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-7a426326b279d3ba9cc0818763c3c226.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./../index.html">
+    <span class="navbar-title">STA 9750</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./.././syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./.././preassignments.html"> 
+<span class="menu-text">Pre-Assignments</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./.././labs.html"> 
+<span class="menu-text">Labs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./.././miniprojects.html"> 
+<span class="menu-text">Mini Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./.././project.html"> 
+<span class="menu-text">Course Project</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./.././resources.html"> 
+<span class="menu-text">Additional Resources and Course Policies</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./.././objectives.html"> 
+<span class="menu-text">Learning Objectives</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-prior-offerings" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Prior Offerings</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-prior-offerings">    
+        <li>
+    <a class="dropdown-item" href="./.././archive/AY-2024-FALL/">
+ <span class="dropdown-text">Fall 2024</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#spatial-visualization-with-ggplot2" id="toc-spatial-visualization-with-ggplot2" class="nav-link active" data-scroll-target="#spatial-visualization-with-ggplot2">Spatial Visualization with <code>ggplot2</code></a>
+  <ul class="collapse">
+  <li><a href="#exercises-1---geospatial-visualizations" id="toc-exercises-1---geospatial-visualizations" class="nav-link" data-scroll-target="#exercises-1---geospatial-visualizations">Exercises 1 - Geospatial Visualizations</a></li>
+  <li><a href="#limitations-and-extensions-of-chloropleths" id="toc-limitations-and-extensions-of-chloropleths" class="nav-link" data-scroll-target="#limitations-and-extensions-of-chloropleths">Limitations and Extensions of Chloropleths</a></li>
+  <li><a href="#exercises-2---cartograms-of-nyc" id="toc-exercises-2---cartograms-of-nyc" class="nav-link" data-scroll-target="#exercises-2---cartograms-of-nyc">Exercises 2 - Cartograms of NYC</a></li>
+  </ul></li>
+  <li><a href="#shiny-creating-interactive-tools-for-data-analysis" id="toc-shiny-creating-interactive-tools-for-data-analysis" class="nav-link" data-scroll-target="#shiny-creating-interactive-tools-for-data-analysis"><code>shiny</code>: Creating Interactive Tools for Data Analysis</a>
+  <ul class="collapse">
+  <li><a href="#exercise-3---building-a-shiny-tool-for" id="toc-exercise-3---building-a-shiny-tool-for" class="nav-link" data-scroll-target="#exercise-3---building-a-shiny-tool-for">Exercise 3 - Building a <code>shiny</code> tool for STA 9750</a>
+  <ul class="collapse">
+  <li><a href="#step-0-run-shiny" id="toc-step-0-run-shiny" class="nav-link" data-scroll-target="#step-0-run-shiny">Step 0: Run <code>shiny</code></a></li>
+  <li><a href="#step-1-add-a-link-to-your-profile" id="toc-step-1-add-a-link-to-your-profile" class="nav-link" data-scroll-target="#step-1-add-a-link-to-your-profile">Step 1: Add a Link to your profile</a></li>
+  <li><a href="#step-2-parameterize-the-mini-project-number" id="toc-step-2-parameterize-the-mini-project-number" class="nav-link" data-scroll-target="#step-2-parameterize-the-mini-project-number">Step 2: Parameterize the Mini-Project Number</a></li>
+  <li><a href="#step-3-confirm-mini-project-submission" id="toc-step-3-confirm-mini-project-submission" class="nav-link" data-scroll-target="#step-3-confirm-mini-project-submission">Step 3: Confirm Mini-Project Submission</a></li>
+  <li><a href="#step-4-extensions" id="toc-step-4-extensions" class="nav-link" data-scroll-target="#step-4-extensions">Step 4: Extensions</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/archive/AY-2024-SPRING/labs/lab08.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/archive/AY-2024-SPRING/labs/lab08.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">STA 9750 Week 8 In-Class Activity: More <code>ggplot2</code> + Tools for Interactive Data Analysis</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><a href="../slides/slides08.html">Week 8 Slides</a></p>
+<section id="spatial-visualization-with-ggplot2" class="level1">
+<h1>Spatial Visualization with <code>ggplot2</code></h1>
+<p>Today, we’re going to dive deeper into <code>ggplot2</code>, with a focus on visualizing spatial data. Spatial data can be <a href="https://postgis.net/">quite complex</a>, but we can get pretty far with the <strong>simple features</strong> (<code>sf</code>) paradigm. Also, if we focus on relatively small regions, we can avoid the complexities that come from Earth not being planar.</p>
+<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/vVX-PrBRtTY" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
+<p>Key to this approach is a <em>shapefile</em>. A <em>shapefile</em>, conventionally stored with a <code>shp</code> extension, gives precise coordinates outlining spatial regions. By plotting a polygon with those points at its boundaries, we can visualize spatial regions.</p>
+<p>The <code>sf</code> package includes a <code>shp</code> file for the counties of North Carolina:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>nc <span class="ot">&lt;-</span> <span class="fu">read_sf</span>(<span class="fu">system.file</span>(<span class="st">"shape/nc.shp"</span>, <span class="at">package=</span><span class="st">"sf"</span>))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>nc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 100 features and 14 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: -84.32385 ymin: 33.88199 xmax: -75.45698 ymax: 36.58965
+Geodetic CRS:  NAD27
+# A tibble: 100 × 15
+    AREA PERIMETER CNTY_ CNTY_ID NAME  FIPS  FIPSNO CRESS_ID BIR74 SID74 NWBIR74
+   &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt;    &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;
+ 1 0.114      1.44  1825    1825 Ashe  37009  37009        5  1091     1      10
+ 2 0.061      1.23  1827    1827 Alle… 37005  37005        3   487     0      10
+ 3 0.143      1.63  1828    1828 Surry 37171  37171       86  3188     5     208
+ 4 0.07       2.97  1831    1831 Curr… 37053  37053       27   508     1     123
+ 5 0.153      2.21  1832    1832 Nort… 37131  37131       66  1421     9    1066
+ 6 0.097      1.67  1833    1833 Hert… 37091  37091       46  1452     7     954
+ 7 0.062      1.55  1834    1834 Camd… 37029  37029       15   286     0     115
+ 8 0.091      1.28  1835    1835 Gates 37073  37073       37   420     0     254
+ 9 0.118      1.42  1836    1836 Warr… 37185  37185       93   968     4     748
+10 0.124      1.43  1837    1837 Stok… 37169  37169       85  1612     1     160
+# ℹ 90 more rows
+# ℹ 4 more variables: BIR79 &lt;dbl&gt;, SID79 &lt;dbl&gt;, NWBIR79 &lt;dbl&gt;,
+#   geometry &lt;MULTIPOLYGON [°]&gt;</code></pre>
+</div>
+</div>
+<p>We represent this data in “tidy” format, with each row being a county. The “magic” is in the <code>geometry</code> column:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>nc <span class="sc">|&gt;</span> <span class="fu">select</span>(NAME, AREA, PERIMETER, geometry)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 100 features and 3 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: -84.32385 ymin: 33.88199 xmax: -75.45698 ymax: 36.58965
+Geodetic CRS:  NAD27
+# A tibble: 100 × 4
+   NAME         AREA PERIMETER                                          geometry
+   &lt;chr&gt;       &lt;dbl&gt;     &lt;dbl&gt;                                &lt;MULTIPOLYGON [°]&gt;
+ 1 Ashe        0.114      1.44 (((-81.47276 36.23436, -81.54084 36.27251, -81.5…
+ 2 Alleghany   0.061      1.23 (((-81.23989 36.36536, -81.24069 36.37942, -81.2…
+ 3 Surry       0.143      1.63 (((-80.45634 36.24256, -80.47639 36.25473, -80.5…
+ 4 Currituck   0.07       2.97 (((-76.00897 36.3196, -76.01735 36.33773, -76.03…
+ 5 Northampton 0.153      2.21 (((-77.21767 36.24098, -77.23461 36.2146, -77.29…
+ 6 Hertford    0.097      1.67 (((-76.74506 36.23392, -76.98069 36.23024, -76.9…
+ 7 Camden      0.062      1.55 (((-76.00897 36.3196, -75.95718 36.19377, -75.98…
+ 8 Gates       0.091      1.28 (((-76.56251 36.34057, -76.60424 36.31498, -76.6…
+ 9 Warren      0.118      1.42 (((-78.30876 36.26004, -78.28293 36.29188, -78.3…
+10 Stokes      0.124      1.43 (((-80.02567 36.25023, -80.45301 36.25709, -80.4…
+# ℹ 90 more rows</code></pre>
+</div>
+</div>
+<p>The <code>geometry</code> column is of type <code>MULTIPOLYGON</code>, essentially a list of GPS coordinates.</p>
+<p>In this course, we’ll mainly just use these for plotting, though it is possible to do quite sophisticated analyses here.</p>
+<p><code>ggplot2</code>’s <code>geom_sf</code> makes it easy to visualize spatial data. It has one required aesthetic, fittingly named <code>geometry</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(nc, <span class="fu">aes</span>(<span class="at">geometry =</span> geometry)) <span class="sc">+</span> <span class="fu">geom_sf</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lab08_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Note that <code>ggplot2</code> is doing some work behind the scenes to keep the aspect ratio reasonable and not “stretching” North Carolina north-south.</p>
+<p>This is nice enough, if we like maps for maps’ sake, but we can do more. The <code>BIR74</code> is the number of children born in that county between July 1, 1974 and June 30, 1978. We can use that to set the <em>fills</em> for each county.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(nc, <span class="fu">aes</span>(<span class="at">geometry =</span> geometry, </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">fill =</span> BIR74)) <span class="sc">+</span> <span class="fu">geom_sf</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lab08_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This type of plot is called a <strong>chloropleth</strong> plot, coming from the Greek for “area-multitude”. It is commonly used to visualize <em>areal</em> geospatial data - that is quantities associated with spatial regions - as opposed to point data.</p>
+<p>Building a chloropleth plot is not too hard, if you have an appropriate shape file. Thankfully, governments are in the business of knowing <em>exactly</em> what the boundaries of their territories are and providing shape files. Typically, these shape files are distributed in a “zip” format, with other geodata files that we won’t use in this course.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<div class="callout callout-style-default callout-note callout-titled" title="Adding Points on Chloropleths">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Adding Points on Chloropleths
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>We can add the <a href="https://en.wikipedia.org/wiki/Charlotte,_North_Carolina">City of Charlotte</a>, the largest city of North Carolina on this map:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>charlotte <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="sc">-</span><span class="dv">80</span> <span class="sc">-</span> <span class="dv">50</span><span class="sc">/</span><span class="dv">60</span> <span class="sc">-</span> <span class="dv">35</span><span class="sc">/</span><span class="dv">60</span><span class="sc">^</span><span class="dv">2</span>, <span class="co"># West = negative</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="sc">+</span><span class="dv">35</span> <span class="sc">+</span> <span class="dv">13</span><span class="sc">/</span><span class="dv">60</span> <span class="sc">+</span> <span class="dv">38</span><span class="sc">/</span><span class="dv">60</span><span class="sc">^</span><span class="dv">2</span>  <span class="co"># North = positive</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_sf</span>(<span class="at">data=</span>nc, </span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>            <span class="fu">aes</span>(<span class="at">geometry =</span> geometry, </span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>                <span class="at">fill =</span> BIR74)) <span class="sc">+</span> </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">data=</span>charlotte, </span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>               <span class="fu">aes</span>(<span class="at">x=</span>x, <span class="at">y=</span>y),</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>               <span class="at">color=</span><span class="st">"red4"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lab08_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Note that I pass <em>different</em> data sets and <code>aes</code> mappings to each layer here, so I do them inside the individual <code>geom_</code>s instead of in the global <code>ggplot()</code> call.</p>
+</div>
+</div>
+</div>
+<section id="exercises-1---geospatial-visualizations" class="level2">
+<h2 class="anchored" data-anchor-id="exercises-1---geospatial-visualizations">Exercises 1 - Geospatial Visualizations</h2>
+<ol type="1">
+<li><p>Download the <a href="https://www.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page"><em>New York City Council Districts (Clipped to Shoreline)</em></a> shapefiles. Unzip the download and read the shape file, <code>nycc.shp</code>, using the <code>sf::read_sf</code> function.</p>
+<p>Use <code>ggplot2::geom_sf</code> to create a basic map of NYC’s city council districts. This should just be a plot of the outlines of each district (recognizable as NYC, but otherwise showing no data).</p></li>
+<li><p>Using the <a href="./nyc_demos.csv"><code>nyc_demos.csv</code></a> data file, create a <em>chloropleth</em> map of NYC, where the color variable represents the 2010 under 5-year-old population of each district.</p>
+<p>Note that you will need to use some <code>dplyr</code> <code>*_join</code> functions to combine the shape data with the demographic data before passing it to <code>ggplot2</code>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> Which parts of NYC have the fewest young children? Does this seem right?</p></li>
+<li><p>Under the “one person one vote” principle, the number of adult residents in each council district should be roughly equal. Create a chloropleth plot showing how many more/fewer adult residents each district has than the average district. Are any districts (significantly) over/under-represented on the NY city council?</p>
+<p>To do this, you will need to first 1) determine the number of voting age residents in each district; 2) compute the average number of voting age residents per district; 3) see how each district compares to the average (above/below and by how much).</p></li>
+<li><p>Create a <em>facet plot</em> where each facet is a chloropleth indicating the <em>percentage</em> of residents in each district identifying as a member of each census-designated racial categories.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> Note that the <code>nyc_demos.csv</code> file contains <em>total counts</em> by race, so you will need to normalize by overall population to get percentages.</p>
+<p>To get the data into suitable form for plotting, you will need to <em>pivot</em> the data into a longer format using the <code>pivot_longer</code> function from the <code>tidyr</code> package.</p></li>
+<li><p>Create a visualization to compare the ratio of rental vs owner-owned housing per district with the age demographics of this district. What do you find? Is this what you would have expected?</p></li>
+</ol>
+</section>
+<section id="limitations-and-extensions-of-chloropleths" class="level2">
+<h2 class="anchored" data-anchor-id="limitations-and-extensions-of-chloropleths">Limitations and Extensions of Chloropleths</h2>
+<p>Chloropleth plots are rightly popular but they have a major limitation: humans are not uniformly distributed across space! Smaller regions may have higher populations (<em>cf</em> Connecticut vs Montana) and administrative regions are not the same size. Because human perception is naturally drawn to larger regions, we often need to adjust the color schemes used to compensate for area effects. This process can be powerful, but it is a bit difficult to get right.</p>
+<p>For instance, let’s see what happens if we create a chloropleth of the <code>SID74</code> data, the number of children who die of SIDS during our sample period in North Carolina:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(nc, <span class="fu">aes</span>(<span class="at">geometry =</span> geometry, <span class="at">fill =</span> SID74)) <span class="sc">+</span> </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_sf</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lab08_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Here, Mecklenberg County (middle, bottom) sticks out because it has a large population, not because SIDS was particularly more common in that county. We can modify our plot to show the SIDS rate, rather than raw counts:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>nc <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">sids_rate_74 =</span> SID74 <span class="sc">/</span> BIR74) <span class="sc">|&gt;</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">geometry =</span> geometry, </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">fill =</span> sids_rate_74)) <span class="sc">+</span> </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_sf</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lab08_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We see less variation here, but there is still some. Note that this type of data – rate estimation from rare counts – can be somewhat tricky to analyze, but that’s not the primary focus of this class so we’ll leave it here.</p>
+<p>This plot still isn’t perfect however: <a href="https://en.wikipedia.org/wiki/Sampson_County%2C_North_Carolina">Sampson county</a> is the largest county in NC, but it has a relatively small population. That means that the largest area - and hence the place our eyes will most immediately look - is assigned to a relatively unimportant county. Relatedly, <a href="https://en.wikipedia.org/wiki/Anson_County%2C_North_Carolina">Anson County</a> is a small population county, but it appears to be a “hot-spot”. This could be true, but it is more likely a noise-effect resulting from a small population.</p>
+<p>To address these issues, we can use a <em>cartogram</em> which will “adjust” the map so that area maps to a relevant quantity. This is quite complex mathematically, but the <code>cartogram</code> package handles it reasonably transparently for us:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cartogram)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>nc <span class="sc">|&gt;</span> </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">sids_rate_74 =</span> SID74 <span class="sc">/</span> BIR74) <span class="sc">|&gt;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_transform</span>(<span class="dv">26916</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cartogram_cont</span>(<span class="at">weight=</span><span class="st">"BIR74"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">geometry=</span>geometry, </span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">fill =</span> sids_rate_74)) <span class="sc">+</span> </span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_sf</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="lab08_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Here the <code>st_transform</code> function species <em>what projection</em> to equilibrate area in. I’m not an expert on this, but the internet seems to suggest 26916 is not a bad default.</p>
+<p>Looking at this plot, we see that counties are now adjusted to population, or really birth count and Anson county - while still high - is clearly down-weighted in accordance with its population.</p>
+</section>
+<section id="exercises-2---cartograms-of-nyc" class="level2">
+<h2 class="anchored" data-anchor-id="exercises-2---cartograms-of-nyc">Exercises 2 - Cartograms of NYC</h2>
+<ol type="1">
+<li><p>Modify your plot of NYC to adjust city council districts by area.</p></li>
+<li><p>Next, modify your analysis to use the Dorling cartogram (<code>cartogram_dorling</code>) which gives a more regular cartogram representation.</p></li>
+</ol>
+</section>
+</section>
+<section id="shiny-creating-interactive-tools-for-data-analysis" class="level1">
+<h1><code>shiny</code>: Creating Interactive Tools for Data Analysis</h1>
+<p>We now turn our attention to creating interactive tools (web applications and dashboards) for data analysis. By learning these tools, you won’t necessarily enable yourself to do analysis, but you will enable colleagues and clients to more fully explore the results of your analyses. The main tool we will use to do is <code>shiny</code>, a <strong>reactive</strong> framework for <code>R</code>.</p>
+<p>“Reactive” programmingrefers to an architecture that changes only in response to user input. You have almost certainly worked with a reactive piece of software in the form of Microsoft Excel (or Google Sheets or similar). The values in the spreadsheet do not change <em>sua sponte</em>, but when you make an input all related cells are updated. (Conceptually, all cells are updated, but Excel is smart and tracks only those cells that actually need to be updated.)</p>
+<section id="exercise-3---building-a-shiny-tool-for" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-3---building-a-shiny-tool-for">Exercise 3 - Building a <code>shiny</code> tool for STA 9750</h2>
+<p>Use the <a href="../tips.html">course helper functions</a> to build a <code>shiny</code> tool that can be used to verify that your mini-projects and peer feedback have been appropriately formatted and submitted.</p>
+<section id="step-0-run-shiny" class="level3">
+<h3 class="anchored" data-anchor-id="step-0-run-shiny">Step 0: Run <code>shiny</code></h3>
+<p>Take the following prototype and confirm that it runs on your computer. Note that this is the “single-file” format for <code>shiny</code> apps. It is somewhat more common to split <code>shiny</code> apps across two files - backend and frontend - but we are using a single file structure here for convenience.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"shiny"</span>)) <span class="fu">install.packages</span>(<span class="st">"shiny"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"glue"</span>)) <span class="fu">install.packages</span>(<span class="st">"glue"</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glue)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"yaml"</span>)) <span class="fu">install.packages</span>(<span class="st">"yaml"</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(yaml)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Create global variables here</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>variables <span class="ot">&lt;-</span> <span class="fu">read_yaml</span>(<span class="st">"https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml"</span>)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>course_repo  <span class="ot">&lt;-</span> variables<span class="sc">$</span>course<span class="sc">$</span>repo</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>course_short <span class="ot">&lt;-</span> variables<span class="sc">$</span>course<span class="sc">$</span>short</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the UI</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>ui <span class="ot">&lt;-</span> <span class="fu">bootstrapPage</span>(</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">textInput</span>(<span class="st">'github_id'</span>, </span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>              <span class="st">'What is your GitHub ID?'</span>, </span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>              <span class="at">placeholder=</span><span class="st">"Type your GitHub ID here"</span>),</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">htmlOutput</span>(<span class="st">'gh_link'</span>)</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the server code</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output) {</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    output<span class="sc">$</span>gh_link <span class="ot">&lt;-</span> <span class="fu">renderText</span>({</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>        <span class="fu">markdown</span>(<span class="fu">glue</span>(<span class="st">"My code for this course found on [GitHub](https://github.com/{input$github_id}/{course_repo})"</span>))</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Return a Shiny app object</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a><span class="fu">shinyApp</span>(<span class="at">ui =</span> ui, <span class="at">server =</span> server)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="step-1-add-a-link-to-your-profile" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-add-a-link-to-your-profile">Step 1: Add a Link to your profile</h3>
+<p>Add a second output to link to the homepage you created in <a href="../miniprojects/mini00.html">MP#00</a>. Copying the treatment of <code>gh_link</code> in the example, you will need to</p>
+<ol type="1">
+<li>Add a second output <a href="https://shiny.posit.co/r/reference/shiny/0.11/rendertext.html"><code>renderText</code></a> component in the server</li>
+<li>Add a second output <a href="https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html"><code>htmlOutput</code></a> component in the UI</li>
+</ol>
+</section>
+<section id="step-2-parameterize-the-mini-project-number" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-parameterize-the-mini-project-number">Step 2: Parameterize the Mini-Project Number</h3>
+<p>Next, extend your app to handle the mini-projects. Modify the above example to do three things:</p>
+<ul>
+<li><p>Add a <a href="https://rstudio.github.io/shiny/reference/numericInput.html"><code>numericInput</code></a> that takes a number between <code>1</code> and <code>4</code> inclusive to select a mini-project.</p></li>
+<li><p>Add an output <a href="https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html"><code>htmlOutput</code></a> element that adds a link to the relevant <a href="https://michael-weylandt.com/STA9750/miniprojects.html">mini-project instructions</a>.</p>
+<p>The <code>glue</code> function can be used to easily substitute values in URLs (as in the example).</p></li>
+<li><p>Add an output <a href="https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html"><code>htmlOutput</code></a> element that adds a link to <em>your</em> mini-project submission. This URL should take both the <code>numericInput</code> and the <code>textInput</code> user inputs to construct the URL. (That is, if you change the <code>GitHub</code> name used the URL should point to a different repo)</p></li>
+</ul>
+</section>
+<section id="step-3-confirm-mini-project-submission" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-confirm-mini-project-submission">Step 3: Confirm Mini-Project Submission</h3>
+<p>Take one of the course helper scripts and use it to determine whether a given MP submission is properly formatted. To do so:</p>
+<ol type="1">
+<li>Load the helpers by adding <code>source("https://michael-weylandt.com/STA9750/load_helpers.R")</code> to the top of your file (outside both the UI and the server).</li>
+<li>Add a reactive input that runs <code>mp_submission_verify</code> and captures the output. The following code snippet will be useful:</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>O <span class="ot">&lt;-</span> <span class="fu">capture.output</span>({</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    E <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>(<span class="fu">mp_submission_verify</span>(N, github_id), </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">error=</span><span class="cf">function</span>(e) e)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">isTRUE</span>(E)){</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    MESSAGE <span class="ot">&lt;-</span> <span class="st">"Mini-Project properly submitted."</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    MESSAGE <span class="ot">&lt;-</span> <span class="st">"Mini-Project not properly submitted. Issue appears to be:</span><span class="sc">\n</span><span class="st">"</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    MESSAGE <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="fu">c</span>(MESSAGE, O[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]), <span class="at">collapse=</span><span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>where you use <code>MESSAGE</code> in creating your output.</p>
+</section>
+<section id="step-4-extensions" class="level3">
+<h3 class="anchored" data-anchor-id="step-4-extensions">Step 4: Extensions</h3>
+<p>Time allowing, do one or more of the following:</p>
+<ul>
+<li>Adapt <code>mp_feedback_locate</code> to provide links to all peer feedback issues. Note that you will need to handle the case of later MPs, who haven’t been assigned yet (<em>i.e.</em>, MPs #03 and #04).</li>
+<li>Adapt <code>mp_feedback_verify</code> to check whether your peer feedback has been properly formatted. This will require a new input for the peer’s GitHub ID.</li>
+</ul>
+
+
+</section>
+</section>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>In <a href="../miniprojects/mini03.html">MP#03</a>, you will learn how to extract the <code>shp</code> file from a <code>zip</code> archive automatically, but for now you can do so “by hand” by opening the zip file as if it were a regular file.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>If you get an error reading “<code>stat_sf()</code> requires the following missing aesthetics: geometry”, make sure you include <code>geometry=geometry</code> in your <code>aes</code> (5 points)<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>These are <code>c("White Hispanic", "Black Hispanic", "Asian and Pacific Islander Nonhispanic", "Other Nonhispanic", "Two or More Races Nonhispanic", "Hispanic Origin")</code>. Note that the census has changed these over time and the categories for the 2020 and 2030 censuses will be different.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/michael-weylandt\.com\/STA9750\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/archive/AY-2024-SPRING/labs/lab08.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/archive/AY-2024-SPRING/labs/lab08.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

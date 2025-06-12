@@ -1,0 +1,371 @@
+---
+session: "`r session <- 4; session`"
+class_date:
+  "`r library(tidyverse); 
+    read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', Item.Number==session) |>
+    pull(Date)`"
+---
+
+
+{{< include _setup.qmd >}}
+
+# Today
+
+## Today
+
+Hello from New Mexico!
+
+I'm on hotel Wifi, so if I drop, hold on a bit and I'll rejoin. 
+
+. . . 
+
+- Course Administration
+- PA#04 FAQs
+- Single-Table Verbs
+- Wrap-Up
+  - Life Tip of the Day
+
+# Course Administration
+
+## {{< var course.short >}} Mini-Project #00
+
+Thank you to those of you who provided peer feedback!
+
+. . . 
+
+A few of you still haven't completed MP#00. 
+
+Too late for peer feedback, but you need to get this done in order to submit MP#01. 
+
+[No late work accepted on graded MPs.](../syllabus.html#late-work-policy)
+
+## Mini-Project #00 - Pay Attention to the Details
+
+At least one submission had title "YOUR TITLE GOES HERE"
+
+. . . 
+
+![](https://i.pinimg.com/originals/51/6c/28/516c28ae4dc99514fc252e29b1d95099.jpg){fig-align="center"}
+
+## Mini-Project #00 - Peer Feedback
+
+Over 75% of the class reported receiving useful peer feedback.
+
+. . .
+
+Instructor's Note: For graded MPs #01-04, be a bit more direct
+in peer feedback. Goal is to help your peers improve: _constructive_ criticism.
+
+. . .
+
+When submitting peer feedback on graded MPs, **use [comment template](https://michael-weylandt.com/STA9750/miniprojects.html#peer-feedback)**. 
+
+. . . 
+
+If you didn't get useful peer feedback on MP#00, please post a follow-up comment
+in your thread and I'll take a look. 
+
+## Mini-Project Helper Scripts
+
+Remember [course helper functions](https://michael-weylandt.com/STA9750/tips.html#helper-scripts)
+
+- `mp_submission_create` - Open an issue for your submission
+- `mp_submission_verify` - Check that your issue is formatted and page is available for review
+- `mp_feedback_locate` - Find issues on which you're being asked to comment
+- `mp_feedback_verify` - Check that your peer feedback comments are formatted
+
+## {{< var course.short >}} Mini-Project #01
+
+[MP#01 released](../miniprojects/mini01.html) - `r get_mp_title(1)`
+
+. . . 
+
+**Due `r get_mp_deadline(1)`**
+
+  - GitHub post (used for peer feedback) *AND* Brightspace
+  - Significant penalties for only submitting one
+  
+. . . 
+
+Pay attention to [the rubric](../miniprojects/mini01.html#rubric) 
+
+- Writing and presentation are about 50% of your grade
+- Evaluated on _rigor_ and _thoughtfulness_, not necessarily correctness
+
+## MP #01 
+
+Happy to see folks already getting started!
+
+- A bit of debugging of network connection issues (possibly transient)
+- Treatment of OT for *per Annum* and *per diem* employees 
+  - Great questions on this (HZ😎) - Piazza pinned
+
+*Not everything has a single _right_ answer - be reasonable, justify, and document*
+
+## MP #01
+
+How to deal with messy / incorrect data? 
+
+- Process it intensely
+- Go 'robust'
+
+## Course Project
+
+```{r}
+#| echo: false
+#| message: false
+roster_deadline <- read_csv("key_dates.csv") |>
+    filter(str_detect(Details, "Roster Submission")) |>
+    mutate(due = paste(Date, "at", Time)) |>
+    pull(due)
+```
+
+Roster due at *`r roster_deadline`* by email to me. 
+
+All teammates need to agree, so takes a bit of time. 
+
+Once you set a team, start thinking about a **team name**!
+
+## Upcoming Mini-Projects
+
+MP#02 assigned next week: 
+
+- `r get_mp_title(2)` due at `r get_mp_deadline(2)`
+
+  *With revised MP #01 deadline, MP #02 released before MP #01 due*
+
+Later: 
+
+- MP#03 due at `r get_mp_deadline(3)`
+- MP#04 due at `r get_mp_deadline(4)`
+
+## Pre-Assignments
+
+Brightspace - Wednesdays at 11:45pm
+
+- Reading, typically on course website
+- Brightspace auto-grades. 
+  - I have to manually change to completion grading. 
+
+# Pre-Assignment #04 FAQs
+
+## FAQ: `select(-)`
+
+`data |> select(colname)` **keeps** `colname`, dropping everything else
+
+`data |> select(-colname)` **drops** `colname`, keeping everything else
+
+Dropping is mainly useful for
+
+- Presentation (removing unwanted columns)
+- Advanced:
+  - Operations _across_ columns
+  
+## FAQ: `filter` vs `group_by` {.smaller}
+
+`group_by` is an _adverb_. On its own, it does nothing; it changes the
+behavior of later functionality. 
+
+```{r}
+#| include: false
+library(palmerpenguins)
+library(tidyverse)
+```
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> print(n=2)
+```
+
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species) |> print(n=2)
+```
+
+## FAQ: `filter` vs `group_by` {.smaller}
+
+No `group_by` - full summarization:
+```{r}
+#| echo: true
+penguins |> drop_na() |> summarize(mean(body_mass_g))
+```
+
+With `group_by` - summary within groups. 
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species) |> summarize(mean(body_mass_g))
+```
+
+## FAQ: `filter` vs `group_by` {.smaller}
+
+With multiple grouping - "cross-tabs" of results: 
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass_g))
+```
+
+Note that result of multi-`group_by` is still grouped: 
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass_g))
+```
+
+## FAQ: `filter` vs `group_by` {.smaller}
+
+Changes next call to `summarize`:
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species) |> 
+    summarize(mbmg = mean(body_mass_g)) |> summarize(mean(mbmg))
+```
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species, sex) |> 
+    summarize(mbmg = mean(body_mass_g)) |> summarize(mean(mbmg))
+```
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(sex, species) |> 
+    summarize(mbmg = mean(body_mass_g)) |> summarize(mean(mbmg))
+```
+
+## FAQ: Order of `group_by`
+
+- No change to first "grouped" operations
+- Change in grouping structure of result
+- Last group "removed" by `summarize`
+- No impact on grouped operations performed by `mutate` or `filter` 
+
+## FAQ: `ungroup`
+
+- Remove all grouping structure
+- Defensive to keep group structure from "propogating" unwantedly
+
+```{r}
+#| echo: true
+#| eval: false
+sum_penguins <- penguins |> 
+    group_by(sex, species) |> 
+    summarize(mbmg = mean(body_mass_g))
+
+... # Lots of code 
+
+sum_penguins |> filter(mbmg == max(mbmg)) # Still grouped!!
+```
+
+## FAQ: Named Arguments in `mutate` and `summarize`
+
+`mutate` and `summarize` create new columns: 
+
+ - `mutate` creates "one-to-one"
+ - `summarize` creates "one-per-group"
+
+--- 
+
+If you want to name them (so you can use them later), use named argument
+
+```{r}
+#| echo: true
+penguins |> group_by(species) |> summarize(n())
+```
+
+vs
+
+```{r}
+#| echo: true
+penguins |> group_by(species) |> summarize(n_species = n())
+```
+
+## FAQ: Pipe Syntax
+
+Pipe syntax (`|>`) is "syntactic sugar"
+
+Just makes code easier to read: 
+
+```{r}
+#| echo: true
+#| eval: false
+penguins |> group_by(species) |> summarize(n_species = n())
+# vs
+summarize(group_by(penguins, species), n_species=n())
+```
+
+_Exactly_ the same execution: improved UX
+
+. . . 
+
+`%>%` is an older way of doing essentially the same thing
+
+## FAQ: Assignment of Pipeline Results {.smaller}
+
+When to start a pipeline with `NAME <-`? Creating a new variable: 
+
+. . . 
+
+- Data you intend to reuse
+- Assignment operator 'up front' indicates __important__
+- My rules of thumb for names:
+  - New names for "new complete thoughts" - whole summary in one pipeline
+  - _Overwrite_ existing names for "like-for-like improvements" (`USAGE <- USAGE |> code(...)`)
+    - Recoding variable names, fixing typos, *etc.*
+    - Use name repeatedly so downstream code picks up effects 'for free'
+
+## FAQ: Comparison with SQL and Pandas (Python)
+
+`dplyr` is _heavily_ inspired by `SQL` (standard query language for data bases)
+
+- MW (2014): "Why bother? Can't folks just use SQL"
+
+. . . 
+
+`pandas` (in Python) inspired by `R` `data.frame` and `SQL`: 
+ 
+- A bit older than `dplyr` (cousins?)
+- "New hotness" (`polars`) directly inspired by `dplyr`
+
+## FAQ: Performance
+
+`dplyr` is _fast_, but advanced options: 
+
+- `dbplyr`: translates `dplyr` syntax to SQL and executes in DB
+- `dtplyr`: uses alternate `data.table` back-end (HFT)
+
+Hard to have bad performance in single-table analysis
+
+- Danger of accidentally creating 'extra' data in multi-table context
+- Will discuss more next week
+
+--- 
+
+Tools for slow code: 
+
+- Profiler: [`profvis`](https://profvis.r-lib.org/)
+- Benchmarking: [`bench`](https://bench.r-lib.org/)
+
+Don't worry about improving code performance until: 
+
+1) You're sure it's right
+2) You're sure it's slow
+
+Incorrect code is _infinitely slow_.
+
+# New Material - Single Table Verbs
+
+## Diving Deeper with `group_by`, `filter`, and `summarize`
+
+Data Set: [`nycflights13`](https://nycflights13.tidyverse.org/)
+
+Exercise: [Lab #04](../labs/lab04.html)
+
+# Wrap-Up
+
+## Looking Ahead
+
+{{< include ../advice/zsb_benefits.qmd >}}

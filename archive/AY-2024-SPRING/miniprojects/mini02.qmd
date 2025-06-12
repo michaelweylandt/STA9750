@@ -1,0 +1,691 @@
+---
+mp_num: "02"
+mp_title: "Identifying Environmentally Responsible US Public Transit Systems"
+mp_skills: "Data Integration, Data Visualization"
+mp_application: "Transit, Environmetrics"
+mp_rhetoric: "Press Release"
+execute:
+  freeze: true # Done with AY-2024-SPRING offering
+title: "{{< var course.short >}} Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}"
+---
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(tidyverse)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, Time)))
+```
+
+```{r}
+#| echo: false
+#| warning: false
+library(glue)
+mp_id <- as.integer(rmarkdown::metadata$mp_num)
+mp <-  DATES |> filter(element == "Mini-Projects", 
+                       item == mp_id)
+mp_file <- list(qmd=glue("`mp{sprintf('%02g', mp_id)}.qmd`"), 
+                html=glue("`mp{sprintf('%02g', mp_id)}.html`"),
+                html_long=glue("`docs/mp{sprintf('%02g', mp_id)}.html`"))
+```
+
+### Due Dates
+
+-   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+-   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
+-   **Peer Feedback:**
+    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
+    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
+
+
+*Estimated Time to Complete: 9 Hours*
+
+*Estimated Time for Peer Feedback: 1 Hour*
+
+## Introduction
+
+Welcome to Mini-Project #{{< meta mp_num >}}. In this project, you will take on
+the role of Executive Director of the Green Transit Alliance for Investigation
+of Variance (GTA IV). GTA IV will be giving a series of awards for the
+"greenest" public transit agencies. Your final submission for this mini-project
+should take the form of a press release, announcing the winners of the various
+GTA IV awards and giving the key statistics that lead to their selection.
+
+For this project, you will use "multi-table" operations such as joins and pivots,
+to combine data from different sources to generate novel insights not attainable
+from any individual table. Our analysis will bring in data from two federal
+sources, the [National Transit Database](https://www.transit.dot.gov/ntd) and
+the [Energy Information Administration](https://www.eia.gov/). 
+ 
+### Student Responsbilities
+
+Recall our basic analytic workflow and table of student responsibilities:
+
+-   Data Ingest and Cleaning: Given a single data source, read it into `R` and transform it to a reasonably useful standardized format.
+-   Data Combination and Alignment: Combine multiple data sources to enable insights not possible from a single source.
+-   Descriptive Statistical Analysis: Take a data table and compute informative summary statistics from both the entire population and relevant subgroups
+-   Data Visualization: Generate insightful data visualizations to spur insights not attainable from point statistics
+-   Inferential Statistical Analysis and Modeling: Develop relevant predictive models and statistical analyses to generate insights about the *underlying population* and not simply the data at hand.
+
++----------------------+---------------------+---------------------------+----------------------------------+---------------+
+|                      | Ingest and Cleaning | Combination and Alignment | Descriptive Statistical Analysis | Visualization |
++:====================:+:===================:+:=========================:+:================================:+:=============:+
+| **Mini-Project #01** |                     |                           | **✓**                            |               |
++----------------------+---------------------+---------------------------+----------------------------------+---------------+
+| **Mini-Project #02** |                     | **✓**                     | **✓**                            | **½**         |
++----------------------+---------------------+---------------------------+----------------------------------+---------------+
+| **Mini-Project #03** | **½**               | **✓**                     | **✓**                            | **✓**         |
++----------------------+---------------------+---------------------------+----------------------------------+---------------+
+| **Mini-Project #04** | **✓**               | **✓**                     | **✓**                            | **✓**         |
++----------------------+---------------------+---------------------------+----------------------------------+---------------+
+
+: Students' Responsibilities in Mini-Project Analyses {.hover}
+
+In this mini-project, you are mainly responsible for data alignment and basic statistical analyses. While not the main focus of this mini-project, you are also expected to provide basic data visualizations to support your findings; the grading rubric, below, emphasizes the `dplyr` tools used in this project, but reports without any visualization will be penalized severely. Note that data visualization will play a larger role in Mini-Project #03.
+
+As before, I will provide code to automatically download and read in the data used for this project. Also note that, as compared with Mini-Project #01, I am providing significantly less 'scaffolding': students are more responsible for directing their own analyses.
+
+### Rubric
+
+{{< var course.short >}} Mini-Projects are evaluated using *peer grading* with
+*meta-review* by the course GTAs. Specifically, variants of the following rubric
+will be used for the mini-projects:
+
++-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Course Element        | Excellent (9-10)                                                                                                                                                                            | Great (7-8)                                                                                                                                                     | Good (5-6)                                                                                                                                                 | Adequate (3-4)                                                                              | Needs Improvement (1-2)                                                                             | Extra Credit                                                                                                                                                                                                        |
++=======================+=============================================================================================================================================================================================+=================================================================================================================================================================+============================================================================================================================================================+=============================================================================================+=====================================================================================================+=====================================================================================================================================================================================================================+
+| Written Communication | Report is well-written and flows naturally. Motivation for key steps is clearly explained to reader without excessive detail. Key findings are highlighted and appropriately given context. | Report has no grammatical or writing issues. Writing is accessible and flows naturally. Key findings are highlighted, but lack suitable motivation and context. | Report has no grammatical or writing issues. Key findings are present but insufficiently highlighted.                                                      | Writing is intelligible, but has some grammatical errors. Key findings are obscured.        | Report exhibits significant weakness in written communication. Key points are difficult to discern. | Report includes extra context beyond instructor provided information.                                                                                                                                               |
++-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Project Skeleton      | Code completes all instructor-provided tasks correctly. Responses to open-ended tasks are particularly insightful and creative.                                                             | Code completes all instructor-provided tasks satisfactorially.                                                                                                  | Response to one instructor provided task is skipped, incorrect, or otherwise incomplete.                                                                   | Responses to two instructor provided tasks are skipped, incorrect, or otherwise incomplete. | Response to three or ore instructor provided tasks are skipped, incorrect, or otherwise incomplete. | Report exhibits particularly creative insights drawn from thorough student-initiated analyses.                                                                                                                      |
++-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Formatting & Display  | Tables have well-formatted column names, suitable numbers of digits, and attractive presentation.                                                                                           | Tables are well-formatted, but still have room for improvement.                                                                                                 | Tables lack significant 'polish' and need improvement in substance (filtering and down-selecting of presented data) or style.                              | Unfiltered 'data dump' instead of curated table.                                            | Report lacks basic tables; OR report lacks basic figures.                                           | Report includes one or more high-quality graphics (created using `R`) using tools beyond static basic `ggplot2`. These can be created using extensions to`ggplot2` or speciality packages for interactive graphics. |
+|                       |                                                                                                                                                                                             |                                                                                                                                                                 |                                                                                                                                                            |                                                                                             |                                                                                                     |                                                                                                                                                                                                                     |
+|                       | Figures are 'publication-quality', with suitable axis labels, well-chosen structure, attractive color schemes, titles, subtitles, and captions, *etc.*                                      | Figures are above 'exploratory-quality', but do not reach full 'publication-quality'.                                                                           | Figures are suitable to support claims made, but are 'exploratory-quality', reflecting minimal effort to customize and 'polish' beyond `ggplot2` defaults. | Baseline figures that do not fully support claims made.                                     |                                                                                                     |                                                                                                                                                                                                                     |
++-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Code Quality          | Code is (near) flawless.                                                                                                                                                                    | Comments give context of the analysis, not simply defining functions used in a particular line.                                                                 | Code has well-chosen variable names and basic comments.                                                                                                    | Code executes properly, but is difficult to read.                                           | Code fails to execute properly.                                                                     | Code takes advantage of advanced `Quarto` features to improve presentation of results.                                                                                                                              |
+|                       |                                                                                                                                                                                             |                                                                                                                                                                 |                                                                                                                                                            |                                                                                             |                                                                                                     |                                                                                                                                                                                                                     |
+|                       | Code passes all `styler` and `lintr` type analyses without issue.                                                                                                                           |                                                                                                                                                                 |                                                                                                                                                            |                                                                                             |                                                                                                     |                                                                                                                                                                                                                     |
++-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Data Preparation      | Automatic (10/10). Out of scope for this mini-project                                                                                                                                       |                                                                                                                                                                 |                                                                                                                                                            |                                                                                             |                                                                                                     | Report modifies instructor-provided import code to use additional columns or data sources in a way that creates novel insights.                                                                                     |
++-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+: Mini-Project Grading Rubric
+
+Note that this rubric is designed with copious opportunities for extra credit if students go *above and beyond* the instructor-provided scaffolding. Students pursuing careers in data analytics are strongly encouraged to go beyond the strict ambit of the mini-projects to i) further refine their skills; ii) learn additional techniques that can be used in the final course project; and iii) develop a more impressive professional portfolio.
+
+Because students are encouraged to use {{< var course.short >}} mini-projects as
+the basis for a professional portfolio, the basic skeleton of each project will be
+released under a fairly permissive usage license. Take advantage of it!
+
+### Submission Instructions
+
+After completing the analysis, write up your findings, *showing all of your
+code*, using a dynamic `quarto` document and post it to your course repository.
+The `qmd` file should be named `{r} I(mp_file$qmd)` so the rendered document can
+be found at `{r} I(mp_file$html_long)` in the student's repository and served at
+the URL:[^sub]
+
+> `https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp{{< meta mp_num >}}.html`
+
+Once you confirm this website works (substituting `<GITHUB_ID>` for the actual
+GitHub username provided to the professor in [MP#00](./mini00.html) of course),
+open a new issue at
+
+> `https://github.com/michaelweylandt/{{< var course.repo >}}/issues/new` .
+
+Title the issue `{{< var course.short >}} <GITHUB_ID> MiniProject #{{< meta mp_num >}}` 
+and fill in the following text for the issue:
+
+::: {#submission-text}
+
+```         
+Hi @michaelweylandt!
+
+I've uploaded my work for MiniProject #**{{< meta mp_num >}}** - check it out!
+
+https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp{{< meta mp_num >}}.html
+```
+
+:::
+
+
+
+Once the submission deadline passes, the instructor will tag classmates for peer feedback in this issue thread.
+
+*Additionally*, a PDF export of this report should be submitted on Brightspace. To create a PDF from the uploaded report, simply use your browser's 'Print to PDF' functionality.
+
+**NB**: The analysis outline below specifies key *tasks* you need to perform within your write up. Your peer evaluators will check that you complete these. You are encouraged to do extra analysis, but the bolded **Tasks** are *mandatory*.
+
+**NB**: Your final submission should look like a *report*, not simply a list of facts answering questions. Add introductions, conclusions, and your own commentary. You should be practicing both raw *coding* skills and written *communication* in all mini-projects. There is little value in data points stated without context or motivation.
+
+
+::: {#submission-text}
+
+```         
+Hi @michaelweylandt!
+
+I've uploaded my work for MiniProject #{{< meta mp_num >}} - check it out!
+
+https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp{{< meta mp_num >}}.html
+```
+
+:::
+
+[^sub]: Throughout this section, replace `<GITHUB_ID>` with your GitHub ID from
+[Mini-Project #00](./mini00.html), making sure to remove the angle brackets. Note
+that the automated course infrastructure will be looking for precise formatting,
+so follow these instructions closely. 
+
+## Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}
+
+Among the commonly cited benefits of robust public transit is a reduction in 
+environmental impact. In this mini-project, we will explore US Public Transit
+systems to assess their environmental efficiency. Our analysis will use a 
+variety of data sources to i) determine how many riders are served by different
+transit systems; ii) determine how far each public transit system transports
+an average rider; and iii) investigate the effective emissions associated with
+each form of transit. 
+
+### Data Acquisition
+
+We begin by downloading and importing relevant data sets. For this mini-project,
+we will download the following details: 
+
+- EIA [State Electricity Profiles](https://www.eia.gov/electricity/state/), 
+  which we will use to estimate the environmental impact of the electricity
+  used to run certain transit systems. 
+  
+  
+
+::: {.callout-tip title="Task 1: Data Import"}
+
+Incorporate the instructor provided code below into your report. As you
+do so, make sure to look for possible "keys" on which you will be able to join
+datasets together. 
+
+:::
+
+#### State Electricity Profiles
+
+For purposes of this analysis, we will assume that all electricity generation
+in a state is fungible. That is, we will assign the average generation emissions
+to all electric transit in a state, even if the transit authority officially
+has a "green supply" agreement in place. 
+
+The following code will parse the EIA SEP summary pages and create a "tidy"
+table for your use: 
+
+```{r}
+#| message: false
+#| warning: false
+ensure_package <- function(pkg){
+    pkg <- as.character(substitute(pkg))
+    options(repos = c(CRAN = "https://cloud.r-project.org"))
+    if(!require(pkg, character.only=TRUE)) install.packages(pkg)
+    stopifnot(require(pkg, character.only=TRUE))
+}
+
+ensure_package(dplyr)
+ensure_package(stringr)
+ensure_package(tidyr)
+ensure_package(httr2)
+ensure_package(rvest)
+ensure_package(datasets)
+ensure_package(purrr)
+ensure_package(DT)
+
+get_eia_sep <- function(state, abbr){
+    state_formatted <- str_to_lower(state) |> str_replace_all("\\s", "")
+    
+    dir_name <- file.path("data", "mp02")
+    file_name <- file.path(dir_name, state_formatted)
+    
+    dir.create(dir_name, showWarnings=FALSE, recursive=TRUE)
+    
+    if(!file.exists(file_name)){
+        BASE_URL <- "https://www.eia.gov"
+        REQUEST <- request(BASE_URL) |> 
+            req_url_path("electricity", "state", state_formatted)
+    
+        RESPONSE <- req_perform(REQUEST)
+    
+        resp_check_status(RESPONSE)
+        
+        writeLines(resp_body_string(RESPONSE), file_name)
+    }
+    
+    TABLE <- read_html(file_name) |> 
+        html_element("table") |> 
+        html_table() |>
+        mutate(Item = str_to_lower(Item))
+    
+    if("U.S. rank" %in% colnames(TABLE)){
+        TABLE <- TABLE |> rename(Rank = `U.S. rank`)
+    }
+    
+    CO2_MWh <- TABLE |> 
+        filter(Item == "carbon dioxide (lbs/mwh)") |>
+        pull(Value) |> 
+        str_replace_all(",", "") |>
+        as.numeric()
+    
+    PRIMARY <- TABLE |> 
+        filter(Item == "primary energy source") |> 
+        pull(Rank)
+    
+    RATE <- TABLE |>
+        filter(Item == "average retail price (cents/kwh)") |>
+        pull(Value) |>
+        as.numeric()
+    
+    GENERATION_MWh <- TABLE |>
+        filter(Item == "net generation (megawatthours)") |>
+        pull(Value) |>
+        str_replace_all(",", "") |>
+        as.numeric()
+    
+    data.frame(CO2_MWh               = CO2_MWh, 
+               primary_source        = PRIMARY,
+               electricity_price_MWh = RATE * 10, # / 100 cents to dollars &
+               # * 1000 kWh to MWH 
+               generation_MWh        = GENERATION_MWh, 
+               state                 = state, 
+               abbreviation          = abbr
+    )
+}
+
+EIA_SEP_REPORT <- map2(state.name, state.abb, get_eia_sep) |> list_rbind()
+```  
+
+This produces the following table: 
+
+```{r}
+#| message: false
+#| warning: false
+ensure_package(scales)
+ensure_package(DT)
+
+EIA_SEP_REPORT |> 
+    select(-abbreviation) |>
+    arrange(desc(CO2_MWh)) |>
+    mutate(CO2_MWh = number(CO2_MWh, big.mark=","), 
+           electricity_price_MWh = dollar(electricity_price_MWh), 
+           generation_MWh = number(generation_MWh, big.mark=",")) |>
+    rename(`Pounds of CO2 Emitted per MWh of Electricity Produced`=CO2_MWh, 
+           `Primary Source of Electricity Generation`=primary_source, 
+           `Average Retail Price for 1000 kWh`=electricity_price_MWh, 
+           `Total Generation Capacity (MWh)`= generation_MWh, 
+           State=state) |>
+    datatable()
+```
+
+&nbsp;
+
+Here, we have collected the effective emissions per MWh[^mwh] as well as price
+and total state-wide generation capacity. We will use this data to compare the
+emissions of different transit modalities. We next turn to the National Transit
+Database to get information on various public transit authorities. Before we
+do so, however, let's explore the SEP data a bit first. 
+
+::: {.callout-tip title="Task 2: Initial Analysis of SEP Data"}
+
+Answer the following questions using the `EIA_SEP_REPORT` data: 
+
+1. Which state has the most expensive retail electricity? 
+2. Which state has the 'dirtiest' electricity mix? 
+3. On average, how many pounds of CO2 are emitted per MWh of electricity
+   produced in the US? (Note that you will need to use a suitably _weighted_
+   average here.) 
+4. What is the rarest primary energy source in the US? What is the associated
+   cost of electricity and where is it used? 
+5. My home state, Texas, has a reputation as being the home of "dirty fossil
+   fuels" while NY has a reputation as a leader in clean energy. How many times
+   cleaner is NY's energy mix than that of Texas? 
+
+:::
+
+#### 2023 Annual Database Energy Consumption
+
+We first download the [2023 Annual Database Energy
+Consumption](https://www.transit.dot.gov/ntd/data-product/2023-annual-database-energy-consumption)
+report. This report is shared as a Excel spreadsheet (`.xlsx` filetype), so we
+use the `readxl` package to import it to `R`. 
+
+```{r}
+#| warning: false
+ensure_package(readxl)
+# Create 'data/mp02' directory if not already present
+DATA_DIR <- file.path("data", "mp02")
+dir.create(DATA_DIR, showWarnings=FALSE, recursive=TRUE)
+
+NTD_ENERGY_FILE <- file.path(DATA_DIR, "2023_ntd_energy.xlsx")
+
+if(!file.exists(NTD_ENERGY_FILE)){
+    DS <- download.file("https://www.transit.dot.gov/sites/fta.dot.gov/files/2024-10/2023%20Energy%20Consumption.xlsx", 
+                  destfile=NTD_ENERGY_FILE, 
+                  method="curl")
+    
+    if(DS | (file.info(NTD_ENERGY_FILE)$size == 0)){
+        cat("I was unable to download the NTD Energy File. Please try again.\n")
+        stop("Download failed")
+    }
+}
+
+NTD_ENERGY_RAW <- read_xlsx(NTD_ENERGY_FILE)
+```
+
+::: {.callout-warning title="Selection of Download Methods"}
+
+`R` provides several different internal tools to download data files from
+the internet. These can be accessed more-or-less seamlessly by changing
+the `method` argument of the `download.file` function. 
+
+Depending on your operating system, different methods may work better than
+others. Above, I used the `"curl"` method as that seemed to be the most robust
+on my computer. If this doesn't work, for you, I would recommend trying the
+following: 
+
+- `method = "internal"`
+- `method = "wget"`
+- `method = "libcurl"`
+- `method = "wininet"`
+
+If none of these work, download the file by hand and save it as
+`data/mp02/2023_ntd_energy.xlsx`. It is worth making sure that you are able
+to download data files through `R` as this will be important in your course
+project (and in life generally).
+
+:::
+
+
+Next, we do some basic clean-up:
+
+```{r}
+#| warning: false
+ensure_package(tidyr)
+to_numeric_fill_0 <- function(x){
+    x <- if_else(x == "-", NA, x)
+    replace_na(as.numeric(x), 0)
+}
+
+NTD_ENERGY <- NTD_ENERGY_RAW |> 
+    select(-c(`Reporter Type`, 
+              `Reporting Module`, 
+              `Other Fuel`, 
+              `Other Fuel Description`)) |>
+    mutate(across(-c(`Agency Name`, 
+                     `Mode`,
+                     `TOS`), 
+                  to_numeric_fill_0)) |>
+    group_by(`NTD ID`, `Mode`, `Agency Name`) |>
+    summarize(across(where(is.numeric), sum), 
+              .groups = "keep") |>
+    mutate(ENERGY = sum(c_across(c(where(is.numeric))))) |>
+    filter(ENERGY > 0) |>
+    select(-ENERGY) |>
+    ungroup()
+```
+
+The resulting table is almost ready for us to work with: 
+
+```{r}
+# Display 10 random rows
+slice_sample(NTD_ENERGY , n=10)
+```
+
+Here, the first 3 columns (`NTD ID`, `Mode`, and `Agency Name`) identify the
+operating agency and the relevant mode of transportation while the remaining
+columns denote how much of each type of fuel that agency used during 2023. 
+The non-electric sources are all quoted in gallons, while `Electric Battery`
+and `Electric Propulsion` are quoted in kWh used. 
+    
+The `Mode` column is important: it is used to distinguish multiple transport
+types operated the same agency, *e.g.* MTA subways and buses in NYC. The
+two letter codes used by the NTD, however, are not immediately interpretable. 
+
+::: {.callout-tip title="Task 3: Recoding the `Mode` column"}
+
+First, find the unique `Mode` codes in our data using the `distinct` function. Next, examine the NTD website and find the interpretations of these codes. Complete the following snippet to recode the `Mode` column.
+
+```{r}
+#| eval: false 
+## This code needs to be modified
+NTD_ENERGY <- NTD_ENERGY |>
+    mutate(Mode=case_when(
+        Mode == "HR" ~ "Heavy Rail", 
+        ...
+        ...
+        TRUE ~ "Unknown"))
+```
+:::
+
+#### 2023 Annual Database Service by Agency
+
+Next, we download the [2023 Service by
+Agency](https://data.transportation.gov/resource/6y83-7vuw.csv) report, from
+which we will extract characteristics of typical passenger trips on each 
+transit service. 
+
+```{r}
+#| message: false
+NTD_SERVICE_FILE <- file.path(DATA_DIR, "2023_service.csv")
+if(!file.exists(NTD_SERVICE_FILE)){
+    DS <- download.file("https://data.transportation.gov/resource/6y83-7vuw.csv", 
+                  destfile=NTD_SERVICE_FILE, 
+                  method="curl")
+    
+    if(DS | (file.info(NTD_SERVICE_FILE)$size == 0)){
+        cat("I was unable to download the NTD Service File. Please try again.\n")
+        stop("Download failed")
+    }
+}
+
+NTD_SERVICE_RAW <- read_csv(NTD_SERVICE_FILE)
+```
+
+As before, we need to clean up the data a bit before we can use it: 
+
+```{r}
+NTD_SERVICE <- NTD_SERVICE_RAW |>
+    mutate(`NTD ID` = as.numeric(`_5_digit_ntd_id`)) |> 
+    rename(Agency = agency, 
+           City   = max_city, 
+           State  = max_state,
+           UPT    = sum_unlinked_passenger_trips_upt, 
+           MILES  = sum_passenger_miles) |>
+    select(matches("^[A-Z]", ignore.case=FALSE)) |>
+    filter(MILES > 0)
+```
+
+Here `UPT` is the number of total _Unlinked Passenger Trips_ during 2023; that
+is, the number of distinct (non-transfer) trips taken. *E.g.*, if you transfer
+from the `7` to the `6` to get to Baruch. You ride two segments, but only take
+1 UPT to get to Baruch (2 total UPT if you go home the same way). 
+
+Let's explore this data a bit to get familiar with it. 
+
+::: {.callout-tip title="Task 4: Explore NTD Service Data"}
+
+Answer the following questions using the `NTD_SERVICE` data. 
+
+1. Which transit service has the most UPT annually? 
+2. What is the average trip length of a trip on MTA NYC? 
+3. Which transit service in NYC has the _longest_ average trip length? 
+
+   (NB: You need to be careful with the `City` column here. Certain MTA services
+   are officially located in "New York City" while others are located in
+   Brooklyn.)
+4. Which state has the _fewest_ total miles travelled by public transit?
+5. Are all states represented in this data? If no, which ones are missing?
+   The `state.name` and `state.abb` objects we used above may be useful here. 
+
+:::
+
+We're now ready to start putting these datasets together and using them to 
+identify America's greenest transit agencies. 
+
+### Analysis
+
+#### Calculate Total Emissions
+
+Compute the total emissions associated with each Agency + Mode pair. 
+
+::: {.callout-tip title="Task 5: Calculate Emissions"}
+
+You will need to join the three tables (`NTD_SERVICE`, `NTD_ENERGY`, and 
+`EIA_SEP_REPORT`) together. You should create a table with the following format:
+
+- Each row should be an Agency + Mode Pair
+- Each row should include the state in which the Agency is located (per
+  the `NTD_SERVICE` table)
+- Each row should include all fuel sources from the `NTD_ENERGY` table
+- Each row should include the EIA estimated CO2 emissions per MWh from the
+  `EIA_SEP_REPORT` table. 
+
+Once this table is created, use a (long-ish) arithmetic formula within a 
+`mutate` to compute the total emissions for that row. Note that you will need
+additional data to convert combustion fuels to CO2 emissions; these conversions
+can be found on [the EIA
+website](https://www.eia.gov/environment/emissions/co2_vol_mass.php). (You may
+hard code these values in your submission. Note that the fuel names used by
+the EIA do not exactly match those reported by the NTD; you will need to align
+these manually to best effort.)
+
+:::
+
+#### Relate Total Emissions and Passenger Service
+
+Now that you have computed the total emissions for each Agency + Mode pair, it
+is time to normalize these by the actual size of the transit agency. *E.g.*, 
+the NYC Subway almost certainly has higher total emissions than local bus service
+in Ithaca, NY, but it also serves **many** more riders, so the *per capita* 
+or *per transit* emissions may be lower. 
+
+::: {.callout-tip title="Task 6: Normalize Emissions to Transit Usage"}
+
+Using the total emissions calculated above, compute the emissions: 
+
+1) Per UPT; and 
+2) Per passenger mile
+
+Which agencies are most efficient on these bases? You may want to filter out
+extremely small agencies and to create "small", "medium", and "large" agencies
+so that you can give multiple awards. 
+
+Note that transit usage is reported at the Agency level, so you may need to 
+sum emissions across multiple modes. 
+
+:::
+
+
+#### Idenitify 'Greenest' Transit Agencies
+
+With the above analysis, determine the winners of (at least) three GTA IV
+awards: 
+
+1) Greenest Transit Agency
+2) Most Emissions Avoided
+3) A third award of your creation
+4) A "Worst Of" award of your creation
+
+The Greenest Transit Agency award can be determined using your analysis above.
+
+For the "Most Emissions Avoided" award, you should first compute the total 
+emissions if all transit usage were replaced with driving individual vehicles. 
+Then use US [CAFE standards](https://www.nhtsa.gov/press-releases/usdot-announces-new-vehicle-fuel-economy-standards-model-year-2024-2026)
+to convert miles to gallons of motor fuel used and convert motor fuel to total
+emissions as per above. Compare this to the actual emissions associated
+with that agency to determine emissions avoided. 
+
+For the third award, determine an additional metric on which a transit agency
+can be considered to be highly green (*e.g.*, highest percentage of
+electrification) and then determine the appropriate winner. 
+
+Finally, for the fourth award, "name and shame" an agency which does not have
+particularly 'green' operations. As with the third award, you can determine
+a metric you think is best. 
+
+Per discussion above, you may choose to break these down into multiple
+categories (or honorable mention awards) to recognize smaller agencies. 
+
+::: {.callout-tip title="Task 7: Determine Award Winners"}
+
+Design and implement metrics for the four GTA IV Green Transit Awards and
+determine winners. 
+
+:::
+
+## Deliverable: Transit Award "Press Release"
+
+After completing your analysis, prepare a "press release" announcing the
+winners in each category. For each award given, your press release should
+include at a minimum: 
+
+i)  A short description of the way in which the relevant metric was calculated. 
+ii) The winning agency and/or transit mode and the *value* of their metric. 
+iii) A 'reference' value that makes the winner look particularly impressive, 
+     *e.g.* how did the _median_ agency do on that same metric? 
+     
+::: {.callout-tip title="Task 8: Visualization"}
+
+For at least two of the four awards, create a suitable visualization demonstrating
+the 'green-ness' of the award winners, both in absolute terms and relative to 
+other agencies and/or private modes of transporation. 
+
+These should be included in your press release as media supplements that can
+be used by, *e.g.*, a local news report in their nightly broadcast. As such, 
+these graphics should: 
+
+i)  Have professional-quality ("publication ready") formatting;[^font]
+ii) Have low-clutter / high-information density; 
+iii) Be self-contained and accessible to a general reader without significant
+     additional description retired. 
+iv)  Include citations to original data sources used
+
+:::
+
+
+[^font]: Make sure to set fonts and figure dimensions large enough to be legible
+on a large screen.
+
+As with [Mini-Project #01](./mini01.html), you are required to present your 
+findings in this format. Because the code implementing this analysis does
+not fit naturally in the press release format, you may find it easier to 
+style it as an Appendix and to include the press release writing as an
+Executive Summary at the top of your submission. 
+
+## Extra Credit Opportunities
+
+
+Peer evaluators are authorized to give up to 4 points of extra credit (total
+across all categories) for 
+
+1) Press release writing that is particularly funny, punny, or otherwise
+   enjoyable to read; and 
+2) Award criteria that are particularly creative and insight-generating. When
+   awarding extra credit, peer evaluators should be sure to assess the quality
+   of the insight generated by these additional awards: finding that, *e.g.*,
+   the NYC subway is highly efficient on two different but highly correlated
+   metrics is not a remarkable insight. 
+   
+*Additionally*, up to 4 points of extra credit may be given for code that 
+automatically reads the [EIA Fuel Type
+Emissions](https://www.eia.gov/environment/emissions/co2_vol_mass.php) estimates
+automatically instead of hard-coding values. Note that full credit may be given
+for analysis which hard-codes these EPA estimates: reading and manipulating
+web data like this is not required until the end of this course. 
+[^mwh]: 1 Megawatt-hour (MWh) is 1,000 kilowatt-hours (kWh) or roughly enough
+to power 3 NYC appartments for one month. Electricity bills are typically cited
+in kWh; to convert the per MWh price reported here to a per kWh price divide by
+1000.
+
+------------------------------------------------------------------------
+
+This work ©2025 by [Michael Weylandt](https://michael-weylandt.com) is licensed
+under a [Creative Commons BY-NC-SA 
+4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en) license.
+![](http://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png){width="10%"}
