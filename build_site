@@ -105,7 +105,7 @@ for(fname in QMD_FILES){
 }
 
 # Process navbar in archive folders
-cat("Adapting Archive Navbars")
+cat("Adapting Archive Navbars\n")
 ARCHIVE_HTML_FILES <- list.files("docs/archive/",
                                  recursive = TRUE,
                                  pattern="*html",
@@ -131,6 +131,43 @@ for(fname in ARCHIVE_HTML_FILES){
     }
 
     writeLines(html_new, fname)
+}
+
+cat("Adding archive announcement bars\n")
+
+for(fname in ARCHIVE_HTML_FILES){
+    html_old <- readLines(fname)
+    if(str_detect(fname, "slides")){
+        next
+    }
+
+    if(any(str_detect(html_old, "quarto-announcement"))){
+        next
+    }
+
+
+
+    breakpoint <- which(str_detect(html_old, "</header>"))[1]
+
+    html_before <- html_old[1:breakpoint]
+    html_after <- html_old[(breakpoint+1):length(html_old)]
+
+    current_link <- str_replace(fname, "docs/archive/+AY-\\d{4}-(SPRING|FALL)/?", "../../")
+    current_link <- str_replace(current_link, "\\.\\./\\.\\./(.*)/(.*)", "../../../\\1/\\2")
+
+    add_in <- glue('
+<div id="quarto-announcement" data-announcement-id="6a42bbecdcf2d6ce6b61d47c55fab2f9" class="alert alert-danger">
+  <i class="bi bi-info-circle quarto-announcement-icon"></i>
+  <div class="quarto-announcement-content">
+    <strong>Warning</strong> - This page is for a prior offering of STA 9750. For the latest offering, click <a id="exit-archive-link" href="{current_link}">here</a>.
+  </div>
+  <i class="bi bi-x-lg quarto-announcement-action"></i>
+</div>
+')
+
+    html_new <- c(html_before, add_in, html_after)
+
+    writeLines(html_new, glue('{fname}'))
 }
 
 knitr::purl("tips.qmd",
