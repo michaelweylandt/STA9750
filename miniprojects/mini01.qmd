@@ -1,9 +1,9 @@
 ---
 mp_num: "01"
-mp_title: "TBD"
-mp_skills: "Messy Data, Large Data, Outliers"
-mp_application: "TBD"
-mp_rhetoric: "TBD"
+mp_title: "Gourmet Cheeseburgers Across the Globe: Exploring the Most Popular Programming on Netflix"
+mp_skills: "Exploratory Data Analysis"
+mp_application: "Streaming Services, Tech Sector, Marketing"
+mp_rhetoric: "Press Release"
 ---
 
 ```{r}
@@ -178,26 +178,49 @@ so follow these instructions closely.
 
 ## Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}
 
+Congratulations! You have just started in an exciting new job opportunity: you
+are a data analyst at Netflix, tasked with supporting the Public Relations team.
+As you may know, Netflix continues to invest heavily in original television and
+film content, with the [goal of producing successful "gourmet
+cheeseburgers"](https://archive.is/3F35p), *i.e.*, high-quality content that 
+is still accessible to and popular with a global mass-market audience. 
+Accordingly, the PR team wants to put out a series of press releases highlighting
+recent successes. In this project, you will mine Netflix's public [Top
+10](https://www.netflix.com/tudum/top10) data to identify and quantify 
+these successes.[^top10]
+
+[^top10]: For this miniproject, we are limited to the data Netflix makes available
+to the general public. This data - taking the form of weekly Top 10 charts - 
+necessarily omits the long tail of Netflix shows that are not hits, perhaps to
+minimize reputational damage of big budget flops. We are also
+only able to access global view counts and will have to make some 
+(rather ridiculous) assumptions about per country popularity measures. If you
+actually worked at Netflix, you would certainly have far more detailed versions
+of this data. 
+
 In this mini-project, you will: 
 
-1) TBD
-2) Practice Use of `dplyr` for analysis of tabular data
-3) Practice Use of `quarto` and Reproducible Research Tools for Effective
+1) Practice use of `dplyr` for analysis of tabular data
+2) Practice use of `quarto` and Reproducible Research Tools for Effective
    Communication of Data Analysis Results
+3) Begin your professional data science portfolio. 
 
 ::: {.callout-warning title="Writing Requirements"}
 
 Recall that you are *evaluated* on writing and communication in these 
-Mini-Projects. You are required write a report in the prescribed style, here
-an internal policy briefing 'white paper'. A submission that performs the 
-instructor-specified tasks, but does not write and give appropriate context
-and commentary will score very poorly on the relevant rubric elements. 
+Mini-Projects. You are required write a report in the prescribed style, 
+culminating in a set of press releases highlighting the success of recent 
+Netflix original releases. A submission that performs the instructor-specified 
+tasks, but does not write and give appropriate context and commentary will 
+score very poorly  on the relevant rubric elements. 
 
-In particular, if a submission is not in "white paper" style, peer evaluators
-should judge it to have "Good" quality Written Communication (at best) as key
-findings are not conveyed appropriately. 
+In particular, if a submission does not include "press releases" and only
+answers the instructor prompts in narrative text, peer evaluators should judge 
+it to have "Good" quality Written Communication (at best) as key findings are 
+not conveyed appropriately. 
 
-Quarto's [cold folding](https://quarto.org/docs/output-formats/html-code.html#folding-code) 
+Quarto's [code 
+folding](https://quarto.org/docs/output-formats/html-code.html#folding-code) 
 functionality is useful for "hiding" code so that it doesn't break the flow of
 your writing. 
 
@@ -209,7 +232,362 @@ This is particularly useful if you want to include a figure or table in an
 
 :::
 
+### Acquire Data
+
+For this project, we will deal with two separate data files, taken from
+[Netflix's TuDum Top 10](https://www.netflix.com/tudum/top10). These are: 
+
+- Global Top 10 
+- Country-wide Top 10
+
+The following code will download the Netflix data and create TSV[^tsv] files in
+a `data/mp01` directory. If this doesn't work for whatever reason, you can
+download the data directly from Netflix, though you will need to make sure
+you are getting the right files and storing them in a location and format
+suitable for this mini-project. 
+
+[^tsv]: _Tab_-Separated Values. TSVs are like CSVs, but are a bit more robust
+when dealing with text data since some titles may have commas in the name.
+
+```{r}
+#| echo: true
+#| eval: true
+if(!dir.exists(file.path("data", "mp01"))){
+    dir.create(file.path("data", "mp01"), showWarnings=FALSE, recursive=TRUE)
+}
+
+GLOBAL_TOP_10_FILENAME <- file.path("data", "mp01", "global_top10_alltime.csv")
+
+if(!file.exists(GLOBAL_TOP_10_FILENAME)){
+    download.file("https://www.netflix.com/tudum/top10/data/all-weeks-global.tsv", 
+                  destfile=GLOBAL_TOP_10_FILENAME)
+}
+
+COUNTRY_TOP_10_FILENAME <- file.path("data", "mp01", "country_top10_alltime.csv")
+
+if(!file.exists(COUNTRY_TOP_10_FILENAME)){
+    download.file("https://www.netflix.com/tudum/top10/data/all-weeks-countries.tsv", 
+                  destfile=COUNTRY_TOP_10_FILENAME)
+}
+
+```
+
+You do not (yet) need to understand the code above, so please use the course
+discussion board if you have trouble getting it working. 
+
+::: {.callout-tip title="Task 1: Data Acquisition"}
+
+Using the code above, acquire the latest Netflix Top 10 Data. Copy the code into
+your Quarto document and make sure it runs successfully. 
+
+:::
+
+::: {.callout-caution title="Do Not `git add` Data Files"}
+
+Make sure that `git` is set to ignore data files, such as the one created above.
+Check the `git` pane in `RStudio` and make sure that `nyc_payroll_export.csv`
+does not appear. (If you set up your `.gitignore` file correctly in
+[MP#00](./mini00.html), it should already be ignored.) If it is appearing, you
+may need to edit your `.gitignore` file.
+
+Removing a large data file from `git` is possible, but difficult. Don't get
+into a bad state!
+
+:::
+
+### Data Import and Preparation
+
+Before we can analyze this data, we need to get it into `R` and in a suitable
+format. The `read_tsv` function from the `readr` package can be used to read
+`tsv` files into `R` (imagine that!). This data comes to use quite well-formated, 
+so we will need to only make one small alteration. 
+
+Let's start by reading in the data and using the `str()` and `glimpse()` functions
+to examine its structure: 
+
+```{r}
+library(readr)
+
+GLOBAL_TOP_10 <- read_tsv(GLOBAL_TOP_10_FILENAME)
+str(GLOBAL_TOP_10)
+```
+
+```{r}
+glimpse(GLOBAL_TOP_10)
+```
+
+From these print-outs, we can see various useful pieces of information: 
+
+- The number of rows and columns
+- The names of each column
+- The _type_ of each column
+
+Make sure you can find each of these in both print-outs. 
+
+Looking more closely, I only see one issue: when the `season_title` is missing 
+(*e.g.*, for a movie), it is read into `R` as the _string_ `"N/A"` instead of
+a proper `NA` value. This however isn't too hard to fix using a `mutate` command. 
+
+::: {.callout-tip title="Task 2: Data Cleaning"}
+
+Complete the following code snippet and copy it into your Quarto document. This
+will convert `"N/A"` values to proper `NA`s. After fixing this issue, use a 
+`str()` or `glimpse()` command to confirm the issue has been addressed. 
+
+```{r}
+#| eval: false
+GLOBAL_TOP_10 <- GLOBAL_TOP_10 |>
+    mutate(season_title = if_else(..., ..., ...))
+```
+
+*Hint*: You will want to use the `is.na` function here. 
+
+:::
+
+The per country data set is similarly organized and also has an issue with reading
+`"N/A"` values. While we could repeat the above transformation on this second data
+set, we can also address this at the time of data import by passing an additional
+argument to `read_csv`. 
+
+::: {.callout-tip title="Task 3: Data Import"}
+
+Modify the call to `read_tsv` above to read the per-country data file into `R`
+as an object called `COUNTRY_TOP_10`. Add an additional argument to `read_tsv`
+to ensure that `"N/A"` values are read as `R`'s native `NA` values. After 
+reading the data into `R`
+
+*Hint*: `read_tsv` has _many_ optional arguments. Use the 
+[function documentation](https://readr.tidyverse.org/reference/read_delim.html)
+to find the one you want. This is the same page that `?read_tsv` gives
+you, but presented in a slightly more readable format. 
+
+:::
+
+
+After completing these two tasks, you should have two data objects: 
+
+- `COUNTRY_TOP_10`
+- `GLOBAL_TOP_10`
+
+and the `season_title` of both data sets should have proper `NA` values. 
+
+### Initial Data Exploration
+
+Before preparing our press releases, we will do a bit of _Exploratory Data Analysis_
+(EDA). EDA serves many purposes in data science-quality control, hypothesis generation,
+outlier identification, etc*-but perhaps the most important is simply knowing
+what information can be found in a novel data set. Now that our data is imported
+and cleaned, it's time to start our EDA. 
+
+When faced with a new data set, it is tempting to look only at the first few
+rows to get a sense of the data: `R` does this by default. In practice, I 
+recommend viewing a _random_ selection of rows instead. This won't guarantee you
+find any issues, but it increases the probability of finding issues in 
+older parts of a data set. 
+
+While we could continue investigating our data using `R`'s basic print-outs, 
+this is a good time to introduce a new package `DT` which can create more 
+attractive visualizations of your results. The 
+[`DT` package](https://rstudio.github.io/DT/) wraps the Javascript 
+[`datatables` library](https://datatables.net/) to provide interactive tables. 
+This library has _many_ options to control formatting. Later in this course, you
+will also encounter the [`gt` package](https://gt.rstudio.com/) which can be used
+to create complex tables natively in `R`.
+
+You can use the `DT` package as follows: 
+
+```{r}
+library(DT)
+GLOBAL_TOP_10 |> 
+    head(n=20) |>
+    datatable(options=list(searching=FALSE, info=FALSE))
+```
+
+This table has several issues: 
+
+i) The column names are not well-formatted. They are formatted as `R` variables
+   instead of as proper "Title Case" names, *e.g.*, `weekly_hours_viewed` should
+   be `Weekly Hours Viewed`. 
+ii) Large numbers, *e.g.*, `weekly_hours_viewed`, are presented without commas
+    or other legibility aids. 
+    
+Let's address both of these: 
+
+```{r}
+library(stringr)
+format_titles <- function(df){
+    colnames(df) <- str_replace_all(colnames(df), "_", " ") |> str_to_title()
+    df
+}
+
+GLOBAL_TOP_10 |> 
+    format_titles() |>
+    head(n=20) |>
+    datatable(options=list(searching=FALSE, info=FALSE)) |>
+    formatRound(c('Weekly Hours Viewed', 'Weekly Views'))
+```
+
+This is a closer to a publication-quality title. We should also drop the
+`season_title` since here at least we are only showing films. 
+
+```{r}
+GLOBAL_TOP_10 |> 
+    select(-season_title) |>
+    format_titles() |>
+    head(n=20) |>
+    datatable(options=list(searching=FALSE, info=FALSE)) |>
+    formatRound(c('Weekly Hours Viewed', 'Weekly Views'))
+```
+
+Finally, showing runtime in hours is a bit awkward, so let's convert this to 
+minutes: 
+
+```{r}
+GLOBAL_TOP_10 |> 
+    mutate(`runtime_(minutes)` = round(60 * runtime)) |>
+    select(-season_title, 
+           -runtime) |>
+    format_titles() |>
+    head(n=20) |>
+    datatable(options=list(searching=FALSE, info=FALSE)) |>
+    formatRound(c('Weekly Hours Viewed', 'Weekly Views'))
+```
+
+Much better.
+
+We are now ready to begin some EDA.
+
+::: {.callout-tip title="Task 4: Exploratory Questions"}
+
+Using `dplyr` tools, answer the following questions. If your answer requires
+several rows, display your result as an interactive table following the example
+above (make sure to make it 'publication quality'). If your answer is a single
+name or value, use Quarto's [inline code](https://quarto.org/docs/computations/inline-code.html)
+functionality to place the values in a sentence; that is, you should answer in
+complete sentences, written as normal text with inline code for computed values.
+Note that, depending on the question, you will need to use either the global table
+or the per-country table. You will not need to 'combine' tables to answer any
+of these questions. 
+
+1. How many different countries does Netflix operate in? (You can use the viewing
+   history as a proxy for countries in which Netflix operates.)
+2. Which non-English-language film has spent the most cumulative weeks in the global
+   top 10? How many weeks did it spend? 
+3. What is the *longest* film (English or non-English) to have ever appeared in 
+   the Netflix global Top 10? How long is it in minutes? 
+   
+   Note that Netflix does not provide runtime for programs before a certain
+   date, so your answer here may be a bit limited. 
+4. For each of the four categories, what program has the most total hours of 
+   global viewership? 
+5. Which TV show had the longest run in a country's Top 10? How long was this run
+   and in what country did it occur?
+6. Netflix provides over 200 weeks of service history for all but one country in
+   our data set. Which country is this and when did Netflix cease operations
+   in that country? 
+7. What is the total viewership of the TV show *Squid Game*? Note that there are
+   three seasons total and we are looking for the total number of hours watched
+   across all seasons.
+8. The movie *Red Notice* has a runtime of 1 hour and 58 minutes. Approximately
+   how many views did it receive in 2021? 
+   
+   *Hint*: The `year()` function from the `lubridate` package may be helpful. 
+9. How many Films reached Number 1 in the US but did not originally debut there?
+   That is, find films that first appeared on the Top 10 chart at, *e.g.*, Number 
+   4 but then became more popular and eventually hit Number 1? What is the most
+   recent film to pull this off? 
+   
+   *Hint*: You will want to create a new variable to identify films that topped
+   the charts at any point during their run. 
+10. Which TV show/season hit the top 10 in the most countries in its debut week? 
+    In how many countries did it chart? 
+
+:::
+
+
+### Preparing Press Releases
+
+Now that you have explored this data, it's time to prepare some press releases. 
+Each press release should have a catchy headline and about one paragraph of body
+text.[^1] Each press release should have at least 3 facts. 
+
+#### Press Release 1: Upcoming Season of *Stranger Things*
+
+Netflix will release the fifth and final season of its hit show *Stranger Things*
+at the end of 2025. In preparation for the release, prepare a press release
+highlighting the broad impact of the previous four seasons. Your press release
+should refer to both the total viewership, the length of popularity (how many 
+weeks in the top 10) and the multinational appeal of previous seasons. You 
+should also compare the impact of *Stranger Things* to other popular 
+English-language TV shows to give a sense of its success. 
+
+::: {.callout-tip title="Task 5: *Stranger Things* Press Release"}
+
+Write a press release promoting season 5 of *Stranger Things.* Be sure to 
+include a catchy headline. 
+
+:::
+
+#### Press Release 2: Commercial Success in India
+
+As the most populated country in the world, India represents a major growth 
+opportunity for Netflix. Prepare a press release highlighting Netflix's recent 
+successes in Hindi-language films and TV. If you assume that all Hindi-language
+viewing is from customers in India (a strong assumption!), you can use this
+viewership data to estimate the size of Netflix's customer base in India: compute
+a few points and discuss the long term growth trends (if any). 
+
+*Hint*: To get a list of possible films to highlight, look for programs which 
+were  very popular in India but did not chart in the US.
+
+
+::: {.callout-tip title="Task 6: Netflix in India Press Release"}
+
+Write a press release touting the success of Netflix in India and highlighting
+recent subscriber growth in the region. Be sure to 
+include a catchy headline. 
+
+:::
+
+#### Press Release 3: Open Topic
+
+Finally, create a press release on a topic of your choosing. Your press release
+can use either data set (or both) and may focus on TV or films. Your press 
+release should be grounded in a meaningful business purpose, *i.e.* highlighting
+success, growth, or opportunities in a region. Your press release may be
+announcing a new initiative (*i.e.*, a new country in which Netflix is becoming
+available) or new conent or celebrating something that has already been released.
+The motivation of your press release should be clear from its content. 
+
+::: {.callout-tip title="Task 7: 3rd Press Release "}
+
+Write a press release on a topic of your choosing. Be sure to 
+include a catchy headline. 
+
+:::
+
+[^1]: I can't find Netflix's press release archive online, but here is an example
+from HBO Max 
+[trumpeting the success](https://press.wbd.com/us/media-release/hbo-0/last-us-season-2-trailer-shatters-records-becoming-hbo-and-maxs-most-watched-original)
+of the trailer for *The Last of Us* Season 2. This style uses bullet points
+instead of a text paragraph, but you can get the general idea. 
+
+
 ## Extra Credit Opportunities
+
+Peer evaluators may award small amounts of extra credit persuant to the rubric
+above. 
+
+In particular, particularly entertaining press releases may receive up to
+2 points of extra credit and highly insightful press releases (particularly around
+item 3) may receive up to 2 points of extra credit. One point of extra credit is
+available for inclusion of creative visual element: this may be a statistical chart
+(generated using `R`) or some sort of artistic or thematic visualization generated
+in other software. (Statistical charts generated in other software, *e.g.*, an Excel
+bar chart are not eligible for extra credit.)
+
+No more than 4 points of extra credit may be awarded to a single submission, no
+matter how excellent.
 
 
 ------------------------------------------------------------------------
