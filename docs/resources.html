@@ -68,6 +68,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -271,13 +300,18 @@ ul.task-list li input[type="checkbox"] {
 <section id="external-resources-use-policy" class="level3">
 <h3 class="anchored" data-anchor-id="external-resources-use-policy">External Resources Use Policy</h3>
 <p>For the coding elements of this course, students are encouraged to use freely available online resources, including question-and-answer fora such as StackOverflow. You may also use AI-driven developer tools such as GitHub Co-Pilot. Paid services are not allowed. On each assignment, you will be asked to list external resources used on each assignment. You are ultimately responsible for the correctness of any submitted materials - “the AI told me so”” is not a valid defense.</p>
-<p><em>Note on ChatGPT and Related Large-Language Models</em>: You <strong>may not</strong> use large-language models to complete any assignment in this course. Specifically, you may not use tools where you describe the course assignment in natural language and receive (pseudo-)code output. While these tools are powerful, and often surprisingly accurate, for this task, using them in this manner will undermine the <a href="./objectives.html">learning objectives</a> of this course.</p>
+<p><em>Note on ChatGPT and Related Large-Language Models</em>: You <strong>may</strong> use large-language models to complete any assignment in this course <em>in a limited fashion</em>. Specifically, you may use tools where you describe a coding objective in natural language and receive (pseudo-)code output. However, you should only use the tools to achieve specific coding aims; you <strong>may not</strong> feed them the course assignment whole and expect them to complete the assignment for you. While these tools are powerful, and often superficially accurate, for this task, using them in this manner will undermine the <a href="./objectives.html">learning objectives</a> of this course.</p>
+<ul>
+<li><p><em>Good</em>: Hi ChatGPT, how can use <code>ggplot2</code> to create a scatterplot with a linear trend, but skip weekdays on my <span class="math inline">\(x\)</span>-axis?</p></li>
+<li><p><em>Bad</em>: Hi ChatGPT, please visualize this data for me.</p></li>
+</ul>
+<p>Additionally, you <strong>may not</strong> use any Generative AI tools for the mini-project peer evaluation cycles.</p>
 <p>For the written elements of this course (<em>e.g.</em> Project Final Report), standard academic expectations of attribution and citation are in place. This will be covered in more detail in the course project documents.</p>
 <p>Students are <em>highly encouraged</em> to collaborate on homework assignments, but each student is required to individually and complete each assignment. If substantially identical assignments are submitted, the instructor may require each student to individually demonstrate their understanding of the material. Collaborators should be listed at the end of each submitted assignment along with a statement of contributions.</p>
 </section>
 <section id="unexcused-abscence-policy" class="level3">
 <h3 class="anchored" data-anchor-id="unexcused-abscence-policy">Unexcused Abscence Policy</h3>
-<p>Attendance is not required, but lecture recordings will not be provided. Students are responsible for the content of all sessions missed.</p>
+<p>Attendance is not required, but lecture recordings may not be provided. Students are responsible for the content of all sessions missed.</p>
 </section>
 <section id="late-work-policy" class="level3">
 <h3 class="anchored" data-anchor-id="late-work-policy">Late Work Policy</h3>
@@ -290,7 +324,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Students should use the course discussion board for all course-related communication. Technical questions, that is, questions either about the course material or asking for help with an issue specific to your computer, should always be asked as “Public” and visible to the entire class. Even if you think an issue is too specific to be of broad interest, it is almost certain that one of your classmates has a very similar issue and will benefit from your question. Before posting a new question, students should review previous questions and, if appropriate, post their question as a follow-up discussion to relevant prior answers. If your question is large enough to merit a new question, but is similar to a previous question, please reference the prior post so the instructor knows that you have already read that question. Failure to do this may result in an sub-optimal answer (<em>e.g.</em>, “go read XYZ”).</p>
 <p>Questions should only be marked as private if they are personal or sensitive, <em>e.g.</em>, specific questions about grading, request for religious or medical accomodation, or discussion of interpersonal conflicts. Questions of potential broad interest inapporiately marked as private, or sent via email, will be closed by the instructor and the student will be asked to re-post their question publically.</p>
 <p>You should take full advantage of the course discussion board to discuss anything of interest related to this course: in addition to diving deeper into course material, please bring in connections to other courses, discussion of news or cutting-edge research, or general questions about your studies and careers as data scientists. The most valuable aspects of your education at Baruch are the connections and community you develop with your classmates and with your faculty.</p>
-<p>The instructor will attempt (but not guarantee) to respond within <strong>one business day</strong> of all student posts.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> Consequently, if you have a complex issue requiring significant back-and-forth to resolve, you need to ask for help early. In particular, you should submit your mini-projects early and often to identify-and hopefully resolve-any technology issues as quickly as possible.</p>
+<p>The instructor will attempt (but not guarantee) to respond within <strong>two business days</strong> of all student posts.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> Consequently, if you have a complex issue requiring significant back-and-forth to resolve, you need to ask for help early. In particular, you should submit your mini-projects early and often to identify-and hopefully resolve-any technology issues as quickly as possible.</p>
 <p>Be sure to keep your interactions in all course fora helpful, respectful, and professional. Inappropriate or unpressional postings will be deleted and grade penalties will be applied for particularly inappropriate interactions. Your classmates have a wide range of technical background - what is obvious to you may be difficult for them - so do not be overly curt.</p>
 </section>
 </section>
