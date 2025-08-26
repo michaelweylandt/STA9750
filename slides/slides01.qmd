@@ -1,0 +1,351 @@
+---
+session: "`r session <- 1; session`"
+class_date:
+  "`r library(tidyverse); 
+    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES   <- read_csv("key_dates.csv")
+SESSION <- session
+TODAY   <- DATES |> filter(`Course Element` == "Class Session", 
+                           `Item Number` == SESSION)
+TODAY_TUESDAY  <- TODAY |> filter(Section == "Tuesday")  |> pull(Date)
+TODAY_THURSDAY <- TODAY |> filter(Section == "Thursday") |> pull(Date)
+
+PROJ_RELEASE <- DATES |> 
+    filter(Details == "Course Project Description Released") |>
+    pull(Date)
+
+ROSTERS <- DATES |> 
+    filter(Details == "Team Roster Submission") |>
+    pull(Date)
+```
+    
+
+## {{< var course.short >}} Week {{< meta session >}} 
+
+Today: 
+
+- Tuesday Section: `r TODAY_TUESDAY`
+- Thursday Section: `r TODAY_THURSDAY`
+
+. . . 
+
+Weekly Course Updates: 
+
+- Brief updates and reminders about course logistics
+- Syllabus and Brightspace are binding
+  - If something is left out of here, it still happens!
+  
+. . . 
+
+Today: Introduction to {{< var course.short >}}
+
+
+
+# {{< var course.short >}}: {{< var course.title >}} 
+
+## Course Overview
+
+{{< var course.short >}} is: 
+
+::: incremental
+
+- [Getting s#!t done]{color="#FF0000"}
+- Establishing a professional data analyst portfolio
+- Increasing your effectiveness in other courses
+- Building your networks with faculty and classmates
+
+:::
+
+## Learning Objectives
+
+Formal learning objectives can be found [here](https://michael-weylandt.com/STA9750/objectives.html)
+
+. . . 
+
+Key aims: 
+
+::: incremental
+
+- Deal with **real** data, no matter how messy and unhelpful
+- Engage with important technologies and learn to quickly adopt new tools
+- Communicate to both technical and non-technical audiences
+- Perform *substantial* and *thoughtful* analyses
+
+::: 
+
+## Course Website
+
+**All course information** can be found [on the course website](https://michael-weylandt.com/STA9750/)
+
+{{< html https://michael-weylandt.com/STA9750/ full-screen-link="false" height="300px">}}
+
+No authentication required - mobile friendly
+
+Source code [on my GitHub](https://github.com/michaelweylandt/STA9750)
+
+## Course Website
+
+Look online for: 
+
+- [Syllabus](https://michael-weylandt.com/STA9750/syllabus.html)
+- [Weekly Pre-Assignments](https://michael-weylandt.com/STA9750/preassignments.html)
+- [Mini-Projects](https://michael-weylandt.com/STA9750/miniprojects.html)
+- [In-Class Activities](https://michael-weylandt.com/STA9750/labs.html)
+- [Course Project](https://michael-weylandt.com/STA9750/project.html)
+- [Additional Policies and Resources](https://michael-weylandt.com/STA9750/resources.html)
+
+## Instructor
+
+Me: Michael Weylandt
+
+. . . 
+
+Assistant (i.e., new) Professor in the [Department of Info. Systems and Statistics](https://zicklin.baruch.cuny.edu/faculty-research/academic-departments/information-technology-statistics/)
+
+. . . 
+
+Previously: 
+
+::: incremental
+
+- Researcher at Sandia National Labs (US Government Lab)
+- Postdoc with US Intelligence Community 
+- Ph.D. in Statistics at Rice University (Houston, TX)
+- "Quant" at Morgan Stanley and a (defunct) hedge fund
+
+::: 
+
+. . . 
+
+See [my website](https://michael-weylandt.com) for more on me and my research
+
+## Course Schedule
+
+::: {.fragment}
+- Lecture / Lab sessions
+  - Tuesdays / Thursdays on Zoom (here!) at 6:05pm
+  - 14 weeks (with two holidays)
+:::
+
+::: {.fragment}
+- Office Hours
+  - Before class (on days we have class) at 5:00pm
+  - *Different Zoom Link*
+:::
+
+::: {.fragment}
+- Asynchronous
+  - Piazza course discussion platform
+:::
+
+## Course Schedule
+
+Major Topics: 
+
+::: incremental
+- Web Communication and Literate Programming Technologies
+- Introduction to `R`
+- Tidy Data Manipulation (SQL-type operations)
+- Plotting and Data Visualization
+- Data Import, Web Scraping, and Text Cleaning
+- Statistical Analysis
+:::
+
+## Grading
+
+- 24% Pre-Assignments
+- 36% Mini-Projects
+- 40% Course Project
+
+. . . 
+
+Extra credit for contribution to course materials or 'above and beyond' on Piazza
+
+. . . 
+
+Final grades curved to match ZSB grading guidelines
+
+## Course Policies
+
+See syllabus for fine print: 
+
+::: incremental
+
+- Regrading: Must request within 48 hours; total regrade
+- Late work: Not without prior permission or DoS letter *ex post*
+- Grace period: two days on mini-project initial submission 
+- External Resources / AI: Free to use for *coding* only
+- Absences: No excuse required, but must attend on presentation days
+- Accomodations: ADA (SDS) or Religious (direct with instructor)
+
+:::
+
+## Pre-Assignments
+
+Pre-Assignments: 
+
+::: incremental
+
+- Weekly reading *before class* followed by a short quiz
+- Introduce new material + helps me know where folks are confused
+- Completion grading
+- Starts next week 
+- Every week except three presentation weeks
+::: 
+
+## Mini-Projects
+
+Traditional homework assignments - "mini-projects"
+
+::: incremental
+
+- Guided real-data analysis using course technologies
+- Increasingly ambitious over the semester
+- Practice *real* data analysis
+- Communication and coding
+- Professional portfolio
+- One ungraded 'set-up' + four graded
+
+:::
+
+More later in the course
+
+## Course Project
+
+In lieu of exams, semester-long group project
+
+::: incremental
+
+- Three presentations + two reports
+  - Project Proposal
+  - Mid-Semester Check-In
+  - Final Presentation
+  - Individual Final Report
+  - Group Final Report
+  
+:::
+
+More later in the course
+
+## Workload Expectations
+
+Per federal and state requirements, 9 hours weekly = 6 hours outside of class
+
+::: incremental
+
+- 10 hours of Pre-Assignments
+- 10 hours of Post-Class Review
+- 35 hours of Mini-Projects (homework)
+- 35 hours of Course Project
+
+:::
+
+Note that course project = sum of all mini-projects - be ambitious!
+
+## Care Resources
+
+See [Care Resources for Students](https://michael-weylandt.com/STA9750/resources.html#care-resources-for-students1) for helpful resources
+
+- Mental health support
+- Physical health / medical care
+- Food Security
+- Financial Security
+- Immigration Support
+
+# Any questions?
+
+# Getting Started with `R` and `RStudio`
+
+## Lab 01
+
+Open [Lab #01](https://michael-weylandt.com/STA9750/labs/lab01.html) and follow
+the instructions to get started with `R` and `RStudio`
+
+. . . 
+
+</br>
+
+Random assignment to Zoom breakout rooms
+
+I will visit rooms to provide support
+
+</br>
+
+. . . 
+
+Call everyone back at 8:30pm
+
+## Mini-Project #00
+
+You can now start thinking about [Mini-Project #00](https://michael-weylandt.com/STA9750/miniprojects/mini00.html)
+
+::: incremental
+
+- Create an account on GitHub + GitHub student developer pack
+- Setting up your own website using `quarto` (like my course site)
+  - Future Mini-Projects submitted here
+- 'Road test' to make sure everything is working correctly
+- Register on course discussion board (Piazza)
+- Verification of Enrollment
+
+:::
+
+```{r}
+#| echo: false
+mp0_due_date <- DATES |> 
+    filter(`Course Element` == "Mini-Projects", 
+           `Item Number` == 0, 
+           str_detect(Details, "Due"), 
+           !str_detect(Details, "Feedback")) |> 
+    pull(Date)
+```
+
+Due `r mp0_due_date`
+
+# Wrap-Up
+
+## Course Introduction
+
+- All materials on course website
+- Review of course structure and key policies
+- More details about mini-projects and course-project to follow
+
+## Getting Started with `R`
+
+- Install `R`, `RStudio`, `git`, and `quarto`
+- Run a basic bit of `R` code to confirm things work well
+
+## Next Week
+
+Writing documents using `Markdown` and `Quarto`
+
+- First Pre-Assignment
+  - Read online
+  - Submit quiz on Brightspace
+
+{{< include ../advice/office_hours.qmd >}}
+
+## Musical Treat
+
+</br></br></br></br>
+
+::: {.center}
+
+{{< video https://www.youtube.com/watch?v=RHu0ALxqUIo width="800" height="400">}}
+
+:::
