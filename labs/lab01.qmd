@@ -77,82 +77,6 @@ wrong - but on balance, it should be useful.
 We won't use it this week, but you will need to install [Quarto](https://quarto.org/docs/get-started/)
 before starting on [Mini-Project #00](../miniprojects/mini00.html).
 
-## Source Code Management
-
-### `git`
-
-`git` is a **source-code management** tool, used by developers to manage the code
-they write. If you've ever been part of a large project and struggled to coordinate
-all team members using the same version of a document, `git` exists to solve that problem.
-
-If you don't have `git` pre-installed, install either [Git for Windows](https://git-for-windows.github.io/) or the XCode Command Line Tools for 
-MacOS. If not automatically prompted when you try to use `git`, the Mac install
-can be manually triggered by running `xcode-select --install` at a command line.
-
-In this course, we will use three main functions of `git`: 
-
-- **staging**: telling `git`, I want you to prepare to save a certain file
-- **committing**: saving a set of related changes
-- **pushing**: copying your committed changes to a separate server for sharing and backup
-
-Whenever you write code you are happy with, you should use `git` to save it. Saving
-changes with `git` is cheap and easy - so do it regularly. You always want `git`
-to have a backup of good code in case you loose power, accidentally delete a file, 
-break something in a way you're not sure how to undo, *etc.*. 
-
-`RStudio` comes with powerful `git` integration. Once you have created a _project_, 
-you should see a tab labelled "Git" in the top right corner of your IDE window that
-looks something like this: 
-
-![](../images/git_pane_nostage.png)
-
-To **stage** a file - prepare to save it - click the empty check box next to the file name. 
-A new file shows a status of "?" - this is `git` saying "I've never seen this file 
-before. Do you want me to track it for you?". Later, when you make further changes to file
-you have already asked git to track, a status of "M" (for **M**odified) will be shown. 
-
-On its own _staging_ a file does nothing. You also need to _commit_ it for `git` to
-truly track it.[^5] The `Commit` button will commit all _staged_ changes. When you 
-make a commit, `git` requires a brief message summarizing the changes. There's no
-particular formatting requirement to this message, but it should be something that
-future-you is able to easily understand. For instance, the commit message from the
-initial draft of this document reads as: 
-
-```
-Initial draft of Lab 01 (STA9750)
-
-- Installing R and RStudio
-- Git and GitHub
-- Leaflet Example for Styler
-
-TODO: Fuller shell explainers
-TODO: Link more git help
-```
-
-When I read this, I know the purpose of the change I made (first line), the
-contents of that change (list), and parts that still need more work. 
-
-Finally, after you save a change, it is only saved on your computer. The true power
-of `git` comes from its ability to copy changes and backups across machines. This
-gives you an easy way to store backups in case your computer dies and makes collaboration
-efficient and fun. `git` allows you to `push` and `pull` changes between machines
-in endlessly powerful (but sometimes complex) ways. For this course, we'll keep
-things simple and only use `GitHub` to share code. We discuss `GitHub` in the next
-section.
-
-
-**Reference**: We will not use all of the functionality of `git` in this course, but
-you should familiarize yourself with Chapters 1, 2, and 6 of the [Git Book](https://git-scm.com/book/en/v2)
-over the next two weeks.
-
-
-### `GitHub`
-
-`GitHub` is an industry-standard code hosting and collaboration platform. In addition
-to hosting copies of code, `GitHub` provides web hosting, bug reporting, code review, 
-continuous integration, documentation wikis, and discussion fora. You will explore
-`GitHub` in more detail starting in [Mini-Project #00](../miniprojects/mini00.html).
-
 ## Code Styling
 
 ### Autoformatting with the `styler` Package
@@ -214,8 +138,13 @@ pAGE = read_html('https://en.wikipedia.org/wiki/Baruch_College')
  baruch_longitude <- sum(as.numeric(strsplit(baruch_longitude, "[^0123456789]")[[1]]) * 
                              (1/60)^(0:2), na.rm=TRUE)
   
-leaflet() %>% addTiles() %>% setView(-baruch_longitude, BaruchLatitude, zoom=17) %>%
-    addPopups(-baruch_longitude, BaruchLatitude, "Look! It's <b>Baruch College</b>!")
+leaflet() |>
+addTiles() |>
+    setView(-baruch_longitude, BaruchLatitude, 
+               zoom=17) |>
+    addPopups(-baruch_longitude,
+              BaruchLatitude, "Look! It's <b>Baruch College</b>!") |>
+print()
 ```
 
 You don't need to understand what this does just yet, but it's hopefully clear that
@@ -267,10 +196,15 @@ BaruchLatitude <- sum(as.numeric(strsplit(
 baruch_longitude <- sum(as.numeric(strsplit(baruch_longitude, "[^0123456789]")[[1]]) *
   (1 / 60)^(0:2), na.rm = TRUE)
 
-leaflet() %>%
-  addTiles() %>%
-  setView(-baruch_longitude, BaruchLatitude, zoom = 17) %>%
-  addPopups(-baruch_longitude, BaruchLatitude, "Look! It's <b>Baruch College</b>!")
+leaflet() |>
+     addTiles() |> 
+     setView(-baruch_longitude, 
+             BaruchLatitude, 
+             zoom = 17) |>
+     addPopups(-baruch_longitude, 
+               BaruchLatitude, 
+               "Look! It's <b>Baruch College</b>!") |>
+     print()
 ```
 
 It's far from perfect - and we will discuss the *many* issues in this example throughout
@@ -312,10 +246,15 @@ BaruchLatitude <- sum(as.numeric(strsplit(
 baruch_longitude <- sum(as.numeric(strsplit(baruch_longitude, "[^0123456789]")[[1]]) *
   (1 / 60)^(0:2), na.rm = TRUE)
 
-leaflet() %>%
-  addTiles() %>%
-  setView(-baruch_longitude, BaruchLatitude, zoom = 17) %>%
-  addPopups(-baruch_longitude, BaruchLatitude, "Look! It's <b>Baruch College</b>!")
+leaflet() |>
+  addTiles() |>
+  setView(-baruch_longitude, 
+          BaruchLatitude, 
+          zoom = 17) |>
+  addPopups(-baruch_longitude, 
+            BaruchLatitude, 
+            "Look! It's <b>Baruch College</b>!") |>
+  print()
 ```
 
 
@@ -331,6 +270,96 @@ map.
 If you want even more feedback on writing good code, install the `lintr` package
 and use the associated `RStudio` add-in. Unlike `styler`, `lintr` won't make changes
 _automatically_ for you, but it will highlight much more subtle _possible_ problems.[^6]
+
+
+## Source Code Management
+
+### `git`
+
+`git` is a **source-code management** tool, used by developers to manage the code
+they write. If you've ever been part of a large project and struggled to coordinate
+all team members using the same version of a document, `git` exists to solve that problem.
+
+If you don't have `git` pre-installed, install either [Git for Windows](https://git-for-windows.github.io/) or the XCode Command Line Tools for 
+MacOS. If not automatically prompted when you try to use `git`, the Mac install
+can be manually triggered by running `xcode-select --install` at a command line.[^commandline]
+
+[^commandline]: Note that this must be run at a 
+**Mac command line**, not at the `R` console. The *command line*
+is direct control of the operating system itself, while the
+`R` console is just for controlling `R`. Within `RStudio`, you can
+access the command line by clicking on the `Terminal` tab, located
+near the `Console` tab. 
+
+In this course, we will use three main functions of `git`: 
+
+- **staging**: telling `git`, I want you to prepare to save a certain file
+- **committing**: saving a set of related changes
+- **pushing**: copying your committed changes to a separate server for sharing and backup
+
+Whenever you write code you are happy with, you should use `git` to save it. Saving
+changes with `git` is cheap and easy - so do it regularly. You always want `git`
+to have a backup of good code in case you loose power, accidentally delete a file, 
+break something in a way you're not sure how to undo, *etc.*. 
+
+`RStudio` comes with powerful `git` integration. Once you have created a _project_, 
+you should see a tab labelled "Git" in the top right corner of your IDE window that
+looks something like this: 
+
+![](../images/git_pane_nostage.png)
+
+For this semester, you should create a project called `{{< var course.repo >}}`. It is *very important* that you copy this name
+exactly and maintain both the hyphens and the capitalization. 
+All work for this course will live within this
+project. We will discuss the use of projects in more detail in
+[Mini-Project #00](../miniprojects/mini00.html).
+
+To **stage** a file - prepare to save it - click the empty check box next to the file name. 
+A new file shows a status of "?" - this is `git` saying "I've never seen this file 
+before. Do you want me to track it for you?". Later, when you make further changes to file
+you have already asked git to track, a status of "M" (for **M**odified) will be shown. 
+
+On its own _staging_ a file does nothing. You also need to _commit_ it for `git` to
+truly track it.[^5] The `Commit` button will commit all _staged_ changes. When you 
+make a commit, `git` requires a brief message summarizing the changes. There's no
+particular formatting requirement to this message, but it should be something that
+future-you is able to easily understand. For instance, the commit message from the
+initial draft of this document reads as: 
+
+```
+Initial draft of Lab 01 (STA9750)
+
+- Installing R and RStudio
+- Git and GitHub
+- Leaflet Example for Styler
+
+TODO: Fuller shell explainers
+TODO: Link more git help
+```
+
+When I read this, I know the purpose of the change I made (first line), the
+contents of that change (list), and parts that still need more work. 
+
+Finally, after you save a change, it is only saved on your computer. The true power
+of `git` comes from its ability to copy changes and backups across machines. This
+gives you an easy way to store backups in case your computer dies and makes collaboration
+efficient and fun. `git` allows you to `push` and `pull` changes between machines
+in endlessly powerful (but sometimes complex) ways. For this course, we'll keep
+things simple and only use `GitHub` to share code. We discuss `GitHub` in the next
+section.
+
+
+**Reference**: We will not use all of the functionality of `git` in this course, but
+you should familiarize yourself with Chapters 1, 2, and 6 of the [Git Book](https://git-scm.com/book/en/v2)
+over the next two weeks.
+
+
+### `GitHub`
+
+`GitHub` is an industry-standard code hosting and collaboration platform. In addition
+to hosting copies of code, `GitHub` provides web hosting, bug reporting, code review, 
+continuous integration, documentation wikis, and discussion fora. You will explore
+`GitHub` in more detail starting in [Mini-Project #00](../miniprojects/mini00.html).
 
 ## Extra: Welcome to $SHELL
 
