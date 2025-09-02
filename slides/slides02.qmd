@@ -19,12 +19,23 @@ class_date:
 #| message: false
 library(tidyverse)
 DATES   <- read_csv("key_dates.csv")
-SESSION <- 2
-TODAY   <- DATES |> filter(`Course Element` == "Class Session", 
-                           `Item Number` == SESSION) |>
-                    pull(Date)
+TODAY   <- DATES |> 
+    filter(`Course Element` == "Class Session", 
+           `Item Number` == session)
+
+TODAY_TUESDAY  <- TODAY |> 
+    filter(Section == "Tuesday")  |> 
+    pull(Date)
+TODAY_THURSDAY <- TODAY |> 
+    filter(Section == "Thursday") |> 
+    pull(Date)
+
+TODAY_TOPIC <- TODAY |>
+    filter(str_detect(Details, "Lecture")) |>
+    pull(Details)
+
 PROJ_RELEASE <- DATES |> 
-    filter(Details == "Course Project Description Released") |>
+    filter(str_detect(Details, "Project Description")) |>
     pull(Date)
 
 ROSTERS <- DATES |> 
@@ -32,24 +43,39 @@ ROSTERS <- DATES |>
     pull(Date)
 ```
     
+## {{< var course.short >}} Week {{< meta session >}} 
 
-## {{< var course.short >}} Week {{< meta session >}} Update 
+Today: 
 
-Today: `r TODAY`
+- Tuesday Section: `r TODAY_TUESDAY`
+- Thursday Section: `r TODAY_THURSDAY`
 
-- Weekly feature
-- Brief updates and reminders about course logistics
-- Syllabus and Brightspace are binding
-  - If something is left out of here, it still happens!
-  
+`r TODAY_TOPIC`
+
+
 ## Course Enrollment
 
-Final enrollment: 28
+```{r}
+#| include: false
+TOTAL_STUDENTS <- 98
+PIAZZA_ENROLLED <- 63
+NOW <- Sys.time()
+```
 
-- $\approx 8$ final project teams (3-4 each)
+Final enrollment: `r TOTAL_STUDENTS`(!)
+
+- $\approx 20$ final project teams (4-6 each)
 - Approx 4 MPs to review per peer-feedback cycle
+
+. . . 
+
+Lots of students: *please* follow instructions *closely* so
+I can automate course management.
+
+- Less time spent 'shuffling paper' gives more time 
+  for feedback and student support
   
-## Course Administration: Course Project Draft Released
+## Course Project Draft
 
 Course project *draft* description is now
 [online](https://michael-weylandt.com/STA9750/project.html) 
@@ -66,13 +92,24 @@ Please send me questions in advance!
 
 First step: by `r ROSTERS`, email me your group members.
 
-## Graduate Teaching Assistant (GTA)
+## Teaching Assistant (GTA)
 
-No GTA this semester. 
+GTA - Charles Ramirez
+
+. . . 
+
+Responsibilities TBD. Likely: 
+
+- Managing grading
+- Weekly office hours
+
+. . . 
+
+Won't start for a few weeks - CUNY is *slow*
 
 ## Piazza 
 
-- 11 sign-ups: 17 still need to sign up
+- `r PIAZZA_ENROLLED` sign-ups: `r TOTAL_STUDENTS - PIAZZA_ENROLLED` still need to sign up
 - Thank you for those of you who already posted questions!
 - Post #05 - Search for Teammates
 
@@ -80,47 +117,208 @@ No GTA this semester.
   look up their GitHub and see how they did on MP#00 and MP#01.
   This might be helpful to find teammates whose standards are
   calibrated to your own.*
-  
-Special thanks to JLL for finding and reporting issues 
-with MP#00 instructions
 
-## Pre-Assignments {.smaller}
+## Pre-Assignments
 
-Pre-Assignment 02:
+`r session |> sprintf("Pre-Assignment #%02d", x= _)`
 
-  - 20 / 28 submitted 
+::: {.small}
+
   - Ignore Brightspace's Grading
-    - Brightspace automatically marks all short answers as wrong
-    - Look at "Grades" tab to see actual sub-totals
-      (12.5 / 100 = 1/8 = full credit on 1 of 8 graded PAs)
-  - I will often give feedback through Brightspace, so make
-    sure to go back and see if I've left you any comments. 
-    (I might not give comments on every question though.)
+    - Brightspace calls all short answers wrong
+    - Gradebook shows complete/incomplete grading
+  - I often give feedback through Brightspace, so 
+    check 'feedback' if you are alerted to any
+    
+:::
 
 . . .
   
-Pre-Assignment 03:
+`r (session + 1) |> sprintf("Pre-Assignment #%02d", x= _)`
 
-  - Before midnight nextweek : 
+::: {.small}
+
+  - Day before class at midnight each week
   - Available on course website + Brightspace after 9pm
+  
+:::
 
 ## Mini-Project #00
+
+```{r}
+#| include: false
+MP0_DATE <- DATES |> 
+    filter(`Course Element` == "Mini-Projects", 
+           `Item Number`==0, 
+            str_detect(Details, "Project Due")) |>
+    pull(Date)
+```
 
 [Mini-Project #00](../miniprojects/mini00.html)
 
 - Due in (slightly less than) a week
+  - `r MP0_DATE |> strftime("%A, %B %d")`
 - Possible tech issues, so start early
-- 1 GitHub tag + 0 Piazza Messages so far
+- 10 GitHub tag + Piazza Messages so far
 
-*Verification of Enrollment* - Required to stay enrolled in class
+[*Verification of Enrollment*](https://enrollmentmanagement.baruch.cuny.edu/registrar/verification-of-enrollment/) - Required to stay enrolled in class
+
+## Optional DataCamp
+
+New _optional_ DataCamp course: 
+
+- Reporting with R Markdown
+
+. . . 
+
+R Markdown is proto-Quarto: 
+
+- [Similar, but not identical](https://quarto.org/docs/faq/rmarkdown.html#quarto-sounds-similar-to-r-markdown.-what-is-the-difference-and-why-create-a-new-project)
 
 ## Today
 
-- Review of Questions from Pre-Assign #02
 - Introduction to Markdown and Quarto
-- Introduction to GitHub pages
+- Review of Questions from Pre-Assign #02
+- Introduction to Git and GitHub pages
 - How to ask for help
-- Interactive Use of `R` and `RStudio`
+
+
+# Introduction Markdown and Quarto
+
+## Markdown
+
+Markdown: 
+
+::: {.incremental}
+
+- Initially developed to replace complex _mark-up_ languages (HTML, XML)
+- Simple syntax: 
+  - Can be read as _plain text_
+  - Easy to translate to HTML
+- Now ubiquitous (even in ChatGPT!)
+- Can be used for more than just web pages
+- Standardized as [CommonMark](https://commonmark.org/)
+  
+:::
+
+## Markdown 
+
+Source code:
+
+```{md}
+This is what Markdown looks like!
+
+I can write in *italics* or **bold**. 
+
+Lists are easy: 
+
+1. First
+1. Second
+1. Third
+
+as are links to [helpful info](https://commonmark.org).
+```
+
+
+## Markdown 
+
+Output: 
+
+> This is what Markdown looks like!
+> 
+> I can write in *italics* or **bold**. 
+> 
+> Lists are easy: 
+>
+> 1. First
+> 1. Second
+> 1. Third
+>
+> as are links to [helpful info](https://commonmark.org).
+
+
+## Rendering Markdown
+
+Markdown is just a _language_:
+
+::: {.incremental}
+
+- Software needed to _render_ from plain text to output formats
+- Most popular (behind the scenes) is [Pandoc](https://pandoc.org/)
+
+:::
+
+. . . 
+
+![](../images/md_pipeline.png)
+
+
+## Rendering Markdown {.scrollable}
+
+Pandoc can essentially convert _anything_ to _anything_: 
+
+. . . 
+
+![](https://pandoc.org/diagram.svgz?v=20250517125450)
+
+
+## Markdown - WYSIWYM
+
+Markdown is a WYSIWYM format: 
+
+::: {.incremental}
+
+- **W**hat **Y**ou **S**ee **i**s **W**hat **Y** **M**ean
+- Not WYSIWYG: **W**hat **Y**ou **S**ee **i**s **W**hat **Y** **G**et
+
+::: 
+
+. . .
+
+Extensions allow finer control of formatting
+
+- Provide _templates_ to `pandoc` for finer control (not in this class)
+
+## Markdown and Quarto
+
+- Quarto _implements_ Markdown with data-analytic extensions
+- Seamless (ideally!) integration of code and text
+- No more copy and paste 
+
+. . . 
+
+![](../images/qmd_pipeline.png)
+
+## Markdown and Quarto
+
+In this class, *web sites*: 
+
+- Each `qmd` document becomes a single `html` file (page)
+- All files in directory collectively make a web site
+  - GitHub project $\implies$ your website in [MP#00](../miniprojects/mini00.qmd)
+
+. . . 
+
+Resources: 
+
+- [Quarto user guide](https://quarto.org/docs/guide) is fantastic!
+- [Source for course materials](https://github.com/michaelweylandt/STA9750) for examples
+
+## RStudio - A Useful IDE
+
+Official Cheat Sheets: 
+
+- [RStudio Cheat Sheet](https://rstudio.github.io/cheatsheets/html/rstudio-ide.html)
+- [Quarto Cheat Sheet](https://rstudio.github.io/cheatsheets/html/quarto.html)
+
+[Data Camp RStudio Tutorial (Free)](https://www.datacamp.com/tutorial/r-studio-tutorial)
+
+- For today, first ~half 
+
+. . . 
+
+RStudio has native Quarto support: just hit "Render"
+
 
 # FAQs from PA#02
 
@@ -154,28 +352,29 @@ markup language specification"
 
 ## Q2
 
-> Other than text formatting, does Markdown ha[ve] 
-  any other us[]es?
+> Other than text formatting, does Markdown have 
+  any other uses?
 
 On its own, Markdown is just text formatting (but that's a lot!)
 
 . . .
 
 We will use _Quarto_ which augments markdown for 
-_reproducible research_. We can embed code-*and its 
-output*-inside Markdown documents.
+_reproducible research_. 
+
+We can embed code-*and its output*-inside Markdown documents.
 
 ## Q3 
 
-> [W]hat documents use[] Markdown? 
+> What uses Markdown? 
 
-So much! Markdown is used by Bitbucket, GitHub, OpenStreetMap,
+So much! Used by Bitbucket, GitHub, OpenStreetMap,
 Reddit, Stack Exchange, Drupal, ChatGPT, Discord, MS Teams 
 and many more!
 
 . . .
 
-With tools like Pandoc/Quarto, Markdown can be _rendered_ to:
+Tools like Pandoc/Quarto _render_ Markdown to:
 
 :::: {.columns}
 
@@ -198,7 +397,7 @@ With tools like Pandoc/Quarto, Markdown can be _rendered_ to:
 
 ## Q4 
 
-> [What is] the difference between [a] Code section and [a] Nested List[? A]re they just different ways of indenting?
+> What is the difference between a Code section and a Nested List? Are they just different ways of indenting?
 
 No. Nested lists are 'just' text
 
@@ -207,28 +406,29 @@ Code formatting enables much more if rendering engine supports it:
 . . .
 
 
-```{.python code-line-numbers="6-8"}
-import numpy as np
-import matplotlib.pyplot as plt
-
-r = np.arange(0, 2, 0.01)
-theta = 2 * np.pi * r
-fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
-ax.plot(theta, r)
-ax.set_rticks([0.5, 1, 1.5, 2])
-ax.grid(True)
-plt.show()
+```{.r code-line-numbers="6-7"}
+library(tidyverse)
+ggplot(txhousing, 
+       aes(x=ym(year, month, 1), 
+           y=sales, 
+           color=city)) + 
+    geom_point() + 
+    geom_smooth() + 
+    xlab("Date") + 
+    ylab("Number of Sales")
 ```
 
 ## Q5
 
-> [H]ow are we going to use Markdown?
+> How are we going to use Markdown?
 
 All written work (mini-projects and final project) 
 in this course will be submitted using Markdown (by way of
 [Quarto](https://quarto.org)). 
 
 . . .
+
+::: {.small}
 
 Specifically:
 
@@ -238,6 +438,8 @@ Specifically:
 
 You are also encouraged (but not required) to use Markdown for
 presentation slides (like these!)
+
+:::
 
 ## Q6
 
@@ -288,135 +490,211 @@ You can even put a link inside an image to be fancy:
 Quarto automatically embeds the results of plotting code: 
 
 ```{r}
-#| echo: true
+#| label: plot-example
 #| fig-align: "center"
-plot(1:5, main="Behold, a Plot!", col=2:6, cex=5, 
-     pch=16, xlab="", cex.main=5)
+#| output-location: slide
+plot(1:5, main="Behold, a Plot!", 
+     col=2:6, cex=5, 
+     pch=16, xlab="", ylab="", 
+     cex.main=4)
 ```
+
+
 
 Here, Quarto handles all the file creation and link targeting for
 us. If I change the code, the figure will change automatically.
 
+# Git and GitHub Pages
 
-# Introduction to `R` REPL and `RStudio`
+## Git
 
-## Life on the Command Line
+`git` is _the_ industry-standard tool for _source code management_ (SCM)
 
-## `R` REPL
+::: {.incremental}
 
-## Terminal
+- SCM *aka* Version Control Systems (VCS) are used to manage code through
+  the development process
+- Saves _versions_ of your code and lets you access them whenever
+- Not automatic like *Dropbox*: you save a version when you intend 
+- Powerful tools for parallel versions or multiple authors - we won't be using these
+:::
 
-## RStudio - A Useful IDE
+## Git
 
-Official Cheat Sheets: 
+Courtesy of [PhD Comics](https://phdcomics.com/comics.php?f=1531), 
+this is what we want to avoid: 
 
-- [RStudio Cheat Sheet](https://rstudio.github.io/cheatsheets/html/rstudio-ide.html)
-- [Quarto Cheat Sheet](https://rstudio.github.io/cheatsheets/html/quarto.html)
+![](https://phdcomics.com/comics/archive/phd101212s.gif){fig-align="center" height=500}
 
-[Data Camp RStudio Tutorial (Free)](https://www.datacamp.com/tutorial/r-studio-tutorial)
 
-- For today, first ~half 
+## Git
 
-# Markdown and Quarto
+Git tracks _changes_ to files
 
-## Markdown and Quarto
+- A _commit_ is both a set of changes & the result of all changes to that
+  point
+- A branch name (like `main`) is just a stand-in for "latest commit"
 
-- Quarto _implements_ Markdown with data-analytic extensions
-- Seamless (ideally!) integration of code and text
-- No more copy and paste
+## The Cycle of Git
 
-[Quarto user guide](https://quarto.org/docs/guide) is fantastic!
+For this course, I like the mental model of a box: 
 
-See also [source for course materials](https://github.com/michaelweylandt/STA9750).
+- `git add`: Commands to put changes in the box
+- `git commit`: Seal the box and put shipping info on the outside
+- `git push`: Send the box (to GitHub)
 
-## Lab Activity: Part 0
+## The Cycle of Git
 
-If you haven't already, [install Quarto](https://quarto.org/docs/get-started/).
+From GitHub user `@design-web-victo`:
 
-## Lab Activity: Part 1
+![](https://design-web-victo.github.io/assets/images/git_basics_01.png)
 
-Create a simple PDF quarto document using the RStudio wizard. 
+## RStudio Git Integration
 
-(Note that you may need to install `tinytex` for this to work properly, but Quarto should install it for you automatically.)
+Once you create a _project_, RStudio has built-in `git` integration
 
-## Lab Activity: Part 2
+:::: {.columns}
 
-Create a 5 slide presentation showing the Houston housing market. This should include: 
+::: {.column width="50%"}
 
-- A title slide
-- Three body slides with a figure and some text
-- A conclusion slide
+- Do the same commands with buttons instead of code
 
-You may use the following code snippets: 
+![](../images/git_pane_basic.png){fig-align="center" height="90%"}
 
---- 
+:::
 
-```
-if(!require("tidyverse")) install.packages("tidyverse")
-library(tidyverse)
-txhousing |> filter(city=="Houston") |> 
-             group_by(year) |> 
-             summarize(sales=sum(sales)) |> 
-             ggplot(aes(x=year, y=sales)) + 
-                geom_line() + 
-                ggtitle("Annual Houses Sold in Houston, TX")
-```
+::: {.column width="50%"}
 
-Recall that this code needs to be between three backticks on each end (and start with `r` in curly braces as well.) 
+- Uncheck Blue `M` are files that have been **M**odified 
+  since the last commit
+- Yellow `?` are files I have never told `git` to track
 
---- 
+:::
 
-```
-if(!require("tidyverse")) install.packages("tidyverse")
-library(tidyverse)
-txhousing |> filter(city=="Houston") |> 
-    group_by(month) |> 
-    summarize(avg_price=sum(volume) / sum(sales)) |> 
-    mutate(month=factor(month.abb[month], 
-                 levels=month.abb, ordered=TRUE)) |>
-    ggplot(aes(x=month, y=avg_price)) + 
-    geom_bar(stat="identity") + 
-    ggtitle("Average Price of Houses Sold in Texas by Month") + 
-    xlab("Month") + 
-    ylab("Average Sale Price") + 
-    scale_y_continuous(labels = scales::dollar)
-```
+::::
 
-Recall that this code needs to be between three backticks on each end (and start with `r` in curly braces as well.) 
+## RStudio Git Integration
 
----
+Check box next to a file name to _stage_ (or _add_) it in `git`
 
-```
-if(!require("tidyverse")) install.packages("tidyverse")
-library(tidyverse)
-txhousing |> filter(year==2015) |> 
-    group_by(city) |> 
-    summarize(avg_price=sum(volume) / sum(sales),
-              num_sales=sum(sales)) |> 
-    slice_max(num_sales, n=10) |>
-    ggplot(aes(x=city, y=avg_price)) + 
-    geom_bar(stat="identity") + 
-    ggtitle("Average Price of Houses Sold in 2015 by City in Texas") + 
-    xlab("City") + 
-    ylab("Average Sale Price") + 
-    scale_y_continuous(labels = scales::dollar)
-```
+- Load it in the box
+- Getting ready to save it
 
-Recall that this code needs to be between three backticks on each end (and start with `r` in curly braces as well.) 
+![](../images/git_pane_added.png){fig-align="center" height=500}
 
-## Lab Activity: Part 3
+## RStudio Git Integration
 
-View the [Quarto Demo Slides](https://quarto.org/docs/presentations/revealjs/demo/#/title-slide) and add one new element to your slides from the previous section. 
+Create a _commit_ with the `Commit` button
 
-# GitHub Pages
+- You have to type a message and hit `Commit` a second time
+
+![](../images/git_commit_wizard.png){fig-align="center" height=500}
+
+## Git to GitHub
+
+`git push` (green up arrow button) to move files to GitHub
+
+. . . 
+
+Resulting commit now [visible on GitHub](https://github.com/michaelweylandt/STA9750/commit/e459c058ed67dc619dfc05553083b04ea572543e#diff-4e73a4a2ba5f87b54c29bb05c8e7483ce648f919836afc3191ebeeb59bf9211e)
+
+. . . 
+
+Automatically updates website as well
+
+. . . 
+
+File no longer listed in `Git` pane - no new changes
+
+- If I make more changes, file will reappear as `M`
+
+## GitHub
+
+For us, `GitHub` is just a "dumping ground" 
+
+- Only send data to `GitHub` from a single computer
+- Much more complex workflow if moving changes up and down
+
+. . . 
+
+**Warning**: Do not make any edits using the GitHub website. This will
+cause tons of pain. All changes should be made from one computer and 
+pushed upwards only.
 
 ## GitHub Pages
 
-In-class discussion of what a static web page is and the role of GitHub Pages as a static web server. 
+GitHub provides [GitHub Pages](https://docs.github.com/en/pages)
+
+::: {.incremental .small}
+
+- Free hosting for _static_ web pages
+- Static means no login or server-side interactivity
+  - Limited client-side activity via JavaScript
+  
+:::
+
+. . . 
+
+We will use GitHub pages for all work submission in this class
+
+::: {.incremental .small}
+
+- Public visibility (portfolio)
+- Uploading `qmd` files allows automatic checks
+- Peer evaluation and discussion
+- Follow instructions _carefully_ & I can automate
+
+:::
+
+## GitHub Instructions
+
+::: {.small}
+
+By default, URLs like: 
+
+> `https://<GITHUB_ID>.github.io/<GITHUB_REPONAME>`
+
+. . . 
+
+If you create a repo called `<GITHUB_ID>.github.io`, URL simplifies: 
+
+> `https://<GITHUB_ID>.github.io/`
+
+. . . 
+
+If you own a domain, you can map to arbitrary base URL: 
+
+> `https://<DOMAIN_NAME>/<GITHUB_REPONAME>`
+
+*E.g.*, `https://michael-weylandt.com/STA9750`
+
+:::
+
+## Brackets in Instructions
+
+::: {.small}
+
+Throughout course instructions, you will see things like `<GITHUB_ID>`
+
+- Substitue your GitHub account name for the whole string, including brackets
+
+. . . 
+
+For me, if instructions say 
+
+> `STA 9750 <GITHUB ID> Mini Project #00`
+
+I will type
+
+> `STA 9750 michaelweylandt Mini Project #00`
+
+(no brackets)
+
+:::
 
 # How to Ask for Help
 
-## How to Ask for Help
+## How to Ask for Help {.scrollable}
 
 Professional programming is at least half _looking things up_; 
 at beginning stages, the fraction is even higher. 
@@ -430,12 +708,14 @@ So it's important to know how to see help _the smart way_:
 
 - [Tidyverse.org](https://tidyverse.org)
 
---- 
+## How to Ask for Help
 
 2. Search Engine. 
 
 Most programming challenges have been faced by somebody 
 before, so Google it!
+
+::: {.smaller}
 
 Tips: 
 
@@ -445,10 +725,14 @@ Tips:
 - Search programming Q&A sites like `StackOverflow` for specific
   code questions; blogs and course materials are better for "big
   picture" questions
+  
+:::
 
---- 
+## How to Ask for Help
 
 3. Ask on a Forum with a Reproducible Example
+
+::: {.smaller}
 
 Programming fora, like `StackOverflow`, are full of great
 resources. Most of what you need is already there. But if
@@ -463,9 +747,13 @@ Make it easy for your helper to help you.
 *Pro-Tip*: You'll solve over 50% of your problems in
 trying to create an MRE.
 
----
+:::
+
+## How to Ask for Help
 
 Tips: 
+
+::: {.smaller}
 
 - Show the code, even if it doesn't work
 - Send code as text, not screenshot (so your helper can run it)
@@ -474,13 +762,19 @@ Tips:
   relevant to problem
 - Remove everything you can
 
+:::
+
 The _reprex_ `R` package helps with this: see [this talk](https://www.youtube.com/watch?v=5gqksthQ0cM).
 
 For this class, rely on Piazza!
 
-# After Class
+# Wrap-Up
 
-## Next Week 
+## Upcoming Work
+
+Upcoming work from [course calendar](../index.qmd#calendar)
+
+::: {.incremental}
 
 - [Pre-Assignment #03](../preassigns/pa03.html) due
 - [Mini-Project #00](../miniprojects/mini00.html) due
@@ -488,13 +782,21 @@ For this class, rely on Piazza!
   assigned
 - [Mini-Project #01](../miniprojects/mini01.html) released
 - [Course Project](../project.html) officially released
-  - Special presentation on Baruch data resources
+
+:::
 
 ## Looking Ahead
 
 Course Project: 
 
 - Start looking for teammates and topics
-- No in-person office hours on 2025-02-18 (MW on travel)
 
-{{< include ../advice/taxes.qmd >}}
+{{< include ../advice/professor_recs.qmd >}}
+
+
+## Musical Treat
+
+</br></br>
+
+{{< video https://www.youtube.com/watch?v=rYcz-g8WpMc width="80%" height="400px">}}
+
