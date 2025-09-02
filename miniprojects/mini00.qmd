@@ -115,6 +115,35 @@ you can create [here](https://github.com/signup). Please note that whatever
 account name you use will be public, so you need to define a pseudonym here
 if you choose to use one.
 
+::: {.callout-note title="Git vs GitHub" collapse="true"}
+
+It's important to keep `git` (a program) and `GitHub` (a website) straight in
+your head. `git` is a version control system that keeps records of different
+versions of your code; `GitHub` is just a website that plays nice with `git` 
+and can be used to store copies of `git` data. You can use `git` with many other
+websites and tools - commercial alternatives to `GitHub` are `BitBucket` and
+`GitLab`, but you could even use Dropbox to keep copies of your `git` data
+if you really want to, but I wouldn't recommend it.[^gitdropbox]
+
+If you think of `git` as a replacement for the practice of having 
+
+- `Document_v1.docx`
+- `Document_v2.docx`
+- `Document_final.docx`
+- `Document_final_final.docx`
+- `Document_final_approved.docx`
+
+and instead storing these all in a single file using "Track Changes" at a super
+high level, `GitHub` is roughly SharePoint: not the software used to write files,
+of the software used to track changes, but a useful site for keeping backups
+and sharing within an organization.
+
+:::
+
+[^gitdropbox]: `git`'s history won't play nicely with
+Dropbox's version history. Trying to keep a `git` repo inside a `Dropbox` 
+folder is generally a bad idea.
+
 ## Stage 2: Course Repo Creation
 
 ### Creating GitHub Repo
@@ -191,7 +220,7 @@ or install GCM via the [GitHub Desktop Client](https://desktop.github.com/downlo
 Next, you need to create a Personal Access Token (PAT) for GitHub. You can think
 of this as a "special-purpose" password. Unlike your general account password, 
 a PAT can be restricted to only perform certain activities or only for a limited
-time period. 
+time period. Like any password, your PAT should not be shared with anyone else.
 
 The easiest way to do so is to run the following code: 
 
@@ -211,7 +240,16 @@ if(!require("gitcreds")) install.packages("gitcreds")
 gitcreds::gitcreds_set()
 ```
 
-If that doesn't work, you can also perform the same steps "by hand":
+Once you do this, your PAT will be stored in your computer's password storage
+(Apple Keychain on a Mac; similar on Windows). Now that your PAT is in an
+"official" location, any time `git` needs to use it to talk to `GitHub`, it
+will know where to find it. This saves you the hassle of holding on to a PAT
+and retyping it constantly. Once this is all set up, you should (hopefully)
+never need to think about PATs again. 
+
+::: {.callout-warning title="Setting Up Tokens by Hand" collapse="true"}
+
+If these commands don't work, you can also perform the same steps "by hand":
 
 After logging in to GitHub via a web browser, visit
 [https://github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new)
@@ -231,11 +269,15 @@ as your password. If everything is set up correctly, GCM will save this token
 and use it to authenticate you every time you push to GitHub. You should not 
 need to paste this token every time. 
 
+:::
+
 ### `.gitignore`
 
 This course will involve many files, not all of which you will want to push
 to `GitHub`. Create a file named `.gitignore` and paste in the following to 
-tell `git` to ignore certain files. (Note the leading `.` in the file name.)
+tell `git` to ignore certain files. If creating this in `RStudio`, 
+create it as a "Text File", not an "R Script". (Also make sure to keep the
+leading `.` in the file name.) 
 
 ```{md}
 **/.quarto/*
@@ -258,8 +300,16 @@ data/**
 ```
 
 You may already have a `.gitignore` file created automatically for you by 
-`RStudio`. If so, simply open it (by clicking the file name in the `Files` pane
-of `RStudio`) and add the above lines at the bottom. 
+`RStudio`. If so, simply open it (by clicking the file name in the 
+`Files` pane of `RStudio`) and add the above lines at the bottom. 
+
+This file essentially gives `git` instructions not to save any of the various
+types of _output_ of code (PDFs, Excel files). There is a time and place
+for saving these files, but in this course _code is truth_ and the output files
+are just an artifact of running that code. Conceptually, you can think of
+this as the fact that an old family secret chocolate cake is stored as
+a recipe (code), not by keeping a very old and moldy cake hidden in the
+back of the fridge. 
 
 ### Additional `git` configuration
 
