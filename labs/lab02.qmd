@@ -5,6 +5,97 @@ format:
     code-link: true
 ---
 
+# [Slides](../slides/slides02.qmd)
+
 # Welcome!
 
-[Slides](../slides/slides02.qmd)
+In this week's in-class activities, we are going to practice
+the use of the [`quarto`](http://quarto.org) rendering
+engine. 
+
+## Quarto
+
+### Lab Activity: Part 0
+
+If you haven't already, [install Quarto](https://quarto.org/docs/get-started/).
+
+### Lab Activity: Part 1
+
+Create a 5 slide presentation showing the Houston housing market. This should include: 
+
+- A title slide
+- Three body slides, each containing a figure and some text
+- A conclusion slide
+
+You may use the following code snippets to generate relevant figures:
+
+```
+if(!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+txhousing |> 
+  filter(city=="Houston") |> 
+  group_by(year) |> 
+  summarize(sales=sum(sales)) |> 
+  ggplot(aes(x=year, y=sales)) + 
+    geom_line() + 
+    ggtitle("Annual Houses Sold in Houston, TX")
+```
+
+
+```
+if(!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+txhousing |> 
+   filter(city=="Houston") |> 
+    group_by(month) |> 
+    summarize(avg_price=sum(volume) / sum(sales)) |> 
+    mutate(month=factor(month.abb[month], 
+                 levels=month.abb, ordered=TRUE)) |>
+    ggplot(aes(x=month, y=avg_price)) + 
+    geom_bar(stat="identity") + 
+    ggtitle("Average Price of Houses Sold in Texas by Month") + 
+    xlab("Month") + 
+    ylab("Average Sale Price") + 
+    scale_y_continuous(labels = scales::dollar)
+```
+
+```
+if(!require("tidyverse")) install.packages("tidyverse")
+library(tidyverse)
+txhousing |> filter(year==2015) |> 
+    group_by(city) |> 
+    summarize(avg_price=sum(volume) / sum(sales),
+              num_sales=sum(sales)) |> 
+    slice_max(num_sales, n=10) |>
+    ggplot(aes(x=city, y=avg_price)) + 
+    geom_bar(stat="identity") + 
+    ggtitle("Average Price of Houses Sold in 2015 by City in Texas") + 
+    xlab("City") + 
+    ylab("Average Sale Price") + 
+    scale_y_continuous(labels = scales::dollar)
+```
+
+
+Recall that this code needs to be between three backticks on each end 
+(and start with `{r}` curly braces as well). You should review 
+[Quarto output options](https://quarto.org/docs/computations/execution-options.html#output-options)
+to make sure the figure is displayed while hiding the code in your slides.
+
+### Lab Activity: Part 2
+
+Review the 
+[Quarto Demo Slides](https://quarto.org/docs/presentations/revealjs/demo/#/title-slide)
+and add one new element to your slides from the previous section. 
+
+
+### Lab Activity: Part 3 (Optional)
+
+Create a simple PDF quarto document using the RStudio wizard. 
+
+(Note that you may need to install `tinytex` for this to work
+properly, but Quarto should install it for you automatically.)
+
+We will not generate PDF documents in this course, so don't
+worry if you can't get it working in class. This is just
+intended to demonstrate the ability of Quarto to render
+to non-HTML outputs. 
