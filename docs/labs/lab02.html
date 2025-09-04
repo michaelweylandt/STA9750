@@ -208,19 +208,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="quarto" class="level2"><h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
 <section id="lab-activity-part-0" class="level3"><h3 class="anchored" data-anchor-id="lab-activity-part-0">Lab Activity: Part 0</h3>
 <p>If you haven’t already, <a href="https://quarto.org/docs/get-started/">install Quarto</a>.</p>
-</section><section id="lab-activity-part-1" class="level3"><h3 class="anchored" data-anchor-id="lab-activity-part-1">Lab Activity: Part 1</h3>
-<p>Create a 5 slide presentation showing the Houston housing market. This should include:</p>
-<ul>
-<li>A title slide</li>
-<li>Three body slides, each containing a figure and some text</li>
-<li>A conclusion slide</li>
-</ul>
-<p>Before attempting to make your slides, run the following two commands at the <code>R</code> console:</p>
-<div class="cell">
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"tidyverse"</span><span class="op">)</span></span>
-<span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://github.com/quarto-dev/quarto-r">"quarto"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"quarto"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>These will make sure all necessary packages are installed.</p>
+<p>Once Quarto is installed, you can check that it is running properly by generating a new <code>qmd</code> document and confirming that it renders properly. To generate a <code>qmd</code> document, click the New File button (white page with a green <code>+</code> symbol) in the top right corner of <code>RStudio</code> and select “Quarto Document”. This will generate a wizard like this:</p>
+<p><img src="../images/qmd_wizard.png" class="img-fluid"></p>
+<p>Type your name and a title and hit “Create”. (You can use the default <code>HTML</code> document type for now.) This will open a new <code>qmd</code> document in <code>RStudio</code> that looks like:</p>
+<p><img src="../images/qmd_skeleton.png" class="img-fluid"></p>
 <div class="callout callout-style-default callout-warning callout-titled" title="Make Sure you are in Source Mode">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -232,14 +223,50 @@ Make Sure you are in Source Mode
 </div>
 <div class="callout-body-container callout-body">
 <p>When you generate your <code>qmd</code> document, make sure that you are using the <code>Source</code> editor mode. Near the top right corner of your file, there will be two buttons that say <code>Source</code> and <code>Visual</code>. You want to make sure <code>Source</code> is selected; <code>Visual</code> mode is dangerous and a bit counterproductive.</p>
+<p>Last week, you should have set <code>RStudio</code> to default to Source mode, but if you are still getting documents created in Visual mode, try the following:</p>
+<ul>
+<li>Tools &gt; Global Options &gt; R Markdown &gt; Visual &gt; Uncheck “Use visual editor by default”</li>
+</ul>
+<p>Additionally, once you create your <code>STA9750-2025-FALL</code> project in <a href="../miniprojects/mini00.html">Mini-Project #00</a>, add the line</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="an">editor:</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  mode: source</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>to your <code>_quarto.yml</code> file.</p>
 </div>
 </div>
-<p>Recall that in <code>Quarto</code>, each new slide is separated by a <code>##</code> (level two) header.</p>
-<p>You may use the following code snippets to generate relevant figures. Recall that this code needs to be between three <a href="https://en.wikipedia.org/wiki/Backtick">back-ticks</a> (the symbol typically found above the <code>tab</code> key) on each end and start with <code>{r}</code> curly braces as well.</p>
+<p>Note that <code>RStudio</code> knows this is a Quarto document and is providing helpful buttons (and the never-to-be-touched <code>Visual</code> button). To confirm <code>RStudio</code> knows this is a Quarto document, note that small <code>Quarto</code> in the bottom right corner. Other file types, <em>e.g.</em>, <code>R</code> scripts, will have different messages there.</p>
+<p>To render this document, simply hit the <code>Render</code> button on the top bar next to the blue arrow. After you save your file, this should create a (very basic) web page and open it automatically in your browser. Add some content to the bottom of the file and re-<code>Render</code> to see how the page is updated.</p>
+<p>The area of the <code>qmd</code> document at the top between the <code>---</code> bars is the document <em>header</em>. This isn’t rendered in the document <em>per se</em>, but is used to set important settings. By default, <code>qmd</code> documents are rendered to HTML, but we can change this by adjusting the document header.</p>
+<p>If you add the line</p>
+<blockquote class="blockquote">
+<p><code>format: docx</code></p>
+</blockquote>
+<p>to the header on its own line between the <code>---</code> bars and hit <code>Render</code>, Quarto will produce a Word document instead of a web page (HTML). In the next sections, you will explore another type of document - web-based presentation slides generated using the <code>revealjs</code> library.</p>
+</section><section id="lab-activity-part-1" class="level3"><h3 class="anchored" data-anchor-id="lab-activity-part-1">Lab Activity: Part 1</h3>
+<p>Create a 5 slide presentation showing the Houston housing market. When starting your document with the Quarto Document wizard, select “Presentation” in the rightmost column and then use the default (<code>revealjs</code>) format. Your presentation should include:</p>
+<ul>
+<li>A title slide</li>
+<li>Three body slides, each containing a figure and some text</li>
+<li>A conclusion slide</li>
+</ul>
+<p>Before attempting to make your slides, run the following two commands at the <code>R</code> console:</p>
+<div class="cell">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"tidyverse"</span><span class="op">)</span></span>
+<span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://github.com/quarto-dev/quarto-r">"quarto"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"quarto"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>These will make sure all necessary packages are installed.</p>
+<p>Recall that in <code>Quarto</code>, sections are separated by <code>#</code> (level one) and <code>##</code> (level two) headers. When generating slides, level one headers are used for “section header” slides (essentially mini-title slides) while level two headers are used to separate individual slides.</p>
+<p>You may use the following code snippets to generate relevant figures. Recall that this code needs to be between three <a href="https://en.wikipedia.org/wiki/Backtick">back-ticks</a> (the ` symbol typically found above the <code>tab</code> key) on each end and start with <code>{r}</code> curly braces as well. A code block should look something like:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>CODE GOES HERE</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <p>You should read about <a href="https://quarto.org/docs/computations/execution-options.html#output-options">Quarto output options</a> to make sure the figure is displayed while hiding the code in your slides.</p>
 <p>Snippet 1:</p>
 <div class="cell">
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"tidyverse"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"tidyverse"</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="va">txhousing</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">city</span><span class="op">==</span><span class="st">"Houston"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -251,7 +278,7 @@ Make Sure you are in Source Mode
 </div>
 <p>Snippet 2:</p>
 <div class="cell">
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"tidyverse"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"tidyverse"</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="va">txhousing</span> <span class="op">|&gt;</span> </span>
 <span>   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">city</span><span class="op">==</span><span class="st">"Houston"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -268,7 +295,7 @@ Make Sure you are in Source Mode
 </div>
 <p>Snippet 3:</p>
 <div class="cell">
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"tidyverse"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"tidyverse"</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="va">txhousing</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">year</span><span class="op">==</span><span class="fl">2015</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">city</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -282,11 +309,27 @@ Make Sure you are in Source Mode
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Average Sale Price"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="va"><a href="https://scales.r-lib.org/reference/dollar_format.html">dollar</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Include these snippets in your slides to see what they produce. Then add some appropriate text and re-render your document.</p>
 </section><section id="lab-activity-part-2" class="level3"><h3 class="anchored" data-anchor-id="lab-activity-part-2">Lab Activity: Part 2</h3>
 <p>Review the <a href="https://quarto.org/docs/presentations/revealjs/demo/#/title-slide">Quarto Demo Slides</a> and add one new element to your slides from the previous section.</p>
 </section><section id="lab-activity-part-3-optional" class="level3"><h3 class="anchored" data-anchor-id="lab-activity-part-3-optional">Lab Activity: Part 3 (Optional)</h3>
 <p>Create a simple PDF quarto document using the RStudio wizard.</p>
-<p>(Note that you may need to install <code>tinytex</code> for this to work properly, but Quarto should install it for you automatically.)</p>
+<div class="callout callout-style-default callout-warning callout-titled" title="LaTeX Required for PDF Generation">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+LaTeX Required for PDF Generation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><code>Quarto</code> (and <code>pandoc</code>) rely on software called <code>LaTeX</code> to generate PDFs. If you do not have <code>pdflatex</code> installed, you will not be able to generate a PDF automatically. In theory, <code>Quarto</code> will handle this for you automatically, but if you are having trouble generating PDFs, run the following command at your <code>R</code> console:</p>
+<div class="cell">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://github.com/rstudio/tinytex">"tinytex"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"tinytex"</span><span class="op">)</span>; <span class="fu">tinytex</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tinytex/man/install_tinytex.html">install_tinytex</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
 <p>We will not generate PDF documents in this course, so don’t worry if you can’t get it working in class. This is just intended to demonstrate the ability of Quarto to render to non-HTML outputs.</p>
 </section><section id="learning-more" class="level3"><h3 class="anchored" data-anchor-id="learning-more">Learning More</h3>
 <p>The official Quarto documentation provides three helpful tutorials:</p>

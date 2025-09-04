@@ -13549,7 +13549,7 @@
     "href": "labs/lab02.html#quarto",
     "title": "STA 9750 Week 2 In-Class Activity: Getting Down with Markdown",
     "section": "Quarto",
-    "text": "Quarto\nLab Activity: Part 0\nIf you haven’t already, install Quarto.\nLab Activity: Part 1\nCreate a 5 slide presentation showing the Houston housing market. This should include:\n\nA title slide\nThree body slides, each containing a figure and some text\nA conclusion slide\n\nBefore attempting to make your slides, run the following two commands at the R console:\n\nif(!require(\"tidyverse\")) install.packages(\"tidyverse\")\nif(!require(\"quarto\")) install.packages(\"quarto\")\n\nThese will make sure all necessary packages are installed.\n\n\n\n\n\n\nMake Sure you are in Source Mode\n\n\n\nWhen you generate your qmd document, make sure that you are using the Source editor mode. Near the top right corner of your file, there will be two buttons that say Source and Visual. You want to make sure Source is selected; Visual mode is dangerous and a bit counterproductive.\n\n\nRecall that in Quarto, each new slide is separated by a ## (level two) header.\nYou may use the following code snippets to generate relevant figures. Recall that this code needs to be between three back-ticks (the symbol typically found above the tab key) on each end and start with {r} curly braces as well.\nYou should read about Quarto output options to make sure the figure is displayed while hiding the code in your slides.\nSnippet 1:\n\nif(!require(\"tidyverse\")) install.packages(\"tidyverse\")\nlibrary(tidyverse)\ntxhousing |&gt; \n  filter(city==\"Houston\") |&gt; \n  group_by(year) |&gt; \n  summarize(sales=sum(sales)) |&gt; \n  ggplot(aes(x=year, y=sales)) + \n    geom_line() + \n    ggtitle(\"Annual Houses Sold in Houston, TX\")\n\nSnippet 2:\n\nif(!require(\"tidyverse\")) install.packages(\"tidyverse\")\nlibrary(tidyverse)\ntxhousing |&gt; \n   filter(city==\"Houston\") |&gt; \n    group_by(month) |&gt; \n    summarize(avg_price=sum(volume) / sum(sales)) |&gt; \n    mutate(month=factor(month.abb[month], \n                 levels=month.abb, ordered=TRUE)) |&gt;\n    ggplot(aes(x=month, y=avg_price)) + \n    geom_bar(stat=\"identity\") + \n    ggtitle(\"Average Price of Houses Sold in Texas by Month\") + \n    xlab(\"Month\") + \n    ylab(\"Average Sale Price\") + \n    scale_y_continuous(labels = scales::dollar)\n\nSnippet 3:\n\nif(!require(\"tidyverse\")) install.packages(\"tidyverse\")\nlibrary(tidyverse)\ntxhousing |&gt; filter(year==2015) |&gt; \n    group_by(city) |&gt; \n    summarize(avg_price=sum(volume) / sum(sales),\n              num_sales=sum(sales)) |&gt; \n    slice_max(num_sales, n=10) |&gt;\n    ggplot(aes(x=city, y=avg_price)) + \n    geom_bar(stat=\"identity\") + \n    ggtitle(\"Average Price of Houses Sold in 2015 by City in Texas\") + \n    xlab(\"City\") + \n    ylab(\"Average Sale Price\") + \n    scale_y_continuous(labels = scales::dollar)\n\nLab Activity: Part 2\nReview the Quarto Demo Slides and add one new element to your slides from the previous section.\nLab Activity: Part 3 (Optional)\nCreate a simple PDF quarto document using the RStudio wizard.\n(Note that you may need to install tinytex for this to work properly, but Quarto should install it for you automatically.)\nWe will not generate PDF documents in this course, so don’t worry if you can’t get it working in class. This is just intended to demonstrate the ability of Quarto to render to non-HTML outputs.\nLearning More\nThe official Quarto documentation provides three helpful tutorials:\n\n“Hello, Quarto!”\nComputations in Quarto\nAuthoring in Quarto\n\nThese provide additional detail on using Quarto."
+    "text": "Quarto\nLab Activity: Part 0\nIf you haven’t already, install Quarto.\nOnce Quarto is installed, you can check that it is running properly by generating a new qmd document and confirming that it renders properly. To generate a qmd document, click the New File button (white page with a green + symbol) in the top right corner of RStudio and select “Quarto Document”. This will generate a wizard like this:\n\nType your name and a title and hit “Create”. (You can use the default HTML document type for now.) This will open a new qmd document in RStudio that looks like:\n\n\n\n\n\n\n\nMake Sure you are in Source Mode\n\n\n\nWhen you generate your qmd document, make sure that you are using the Source editor mode. Near the top right corner of your file, there will be two buttons that say Source and Visual. You want to make sure Source is selected; Visual mode is dangerous and a bit counterproductive.\nLast week, you should have set RStudio to default to Source mode, but if you are still getting documents created in Visual mode, try the following:\n\nTools &gt; Global Options &gt; R Markdown &gt; Visual &gt; Uncheck “Use visual editor by default”\n\nAdditionally, once you create your STA9750-2025-FALL project in Mini-Project #00, add the line\n\neditor:\n  mode: source\n\nto your _quarto.yml file.\n\n\nNote that RStudio knows this is a Quarto document and is providing helpful buttons (and the never-to-be-touched Visual button). To confirm RStudio knows this is a Quarto document, note that small Quarto in the bottom right corner. Other file types, e.g., R scripts, will have different messages there.\nTo render this document, simply hit the Render button on the top bar next to the blue arrow. After you save your file, this should create a (very basic) web page and open it automatically in your browser. Add some content to the bottom of the file and re-Render to see how the page is updated.\nThe area of the qmd document at the top between the --- bars is the document header. This isn’t rendered in the document per se, but is used to set important settings. By default, qmd documents are rendered to HTML, but we can change this by adjusting the document header.\nIf you add the line\n\nformat: docx\n\nto the header on its own line between the --- bars and hit Render, Quarto will produce a Word document instead of a web page (HTML). In the next sections, you will explore another type of document - web-based presentation slides generated using the revealjs library.\nLab Activity: Part 1\nCreate a 5 slide presentation showing the Houston housing market. When starting your document with the Quarto Document wizard, select “Presentation” in the rightmost column and then use the default (revealjs) format. Your presentation should include:\n\nA title slide\nThree body slides, each containing a figure and some text\nA conclusion slide\n\nBefore attempting to make your slides, run the following two commands at the R console:\n\nif(!require(\"tidyverse\")) install.packages(\"tidyverse\")\nif(!require(\"quarto\")) install.packages(\"quarto\")\n\nThese will make sure all necessary packages are installed.\nRecall that in Quarto, sections are separated by # (level one) and ## (level two) headers. When generating slides, level one headers are used for “section header” slides (essentially mini-title slides) while level two headers are used to separate individual slides.\nYou may use the following code snippets to generate relevant figures. Recall that this code needs to be between three back-ticks (the ` symbol typically found above the tab key) on each end and start with {r} curly braces as well. A code block should look something like:\n\n```{r}\nCODE GOES HERE\n```\n\nYou should read about Quarto output options to make sure the figure is displayed while hiding the code in your slides.\nSnippet 1:\n\nif(!require(\"tidyverse\")) install.packages(\"tidyverse\")\nlibrary(tidyverse)\ntxhousing |&gt; \n  filter(city==\"Houston\") |&gt; \n  group_by(year) |&gt; \n  summarize(sales=sum(sales)) |&gt; \n  ggplot(aes(x=year, y=sales)) + \n    geom_line() + \n    ggtitle(\"Annual Houses Sold in Houston, TX\")\n\nSnippet 2:\n\nif(!require(\"tidyverse\")) install.packages(\"tidyverse\")\nlibrary(tidyverse)\ntxhousing |&gt; \n   filter(city==\"Houston\") |&gt; \n    group_by(month) |&gt; \n    summarize(avg_price=sum(volume) / sum(sales)) |&gt; \n    mutate(month=factor(month.abb[month], \n                 levels=month.abb, ordered=TRUE)) |&gt;\n    ggplot(aes(x=month, y=avg_price)) + \n    geom_bar(stat=\"identity\") + \n    ggtitle(\"Average Price of Houses Sold in Texas by Month\") + \n    xlab(\"Month\") + \n    ylab(\"Average Sale Price\") + \n    scale_y_continuous(labels = scales::dollar)\n\nSnippet 3:\n\nif(!require(\"tidyverse\")) install.packages(\"tidyverse\")\nlibrary(tidyverse)\ntxhousing |&gt; filter(year==2015) |&gt; \n    group_by(city) |&gt; \n    summarize(avg_price=sum(volume) / sum(sales),\n              num_sales=sum(sales)) |&gt; \n    slice_max(num_sales, n=10) |&gt;\n    ggplot(aes(x=city, y=avg_price)) + \n    geom_bar(stat=\"identity\") + \n    ggtitle(\"Average Price of Houses Sold in 2015 by City in Texas\") + \n    xlab(\"City\") + \n    ylab(\"Average Sale Price\") + \n    scale_y_continuous(labels = scales::dollar)\n\nInclude these snippets in your slides to see what they produce. Then add some appropriate text and re-render your document.\nLab Activity: Part 2\nReview the Quarto Demo Slides and add one new element to your slides from the previous section.\nLab Activity: Part 3 (Optional)\nCreate a simple PDF quarto document using the RStudio wizard.\n\n\n\n\n\n\nLaTeX Required for PDF Generation\n\n\n\nQuarto (and pandoc) rely on software called LaTeX to generate PDFs. If you do not have pdflatex installed, you will not be able to generate a PDF automatically. In theory, Quarto will handle this for you automatically, but if you are having trouble generating PDFs, run the following command at your R console:\n\nif(!require(\"tinytex\")) install.packages(\"tinytex\"); tinytex::install_tinytex()\n\n\n\nWe will not generate PDF documents in this course, so don’t worry if you can’t get it working in class. This is just intended to demonstrate the ability of Quarto to render to non-HTML outputs.\nLearning More\nThe official Quarto documentation provides three helpful tutorials:\n\n“Hello, Quarto!”\nComputations in Quarto\nAuthoring in Quarto\n\nThese provide additional detail on using Quarto."
   },
   {
     "objectID": "slides/slides02.html#professional-vs-academic",
@@ -13800,14 +13800,56 @@
     "objectID": "test_slides.html#slide-to-start",
     "href": "test_slides.html#slide-to-start",
     "title": "Houston Houses",
-    "section": "",
-    "text": "Here is some text on a slide!"
+    "section": "Slide To Start",
+    "text": "Slide To Start\nHere is some text on a slide!"
   },
   {
     "objectID": "test_slides.html",
     "href": "test_slides.html",
     "title": "Houston Houses",
     "section": "",
-    "text": "Here is some text on a slide!"
+    "text": "There are lots of houses for sale in Houston!\n\n\nLoading required package: tidyverse\n\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.4     ✔ readr     2.1.5\n✔ forcats   1.0.0     ✔ stringr   1.5.1\n✔ ggplot2   3.5.2     ✔ tibble    3.3.0\n✔ lubridate 1.9.4     ✔ tidyr     1.3.1\n✔ purrr     1.1.0     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors"
+  },
+  {
+    "objectID": "test_slides.html#another-slide",
+    "href": "test_slides.html#another-slide",
+    "title": "Houston Houses",
+    "section": "Another Slide",
+    "text": "Another Slide"
+  },
+  {
+    "objectID": "test_slides.html#the-third-slide",
+    "href": "test_slides.html#the-third-slide",
+    "title": "Houston Houses",
+    "section": "The third Slide",
+    "text": "The third Slide\nWow! Even more slides!"
+  },
+  {
+    "objectID": "test_slides.html#housing-sales",
+    "href": "test_slides.html#housing-sales",
+    "title": "Houston Houses",
+    "section": "Housing Sales",
+    "text": "Housing Sales\nThere are lots of houses for sale in Houston!"
+  },
+  {
+    "objectID": "test_slides.html#housing-prices-over-time",
+    "href": "test_slides.html#housing-prices-over-time",
+    "title": "Houston Houses",
+    "section": "Housing Prices over Time",
+    "text": "Housing Prices over Time\nHouses are cheap all year long!"
+  },
+  {
+    "objectID": "test_slides.html#houses-in-texas",
+    "href": "test_slides.html#houses-in-texas",
+    "title": "Houston Houses",
+    "section": "Houses in Texas",
+    "text": "Houses in Texas\nWow - houses are cheap everywhere in Texas!"
+  },
+  {
+    "objectID": "test_slides.html#conclusions",
+    "href": "test_slides.html#conclusions",
+    "title": "Houston Houses",
+    "section": "Conclusions",
+    "text": "Conclusions\nBuying homes in Texas is great for many reasons:\n\nThere are lots of homes for sale\nYou can buy them all year long\nOther cities are also quite affordable"
   }
 ]
