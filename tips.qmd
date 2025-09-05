@@ -236,9 +236,10 @@ mp_submission_verify <- function(N, github_id){
     stop("MINIPROJECT NOT SUBMITTED CORRECTLY.")
   }
   
-  if(issue_body != body){
-    cat("Issue does not appear to have the correct body text. This is not",
-        "necessarily an issue, but you may want to confirm all relevant",
+  if(!str_equal(issue_body, body, ignore_case = TRUE)){
+    cat("Issue does not appear to exactly match the correct body text.",
+        "This is not necessarily an issue since the expected link is present",
+        "but you may want to confirm all relevant",
         "information is included.\n")
   }
   
@@ -247,7 +248,7 @@ mp_submission_verify <- function(N, github_id){
   URL_REGEX <- "http[A-Za-z0-9:/\\-\\.]*"
     
   urls <- str_match_all(paste(issue_body, "\n Thanks!\n", sep=""), 
-                        URL_REGEX)[[1]]
+                        URL_REGEX)[[1]] |> unique()
   expected_url <- str_extract(body, URL_REGEX)
   
   if(length(urls) > 1){
@@ -259,7 +260,7 @@ mp_submission_verify <- function(N, github_id){
  
   submitted_url <- urls[1]
   
-  if(submitted_url != expected_url){
+  if(!str_equal(submitted_url, expected_url, ignore_case = TRUE)){
     cat("The submitted URL does not match the Mini-Project instructions.\n", 
         "Expected:\n - ", expected_url, "\n", 
         "Submitted:\n - ", submitted_url, "\n", 
@@ -291,14 +292,15 @@ mp_submission_verify <- function(N, github_id){
   
   if(resp_is_error(resp_raw)){
       ## Try again with 'master' instead of 'main' branch
-      raw_url <- str_replace(raw_url, "main", "master")
-      resp_raw <- request(raw_url) |> 
+      raw_url_master <- str_replace(raw_url, "main", "master")
+      resp_raw <- request(raw_url_master) |> 
       req_error(is_error = \(r) FALSE) |>
       req_perform()
   }
   
   if(resp_is_error(resp_raw)){
-      cat("I cannot find the source qmd document at", raw_url, ".\n",
+      cat("I cannot find the source qmd document at", raw_url, "or", 
+          raw_url_master, ".\n",
           "Please confirm it was correctly submitted and try again.\n",
           "This document is needed for automated code quality checks.\n")
       

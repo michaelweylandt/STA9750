@@ -6,14 +6,18 @@ from functools import cache
 from datetime import datetime
 from glob import glob
 import json
+import math
+from math import nan
 import os
 import os.path as op
 from pathlib import Path
+from statistics import median
 import subprocess
 import random
 import re
 import webbrowser
 from copy import deepcopy as dcopy
+from pprint import pformat
 
 # PyPI Modules - Nothing here is too exotic, so not worrying about
 # environment management / versioning for now
@@ -26,9 +30,6 @@ import requests as r
 from requests.compat import urljoin, quote, quote_plus
 from yaml import safe_load as yaml_load
 from pandas.api.types import is_list_like
-import math
-from math import nan
-from statistics import median
 
 Issue = namedtuple(
     "Issue", ["title", "number", "html_url", "body", "state", "opened_by"]
@@ -143,6 +144,7 @@ def gh_list_issues(owner=None):
     ## FIXME: Paginate this
     resp = _gh(f"/repos/michaelweylandt/{course_repo()}/issues?state=all&per_page=100")
     if "status" in resp and resp["status"] != "200":
+        click.echo("UNABLE TO ACCESS GITHUB API")
         return dict()
 
     ISSUES_DICT = {
@@ -203,7 +205,7 @@ def course_dir():
     click.echo("Reading configuration from _teaching.yml")
     with open("_teaching.yml") as f:
         course_config = yaml_load(f)
-        click.echo("Course Configuration: " + str(course_config))
+        click.echo("Course Configuration: \n" + pformat(course_config))
 
     return op.expanduser(course_config["gradedir"])
 
@@ -407,8 +409,10 @@ def roster():
     circumstances) or otherwise manage the course. Note that this roster is
     used implicitly by all other commands, so it must be kept up to date."""
 
-
-def current_roster():
+def current_roster(include_inactive=False):
+    if include_inactive:
+        raise NotImplementedError
+    
     try:
         return pd.read_json(roster_file())
     except ValueError:
@@ -426,7 +430,8 @@ def current_teams():
 def roster_list():
     """Print current course roster"""
     roster = current_roster()
-    click.echo(current_roster().to_string(index=False))
+    roster.index = roster.index + 1
+    click.echo(roster.to_markdown(index=True))
     click.echo(f"{roster.shape[0]} students registered.")
 
 
@@ -523,7 +528,35 @@ def roster_delete(github):
 
     with open(roster_file(), "w+") as f:
         f.write(NEW_ROSTER.to_json())
+        
 
+@roster.command(name="edit")
+@click.option(
+    "--github",
+    help="Student's GitHub ID",
+    prompt="What is the Student's GitHub ID?",
+    prompt_required=False,
+    default=None,
+)
+def roster_edit(github):
+    """Edit a student on the course roster.
+
+    This function is not yet implemented."""
+    raise NotImplementedError
+
+@roster.command(name="deactivate")
+@click.option(
+    "--github",
+    help="Student's GitHub ID",
+    prompt="What is the Student's GitHub ID?",
+    prompt_required=False,
+    default=None,
+)
+def roster_deactivate(github):
+    """Deactivate a student on the course roster.
+
+    This function is not yet implemented."""
+    raise NotImplementedError
 
 @course_manager.group()
 def project():
@@ -531,7 +564,6 @@ def project():
 
     This subcommand manages the course project. It includes functionality to create
     groups, add students to them, and to assign grades for group-based work."""
-
 
 @project.command(name="create")
 def project_create():
@@ -1189,12 +1221,13 @@ def _mini_verify(project_id, github):
         if not RAW_RESP.ok:
             # Some students use 'master' instead of 'main' branch
             # so try this as well
-            RAW_URL = RAW_URL.replace("main", "master")
-            RAW_RESP = r.get(RAW_URL)
+            RAW_URL_MASTER = RAW_URL.replace("main", "master")
+            RAW_RESP = r.get(RAW_URL_MASTER)
 
         if not RAW_RESP.ok:
             click.echo("Could not identify qmd source")
-            click.echo(" - Expected: " + RAW_URL)
+            click.echo(" - Not Found at Expected: " + RAW_URL)
+            click.echo(" - Not Found at Alternate: " + RAW_URL_MASTER)
 
             RESULTS[gh] = (False, gh, "NO SOURCE", ISSUE.number)
             continue
