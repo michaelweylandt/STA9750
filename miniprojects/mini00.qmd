@@ -247,7 +247,7 @@ will know where to find it. This saves you the hassle of holding on to a PAT
 and retyping it constantly. Once this is all set up, you should (hopefully)
 never need to think about PATs again. 
 
-::: {.callout-warning title="Setting Up Tokens by Hand" collapse="true"}
+::: {.callout-caution title="Setting Up Tokens by Hand" collapse="true"}
 
 If these commands don't work, you can also perform the same steps "by hand":
 
@@ -356,7 +356,7 @@ things to check are:
 - Is the "origin" set correctly for the GitHub project? 
 
 
-::: {.callout-warning title="Default branch mismatch between local repo and remote." collapse=true}
+::: {.callout-caution title="Default branch mismatch between local repo and remote." collapse=true}
 
 Certain older versions of `git` will use the default name
 `master` for the initial branch (though the command above
@@ -379,7 +379,7 @@ needs to be run *between* making your first commit and
 
 
 
-### Initial Push
+### Initial Commit and Push
 
 Now, to make sure everything is working, let's save a basic `README` file and
 push it to GitHub. This is a plain text file with no particular structure. 
@@ -414,6 +414,38 @@ Finally, push the  `Push` button. If everything works, you should see a screen l
 
 To confirm everything worked, return to the GitHub repo in your browser. You should see
 the text of your `README` file displayed at the bottom of the page. 
+
+::: {.callout-caution title="Error: Cannot run `gpg`" collapse="true"}
+
+Occasionally, students will get an error message stating `Cannot run gpg`
+when trying to make their initial commit. If this happens to you, make sure
+you have not checked a `Sign this Commit` button in the `Commit` wizard. If
+that box is not checked (or does not appear), try following
+[these instructions](https://docs.posit.co/ide/user/ide/guide/tools/version-control.html#git-commit-signing)
+to make sure `RStudio` is set to use `gpg` automatically. 
+
+If you have 'unchecked' that box but you are still getting the `gpg` error,
+it is likely that something in your `git` settings is requiring `gpg`. 
+I don't know why this happens to some students, but it's an easy fix: 
+go to the `Terminal` tab in `RStudio` (not the same as the `Console`!) and
+run the following commands:
+
+```
+git config commit.gpgsign false
+git config --global commit.gpgsign false
+```
+
+These will turn of the default use of `gpg` in `git`. 
+
+Taken together these two steps seem to be sufficient for making sure
+`gpg` is never invoked by `git` or `RStudio`. 
+
+[`gpg`](https://en.wikipedia.org/wiki/GNU_Privacy_Guard) is a powerful privacy
+and identity verification software that can be used to prove that you are 
+the actual author of your `git` commits. If you have used it elsewhere and want
+to use it in this course, that's fine, but it is certainly not required. 
+
+:::
 
 ## Stage 3: Personal Website Creation
 

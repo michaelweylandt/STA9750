@@ -186,7 +186,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#gitignore" id="toc-gitignore" class="nav-link" data-scroll-target="#gitignore"><code>.gitignore</code></a></li>
   <li><a href="#additional-git-configuration" id="toc-additional-git-configuration" class="nav-link" data-scroll-target="#additional-git-configuration">Additional <code>git</code> configuration</a></li>
   <li><a href="#git-check" id="toc-git-check" class="nav-link" data-scroll-target="#git-check"><code>git</code> Check</a></li>
-  <li><a href="#initial-push" id="toc-initial-push" class="nav-link" data-scroll-target="#initial-push">Initial Push</a></li>
+  <li><a href="#initial-commit-and-push" id="toc-initial-commit-and-push" class="nav-link" data-scroll-target="#initial-commit-and-push">Initial Commit and Push</a></li>
   </ul>
 </li>
   <li>
@@ -328,7 +328,7 @@ Git vs GitHub
 <span><span class="fu">gitcreds</span><span class="fu">::</span><span class="fu"><a href="https://gitcreds.r-lib.org/reference/gitcreds_get.html">gitcreds_set</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Once you do this, your PAT will be stored in your computer’s password storage (Apple Keychain on a Mac; similar on Windows). Now that your PAT is in an “official” location, any time <code>git</code> needs to use it to talk to <code>GitHub</code>, it will know where to find it. This saves you the hassle of holding on to a PAT and retyping it constantly. Once this is all set up, you should (hopefully) never need to think about PATs again.</p>
-<div class="callout callout-style-default callout-warning callout-titled" title="Setting Up Tokens by Hand">
+<div class="callout callout-style-default callout-caution callout-titled" title="Setting Up Tokens by Hand">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
@@ -391,7 +391,7 @@ Setting Up Tokens by Hand
 <li>Does the token have the requisite “repo” scope?</li>
 <li>Is the “origin” set correctly for the GitHub project?</li>
 </ul>
-<div class="callout callout-style-default callout-warning callout-titled" title="Default branch mismatch between local repo and remote.">
+<div class="callout callout-style-default callout-caution callout-titled" title="Default branch mismatch between local repo and remote.">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
@@ -413,7 +413,7 @@ Default branch mismatch between local repo and remote.
 </div>
 </div>
 </div>
-</section><section id="initial-push" class="level3"><h3 class="anchored" data-anchor-id="initial-push">Initial Push</h3>
+</section><section id="initial-commit-and-push" class="level3"><h3 class="anchored" data-anchor-id="initial-commit-and-push">Initial Commit and Push</h3>
 <p>Now, to make sure everything is working, let’s save a basic <code>README</code> file and push it to GitHub. This is a plain text file with no particular structure.</p>
 <p>To create it, click the new file button in RStudio (top left; piece of paper with a green plus) and select <code>Text File</code>. RStudio will open this file in the editor: type some basic content, <em>e.g.</em>,</p>
 <pre><code>Submission materials for STA 9750 at Baruch College. 
@@ -429,6 +429,28 @@ Owner: &lt;YOURNAME&gt;</code></pre>
 <p>Finally, push the <code>Push</code> button. If everything works, you should see a screen like the below:</p>
 <p><img src="../images/git_postcommit.png" class="img-fluid"></p>
 <p>To confirm everything worked, return to the GitHub repo in your browser. You should see the text of your <code>README</code> file displayed at the bottom of the page.</p>
+<div class="callout callout-style-default callout-caution callout-titled" title="Error: Cannot run `gpg`">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Error: Cannot run <code>gpg</code>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Occasionally, students will get an error message stating <code>Cannot run gpg</code> when trying to make their initial commit. If this happens to you, make sure you have not checked a <code>Sign this Commit</code> button in the <code>Commit</code> wizard. If that box is not checked (or does not appear), try following <a href="https://docs.posit.co/ide/user/ide/guide/tools/version-control.html#git-commit-signing">these instructions</a> to make sure <code>RStudio</code> is set to use <code>gpg</code> automatically.</p>
+<p>If you have ‘unchecked’ that box but you are still getting the <code>gpg</code> error, it is likely that something in your <code>git</code> settings is requiring <code>gpg</code>. I don’t know why this happens to some students, but it’s an easy fix: go to the <code>Terminal</code> tab in <code>RStudio</code> (not the same as the <code>Console</code>!) and run the following commands:</p>
+<pre><code>git config commit.gpgsign false
+git config --global commit.gpgsign false</code></pre>
+<p>These will turn of the default use of <code>gpg</code> in <code>git</code>.</p>
+<p>Taken together these two steps seem to be sufficient for making sure <code>gpg</code> is never invoked by <code>git</code> or <code>RStudio</code>.</p>
+<p><a href="https://en.wikipedia.org/wiki/GNU_Privacy_Guard"><code>gpg</code></a> is a powerful privacy and identity verification software that can be used to prove that you are the actual author of your <code>git</code> commits. If you have used it elsewhere and want to use it in this course, that’s fine, but it is certainly not required.</p>
+</div>
+</div>
+</div>
 </section></section><section id="stage-3-personal-website-creation" class="level2"><h2 class="anchored" data-anchor-id="stage-3-personal-website-creation">Stage 3: Personal Website Creation</h2>
 <p>Now that you created a place where you can push files to GitHub and have successfully pushed a basic <code>README</code>, it’s time to build a webpage using <a href="https://quarto.org/"><code>quarto</code></a>.</p>
 <p>We will need three pages to build a website:</p>
@@ -468,9 +490,9 @@ editor:
 <p>This file will be divided into two parts, a header giving the <em>metadata</em> for the site, and a body, giving the <em>content</em> of the site.</p>
 <p>First write the header, separated by three horizontal bars (minus signs) above and below. For now, all you need to specify is a <code>title</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "YOUR TITLE GOES HERE"</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "YOUR TITLE GOES HERE"</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Below the header, write the basic content of your website: a brief introduction of who you are.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> You can use <code>markdown</code> here for formatting. Basic text will suffice, but this is also a great opportunity to include things like a personal headshot, a link to a full resume, or similar.</p>
 <p>As you work on this, click the “Render” button at the top of the editor pane to see what your site will look like.</p>
@@ -480,12 +502,12 @@ editor:
 <section id="last-updated" class="level4"><h4 class="anchored" data-anchor-id="last-updated">Last Updated</h4>
 <p>The following code will add a “Last Updated:” footer at the bottom of your page.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span><span class="sc">+</span><span class="dv">1</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>--------------</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>Last Updated: <span class="in">`r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span><span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>--------------</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>Last Updated: <span class="in">`r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -503,26 +525,26 @@ Warning
 </section><section id="baruch-map" class="level4"><h4 class="anchored" data-anchor-id="baruch-map">Baruch Map</h4>
 <p>The following adds a map with the location of Baruch College. You can change the GPS coordinates and text to another place of relevance to you.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"leaflet"</span>)){</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">options</span>(<span class="at">repos=</span><span class="fu">c</span>(<span class="at">CRAN=</span><span class="st">"https://cloud.r-project.org"</span>))</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">install.packages</span>(<span class="st">"leaflet"</span>)</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stopifnot</span>(<span class="fu">require</span>(<span class="st">"leaflet"</span>))</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>baruch_longitude <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">73.98333</span></span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>baruch_latitude  <span class="ot">&lt;-</span> <span class="sc">+</span><span class="fl">40.75028</span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="fu">leaflet</span>() <span class="sc">|&gt;</span></span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addTiles</span>() <span class="sc">|&gt;</span></span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setView</span>(baruch_longitude, baruch_latitude, <span class="at">zoom=</span><span class="dv">17</span>) <span class="sc">|&gt;</span></span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addPopups</span>(baruch_longitude, baruch_latitude, </span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">"I am a Master's student at &lt;b&gt;Baruch College&lt;/b&gt;!"</span>)</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">require</span>(<span class="st">"leaflet"</span>)){</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">options</span>(<span class="at">repos=</span><span class="fu">c</span>(<span class="at">CRAN=</span><span class="st">"https://cloud.r-project.org"</span>))</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">install.packages</span>(<span class="st">"leaflet"</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stopifnot</span>(<span class="fu">require</span>(<span class="st">"leaflet"</span>))</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>baruch_longitude <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">73.98333</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>baruch_latitude  <span class="ot">&lt;-</span> <span class="sc">+</span><span class="fl">40.75028</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="fu">leaflet</span>() <span class="sc">|&gt;</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addTiles</span>() <span class="sc">|&gt;</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setView</span>(baruch_longitude, baruch_latitude, <span class="at">zoom=</span><span class="dv">17</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">addPopups</span>(baruch_longitude, baruch_latitude, </span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>            <span class="st">"I am a Master's student at &lt;b&gt;Baruch College&lt;/b&gt;!"</span>)</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section><section id="resume-hosting" class="level4"><h4 class="anchored" data-anchor-id="resume-hosting">Resume Hosting</h4>
 <p>If you have a copy of your resume available as a PDF, TODO.</p>
@@ -584,7 +606,7 @@ https://&lt;GITHUB_ID&gt;.github.io/STA9750-2025-FALL/</code></pre>
 <p><img src="../images/github_issue.png" class="img-fluid"></p>
 <p>This will send me a notification through GitHub and I will confirm that I can access your repository and website. You should also use the <a href="../tips.html">course helper scripts</a> to verify you have opened a GitHub issue properly. For this project, simply run:</p>
 <div class="cell">
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="st">"https://michael-weylandt.com/STA9750/load_helpers.R"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="st">"https://michael-weylandt.com/STA9750/load_helpers.R"</span><span class="op">)</span></span>
 <span><span class="fu">mp_submission_verify</span><span class="op">(</span><span class="fl">0</span>, <span class="st">"&lt;GITHUB_ID&gt;"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If you don’t do this, I may not be able toaccess your graded assignments when you submit them! I will confirm that I have your real ID verified as well.</p>
