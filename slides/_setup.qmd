@@ -5,6 +5,10 @@
 library(glue)
 library(rlang)
 library(yaml)
+library(purrr)
+library(jsonlite)
+
+REPO_NAME <- read_yaml("_variables.yml")$course$repo
 get_mp_title <- function(N){
     mp_file <- glue("miniprojects/mini0{N}.qmd")
     mp_text <- readLines(mp_file, n=50)
@@ -52,6 +56,16 @@ get_mp_skills <- function(N){
     header_info$mp_skills %||% "TBD"
 }
 
+get_mp_assigned <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Mini-Projects", 
+               `Item Number`== N, 
+               str_detect(Details, "Assigned"), 
+               !str_detect(Details, "Peer")) |>
+        mutate(due = paste(Date, "at", Time)) |>
+        pull(due)
+}
+
 get_mp_deadline <- function(N){
     read_csv("key_dates.csv") |> 
         filter(`Course Element` == "Mini-Projects", 
@@ -60,6 +74,15 @@ get_mp_deadline <- function(N){
                !str_detect(Details, "Peer")) |>
         mutate(due = paste(Date, "at", Time)) |>
         pull(due)
+}
+
+get_mp_pf_assigned <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Mini-Projects", 
+               `Item Number`== N, 
+               str_detect(Details, "Assigned"), 
+               str_detect(Details, "Peer")) |>
+        pull(Date)
 }
 
 
@@ -71,6 +94,25 @@ get_pa_deadline <- function(N){
                !str_detect(Details, "Peer")) |>
         mutate(due = paste(Date, "at", Time)) |>
         pull(due)
+}
+
+get_mp_submitted <- function(N){
+    ISSUES <- read_json(glue("https://api.github.com/repos/michaelweylandt/{REPO_NAME}/issues?labels=MiniProject%20%230{N}&per_page=100&state=open"))
+    
+    LABELS <- ISSUES |> 
+        map(pluck("labels")) |> 
+        purrr::flatten() |> 
+        map(pluck("name")) |> 
+        list_c()
+    
+    N_SUBMITTED <- length(ISSUES)
+    
+    N_COMPLETED <- LABELS |> str_equal("Passed all automated checks") |> sum()
+    N_NEED_WORK <- N_SUBMITTED - N_COMPLETED
+    
+    list(n_submitted = N_SUBMITTED, 
+         n_completed = N_COMPLETED,
+         n_need_work = N_NEED_WORK)
 }
 
 next_session <- session + 1

@@ -13,9 +13,9 @@ lab_title: "`R`, These are your First Steps"
 # Welcome!
 
 In this week's in-class activities, we are going to dive a bit deeper into
-`R`'s most important data structure, the `data.frame`.
+`R`'s basic data structure - the _vector_
 
-# Vector Semantics in `R`
+## Vectors in `R`
 
 `R` works with _3_ core principal structures: 
 
@@ -30,8 +30,10 @@ This week, our primary focus is on _vectors_.
 
 ## Review of `R`
 
-In this section, we will review some of the basic 'built-in' features of `R`.  In the next section (`Packages`) we will discuss how to add to the "base-bones" functionality. 
-When working with `R`, there are two interacting 'subsystems' in play:
+In this section, we will review some of the basic 'built-in' features of `R`.  
+In the next section (`Packages`) we will discuss how to add to the "base-bones"
+functionality. When working with `R`, there are two interacting 'subsystems' 
+in play:
 
 - The `R` language and interpreter: this is the part of `R` that is similar
   to `python` or `C`/`C++`. You will write `R` code in the `R` language and the
@@ -55,8 +57,8 @@ Run the following code to see what your `R` environment looks like:
 sessionInfo()
 ```
 
-Compare the output of running this here-in the browser-with what you get by running
-`sessionInfo()` on your machine. 
+Compare the output of running this here-in the browser-with what you 
+get by running `sessionInfo()` on your machine. 
 
 There is lots of useful information here, including
 
@@ -76,9 +78,10 @@ default. These are the `base` packages, and they are noted in your `sessionInfo(
 But we can do _many_ more things with `R` using contributed (non-base) packages!
 
 The most common platform for distributing `R` packages is `CRAN`, the Comprehensive
-R Archive Network, available at [https://cran.r-project.org/](https://cran.r-project.org/). You have likely already
-visited this site to download `R`. The `available.packages()` function in `R` lists
-all packages currently on `CRAN`. We can see that there are _many_: 
+R Archive Network, available at [https://cran.r-project.org/](https://cran.r-project.org/). 
+You have likely already visited this site to download `R`. The 
+`available.packages()` function in `R` lists all packages currently on 
+`CRAN`. We can see that there are _many_: 
 
 ```{r}
 #| echo: false
@@ -86,7 +89,12 @@ options(repos=c(CRAN = "https://cloud.r-project.org"))
 ```
 
 ```{r}
-#| echo: false
+#| echo: true
+available.packages()["Package"]
+```
+
+```{r}
+#| echo: true
 NROW(available.packages())
 ```
 
@@ -95,8 +103,10 @@ If you want to use a contributed package, you need to do two things:
 1. Download it from CRAN and install it onto your computer (one time)
 2. Load it from your hard drive into `R` (every time you restart `R`)
 
-The first step - download and install - can be completed using the `install.packages()`
-function. For example, to install the [`palmerpenguins` package](https://allisonhorst.github.io/palmerpenguins/), I would run: 
+The first step - download and install - can be completed using the 
+`install.packages()` function. For example, to install the 
+[`palmerpenguins` package](https://allisonhorst.github.io/palmerpenguins/), 
+I would run: 
 
 ```{r}
 #| eval: false
@@ -114,10 +124,11 @@ can be automatically installed by installing the `tidyverse` package.
 install.packages("tidyverse")
 ```
 
-Note that there really isn't much in the `tidyverse` package we want, but it's a
-useful proxy for a much larger set of packages. 
+Note that there really isn't much in the `tidyverse` package we want, but it's 
+a useful proxy for a much larger set of packages. 
 
-Once a package is installed, we need to load it into `R` with the `library` function:
+Once a package is installed, we need to load it into `R` with the `library` 
+function:
 
 ```{r}
 library(palmerpenguins)
@@ -128,21 +139,23 @@ until we restart `R`.
 
 ::: {.callout-danger}
 
-Note that the `install.packages` function wants you to quote its argument, but
+Note that the `install.packages` function requires you to quote its argument, but
 `library` does not. This is a weird historical quirk of `R` that you will trip
-up on many times before this course ends. 
+up on many times before this course ends. To be safe, you can just quote the
+argument to `library()` as well
 
 ```{r}
 #| eval: false
 install.packages("tidyverse")
-library(tidyverse)
+library("tidyverse")
 ```
 :::
 
 For example, `palmerpenguins` package provides a data set of penguin measurements.
 If we try to get the data set without loading `palmerpenguins`, we get an error message: 
 
-```{webr, error=TRUE}
+```{webr}
+#| error: true
 penguins
 ```
 
@@ -155,6 +168,8 @@ head(penguins, 10) # Print only the first 10 rows of penguins
 ```
 
 So much tuxedo goodness!
+
+![Courtesy of Gabe Mednick](https://www.gabemednick.com/post/penguin/featured_hu23a2ff6767279debab043a6c8f0a6157_878472_720x0_resize_lanczos_2.png)
 
 In general, if you get a error message of the form `Error: object 'X' not found`,
 you should: 
@@ -179,9 +194,10 @@ packages, so it becomes essentially impossible to reinstall a package properly.
 
 Whenever you type a "word" of `R` code, it must be one of three things:
 
-- A reserved word: this is a small set of `keywords` that `R` keeps for its own use. 
-  These have special rules for their use that we'll learn as we go along. The main
-  ones are: `if`, `else`, `for`, `in`, `while`, `function`, `repeat`, `break`, and `next`. 
+- A reserved word: this is a small set of `keywords` that `R` keeps for 
+  its own use. These have special rules for their use that we'll learn as we 
+  go along. The main ones are: `if`, `else`, `for`, `in`, `while`, `function`,
+  `repeat`, `break`, and `next`. 
   
   If you use one of these words and get a weird error message, it's likely 
   because you aren't respecting the special rules for these words.
@@ -389,7 +405,7 @@ For the `paste` function, the `sep` defaults to `" "`.
 When you want to create your own function, you use a variant of the assignment
 structure
 
-```{r}
+```{webr}
 #| eval: true
 #| echo: true
 my_addition <- function(x, y) {
@@ -417,8 +433,7 @@ Let's break this into pieces:
 This function will add two numbers together. Now that we've defined it, we can
 use it just like a built-in function: 
 
-```{r}
-#| echo=TRUE
+```{webr}
 my_addition(2, 4)
 ```
 
@@ -434,22 +449,22 @@ but otherwise the default is used.
 
 For example, 
 
-```{r}
-#| echo: true
+```{webr}
 make_bigger <- function(x, by=2){
     x + by
 }
 
 make_bigger(3)
+```
+
+```{webr}
 make_bigger(3, by = 3)
 ```
 
 Here `by` defaults to `2`, but the user is required to supply `x` because it
 has no default. 
 
-```{r}
-#| eval: true
-#| error: true
+```{webr}
 make_bigger(by=3)
 ```
 
@@ -467,7 +482,8 @@ gets executed.
 
 ### Conditionals
 
-Perhaps the most common control flow operator is the "conditional" - the `if` operator. In `R`, the `if` operator looks like this: 
+Perhaps the most common control flow operator is the "conditional" - 
+the `if` operator. In `R`, the `if` operator looks like this: 
 
 ```{r}
 #| eval: false
@@ -481,8 +497,7 @@ if(TEST){
 ```
 
 For example
-```{r}
-#| echo: true
+```{webr}
 x <- 3
 if(x > 0){
     print("x is positive!")
@@ -518,96 +533,318 @@ We'll practice using conditional operators below.
 
 ### Looping
 
-In other 
+In other contexts, it is useful to perform the same operation several times over.
+When possible, it is best to use a vectorized approach, but sometimes that's not
+feasible. In particular, if you have a situation where you need a value from
+the previous time, vectorization isn't going to work.
+
+In this case, you need a loop. There are several types of loops, but the most
+common is the `for` loop, which looks like this: 
+
+```{r}
+#| echo: true
+#| eval: false
+for(VARIABLE_NAME in VECTOR){
+    BODY
+}
+```
+
+For example, we can use the `toupper` function and the `month.name` vector to
+do this: 
+
+```{webr}
+for(month in month.name){
+    cat("If you capitalize", month, "you get", toupper(month), "\n")
+}
+```
+
+Here, the loop repeats 12 times - once for each element of `month.name`. As we
+go through the loop, the value of the variable `month` changes: it is set to
+each element of the vector `month.name` separately. On a single iteration
+`month` is a _scalar_ (length-one vector), not a length-12 vector. The "body"
+of the loop is the code between the curly braces. It is repeated _as is_, with
+the only changes coming from the fact that the value of variables are changed. 
+
+A common pattern is to want to repeat a block of code without needing to iterate
+over a vector. In this case, just define an unused iteration variable and iterate
+over a sequence. *E.g.*, to compute the first 10 powers of 2: 
+
+```{webr}
+x <- 1
+for(i in 1:10){
+    x <- 2 * x
+    cat("The next power of 2 is", x, "\n")
+}
+```
+
+Note that this example can be computed more effectively using vectorization: 
+do you see how? Note that if you re-assign a variable other than the loop
+variable, you can use it again on the next time through the loop: so here, we
+get the old value of `x` on the right-hand side of `x <- 2 * x` and we put the
+new value back into `x` for later use. 
+
+If you try to assign to the loop variable (`i`), your values are overwritten
+at the start of the next loop. 
+
+```{webr}
+x <- 1
+for(i in 1:10){
+    cat("At the start of the loop i=", i, "\n")
+    i <- i * 2
+    cat("At the end of the loop i=", i, "\n")
+}
+```
+
+So be careful what you use the loop variable for. 
+
+Because it has vectorization, `R` uses loops much less than other languages, but
+they still sometimes appear and it's worth being aware of them.
+
 ## Programming Exercises
 
 Write *functions* to perform each of the following tasks. 
 
-1. Write a function that takes in a vector of numbers, calculates the length and maximum value of the vector, and prints that information to the screen in a formatted way.
+1. Write a function that takes in a vector of numbers, calculates the 
+   length and maximum value of the vector, and prints that information to the 
+   screen in a formatted way.
 
-```
-> func_1(c(1, 2, 3, 5, 7))
-The largest value in that list of 5 numbers is 7.
+   ```
+   > func_1(c(1, 2, 3, 5, 7))
+   The largest value in that vector of 5 numbers is 7.
 
-> func_1(c(1, 2, 5, 5))
-The largest value in that list of 4 numbers is 5.
-```
+   > func_1(c(1, 2, 5, 5))
+   The largest value in that vector of 4 numbers is 5.
+   ```
 
-To make your output as attractive as possible, you might want to use the `cat` command instead of the `print` command.
+   To make your output as attractive as possible, you might want to use the 
+    `cat` command instead of the `print` command.
+    
+   ::: {.callout-note title="Solution" collapse="true"}
+    
+   ```{webr}
+   func_1 <- function(x){
+      n_values  <- length(x)
+      max_value <- max(x)
+      
+      cat("The largest value in that vector of ", n_values, " numbers is ", 
+          max_value, ".\n", sep="")
+   }
+   ```
+   
+   which behaves as expected: 
+   
+   ```{webr}
+   func_1(c(1, 2, 3, 5, 7))
+   func_1(c(1, 2, 5, 5))
+   ```
+   
+   :::
 
-2. Write a program that tests whether its (integer) outputs are leap years. Recall the leap year rules: 
+2. Write a program that tests whether its (integer) outputs are leap years. 
+   Recall the leap year rules: 
 
     - A year is a leap year if it is divisible by 4
     - But it is not a leap year if it is divisible by 100
     - Unless it is also divisible by 400
     
-```
-> leap_year(2023)
-FALSE
-> leap_year(2024)
-TRUE
-> leap_year(2100)
-FALSE
-> leap_year(2000)
-TRUE
-```
+   Your function should behave like this: 
+    
+   ```
+   > leap_year(2025)
+   [1] FALSE
+   > leap_year(2024)
+   [1] TRUE
+   > leap_year(2100)
+   [1] FALSE
+   > leap_year(2000)
+   TRUE
+   ```
+   
+   Remember our discussion of the `%%` operator from above.
+    
+   ::: {.callout-note title="Solution" collapse="true"}
+    
+   ```{webr}
+   leap_year <- function(yyyy){
+      if((yyyy %% 400) == 0){
+          TRUE
+      } else if((yyyy %% 100) == 0){
+          FALSE
+      } else if((yyyy %% 4) == 0){
+          TRUE
+      } else {
+          FALSE
+      }
+   }
+   ```
+   
+   Alternatively, we could use a helper function: 
+   
+   ```{webr}
+   divides <- function(n, by){
+      if((n %% by) == 0) TRUE else FALSE
+   }
+   
+   leap_year <- function(yyyy){
+     if(divides(yyyy, 400)){
+         TRUE
+     } else if(divides(yyyy, 100)){
+         FALSE
+     } else if(divides(yyyy, 4)){  
+         TRUE
+     } else {
+         FALSE
+     }
+   }
+   ```
+   
+   which behaves as we expect
+   
+   ```{webr}
+   leap_year(2025)
+   leap_year(2024)
+   leap_year(2100)
+   leap_year(2000)
+   ```
+   
+   :::
 
-Remember our discussion of the `%\%` operator from class.
-
-3. Write a function to greet your classmates with varying levels of enthusiasm. It should have three optional arguments: 
+3. Write a function to greet your classmates with varying levels of 
+   enthusiasm. It should have three optional arguments: 
 
    a. `name`. The name of the person to greet. Default `"friend"`
-   b. `times`. The number of times to repeat the greeting.
-   c. `emphasis`. A Boolean (TRUE/FALSE) value indicating whether the greeting should end with an exclamaition point. (Default `FALSE`)
+   b. `times`. The number of times to repeat the greeting. Default `1`
+   c. `emphasis`. A Boolean (TRUE/FALSE) value indicating whether 
+       the greeting should end with an exclamaition point. (Default `FALSE`)
 
-```
-> greetings()
-Hello, friend
-> greetings(name="Michael")
-Hello, Michael
-> greetings(times=2)
-Hello, friend
-Hello, friend
-> greetings(emphasis=TRUE)
-Hello, friend!
-> greetings("Michael", 5, TRUE)
-Hello, Michael!
-Hello, Michael!
-Hello, Michael!
-Hello, Michael!
-Hello, Michael!
-```
+   ```
+   > greetings()
+   Hello, friend
+   > greetings(name="Michael")
+   Hello, Michael
+   > greetings(times=2)
+   Hello, friend
+   Hello, friend
+   > greetings(emphasis=TRUE)
+   Hello, friend!
+   > greetings("Michael", 5, TRUE)
+   Hello, Michael!
+   Hello, Michael!
+   Hello, Michael!
+   Hello, Michael!
+   Hello, Michael!
+   ```
+   
+   ::: {.callout-note title="Solution" collapse="true"}
+    
+   ```{webr}
+   greetings <- function(name = "friend", times=1, emphasis = FALSE){
+      if(emphasis){
+          string <- paste0("Greetings, ", name, "!")
+      } else {
+          string <- paste0("Greetings, ", name)
+      }
+      
+      for(n in seq(times)){
+          cat(string, "\n")
+      }
+      cat("\n")
+   }
+   ```
+   
+   which gives
+   
+   ```{webr}
+   greetings()
+   greetings(name="Michael")
+   greetings(times=2)
+   greetings(emphasis=TRUE)
+   greetings("Michael", 5, TRUE)
+   ```
+   
+   :::
 
-4. The [Riemann Zeta Function](https://en.wikipedia.org/wiki/Riemann_zeta_function) is a famous function in analytic number theory[^1] defined as
-$$\zeta(k) = 1 + \left(\frac{1}{2}\right)^k + \left(\frac{1}{3}\right)^k + \dots = \sum_{i=1}^{\infty} i^{-k} $$
-    We cannot implement an infinite series in `R`, but we can get very close by taking a large number of terms in the series (*e.g*, the first 500,000). Implement the zeta function and show that $\zeta(2) = \frac{\pi^2}{6}$
+4. The [Riemann Zeta Function](https://en.wikipedia.org/wiki/Riemann_zeta_function) 
+   is a famous function in analytic number theory[^1] defined as
+   
+   $$\zeta(k) = 1 + \left(\frac{1}{2}\right)^k + \left(\frac{1}{3}\right)^k + \dots = \sum_{i=1}^{\infty} i^{-k} $$
+    We cannot implement an infinite series in `R`, but we can get very close by
+    taking a large number of terms in the series (*e.g*, the first 500,000). 
+    Implement the zeta function and show that $\zeta(2) = \frac{\pi^2}{6}$
 
-```
-> zeta(2)
-[1] 1.644932
-> zeta(3)
-[1] 1.202057
-> zeta(4)
-[1] 1.082323
-> all.equal(zeta(2), pi^2/6, tol=1e-4)
-[1] TRUE
-```
+   ```
+   > zeta(2)
+   [1] 1.644932
+   > zeta(3)
+   [1] 1.202057
+   > zeta(4)
+   [1] 1.082323
+   > all.equal(zeta(2), pi^2/6, tol=1e-4)
+   [1] TRUE
+   ```
+   
+   ::: {.callout-note title="Solution" collapse="true"}
+    
+   ```{webr}
+   zeta <- function(x){
+       sum((1/(1:500000))^x)
+   }
+   ```
+   
+   which gives
+   
+   ```{webr}
+   zeta(2)
+   zeta(3)
+   zeta(4)
+   all.equal(zeta(2), pi^2/6, tol=1e-4)
+   ```
+   
+   :::
 
-5. *Hero of Alexandria* developed a method for computing square roots numerically. He showed that by performing the following update repeatedly, $x$ will converge to $\sqrt{n}$:
-$$x \leftarrow \frac{1}{2}\left(x + \frac{n}{x}\right)$$
-    You can start with any positive $x$, but $n/2$ is a good choice. 
+5. *Hero of Alexandria* developed a method for computing square roots 
+   numerically. He showed that by performing the following update repeatedly, 
+   $x$ will converge to $\sqrt{n}$:
+   
+   $$x \leftarrow \frac{1}{2}\left(x + \frac{n}{x}\right)$$
+   You can start with any positive $x$, but $n/2$ is a good choice. 
 
-    Implement this method to compute square roots. Use an optional keyword      argument (default value 100) to control how many iterations are performed: 
+   Implement this method to compute square roots. Use an optional keyword 
+   argument `iter` with a default value of 100 to control how many iterations 
+   are performed: 
 
-```
-> hero_sqrt(100)
-[1] 1.644932
-> hero_sqrt(3)^2
-[1] 3
-> hero_sqrt(3, iter=2)
-[1] 1.732143
-> hero_sqrt(3000)
-[1] 54.77226
-```
+   ```
+   > hero_sqrt(100)
+   [1] 1.644932
+   > hero_sqrt(3)^2
+   [1] 3
+   > hero_sqrt(3, iter=2)
+   [1] 1.732143
+   > hero_sqrt(3000)
+   [1] 54.77226
+   ```
+   
+   ::: {.callout-note title="Solution" collapse="true"}
+    
+   ```{webr}
+   hero_sqrt <- function(n, iter=100){
+       x <- n/2
+       for(i in 1:iter){
+           x <- 0.5 * (x + n/x)
+       }
+       x
+   }
+   ```
+   
+   which gives
+   
+   ```{webr}
+   hero_sqrt(100)
+   hero_sqrt(3)^2
+   hero_sqrt(3, iter=2)
+   hero_sqrt(3000)
+   ```
+   
+   :::
 
 [^1]: ANL is basically the application of calculus techniques to prove properties of prime numbers: it's a surprisingly powerful approach.
