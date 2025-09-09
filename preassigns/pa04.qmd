@@ -1,8 +1,14 @@
 ---
 title: "{{< var course.short >}} Week {{< meta pa_num >}} Pre Assignment: {{< meta pa_title >}}"
+format: live-html
+engine: knitr
 pa_num: 4
 pa_title: "Single-Table `dplyr` Verbs"
 ---
+
+
+{{< include _gradethis_init.qmd >}}
+
 
 ```{r}
 #| echo: false
@@ -27,7 +33,11 @@ This week, we begin manipulating `R`'s most important structure the `data.frame`
 
 ## What is a `data.frame`?
 
-Last week, we discussed *vectors*, one-dimensional collections of the same type of object. While vectors are an important computational tool, real data is rarely quite so simple: we collect multiple features (covariates) from each of our observations and these features may be of different type. For example, when performing a political survey, we may record the:
+Last week, we discussed *vectors*, one-dimensional collections of the same 
+type of object. While vectors are an important computational tool, real data is 
+rarely quite so simple: we collect multiple features (covariates) from each of 
+our observations and these features may be of different type. For example, when
+performing a political survey, we may record the:
 
 -   Name (`character`)
 -   Age (`integer`)
@@ -50,7 +60,8 @@ Note several important features of this data:
 - Each row corresponds to one, and only one, sample
 - Each column corresponds to one, and only one, feature
 - The values in each column are all of the same type
-- The order doesn't matter: all important data is reflected in the values, not the presentation
+- The order doesn't matter: all important data is reflected in the values, 
+  not the presentation or order of the rows
 
 Generally, data in this pattern will be called "tidy". `R` represents
 this type of data as a `data.frame` object. For more on what it means
@@ -70,6 +81,8 @@ simultaneously. I recommend you start most of your analyses with the
 command: 
 
 ```{r}
+#| echo: true
+#| eval: false
 library(tidyverse)
 ```
 
@@ -85,6 +98,13 @@ This will automatically load the following packages:
 - `tibble` for data frame enhancement
 - `ggplot2` for data visualization
 
+When loading these, you will get a message (not error!) if the names used by any
+of the `tidyverse` packages conflict with names used by other packages. The most
+common issue is a function called `filter` from `dplyr` conflicting with `filter`
+from `stats`. `filter` in the `stats` package is used to do linear filtering on
+time series - we're not doing that in this class, so letting `dplyr` "own" the
+name,  which happens by default, is fine for us. 
+
 This week, we are focusing on functionality from the `dplyr` package. 
 
 You may, from time to time, see reference to `tibble`s in `R`
@@ -96,7 +116,7 @@ issue.
 Before we get into `dplyr`, let's make sure we have a data frame to
 play with. Let's bring back our friends, the Palmer penguins: 
 
-```{r}
+```{webr}
 library(tidyverse)
 library(palmerpenguins)
 penguins
@@ -115,7 +135,7 @@ The main `dplyr` function for column subsetting is `select()`. In its
 simplest form, we provide a set of column names we want to keep and
 everything else gets dropped. 
 
-```{r}
+```{webr}
 select(penguins, species, island)
 ```
 
@@ -129,15 +149,13 @@ the `pipe` operator.
 
 `R` provides an operator `|>` which "rewrites" code, so 
 
-```{r}
-#| eval: false
+```{webr}
 select(penguins, species, island)
 ```
 
 and 
 
-```{r}
-#| eval: false
+```{webr}
 penguins |> select(species, island)
 ```
 
@@ -149,7 +167,7 @@ long run.
 Just like base `R`, if we include `-` signs in our `select` statement, we get
 _everything except_ a certain column: 
 
-```{r}
+```{webr}
 penguins |> select(-bill_length_mm, -bill_depth_mm, -flipper_length_mm)
 ```
 
@@ -172,7 +190,7 @@ commonly, this logical vector is created by performing some sort of _tests_
 on the values in the data frame. For example, if we want to select only the
 `male` penguins in our data set, we may write: 
 
-```{r}
+```{webr}
 penguins |> filter(sex == "male")
 ```
 
@@ -180,31 +198,30 @@ Here, note the use of the `==` operator for testing _equality_.
 A very common mistake is to use the single equals (assignment) 
 operator inside of `filter`. Thankfully, `dplyr` will alert us with an `error`
 if we make this mistake: 
-```{r}
-#| error: true
+
+```{webr}
 penguins |> filter(sex = "male")
 ```
 
 If we supply multiple tests to `filter`, we get the _intersection_: that is, 
 we get rows that pass _all_ tests. 
 
-```{r}
-#| error: true
+```{webr}
 penguins |> filter(sex == "male", bill_length_mm > 38)
 ```
 
 If we want the _union_-rows that satisfy _any_ of the tests-we have to use
 the logical operators we previous applied to vectors: 
 
-```{r}
-#| error: true
+```{webr}
 penguins |> filter( (sex == "male") | (bill_length_mm > 38))
 ```
 
 It's a bit clunky, but thankfully, this is somewhat less common than checking
 that all conditions are satisfied. 
 
-`dplyr` provides all sorts of useful helpers for creating test statements, *e.g.*, the 
+`dplyr` provides all sorts of useful helpers for creating test statements, 
+*e.g.*, the 
 
 - `between`
 - `near`
@@ -215,8 +232,8 @@ Even more useful than these, however, are the `slice_*()` functions which can
 be used to perform "top $k$" type operations. If we want the five largest Adelie
 penguins, we might try something like: 
 
-```{r}
-penguins |> filter(species == "Adelie") |> slice_max(body_mass_g, n=5)
+```{webr}
+penguins |> filter(species == "Adelie") |> slice_max(body_mass, n=5)
 ```
 
 `slice_min()` works similarly. `slice_head` and `slice_tail` get the first and
@@ -239,26 +256,29 @@ of missing data is often very problem-specific and very hard.
 A key task in data analysis is _transforming_ data. As discussed in class, one
 of the guiding themes of `R` programming is _data integrity_ and an important
 way `R` ensures this is by applying commands to the entire vector. In the 
-data frame context, we apply commands to an entire _column_. The `mutate` function is `dplyr`'s main interface for column creation and manipulation. 
+data frame context, we apply commands to an entire _column_. The `mutate` 
+function is `dplyr`'s main interface for column creation and manipulation. 
 
 In general, each argument to `mutate` takes a `name = value` pair: the `name`
 is the name of a column to be created from `value`. `value` can be an arbitrary
 function of other columns. If `name` corresponds to an existing column, that 
 column is silently overwritten. 
 
-For example, if we want to convert penguin bill lengths from millimeters to inches, we might operator: 
+For example, if we want to convert penguin bill lengths from millimeters to 
+inches, we might operator: 
 
-```{r}
+```{webr}
 penguins |> mutate(bill_length_in = bill_length_mm / 25.4)
 ```
 
-Here, note that the `bill_length_mm` column is retained - and all columns are kept! `mutate` only creates new columns; it won't secretly drop them. 
+Here, note that the `bill_length_mm` column is retained - and all columns are 
+kept! `mutate` only creates new columns; it won't secretly drop them. 
 
 A particularly common operator is changing the name of a column without changing
 its values. You can use `mutate` and `select(-)` for this, but `rename` provides
 essentially the same interface and its _semantically_ clearer: 
 
-```{r}
+```{webr}
 penguins |> rename(mass = body_mass_g)
 ```
 
@@ -267,12 +287,13 @@ penguins |> rename(mass = body_mass_g)
 We often want to _summarize_ our data in useful ways: these can be simple
 summaries like mean (average) or standard deviation or more complex operations
 (trend lines). In the world of `dplyr`, the `summarize` function is used whenever
-we want to reduce multiple rows to a single data point. Note how this differs from `filter`: `filter` drops rows, `summarize` combines and reduces them. 
+we want to reduce multiple rows to a single data point. Note how this differs
+from `filter`: `filter` drops rows, `summarize` combines and reduces them. 
 
 For example, if we want to get the number of `male` penguins in our data set, 
 we can use the `n()` function, which counts the number of rows: 
 
-```{r}
+```{webr}
 penguins |> 
     filter(sex == "male") |>
     summarize(number = n())
@@ -283,8 +304,8 @@ Look at all those male penguins!
 This is a relatively simple operation, but we can be a bit more complex: *e.g.*,
 with the mean function: 
 
-```{r}
-penguins |> summarize(body_mass_avg = mean(body_mass_g))
+```{webr}
+penguins |> summarize(body_mass_avg = mean(body_mass))
 ```
 
 Wait! Why didn't that work? 
@@ -295,8 +316,8 @@ missing values, the mean could be anything, so `R` returns a missing (unknown)
 value for the mean as well. Many base `R` functions have this default behavior
 and have an optional flag for automatically removing `NA` values: 
 
-```{r}
-penguins |> summarize(body_mass_avg = mean(body_mass_g, na.rm=TRUE))
+```{webr}
+penguins |> summarize(body_mass_avg = mean(body_mass, na.rm=TRUE))
 ```
 
 Here `na.rm=TRUE` means to `r`e`m`ove all `na` values before computing
@@ -306,16 +327,16 @@ The `summarize` function is particularly powerful when applied _groupwise_:
 *e.g.*, what is the average body mass _by species_? In `dplyr` world, this is 
 a two-step operation: 
 
-```{r}
+```{webr}
 penguins |> 
     group_by(species) |>
-    summarize(body_mass_avg = mean(body_mass_g, na.rm=TRUE))
+    summarize(body_mass_avg = mean(body_mass, na.rm=TRUE))
 ```
 
 We added the `group_by` operator here. Note that, on its own, `group_by` doesn't
 really do anything: 
 
-```{r}
+```{webr}
 penguins |> 
     group_by(species)
 ```
@@ -325,10 +346,10 @@ until the `summarize` step.
 
 We can also group by more than one element: 
 
-```{r}
+```{webr}
 penguins |> 
     group_by(species, sex) |>
-    summarize(body_mass_avg = mean(body_mass_g, na.rm=TRUE))
+    summarize(body_mass_avg = mean(body_mass, na.rm=TRUE))
 ```
 
 Note here that the result is still _grouped_ and that only the last (`sex`)
@@ -336,10 +357,10 @@ grouping was removed. That means that any future operations will be
 automatically grouped by `species`. If you want to remove all grouping
 structure, add the `ungroup` operator at the end: 
 
-```{r}
+```{webr}
 penguins |> 
     group_by(species, sex) |>
-    summarize(body_mass_avg = mean(body_mass_g, na.rm=TRUE)) |>
+    summarize(body_mass_avg = mean(body_mass, na.rm=TRUE)) |>
     ungroup()
 ```
 
@@ -347,10 +368,10 @@ penguins |>
 implicitly by other functions. *E.g.*, if we want to get all penguins that
 are above average mass _for their species_, we might try the following: 
 
-```{r}
+```{webr}
 penguins |> 
     group_by(species) |>
-    filter(body_mass_g >= mean(body_mass_g, na.rm=TRUE)) |>
+    filter(body_mass >= mean(body_mass, na.rm=TRUE)) |>
     ungroup()
 ```
 
@@ -363,7 +384,7 @@ the largest difference in average body mass between the sexes?
 #| include: false
 sex_diff <- penguins |> 
     group_by(species, sex) |>
-    summarize(body_mass_avg_g = mean(body_mass_g, na.rm=TRUE)) |>
+    summarize(body_mass_avg_g = mean(body_mass, na.rm=TRUE)) |>
     filter(!is.na(sex)) |>
     summarize(sex_diff_g = max(body_mass_avg_g) - min(body_mass_avg_g)) |>
     slice_max(sex_diff_g, n=1) |>
@@ -373,11 +394,36 @@ sex_diff <- penguins |>
 Answer: `{r} sex_diff` penguins have the largest sex difference in average
 body mass. 
 
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{webr}
+penguins |> 
+    group_by(species, sex) |>
+    summarize(body_mass_avg_g = mean(body_mass, na.rm=TRUE)) |>
+    filter(!is.na(sex)) |>
+    summarize(sex_diff_g = max(body_mass_avg_g) - min(body_mass_avg_g)) |>
+    slice_max(sex_diff_g, n=1) |>
+    pull(species)
+```
+
+:::
+
+
 Before completing the Brightspace submission for this assignment, look up
 the source for this document on my GitHub (Hint: see the buttons on the sidebar)
 and see i) how I computed the answer; and ii) how I included it in the rendered 
 text. This will be helpful as you begin preparing your first report. 
 
-[^1]: Recall a `factor` is a vector with a fixed set of possible values, often used to represent categorical data. Here, we follow the NY DMV and allow `M`, `F`, and `X` values for sex, but, in general, representation of sex and gender in databases is a tricky problem. See [this essay](https://medium.com/gender-2-0/falsehoods-programmers-believe-about-gender-f9a3512b4c9c) for a list of some of the complexity of real people. (This essay follows in a longer tradition of "the world is much more complicated than you would believe" essays: [names](https://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/), [time](https://infiniteundo.com/post/25326999628/falsehoods-programmers-believe-about-time), [addresses](https://www.mjt.me.uk/posts/falsehoods-programmers-believe-about-addresses/). People - and the world we create - are infinitely complex.
+[^1]: Recall a `factor` is a vector with a fixed set of possible values, often 
+used to represent categorical data. Here, we follow the NY DMV and allow `M`, 
+`F`, and `X` values for sex, but, in general, representation of sex and gender
+in databases is a tricky problem. See 
+[this essay](https://medium.com/gender-2-0/falsehoods-programmers-believe-about-gender-f9a3512b4c9c)
+for a list of some of the complexity of real people. (This essay follows in a
+longer tradition of "the world is much more complicated than you would believe"
+essays: [names](https://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/),
+[time](https://infiniteundo.com/post/25326999628/falsehoods-programmers-believe-about-time),
+[addresses](https://www.mjt.me.uk/posts/falsehoods-programmers-believe-about-addresses/).
+People - and the world we create - are infinitely complex.
 
 [^2]: We will say much more about `R`'s missing data model in class this week.
