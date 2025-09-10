@@ -187,31 +187,38 @@ mp_submission_verify <- function(N, github_id){
   
   body <- mp_text |> str_replace("<GITHUB_ID>", github_id) |> str_squish()
   
-  issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all", 
+  pagination <- 1
+  
+  issues <- list()
+  
+  while((length(issues) %% 100) == 0){
+      new_issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all&per_page=100&page={pagination}", 
                owner=github_id, 
                repo=course_repo)
+      
+      issues <- c(issues, new_issues)
+      pagination <- pagination + 1
+  }
   
   issue_names <- vapply(issues, function(x) str_squish(x$title), "")
   
   name_match <- which(issue_names == title)
-  
-  if(length(name_match) == 0){
+  case_insensitive_match <- which(tolower(issue_names) == tolower(title))
+        
+  if((length(name_match) == 0) & (length(case_insensitive_match) == 0)){
     cat("I could not find a unique issue with the title:\n", 
         "    ", sQuote(title),"\n",
         "The issues I found had the following titles:\n",
         paste(c("", issue_names), collapse="\n - "), "\n",
         "If something on that list looks correct, please check",
         "capitalization and punctuation.\n")
-      
-    case_insensitive_match <- which(tolower(issue_names) == tolower(title))
-        
-    if(length(case_insensitive_match) > 0){
-      cat("In particular, please check", 
-          sQuote(issue_names[case_insensitive_match]), 
-          "which appears to be the same, modulo capitalization.\n")
-    }
-         
     stop("MINIPROJECT NOT SUBMITTED CORRECTLY.")
+  } else if((length(name_match) == 0) & (length(case_insensitive_match) >= 0)) {
+      cat("I have found a partial match (differing by case only).\n",
+          "- Searching for: ", title, , "\n", 
+          "- Found: ", issue_names[case_insensitive_match], ".\n",
+          "Attempting to proceed with partial match issue")
+      name_match <- case_insensitive_match
   } else if(length(name_match) > 1){
     cat("I found multiple issues with the title:\n", 
         "    ", sQuote(title),"\n",
