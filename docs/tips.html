@@ -489,33 +489,42 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">missing</span>(github_id)){</span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        github_id <span class="ot">&lt;-</span> <span class="fu">readline</span>(<span class="st">"What is your GitHub ID? "</span>)</span>
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    issues <span class="ot">&lt;-</span> <span class="fu">gh</span>(<span class="st">"/repos/michaelweylandt/{repo}/issues?state=all"</span>, </span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">repo=</span>course_repo)</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    pf_urls <span class="ot">&lt;-</span> issues <span class="sc">|&gt;</span> </span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        <span class="fu">keep</span>(<span class="sc">~</span> <span class="fu">str_detect</span>(.x<span class="sc">$</span>title, <span class="fu">glue</span>(<span class="st">"#0{N}"</span>))) <span class="sc">|&gt;</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">map</span>(<span class="sc">~</span><span class="fu">data.frame</span>(<span class="at">html=</span>.x<span class="sc">$</span>html_url, <span class="at">comments=</span>.x<span class="sc">$</span>comments_url)) <span class="sc">|&gt;</span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        <span class="fu">keep</span>(<span class="sc">~</span><span class="fu">any</span>(<span class="fu">str_detect</span>(<span class="fu">map_chr</span>(<span class="fu">gh</span>(.x<span class="sc">$</span>comments), <span class="st">"body"</span>), github_id))) <span class="sc">|&gt;</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>        <span class="fu">map</span>(<span class="st">"html"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        <span class="fu">list_c</span>()</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="fu">glue</span>(<span class="st">"I have found several MP#0{N} issues that may be assigned to you.</span><span class="sc">\n</span><span class="st">"</span>),</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>             <span class="st">"Please review the following:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(pf <span class="cf">in</span> pf_urls){</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cat</span>(<span class="st">" - "</span>, pf, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    to_browser <span class="ot">&lt;-</span> <span class="fu">menu</span>(<span class="at">title=</span><span class="st">"Would you like me to open these in your web browser?"</span>, </span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>                       <span class="at">choices=</span><span class="fu">c</span>(<span class="st">"Yes"</span>, <span class="st">"No"</span>))</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    pagination <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    issues <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span>((<span class="fu">length</span>(issues) <span class="sc">%%</span> <span class="dv">100</span>) <span class="sc">==</span> <span class="dv">0</span>){</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        new_issues <span class="ot">&lt;-</span> <span class="fu">gh</span>(<span class="st">"/repos/michaelweylandt/{repo}/issues?state=all&amp;per_page=100&amp;page={pagination}"</span>, </span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>                 <span class="at">owner=</span>github_id, </span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>                 <span class="at">repo=</span>course_repo)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        issues <span class="ot">&lt;-</span> <span class="fu">c</span>(issues, new_issues)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        pagination <span class="ot">&lt;-</span> pagination <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    pf_urls <span class="ot">&lt;-</span> issues <span class="sc">|&gt;</span> </span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">keep</span>(<span class="sc">~</span> <span class="fu">str_detect</span>(.x<span class="sc">$</span>title, <span class="fu">glue</span>(<span class="st">"#0{N}"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>        <span class="fu">map</span>(<span class="sc">~</span><span class="fu">data.frame</span>(<span class="at">html=</span>.x<span class="sc">$</span>html_url, <span class="at">comments=</span>.x<span class="sc">$</span>comments_url)) <span class="sc">|&gt;</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>        <span class="fu">keep</span>(<span class="sc">~</span><span class="fu">any</span>(<span class="fu">str_detect</span>(<span class="fu">map_chr</span>(<span class="fu">gh</span>(.x<span class="sc">$</span>comments), <span class="st">"body"</span>), github_id))) <span class="sc">|&gt;</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>        <span class="fu">map</span>(<span class="st">"html"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>        <span class="fu">list_c</span>()</span>
 <span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(to_browser <span class="sc">==</span> <span class="dv">1</span>){</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span>(pf <span class="cf">in</span> pf_urls){</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>            <span class="fu">browseURL</span>(pf)</span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="fu">glue</span>(<span class="st">"I have found several MP#0{N} issues that may be assigned to you.</span><span class="sc">\n</span><span class="st">"</span>),</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>             <span class="st">"Please review the following:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(pf <span class="cf">in</span> pf_urls){</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cat</span>(<span class="st">" - "</span>, pf, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
 <span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">invisible</span>(<span class="cn">TRUE</span>)</span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>    to_browser <span class="ot">&lt;-</span> <span class="fu">menu</span>(<span class="at">title=</span><span class="st">"Would you like me to open these in your web browser?"</span>, </span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>                       <span class="at">choices=</span><span class="fu">c</span>(<span class="st">"Yes"</span>, <span class="st">"No"</span>))</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(to_browser <span class="sc">==</span> <span class="dv">1</span>){</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span>(pf <span class="cf">in</span> pf_urls){</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>            <span class="fu">browseURL</span>(pf)</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">invisible</span>(<span class="cn">TRUE</span>)</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="verify-peer-feedback-properly-formatted" class="level4">
@@ -552,68 +561,78 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  title <span class="ot">&lt;-</span> <span class="fu">glue</span>(<span class="st">"{course_short} {peer_id} MiniProject #0{N}"</span>)</span>
 <span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>  issues <span class="ot">&lt;-</span> <span class="fu">gh</span>(<span class="st">"/repos/michaelweylandt/{repo}/issues?state=all"</span>, </span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>               <span class="at">repo=</span>course_repo)</span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  issue_names <span class="ot">&lt;-</span> <span class="fu">vapply</span>(issues, <span class="cf">function</span>(x) <span class="fu">str_squish</span>(x<span class="sc">$</span>title), <span class="st">""</span>)</span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  name_match <span class="ot">&lt;-</span> <span class="fu">which</span>(issue_names <span class="sc">==</span> title)</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(name_match) <span class="sc">!=</span> <span class="dv">1</span>){</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"I could not find a unique issue with the title:</span><span class="sc">\n</span><span class="st">"</span>, </span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>          <span class="st">"    "</span>, <span class="fu">sQuote</span>(title),<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>          <span class="st">"I'm afraid I can't verify whether the peer feedback was submitted properly</span><span class="sc">\n</span><span class="st">"</span>, </span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>          <span class="st">"but the issue likely lies with the submittor, not with your feedback."</span>)</span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>          <span class="fu">stop</span>(<span class="st">"PEER FEEDBACK NOT VERIFIED."</span>)</span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>  } </span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>  pagination <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>  issues <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span>((<span class="fu">length</span>(issues) <span class="sc">%%</span> <span class="dv">100</span>) <span class="sc">==</span> <span class="dv">0</span>){</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>      new_issues <span class="ot">&lt;-</span> <span class="fu">gh</span>(<span class="st">"/repos/michaelweylandt/{repo}/issues?state=all&amp;per_page=100&amp;page={pagination}"</span>, </span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>               <span class="at">owner=</span>github_id, </span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>               <span class="at">repo=</span>course_repo)</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>      issues <span class="ot">&lt;-</span> <span class="fu">c</span>(issues, new_issues)</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>      pagination <span class="ot">&lt;-</span> pagination <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>  issue_names <span class="ot">&lt;-</span> <span class="fu">vapply</span>(issues, <span class="cf">function</span>(x) <span class="fu">str_squish</span>(x<span class="sc">$</span>title), <span class="st">""</span>)</span>
 <span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  issue <span class="ot">&lt;-</span> issues[[name_match]]</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  name_match <span class="ot">&lt;-</span> <span class="fu">which</span>(issue_names <span class="sc">==</span> title)</span>
 <span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  issue_url <span class="ot">&lt;-</span> issue<span class="sc">$</span>html_url</span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>  issue_comment_url <span class="ot">&lt;-</span> issue<span class="sc">$</span>comments_url</span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>  comments <span class="ot">&lt;-</span> <span class="fu">gh</span>(issue_comment_url)</span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>  commenters <span class="ot">&lt;-</span> <span class="fu">vapply</span>(comments, <span class="cf">function</span>(x) x<span class="sc">$</span>user<span class="sc">$</span>login, <span class="st">""</span>)</span>
-<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>  comment_num <span class="ot">&lt;-</span> <span class="fu">which</span>(commenters <span class="sc">==</span> github_id)</span>
-<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(comment_num) <span class="sc">!=</span> <span class="dv">1</span>){</span>
-<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"I cannot identify your comment on the issue at"</span>, </span>
-<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>       <span class="fu">sQuote</span>(issue_url), <span class="st">". Please verify that this is the correct link.</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>       </span>
-<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">length</span>(comment_num) <span class="sc">==</span> <span class="dv">0</span>){</span>
-<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"You do not appear to have commented on this issue."</span>)</span>
-<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"You have left multiple comments on this issue."</span>,</span>
-<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Please consolidate your feedback"</span>)</span>
-<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"PEER FEEDBACK NOT VERIFIED."</span>)</span>
-<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>  comment_body <span class="ot">&lt;-</span> comments[[comment_num]]<span class="sc">$</span>body</span>
-<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"I have found your comment, with the following text:</span><span class="sc">\n</span><span class="st">-----</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(comment_body)</span>
-<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">-----</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>  comment_body  <span class="ot">&lt;-</span> comment_body <span class="sc">|&gt;</span> <span class="fu">str_squish</span>()</span>
-<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>  template_text <span class="ot">&lt;-</span> template_text <span class="sc">|&gt;</span> <span class="fu">str_squish</span>()</span>
-<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>  matches <span class="ot">&lt;-</span> <span class="fu">str_match_all</span>(comment_body, template_text)[[<span class="dv">1</span>]][<span class="sc">-</span><span class="dv">1</span>]</span>
-<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">anyNA</span>(matches)){</span>
-<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"I couldn't match the template to your comment. Please modify and try again."</span>)</span>
-<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"PEER FEEDBACK NOT VERIFIED."</span>)</span>
-<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(name_match) <span class="sc">!=</span> <span class="dv">1</span>){</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"I could not find a unique issue with the title:</span><span class="sc">\n</span><span class="st">"</span>, </span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>          <span class="st">"    "</span>, <span class="fu">sQuote</span>(title),<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>          <span class="st">"I'm afraid I can't verify whether the peer feedback was submitted properly</span><span class="sc">\n</span><span class="st">"</span>, </span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>          <span class="st">"but the issue likely lies with the submittor, not with your feedback."</span>)</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>          <span class="fu">stop</span>(<span class="st">"PEER FEEDBACK NOT VERIFIED."</span>)</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>  } </span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>  issue <span class="ot">&lt;-</span> issues[[name_match]]</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>  issue_url <span class="ot">&lt;-</span> issue<span class="sc">$</span>html_url</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>  issue_comment_url <span class="ot">&lt;-</span> issue<span class="sc">$</span>comments_url</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>  comments <span class="ot">&lt;-</span> <span class="fu">gh</span>(issue_comment_url)</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>  commenters <span class="ot">&lt;-</span> <span class="fu">vapply</span>(comments, <span class="cf">function</span>(x) x<span class="sc">$</span>user<span class="sc">$</span>login, <span class="st">""</span>)</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>  comment_num <span class="ot">&lt;-</span> <span class="fu">which</span>(commenters <span class="sc">==</span> github_id)</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(comment_num) <span class="sc">!=</span> <span class="dv">1</span>){</span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"I cannot identify your comment on the issue at"</span>, </span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>       <span class="fu">sQuote</span>(issue_url), <span class="st">". Please verify that this is the correct link.</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>       </span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">length</span>(comment_num) <span class="sc">==</span> <span class="dv">0</span>){</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"You do not appear to have commented on this issue."</span>)</span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">"You have left multiple comments on this issue."</span>,</span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>          <span class="st">"Please consolidate your feedback"</span>)</span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"PEER FEEDBACK NOT VERIFIED."</span>)</span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>  comment_body <span class="ot">&lt;-</span> comments[[comment_num]]<span class="sc">$</span>body</span>
+<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"I have found your comment, with the following text:</span><span class="sc">\n</span><span class="st">-----</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(comment_body)</span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">-----</span><span class="sc">\n</span><span class="st">"</span>)</span>
 <span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">glue</span>(<span class="st">"Congratulations! Your peer feedback on {peer_id}'s MP #0{N} appears properly formatted.</span><span class="sc">\n</span><span class="st">Thank you for your contributions to {course_short}!</span><span class="sc">\n</span><span class="st">"</span>))</span>
-<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="cn">TRUE</span>)</span>
-<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a>  comment_body  <span class="ot">&lt;-</span> comment_body <span class="sc">|&gt;</span> <span class="fu">str_squish</span>()</span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a>  template_text <span class="ot">&lt;-</span> template_text <span class="sc">|&gt;</span> <span class="fu">str_squish</span>()</span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a>  matches <span class="ot">&lt;-</span> <span class="fu">str_match_all</span>(comment_body, template_text)[[<span class="dv">1</span>]][<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">anyNA</span>(matches)){</span>
+<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"I couldn't match the template to your comment. Please modify and try again."</span>)</span>
+<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"PEER FEEDBACK NOT VERIFIED."</span>)</span>
+<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">glue</span>(<span class="st">"Congratulations! Your peer feedback on {peer_id}'s MP #0{N} appears properly formatted.</span><span class="sc">\n</span><span class="st">Thank you for your contributions to {course_short}!</span><span class="sc">\n</span><span class="st">"</span>))</span>
+<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(<span class="cn">TRUE</span>)</span>
+<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>

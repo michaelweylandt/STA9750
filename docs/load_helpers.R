@@ -207,10 +207,19 @@ mp_feedback_locate <- function(N, github_id){
     if(missing(github_id)){
         github_id <- readline("What is your GitHub ID? ")
     }
-    
-    issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all", 
+    pagination <- 1
+  
+    issues <- list()
+  
+    while((length(issues) %% 100) == 0){
+        new_issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all&per_page=100&page={pagination}", 
+                 owner=github_id, 
                  repo=course_repo)
-    
+      
+        issues <- c(issues, new_issues)
+        pagination <- pagination + 1
+    }
+
     pf_urls <- issues |> 
         keep(~ str_detect(.x$title, glue("#0{N}"))) |>
         map(~data.frame(html=.x$html_url, comments=.x$comments_url)) |>
@@ -266,8 +275,18 @@ mp_feedback_verify <- function(N, github_id, peer_id){
   
   title <- glue("{course_short} {peer_id} MiniProject #0{N}")
 
-  issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all", 
+  pagination <- 1
+  
+  issues <- list()
+  
+  while((length(issues) %% 100) == 0){
+      new_issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all&per_page=100&page={pagination}", 
+               owner=github_id, 
                repo=course_repo)
+      
+      issues <- c(issues, new_issues)
+      pagination <- pagination + 1
+  }
   
   issue_names <- vapply(issues, function(x) str_squish(x$title), "")
   
