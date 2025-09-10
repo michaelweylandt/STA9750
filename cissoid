@@ -141,18 +141,21 @@ def _gh(path, get=True, data=None):
 
 @cache
 def gh_list_issues(owner=None):
-    ## FIXME: Paginate this
-    resp = _gh(f"/repos/michaelweylandt/{course_repo()}/issues?state=all&per_page=100")
-    if "status" in resp and resp["status"] != "200":
-        click.echo("UNABLE TO ACCESS GITHUB API")
-        return dict()
+    ALL_ISSUES = []
+    pagination = 1
+    
+    while((len(ALL_ISSUES) % 100) == 0): 
+        resp = _gh(f"/repos/michaelweylandt/{course_repo()}/issues?state=all&per_page=100&page={pagination}")
+
+        if "status" in resp and resp["status"] != "200":
+            click.echo("UNABLE TO ACCESS GITHUB API")
+            return dict()
+        
+        ALL_ISSUES += resp
+        pagination += 1
 
     ISSUES_DICT = {
-        # FIXME: Handle duplicate issue titles
-        # Common case is students forgetting to fix "<GITHUB_ID>"
-        #
-        str_simplify(i["title"]): Issue(
-            # str_simplify(i["title"].replace("<GITHUB_ID>", i["user"]["login"])): Issue(
+        (i["number"], str_simplify(i["title"])): Issue(
             i["title"],
             i["number"],
             i["html_url"],
@@ -160,7 +163,7 @@ def gh_list_issues(owner=None):
             i["state"],
             i["user"]["login"],
         )
-        for i in resp
+        for i in ALL_ISSUES
     }
 
     if owner:
@@ -488,7 +491,7 @@ def roster_add(github, email, emplid, name):
     click.echo(NEW_STUDENT)
 
     with open(roster_file(), "w+") as f:
-        f.write(NEW_ROSTER.to_json(orient="records"))
+        f.write(NEW_ROSTER.to_json(orient="records", indent=2))
 
 
 @roster.command(name="delete")
@@ -527,7 +530,7 @@ def roster_delete(github):
     NEW_ROSTER = ROSTER.loc[ROSTER["github"] != github]
 
     with open(roster_file(), "w+") as f:
-        f.write(NEW_ROSTER.to_json())
+        f.write(NEW_ROSTER.to_json(orient="records", indent=2))
         
 
 @roster.command(name="edit")
@@ -626,10 +629,10 @@ def project_create():
     click.confirm("Should I create this team?", abort=True)
 
     with open(teams_file(), "w+") as f:
-        f.write(NEW_TEAMS.to_json(orient="records"))
+        f.write(NEW_TEAMS.to_json(orient="records", indent=2))
 
     with open(roster_file(), "w+") as f:
-        f.write(ROSTER.to_json())
+        f.write(ROSTER.to_json(orient="records", indent=2))
 
 
 @project.command(name="modify")
@@ -697,7 +700,7 @@ def project_modify(number, action):
         TEAMS.loc[TEAMS["number"] == number, "name"] = new_name
 
         with open(teams_file(), "w+") as f:
-            f.write(TEAMS.to_json(orient="records"))
+            f.write(TEAMS.to_json(orient="records", indent=2))
 
 
 @project.command(name="list")
@@ -1162,8 +1165,10 @@ def _mini_verify(project_id, github):
             click.echo(f"No issues found for user {gh} in repo {course_repo()}")
             RESULTS[gh] = (False, gh, "NO ISSUES FOUND", None)
             continue
+        
+        ISSUE_TITLES = [str_simplify(_.title) for _ in ISSUES.values()]
 
-        if str_simplify(TITLE) not in ISSUES.keys():
+        if str_simplify(TITLE) not in ISSUE_TITLES:
             click.echo("I could not find an issue with the desired title:")
             click.echo(f" - {TITLE}")
             click.echo("I found issues with the following titles instead:")
@@ -1173,8 +1178,13 @@ def _mini_verify(project_id, github):
 
             RESULTS[gh] = (False, gh, "NO TITLE MATCH", None)
             continue
+        
+        POTENTIAL_ISSUES = [v for v in ISSUES.values() if str_simplify(v.title) == str_simplify(TITLE)]
 
-        ISSUE = ISSUES[str_simplify(TITLE)]
+        if len(POTENTIAL_ISSUES) != 1: 
+            import pdb; pdb.set_trace()
+
+        ISSUE = POTENTIAL_ISSUES[0]
 
         if ISSUE.state != "open":
             click.echo(f"Issue {TITLE} is not in 'open' state")
@@ -1242,21 +1252,26 @@ def _mini_verify(project_id, github):
 
     if DF.ok.any():
         click.echo("-----------------------------------")
-        click.echo(f"MP {project_id} successfully verified for: ")
-        click.echo(", ".join(DF[DF.ok].github.values))
+        github_ok = sorted(DF[DF.ok].github.values, key=str.casefold)
+        n_ok = len(github_ok)
+        click.echo(f"MP #{project_id:02g} successfully verified for {n_ok} students: ")
+        for ix, g in enumerate(github_ok, start=1):
+            click.echo(f"- {ix:02g} {g}")
 
     if not DF.ok.all():
         click.echo("-----------------------------------")
-        click.echo("Problems were identified for the following users.")
+        
+        DF_BAD = DF[DF.ok != True]
+        click.echo(f"Problems were identified for the following {DF_BAD.shape[0]} users:")
 
-        for _, row in DF[DF.ok != True].iterrows():
+        for ix, row in enumerate(DF_BAD.itertuples(), start=n_ok+1):
             if row.issue_num:
                 click.echo(
-                    f"- GitHub user {row.github} failed with message {row.message}. See https://github.com/michaelweylandt/{course_repo()}/issues/{row.issue_num} for details"
+                    f"- {ix:02g} GitHub user {row.github} failed with message {row.message}. See https://github.com/michaelweylandt/{course_repo()}/issues/{row.issue_num} for details"
                 )
             else:
                 click.echo(
-                    f"- GitHub user {row.github} failed with message {row.message}. No suitable issue found. See above for details."
+                    f"- {ix:02g} GitHub user {row.github} failed with message {row.message}. No suitable issue found. See above for details."
                 )
 
     return DF
@@ -1436,9 +1451,7 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip):
             try:
                 ALL_ISSUES = gh_list_issues(gh)
             except TypeError:
-                import pdb
-
-                pdb.set_trace()
+                import pdb; pdb.set_trace()
 
             ALL_ISSUES = list(ALL_ISSUES.values())
             ALL_ISSUES.sort(key=lambda i: i.number)
@@ -1932,9 +1945,7 @@ def peer_grade(project_id):
                     try:
                         e_feedback["scores"][c]
                     except TypeError:
-                        import pdb
-
-                        pdb.set_trace()
+                        import pdb; pdb.set_trace()
 
                     if is_nan(e_feedback["scores"][c]):
                         continue
@@ -1946,9 +1957,7 @@ def peer_grade(project_id):
                 SCORES = {k: median(v) if v else nan for k, v in SCORE_DICT.items()}
                 TOTAL = sum(SCORES.values())
             except:
-                import pdb
-
-                pdb.set_trace()
+                import pdb; pdb.set_trace()
 
             if penalty:
                 TOTAL = TOTAL - 5
