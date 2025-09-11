@@ -222,9 +222,10 @@ p1 + p2
 
 ```{r}
 #| echo: true
-library(ggplot2); library(palmerpenguins)
+library(ggplot2)
 ggplot(penguins, 
-       aes(x=bill_length_mm, y=bill_depth_mm, color=species))+ geom_point()
+       aes(x=bill_len, y=bill_dep, color=species)) +
+    geom_point()
 ```
 
 ## FAQ: Inside vs. Outside `aes()`
@@ -233,9 +234,9 @@ ggplot(penguins,
 
 ```{r}
 #| echo: true
-library(ggplot2); library(palmerpenguins)
+library(ggplot2)
 ggplot(penguins, 
-       aes(x=bill_length_mm, y=bill_depth_mm))+ geom_point(color="blue")
+       aes(x=bill_len, y=bill_dep))+ geom_point(color="blue")
 ```
 
 ## FAQ: Global vs `geom_` specific `aes()`
@@ -246,9 +247,9 @@ ggplot(penguins,
 
 ```{r}
 #| echo: true
-library(ggplot2); library(palmerpenguins)
+library(ggplot2)
 ggplot(penguins, 
-       aes(x=bill_length_mm, y=bill_depth_mm, color=species))+
+       aes(x=bill_len, y=bill_dep, color=species))+
     geom_smooth() + 
     geom_point(color="blue")
 ```
@@ -285,8 +286,8 @@ When mapping quantitative variables to palettes (sequential/diverging), two appr
 
 ```{r}
 #| echo: true
-library(ggplot2); library(palmerpenguins)
-ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + 
+library(ggplot2)
+ggplot(penguins, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
     geom_point() + theme_bw() + 
     scale_color_distiller(type="seq") # Continuous
 ```
@@ -295,8 +296,8 @@ ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) +
 
 ```{r}
 #| echo: true
-library(ggplot2); library(palmerpenguins)
-ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + 
+library(ggplot2)
+ggplot(penguins, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
     geom_point() + theme_bw() + 
     scale_color_fermenter(type="seq") # Binned
 ```
@@ -305,8 +306,8 @@ ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) +
 
 ```{r}
 #| echo: true
-library(ggplot2); library(palmerpenguins)
-ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + 
+library(ggplot2)
+ggplot(penguins, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
     geom_point() + theme_bw() + 
     scale_color_fermenter(type="seq") # Binned + Sequential
 ```
@@ -315,8 +316,8 @@ ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) +
 
 ```{r}
 #| echo: true
-library(ggplot2); library(palmerpenguins)
-ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + 
+library(ggplot2)
+ggplot(penguins, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
     geom_point() + theme_bw() +
     scale_color_fermenter(type="qual") # Binned + Qualitative
 ```
@@ -325,8 +326,8 @@ ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) +
 
 ```{r}
 #| echo: true
-library(ggplot2); library(palmerpenguins)
-ggplot(penguins, aes(x=bill_length_mm, y=bill_depth_mm, color=body_mass_g)) + 
+library(ggplot2)
+ggplot(penguins, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
     geom_point() + theme_bw() + 
     scale_color_fermenter(type="div") # Binned + Diverging
 ```
@@ -358,11 +359,10 @@ Built-in themes + `ggthemes` package:
 ```{r}
 #| echo: true
 #| warning: false
-library(ggplot2); library(ggthemes); 
-library(palmerpenguins); library(ggpmisc)
+library(ggplot2); library(ggthemes); library(ggpmisc)
 p <- ggplot(penguins, 
-       aes(x=flipper_length_mm, 
-           y=body_mass_g, 
+       aes(x=flipper_len, 
+           y=body_mass, 
            color=species)) + 
     geom_point() + 
     stat_poly_line(se=FALSE, 
@@ -501,10 +501,10 @@ Order of layers _technically_ matters, but the effect is small
 
 ```{r}
 #| echo: true
-p1 <- ggplot(penguins, aes(x=bill_length_mm, y=flipper_length_mm)) +
+p1 <- ggplot(penguins, aes(x=bill_len, y=flipper_len)) +
         geom_point(color="black") + 
         geom_smooth(color="blue", method="lm") + ggtitle("Line on points")
-p2 <- ggplot(penguins, aes(x=bill_length_mm, y=flipper_length_mm)) +
+p2 <- ggplot(penguins, aes(x=bill_len, y=flipper_len)) +
         geom_smooth(color="blue", method="lm") + 
         geom_point(color="black") + ggtitle("Points on line")
 p1 + p2
@@ -574,10 +574,10 @@ Facets are `group_by` for plots. Useful for
 #| label: "Create Data"
 library(datasauRus)
 library(dplyr)
-simpsons_paradox <- datasauRus::simpsons_paradox %>%
-  filter(dataset == "simpson_2") %>%
+simpsons_paradox <- datasauRus::simpsons_paradox |>
+  filter(dataset == "simpson_2") |>
   mutate(group = cut(x + y, c(0, 55, 80, 120, 145, 200), 
-       labels = LETTERS[1:5])) %>%
+       labels = LETTERS[1:5])) |>
   select(- dataset)
 ```
 
@@ -637,7 +637,9 @@ See the `ggimage` or `ggflags` package for images as "points":
 
 ```{r}
 #| echo: true
-#devtools::install_github("jimjam-slam/ggflags"); 
+if(!require("ggflags")){
+    devtools::install_github("jimjam-slam/ggflags"); 
+}
 library(ggflags)
 d <- data.frame(x=rnorm(50), y=rnorm(50), 
                 country=sample(c("ar","fr", "nz", "gb", "es", "ca"), 50, TRUE), 

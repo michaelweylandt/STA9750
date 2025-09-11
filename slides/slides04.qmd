@@ -175,19 +175,18 @@ behavior of later functionality.
 
 ```{r}
 #| include: false
-library(palmerpenguins)
 library(tidyverse)
 ```
 
 ```{r}
 #| echo: true
-penguins |> drop_na() |> print(n=2)
+penguins |> drop_na() |> head(2)
 ```
 
 
 ```{r}
 #| echo: true
-penguins |> drop_na() |> group_by(species) |> print(n=2)
+penguins |> drop_na() |> group_by(species) |> head(2)
 ```
 
 ## FAQ: `filter` vs `group_by` {.smaller}
@@ -195,13 +194,13 @@ penguins |> drop_na() |> group_by(species) |> print(n=2)
 No `group_by` - full summarization:
 ```{r}
 #| echo: true
-penguins |> drop_na() |> summarize(mean(body_mass_g))
+penguins |> drop_na() |> summarize(mean(body_mass))
 ```
 
 With `group_by` - summary within groups. 
 ```{r}
 #| echo: true
-penguins |> drop_na() |> group_by(species) |> summarize(mean(body_mass_g))
+penguins |> drop_na() |> group_by(species) |> summarize(mean(body_mass))
 ```
 
 ## FAQ: `filter` vs `group_by` {.smaller}
@@ -210,14 +209,14 @@ With multiple grouping - "cross-tabs" of results:
 
 ```{r}
 #| echo: true
-penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass_g))
+penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass))
 ```
 
 Note that result of multi-`group_by` is still grouped: 
 
 ```{r}
 #| echo: true
-penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass_g))
+penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass))
 ```
 
 ## FAQ: `filter` vs `group_by` {.smaller}
@@ -227,19 +226,19 @@ Changes next call to `summarize`:
 ```{r}
 #| echo: true
 penguins |> drop_na() |> group_by(species) |> 
-    summarize(mbmg = mean(body_mass_g)) |> summarize(mean(mbmg))
+    summarize(mbmg = mean(body_mass)) |> summarize(mean(mbmg))
 ```
 
 ```{r}
 #| echo: true
 penguins |> drop_na() |> group_by(species, sex) |> 
-    summarize(mbmg = mean(body_mass_g)) |> summarize(mean(mbmg))
+    summarize(mbmg = mean(body_mass)) |> summarize(mean(mbmg))
 ```
 
 ```{r}
 #| echo: true
 penguins |> drop_na() |> group_by(sex, species) |> 
-    summarize(mbmg = mean(body_mass_g)) |> summarize(mean(mbmg))
+    summarize(mbmg = mean(body_mass)) |> summarize(mean(mbmg))
 ```
 
 ## FAQ: Order of `group_by`
@@ -259,7 +258,7 @@ penguins |> drop_na() |> group_by(sex, species) |>
 #| eval: false
 sum_penguins <- penguins |> 
     group_by(sex, species) |> 
-    summarize(mbmg = mean(body_mass_g))
+    summarize(mbmg = mean(body_mass))
 
 ... # Lots of code 
 

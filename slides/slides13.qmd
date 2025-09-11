@@ -235,15 +235,14 @@ Basic modeling function: `lm` (_linear model_)
 
 ```{r}
 #| echo: true
-library(palmerpenguins)
-lm(body_mass_g ~ flipper_length_mm, data=penguins)
+lm(body_mass ~ flipper_len, data=penguins)
 ```
 
 
 ## Modeling Functions
 
 ```{r}
-lm(body_mass_g ~ flipper_length_mm, data=penguins)
+lm(body_mass ~ flipper_len, data=penguins)
 ```
 
 - Provide model (`formula`) and data (`data.frame`) instead of $X, y$
@@ -252,7 +251,7 @@ lm(body_mass_g ~ flipper_length_mm, data=penguins)
 ## Modeling Functions
 
 ```{r}
-lm(body_mass_g ~ flipper_length_mm + species, data=penguins)
+lm(body_mass ~ flipper_len + species, data=penguins)
 ```
 
 Automatically: 
@@ -265,7 +264,7 @@ Automatically:
 ## Modeling Functions
 
 ```{r}
-lm(body_mass_g ~ flipper_length_mm*bill_depth_mm, data=penguins)
+lm(body_mass ~ flipper_len*bill_dep, data=penguins)
 ```
 
 - `*` creates both 'main' effects and interactions
@@ -274,7 +273,7 @@ lm(body_mass_g ~ flipper_length_mm*bill_depth_mm, data=penguins)
 ## Modeling Functions
 
 ```{r}
-lm(body_mass_g ~ flipper_length_mm*species, data=penguins)
+lm(body_mass ~ flipper_len*species, data=penguins)
 ```
 
 - `*` of continuous and categorical creates ANCOVA
@@ -286,7 +285,7 @@ Many extensions
 ```{r}
 #| echo: true
 library(mgcv)
-gam(body_mass_g ~ s(flipper_length_mm) + s(bill_depth_mm, by=species), data=penguins)
+gam(body_mass ~ s(flipper_len) + s(bill_dep, by=species), data=penguins)
 ```
 Fits a *mixed-effect non-linear regression*
 
@@ -296,7 +295,7 @@ Helper functions to access fitted models:
 
 ```{r}
 #| echo: true
-m <- lm(body_mass_g ~ flipper_length_mm*bill_depth_mm + species, data=penguins)
+m <- lm(body_mass ~ flipper_len*bill_dep + species, data=penguins)
 coef(m)
 ```
 
@@ -322,7 +321,7 @@ Out-of-sample / test prediction:
 
 ```{r}
 #| echo: true
-toppenguins <- penguins |> slice_max(body_mass_g, n=10)
+toppenguins <- penguins |> slice_max(body_mass, n=10)
 predict(m, newdata=toppenguins)
 ```
 
@@ -539,6 +538,7 @@ Fit workflow to a grid of parameters:
 ```{r}
 #| eval: true
 #| echo: true
+#| cache: true
 lr_results <- 
   lr_workflow |> 
   tune_grid(grid = lr_reg_grid,
@@ -555,6 +555,7 @@ Visual examination
 ```{r}
 #| eval: true
 #| echo: true
+#| cache: true
 lr_results |> 
   collect_metrics() |> 
   ggplot(aes(x = penalty, y = mean)) + 
