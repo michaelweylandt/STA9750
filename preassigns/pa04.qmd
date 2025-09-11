@@ -114,13 +114,34 @@ this course- you can substitute `tibble` with `data.frame` without
 issue. 
 
 Before we get into `dplyr`, let's make sure we have a data frame to
-play with. Let's bring back our friends, the Palmer penguins: 
+play with. Let's bring back our friends, the Palmer penguins:[^penguins]
+
+[^penguins]: The `penguins` data set was originally distributed in a separate
+package called `palmerpenguins`. If you have an version of `R` from before
+R 4.5, you may need to `install.packages` and `library` that package to access
+this data. Note that that version has slightly different names of certain columns
+than we have here. The following snippet can be used to check if that package
+is needed and translate between the two versions: 
+
+    ```{r}
+    #| eval: false
+    if(getRversion() < "4.5"){
+        if(!require("palmerpenguins")) install.packages("palmerpenguins")
+        data(penguins, package="palmerpenguins")
+    }
+    colnames(penguins) <- c("species", "island", "bill_len", "bill_dep", 
+                            "flipper_len", "body_mass", "sex", "year")
+    ```
 
 ```{webr}
+options(max.print=25) # Keep Web-R from printing quite so much
 library(tidyverse)
-library(palmerpenguins)
-penguins
+head(penguins, 10)
 ```
+
+So much tuxedo goodness!
+
+![Courtesy of Gabe Mednick](https://www.gabemednick.com/post/penguin/featured_hu23a2ff6767279debab043a6c8f0a6157_878472_720x0_resize_lanczos_2.png)
 
 
 ## Subsetting Data Frames
@@ -168,7 +189,7 @@ Just like base `R`, if we include `-` signs in our `select` statement, we get
 _everything except_ a certain column: 
 
 ```{webr}
-penguins |> select(-bill_length_mm, -bill_depth_mm, -flipper_length_mm)
+penguins |> select(-bill_len, -bill_dep, -flipper_len)
 ```
 
 Here, we _dropped_ three columns. 
@@ -183,7 +204,8 @@ into that just yet.
 Often in data analysis, we want to focus on a _subset_ of the entire population:
 *e.g.*, we might want to know the fraction of women supporting a certain
 political candidate or the rate of a rare cancer among patients 65 or older. In
-this case, we need to select only those rows of our data that match some criterion. This brings us to the `filter` operator. 
+this case, we need to select only those rows of our data that match some 
+criterion. This brings us to the `filter` operator. 
 
 `filter` takes a logical vector and uses it to select rows of a data frame. Most
 commonly, this logical vector is created by performing some sort of _tests_
@@ -207,14 +229,14 @@ If we supply multiple tests to `filter`, we get the _intersection_: that is,
 we get rows that pass _all_ tests. 
 
 ```{webr}
-penguins |> filter(sex == "male", bill_length_mm > 38)
+penguins |> filter(sex == "male", bill_len > 38)
 ```
 
 If we want the _union_-rows that satisfy _any_ of the tests-we have to use
 the logical operators we previous applied to vectors: 
 
 ```{webr}
-penguins |> filter( (sex == "male") | (bill_length_mm > 38))
+penguins |> filter( (sex == "male") | (bill_len > 38))
 ```
 
 It's a bit clunky, but thankfully, this is somewhat less common than checking
@@ -268,10 +290,10 @@ For example, if we want to convert penguin bill lengths from millimeters to
 inches, we might operator: 
 
 ```{webr}
-penguins |> mutate(bill_length_in = bill_length_mm / 25.4)
+penguins |> mutate(bill_len_in = bill_len / 25.4)
 ```
 
-Here, note that the `bill_length_mm` column is retained - and all columns are 
+Here, note that the original `bill_len` column is retained - and all columns are 
 kept! `mutate` only creates new columns; it won't secretly drop them. 
 
 A particularly common operator is changing the name of a column without changing
@@ -279,7 +301,7 @@ its values. You can use `mutate` and `select(-)` for this, but `rename` provides
 essentially the same interface and its _semantically_ clearer: 
 
 ```{webr}
-penguins |> rename(mass = body_mass_g)
+penguins |> rename(body_mass_g = body_mass)
 ```
 
 ## Operating with Group Structure

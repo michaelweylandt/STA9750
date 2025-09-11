@@ -351,10 +351,10 @@ execution order for you automatically.
 ```{r}
 #| echo: true
 #| eval: true
-library(dplyr); library(tidyr); library(palmerpenguins)
+library(dplyr); library(tidyr)
 penguins |> drop_na() |> 
     group_by(sex, species) |> 
-    summarize(weight = mean(body_mass_g)) |>
+    summarize(weight = mean(body_mass)) |>
     pivot_wider(id_cols=species, 
                 names_from=sex,
                 values_from=weight) |>
@@ -442,10 +442,9 @@ Q: Which penguin species has the largest between-sex mass difference?
 ```{r}
 #| echo: true
 library(tidyr)
-library(palmerpenguins)
 avg_mass_tbl <- penguins |> drop_na() |> 
     group_by(sex, species) |> 
-    summarize(avg_mass = mean(body_mass_g)) |> 
+    summarize(avg_mass = mean(body_mass)) |> 
     ungroup()
 avg_mass_tbl
 ```
