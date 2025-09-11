@@ -211,17 +211,25 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 <script>
-var filter_date = new Date();
-filter_date.setDate(filter_date.getDate() - 1);
-var filter_string = filter_date.toISOString().split('T')[0];
+// Update Calendar DataTables (created above in R) to show future events only
+// 
+// We set a one-time hook on each table (selected by ID) at its initial 'draw'
+// event. This function checks the current date and compares it to the value
+// in the fourth (date) column, deleting rows with past dates. After deletion,
+// the table is re-drawn. 
+//
+// We use a one time hook (\$.one) as opposed to an everytime hook (\$.on) to 
+// avoid an infinite loop. Since the table is not destroyed, just hidden, when
+// moving from one tab to the other, this seems to be safe. 
+$('#tuesday_table,#thursday_table').each(function(){
+  $(this).one( 'draw.dt', function(){
+    var filter_date = new Date();
+    filter_date.setDate(filter_date.getDate() - 1);
+    var filter_string = filter_date.toISOString().split('T')[0];
+    $("table").DataTable().rows((idx, data) => data[3] < filter_string).remove().draw();
+  });
+});
 
-$('#tuesday_table').one( 'draw.dt', function () {
-  $("#tuesday_table table").DataTable().rows((idx, data) => data[3] < filter_string).remove().draw();
-} );
-
-$('#thursday_table').one( 'draw.dt', function () {
-  $("#thursday_table table").DataTable().rows((idx, data) => data[3] < filter_string).remove().draw();
-} );
 </script>
 <p>Instructor: <a href="https://michael-weylandt.com">Michael Weylandt</a></p>
 
