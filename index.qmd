@@ -72,10 +72,8 @@ readr::read_csv("key_dates_tuesday.csv") |>
     DT::datatable(options=list(searching=FALSE,
                                paging=TRUE),
                   caption=glue("Upcoming Important Dates for {course_short} - Tuesday Section"), 
-                  rownames=TRUE) # Setting rownames=FALSE seems to delete
-                                 # All 'student' rows from this table for
-                                 # the Tuesday section only, so we have to keep
-                                 # them here only
+                  elementId="tuesday_table",
+                  rownames=FALSE)
 ```
 
 
@@ -87,7 +85,7 @@ Instructions for how to do so can be found
 If you use another calendar system that cannot accept CSV files in this format, 
 let me know and I will try to provide additional file formats. 
 
-## Thursday Section 
+## Thursday Section
 
 There are quite a few moving parts to this course, so this [key dates file](./key_dates_thursday.csv)
 or the list of upcoming course activities below may be useful:
@@ -109,6 +107,7 @@ readr::read_csv("key_dates_thursday.csv") |>
     DT::datatable(options=list(searching=FALSE,
                                paging=TRUE),
                   caption=glue("Upcoming Important Dates for {course_short} - Thursday Section"), 
+                  elementId="thursday_table",
                   rownames=FALSE)
 ```
 
@@ -123,13 +122,18 @@ let me know and I will try to provide additional file formats.
 
 :::
 
-<script defer>
-window.addEventListener("load", function(){
-  var filter_date = new Date();
-  filter_date.setDate(filter_date.getDate() - 1);
-  var filter_string = filter_date.toISOString().split('T')[0]
-  $("table").DataTable().rows((idx, data) => data[4] < filter_string).remove().draw();
-});
+<script>
+var filter_date = new Date();
+filter_date.setDate(filter_date.getDate() - 1);
+var filter_string = filter_date.toISOString().split('T')[0];
+
+$('#tuesday_table').one( 'draw.dt', function () {
+  $("#tuesday_table table").DataTable().rows((idx, data) => data[3] < filter_string).remove().draw();
+} );
+
+$('#thursday_table').one( 'draw.dt', function () {
+  $("#thursday_table table").DataTable().rows((idx, data) => data[3] < filter_string).remove().draw();
+} );
 </script>
 
 Instructor: [Michael Weylandt](https://michael-weylandt.com)
