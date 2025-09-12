@@ -1,5 +1,5 @@
 ---
-title: "{{< var course.short >}} Week {{< meta lab_num >}} Pre Assignment: {{< meta lab_title >}}"
+title: "{{< var course.short >}} Week {{< meta lab_num >}} In-Class Activity: {{< meta lab_title >}}"
 format: live-html
 engine: knitr
 lab_num: 3
@@ -88,15 +88,28 @@ You have likely already visited this site to download `R`. The
 options(repos=c(CRAN = "https://cloud.r-project.org"))
 ```
 
-```{r}
-#| echo: true
-available.packages()["Package"]
-```
+The list of available packages is _long_ 
 
 ```{r}
 #| echo: true
-NROW(available.packages())
+#| eval: false
+available.packages()[,"Package"]
 ```
+
+```{r}
+#| echo: false
+available.packages() |> rownames() |> print(max=20)
+```
+
+As of the time of writing, CRAN contains approximately
+`r NROW(available.packages())` different freely available packages, while
+continuing to grow daily. A full list of CRAN packages  can be found
+[here](https://cran.r-project.org/web/packages/available_packages_by_name.html).
+In addition to all of these, there are even more packages hosted on sites like
+GitHub or on repositories that are specific to large organizations.[^bioc]
+
+[^bioc]: The `BioConductor` project produces over 2000 high-quality non-CRAN
+packages for bioinformatics alone. 
 
 If you want to use a contributed package, you need to do two things: 
 
@@ -165,15 +178,36 @@ After we install and load `nycflights13`, we are good to go:
 ```{webr}
 install.packages("nycflights13")
 library(nycflights13)
-head(nycflights, 10) # Print only the first 10 rows of the data set
+head(airports, 10) # Print only the first 10 rows of the data set
 ```
-
 
 In general, if you get a error message of the form `Error: object 'X' not found`,
 you should: 
 
 1. Make sure you spelled `X` properly
 2. If `X` comes from a package, make sure you `library()` that package. 
+
+::: {.callout-tip title="How do I know what a Package Contains?" collapse="true"}
+
+As you first get started with the various packages we'll use in this course, 
+you might wonder how you should know what functions and data are in a given
+package. The easiest way to do so is to find the web documentation for that
+package. For the `nycflights13` package used above, a little web searching
+will lead you to <https://nycflights13.tidyverse.org/>. On this site, we see
+a high-level description of what the `nycflights13` package includes. If
+you click "Reference" at the top of the page, you will be taken to a 
+[page listing _everything_](https://nycflights13.tidyverse.org/reference/index.html)
+made available to you by that package. All of the packages we'll use in this
+course have similarly designed web documentation. See the 
+[Resources Page](../resources.qmd) for direct links to some of the most important
+packages. 
+
+As a general rule, however, I don't recommend trying to learn a package by
+learning _everything_ in it. It's much more productive to look up the functions
+you need 'just-in-time' for you to use them. This way, you will repeatedly 
+look up the _most useful_ functions and commit them to memory the most rapidly.
+
+:::
 
 There's no harm to `library()`-ing a package multiple times; if you
 `install.packages()` a package that you have already loaded, you may need to 
