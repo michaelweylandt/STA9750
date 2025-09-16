@@ -6,8 +6,7 @@ We are now starting the *peer feedback* portion of the cycle.
 
 ---
 
-This submission passed all automated checks for 
-submission formatting.
+This submission passed all automated checks for submission formatting.
 
 ---
 
@@ -36,10 +35,13 @@ For practice, please make sure to provide your feedback according to the
 specified rubric (see below).
 {% endif %}
 
-Note that your feedback should follow the format specified 
-in the [relevant documentation](https://michael-weylandt.com/STA9750/miniprojects.html#peer-feedback).
-After submitting your feedback, you can verify that it is properly formatted
-using the [`mp_feedback_verify`](https://michael-weylandt.com/STA9750/tips.html#verify-peer-feedback-properly-formatted)
+Note that your feedback should follow the format specified in the 
+[relevant documentation](https://michael-weylandt.com/STA9750/miniprojects.html#peer-feedback).
+You can use the [`mp_feedback_create`](https://michael-weylandt.com/STA9750/tips.html#mp_feedback_create)
+function from the course helper scripts to ensure your comment is properly
+formatted. After submitting your feedback, you can verify that it is 
+properly formatted using the 
+[`mp_feedback_verify`](https://michael-weylandt.com/STA9750/tips.html#mp_feedback_verify)
 function from the course helper functions. 
 
 Feel free to link to other repos, the course documentation, or other useful
