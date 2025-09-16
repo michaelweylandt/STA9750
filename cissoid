@@ -148,8 +148,7 @@ def gh_list_issues(owner=None):
         resp = _gh(f"/repos/michaelweylandt/{course_repo()}/issues?state=all&per_page=100&page={pagination}")
 
         if "status" in resp and resp["status"] != "200":
-            click.echo("UNABLE TO ACCESS GITHUB API")
-            return dict()
+            raise click.Abort("UNABLE TO ACCESS GITHUB API")
         
         ALL_ISSUES += resp
         pagination += 1
@@ -281,16 +280,16 @@ def team_grades_file():
 
 @cache
 def mapping_file():
-    filename = Path(op.join(course_dir(), "master_mapping.json")).resolve(strict=True)
+    filename = Path(op.join(course_dir(), "master_mapping.json"))
     filename.touch(exist_ok=True)
-    return filename
+    return filename.resolve(strict=True)
 
 
 @cache
 def mapping_index_file():
-    filename = Path(op.join(course_dir(), "mapping_indices.json")).resolve(strict=True)
+    filename = Path(op.join(course_dir(), "mapping_indices.json"))
     filename.touch(exist_ok=True)
-    return filename
+    return filename.resolve(strict=True)
 
 def number_to_letter(score):
     if score >= 97:   # 97-100
@@ -413,14 +412,15 @@ def roster():
     used implicitly by all other commands, so it must be kept up to date."""
 
 def current_roster(include_inactive=False):
-    if include_inactive:
-        raise NotImplementedError
-    
     try:
-        return pd.read_json(roster_file())
-    except ValueError:
+        ROSTER = pd.read_json(roster_file())
+        
+        if include_inactive:
+            return ROSTER
+        else: 
+            return ROSTER[ROSTER["active"]]
+    except: 
         return pd.DataFrame()
-
 
 def current_teams():
     try:
@@ -430,9 +430,16 @@ def current_teams():
 
 
 @roster.command(name="list")
-def roster_list():
+@click.option(
+    "-I",
+    "--include-inactive",
+    help="Should GitHub inactive students bee included?",
+    default=False,
+    is_flag=True
+)
+def roster_list(include_inactive):
     """Print current course roster"""
-    roster = current_roster()
+    roster = current_roster(include_inactive=include_inactive)
     roster.index = roster.index + 1
     click.echo(roster.to_markdown(index=True))
     click.echo(f"{roster.shape[0]} students registered.")
@@ -843,7 +850,7 @@ def project_grade(element, number, skip_email):
     ALL_GRADES[element.lower()][number] = total
 
     with open(team_grades_file(), "w") as f:
-        f.write(json.dumps(ALL_GRADES))
+        f.write(json.dumps(ALL_GRADES, indent=2))
 
     if skip_email:
         return 0
@@ -1174,7 +1181,7 @@ def _mini_verify(project_id, github):
             click.echo("I found issues with the following titles instead:")
 
             for t in ISSUES.values():
-                click.echo(f" - {t.title}")
+                click.echo(f" - {t.title} (Issue #{t.number:02g})")
 
             RESULTS[gh] = (False, gh, "NO TITLE MATCH", None)
             continue
@@ -1250,10 +1257,11 @@ def _mini_verify(project_id, github):
     click.echo("-----------------------------------")
     click.echo("----------ANALYSIS COMPLETE--------")
 
+    github_ok = sorted(DF[DF.ok].github.values, key=str.casefold)
+    n_ok = len(github_ok)
+
     if DF.ok.any():
         click.echo("-----------------------------------")
-        github_ok = sorted(DF[DF.ok].github.values, key=str.casefold)
-        n_ok = len(github_ok)
         click.echo(f"MP #{project_id:02g} successfully verified for {n_ok} students: ")
         for ix, g in enumerate(github_ok, start=1):
             click.echo(f"- {ix:02g} {g}")
@@ -1262,6 +1270,7 @@ def _mini_verify(project_id, github):
         click.echo("-----------------------------------")
         
         DF_BAD = DF[DF.ok != True]
+        DF_BAD = DF_BAD.sort_values("github", key=lambda col: col.str.lower())
         click.echo(f"Problems were identified for the following {DF_BAD.shape[0]} users:")
 
         for ix, row in enumerate(DF_BAD.itertuples(), start=n_ok+1):
@@ -1298,8 +1307,10 @@ def _peer_assignment_master():
 
     MAPPING_FILE = mapping_file()
 
-    if not op.exists(MAPPING_FILE):
-        NAMES = current_roster()["github"]
+    if (not op.exists(MAPPING_FILE)) or (op.getsize(MAPPING_FILE) == 0):
+        NAMES = current_roster(include_inactive=True)["github"]
+        
+        random.shuffle(NAMES)
         n = len(NAMES)
 
         l = [
@@ -1327,11 +1338,11 @@ def _peer_assignment_master():
 def _peer_assignment_mapping(project_id, n_peers=None):
     MASTER_MAPPING = _peer_assignment_master()
     project_id_s = f"mp0{project_id}"
-
+    
     # Check for previous mappings
     INDEX_TO_PF_FILE = op.join(course_dir(), "mapping_indices.json")
 
-    if not op.exists(INDEX_TO_PF_FILE):
+    if (not op.exists(INDEX_TO_PF_FILE)) or (op.getsize(INDEX_TO_PF_FILE) == 0):
         Path(INDEX_TO_PF_FILE).touch(exist_ok=True)
 
     with open(INDEX_TO_PF_FILE, "r") as f:
@@ -1352,7 +1363,7 @@ def _peer_assignment_mapping(project_id, n_peers=None):
         INDEX_DICT[project_id_s] = NEW_IX
 
         with open(INDEX_TO_PF_FILE, "w") as f:
-            f.write(json.dumps(INDEX_DICT))
+            f.write(json.dumps(INDEX_DICT, indent=2))
 
     with open(INDEX_TO_PF_FILE, "r") as f:
         INDEX_DICT = json.loads(f.read())
@@ -1416,7 +1427,7 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip):
 
     # We begin by loading the peer feedback
     # mapping for this assignment
-    ROSTER = current_roster()
+    ROSTER = current_roster(include_inactive=False)
     PF_MAPPING = _peer_assignment_mapping(project_id, peer_count)
 
     PF_DIR = op.join(course_dir(), f"mp0{project_id}")
@@ -1436,7 +1447,8 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip):
         if post_glob:
             continue
 
-        EVALUATORS = PF_MAPPING[gh]
+        EVALUATORS = [e for e in set(PF_MAPPING[gh]) & set(ROSTER.github.values)]
+        
         ISSUE_STATUS = _mini_verify(project_id, [gh])
 
         SUB_URL, RAW_URL = _get_submission_urls(project_id, gh)
@@ -1855,7 +1867,7 @@ def peer_collect(project_id, rearchive, skip_pdf, force, github):
             ALL_PEER_FEEDBACK[student][evaluator]["posts"] = POSTS
 
             with open(pf_file, "w") as f:
-                f.write(json.dumps(ALL_PEER_FEEDBACK))
+                f.write(json.dumps(ALL_PEER_FEEDBACK, indent=2))
 
         # Save the issue number for later just in case
         ALL_PEER_FEEDBACK[student]["issue_num"] = KEY_ISSUE["number"]
