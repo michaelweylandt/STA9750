@@ -1,8 +1,12 @@
 ---
 title: "{{< var course.short >}} Week {{< meta pa_num >}} Pre Assignment: {{< meta pa_title >}}"
+format: live-html
+engine: knitr
 pa_num: 5
 pa_title: "Multi-Table `dplyr` Verbs"
 ---
+
+{{< include _gradethis_init.qmd >}}
 
 ```{r}
 #| echo: false
@@ -45,19 +49,19 @@ somewhat regularly (*e.g.*, Facebook becoming Meta)
 The simplest join is the `inner_join`, which returns rows which match between
 the two tables: 
 
-```{r}
+```{webr}
 library(dplyr)
 band_members
 ```
 
-```{r}
+```{webr}
 band_instruments
 ```
 
 In this case, the `name` column forms a unique ID, so we can use it
 for our join. 
 
-```{r}
+```{webr}
 inner_join(band_members, band_instruments)
 ```
 
@@ -65,7 +69,7 @@ We see here that `R` automatically performed the join using the common
 column (`name`): if we want to be clearer, let's specify the join element
 ourselves: 
 
-```{r}
+```{webr}
 inner_join(band_members, band_instruments, join_by(name))
 ```
 
@@ -73,14 +77,14 @@ Here `join_by` is a _helper_ function that can be used to specify
 the form of the join used. In some contexts, the "common" column has different
 names in the two tables, so we can use a more explicit call to `join_by`: 
 
-```{r}
+```{webr}
 band_instruments2
 ```
 
 *Note that this is the same as `band_instruments`, but with the `name` column
 changed to `artist`.*
 
-```{r}
+```{webr}
 inner_join(band_members, band_instruments2, join_by(name == artist))
 ```
 
@@ -90,7 +94,7 @@ names are the same between the two tables (`join_by(name == name)`).
 Let's look more closely at the result here: we return a table with 3 columns
 and two rows: 
 
-```{r}
+```{webr}
 inner_join(band_members, band_instruments, join_by(name == name))
 ```
 
@@ -115,7 +119,7 @@ sometimes called an _outer_ join) is basically a _union_ join. We get back
 all rows from both tables, regardless of whether a match has been found. 
 But what happens with those unmatched rows?
 
-```{r}
+```{webr}
 full_join(band_members, band_instruments, join_by(name == name))
 ```
 
@@ -125,7 +129,7 @@ Mick [Jagger] plays an instrument, but it is _unknown_ to `R` here.
 Finally, we have the intermediate _left_ join, which keeps all rows from
 one table whether or not they have a match: 
 
-```{r}
+```{webr}
 left_join(band_members, band_instruments, join_by(name == name))
 ```
 
@@ -153,12 +157,20 @@ different models of what a "unit" is. For example, consider a hypothetical
 instructor who has i) a table with student names and contact information; and
 ii) a table with grades on different assignments. 
 
-```{r}
+::: {.callout-note title="`tribble`"}
+
+In the following examples, I use the `tribble` function to quickly create a
+data frame. The specifics of `tribble` are beyond the scope of this course.
+
+:::
+
+```{webr}
+library(tibble)
 students <- tribble(
-    ~name, ~email, ~id,
-    "Bernard",  "bernard@cuny.edu",  1,
-    "Hunter",   "hunter@cuny.edu",   2,
-    "John Jay", "john.jay@cuny.edu", 3
+    ~name,                   ~email, ~id,
+    "Bernard",   "bernard@cuny.edu",   1,
+    "Hunter",     "hunter@cuny.edu",   2,
+    "John Jay", "john.jay@cuny.edu",   3
 )
 
 grades <- tribble(
@@ -177,7 +189,7 @@ grades <- tribble(
 
 What happens if we join these? 
 
-```{r}
+```{webr}
 inner_join(students, grades, join_by(id == student_id))
 ```
 
@@ -189,7 +201,7 @@ is quite common in database design.)
 We get repeats of the student rows: for _each_ valid student-grade pair, we
 have a row. From here, we can compute final grades: 
 
-```{r}
+```{webr}
 inner_join(students, 
            grades, 
            join_by(id == student_id)) |>
@@ -204,9 +216,9 @@ inner_join(students,
 ```
 
 In this case, everything works well. But let's try a slightly trickier case,
-with some students who never fail to submit certain assignments. 
+with some students who fail to submit certain assignments. 
 
-```{r}
+```{webr}
 students <- tribble(
     ~name, ~email, ~id,
     "Bernard",  "bernard@cuny.edu",  1,
@@ -240,7 +252,7 @@ inner_join(students,
 
 Why did the final grades go up after we deleted rows? 
 
-```{r}
+```{webr}
 inner_join(students, 
            grades, 
            join_by(id == student_id))
@@ -259,7 +271,7 @@ So far, our join results have been relatively straightforward because we have
 had 'good' unique identifiers. If we find ourselves in a situation where
 we lack unique IDs, things can go wrong quickly: 
 
-```{r}
+```{webr}
 students <- tribble(
     ~name, ~email, ~id,
     "Bernard",  "bernard@cuny.edu",  1,
@@ -298,7 +310,7 @@ several columns: that is, taken on its own, no column is unique, but the
 tuples formed by comining several columns are unique, *e.g.*, data with
 year, month, and day columns. 
 
-```{r}
+```{webr}
 revenues <- tribble(
     ~year, ~month, ~day, ~revenue,
     2024,  09,     22,   100,
@@ -320,7 +332,7 @@ expenses <- tribble(
 
 In this case, a simple join on any one column goes astray: 
 
-```{r}
+```{webr}
 inner_join(revenues, expenses, join_by(day == day))
 ```
 
@@ -330,7 +342,7 @@ In this scenario, we should really "tidy" up the data by combining
 the date information, which is spread across three columns, into a single
 column, but we have the alternative option of a _compound_ join: 
 
-```{r}
+```{webr}
 inner_join(revenues, expenses, 
            join_by(day == day, 
                    month == month, 
@@ -345,7 +357,7 @@ we want all three parts of the date to match.
 Finally, we may want to re-arrange the output of a join. Returning to our
 grades example from above: 
 
-```{r}
+```{webr}
 students <- tribble(
     ~name, ~email, ~id,
     "Bernard",  "bernard@cuny.edu",  1,
@@ -387,7 +399,8 @@ we want to use the `pivot_wider` column from the `tidyr` package.
 This is maybe easier by example: 
 
 
-```{r}
+```{webr}
+library(tidyr)
 grade_book |>
     pivot_wider(id_cols = c(name, email, id), 
                 names_from=assignment_id,
@@ -397,7 +410,7 @@ grade_book |>
 This `pivot` trick is particularly useful for finding missing rows, like
 those that tripped us up earlier: 
 
-```{r}
+```{webr}
 grades <- tribble( # Implicit missing values
     ~student_id, ~assignment_id, ~grade,
     1,           "A",            100,
@@ -421,7 +434,7 @@ Here, our missing values are now explicit!
 
 We can also explicitly fill the `NA` with a value of our choice, here 0: 
 
-```{r}
+```{webr}
 inner_join(students, 
            grades, 
            join_by(id == student_id)) |>
@@ -437,7 +450,7 @@ There is also an inverse operator `pivot_longer` which takes a wide table
 To complete our grade book example, we might want to take the _average_ 
 across the three grade columns: 
 
-```{r}
+```{webr}
 inner_join(students, 
            grades, 
            join_by(id == student_id)) |>
@@ -457,7 +470,7 @@ three grades and passing it to the `mean` function.
 
 What is `group_by(name)` doing here? See what happens without it: 
 
-```{r}
+```{webr}
 inner_join(students, 
            grades, 
            join_by(id == student_id)) |>
@@ -476,7 +489,7 @@ have the `rowwise()` helper, which automatically creates group structure
 with each group a separate row. If you don't have a clean unique identifier,
 or just can't think of one easily, this is sometimes a useful helper. 
 
-```{r}
+```{webr}
 inner_join(students, 
            grades, 
            join_by(id == student_id)) |>
