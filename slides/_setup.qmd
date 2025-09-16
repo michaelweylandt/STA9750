@@ -85,6 +85,16 @@ get_mp_pf_assigned <- function(N){
 }
 
 
+
+get_mp_pf_deadline <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Mini-Projects", 
+               `Item Number`== N, 
+               str_detect(Details, "Peer"), 
+               str_detect(Details, "Due")) |>
+        pull(Date)
+}
+
 get_pa_deadline <- function(N){
     read_csv("key_dates.csv") |> 
         filter(`Course Element` == "Pre-Assignments", 
