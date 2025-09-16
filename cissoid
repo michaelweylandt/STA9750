@@ -441,8 +441,6 @@ def roster_list(include_inactive, include_emplid):
     """Print current course roster"""
     
     roster = current_roster(include_inactive=include_inactive)
-    roster.index = roster.index + 1
-    
     teams = current_teams()
     
     full_roster = pd.merge(
@@ -454,6 +452,8 @@ def roster_list(include_inactive, include_emplid):
         left_on="project_team", 
         right_on="team_number", how="left").\
     drop(["project_team", "team_number"], axis=1)
+    
+    full_roster.index = full_roster.index + 1
     
     if not include_emplid:
         full_roster = full_roster.drop(["emplid"], axis=1)
