@@ -148,7 +148,7 @@ def gh_list_issues(owner=None):
         resp = _gh(f"/repos/michaelweylandt/{course_repo()}/issues?state=all&per_page=100&page={pagination}")
 
         if "status" in resp and resp["status"] != "200":
-            raise click.Abort("UNABLE TO ACCESS GITHUB API")
+            raise click.ClickException("UNABLE TO ACCESS GITHUB API")
         
         ALL_ISSUES += resp
         pagination += 1
@@ -356,20 +356,13 @@ def get_pf_mapping(project_id):
                 continue
 
             if len(issue) > 1:
-                click.echo(
-                    "ERROR: "
-                    + f"Multiple issues found for {author} on MP #0{project_id}"
-                )
-                raise click.Abort()
+                raise click.ClickException(f"Multiple issues found for {author} on MP #0{project_id}")
 
             issue_file = op.basename(issue[0])
             issue_num = int(re.search("_issue([0-9]+)\\.md$", issue_file).group(1))
 
             if not issue_file:
-                click.echo(
-                    "ERROR: Issue appears to be issue #0. Please confirm all PF properly assigned."
-                )
-                raise click.Abort()
+                raise click.ClickException("Issue appears to be issue #0. Please confirm all PF properly assigned.")
 
             issue_url = (
                 f"https://github.com/michaelweylandt/{course_repo()}/issues/{issue_num}"
@@ -437,12 +430,39 @@ def current_teams():
     default=False,
     is_flag=True
 )
-def roster_list(include_inactive):
+@click.option(
+    "-E", 
+    "--include_emplid", 
+    help="Should EmplID be printed?",
+    default=False,
+    is_flag=True
+)
+def roster_list(include_inactive, include_emplid):
     """Print current course roster"""
+    
     roster = current_roster(include_inactive=include_inactive)
     roster.index = roster.index + 1
-    click.echo(roster.to_markdown(index=True))
-    click.echo(f"{roster.shape[0]} students registered.")
+    
+    teams = current_teams()
+    
+    full_roster = pd.merge(
+        roster, 
+        teams.rename(columns={
+            "name": "team_name", 
+            "number": "team_number"
+         }),
+        left_on="project_team", 
+        right_on="team_number", how="left").\
+    drop(["project_team", "team_number"], axis=1)
+    
+    if not include_emplid:
+        full_roster = full_roster.drop(["emplid"], axis=1)
+        
+    if not include_inactive:
+        full_roster = full_roster.drop(["active"], axis=1)
+    
+    click.echo(full_roster.to_markdown(index=True))
+    click.echo(f"{full_roster.shape[0]} students registered.")
 
 
 @roster.command(name="add")
@@ -526,7 +546,7 @@ def roster_delete(github):
         )
 
     if github not in ROSTER.github.values:
-        raise click.Abort("Could not match user to existing roster")
+        raise click.ClickException("Could not match user to existing roster")
 
     DROPPER = ROSTER.loc[ROSTER["github"] == github]
 
@@ -542,17 +562,78 @@ def roster_delete(github):
 
 @roster.command(name="edit")
 @click.option(
+    "-g",
     "--github",
     help="Student's GitHub ID",
     prompt="What is the Student's GitHub ID?",
     prompt_required=False,
     default=None,
 )
-def roster_edit(github):
+@click.option(
+    "-F",
+    "--field",
+    type=click.Choice(
+        ["Name", "GitHub", "Email", "EmplID"], case_sensitive=False
+    ),
+    help="Which field to modify?",
+    prompt="Which field should be modified?",
+)
+def roster_edit(github, field):
     """Edit a student on the course roster.
 
     This function is not yet implemented."""
-    raise NotImplementedError
+    
+    ROSTER = current_roster(include_inactive=True)
+ 
+    if not github:
+        click.echo("The current roster contains the following students:")
+        for row in ROSTER.itertuples():
+            click.echo(f"{row.Index:02g}. {row.name} - {row.github}")
+
+        number = click.prompt(
+            "Which student would you like to modify?",
+            type=click.IntRange(min=ROSTER.index.min(), max=ROSTER.index.max()),
+        )
+        
+        github = ROSTER.loc[number].github
+        
+    if github not in ROSTER.github.values:
+        raise click.ClickException(f"No student with GitHub ID {github} found")
+        
+    roster_ix = (ROSTER.github == github).where(lambda x: x).dropna().index.values[0]
+
+    click.echo("-------")
+    click.echo("You are about to edit the following student:")
+    
+    click.echo(f"Name: {ROSTER.loc[roster_ix, 'name']}")
+    click.echo(f"GitHub: {ROSTER.loc[roster_ix, 'github']}")
+    click.echo(f"Email: {ROSTER.loc[roster_ix, 'email']}")
+    click.echo(f"EmplID: {ROSTER.loc[roster_ix, 'emplid']}")
+    click.echo("-------")
+
+    field_new_value = click.prompt(
+            f"Enter the new {field} for this student. (Leave blank to skip change.)",
+            default=ROSTER.loc[roster_ix, field.lower()],
+            show_default=True,
+        )
+        
+    ROSTER.loc[roster_ix, field.lower()] = field_new_value
+    
+    click.echo("Updated Values:")
+    click.echo("-------")
+    click.echo(f"Name: {ROSTER.loc[roster_ix, 'name']}")
+    click.echo(f"GitHub: {ROSTER.loc[roster_ix, 'github']}")
+    click.echo(f"Email: {ROSTER.loc[roster_ix, 'email']}")
+    click.echo(f"EmplID: {ROSTER.loc[roster_ix, 'emplid']}")
+    click.echo("-------")
+    
+    click.confirm(
+            f"Are you sure you would like to update this student as shown above?",
+            abort=True,
+        )
+        
+    with open(roster_file(), "w+") as f:
+        f.write(ROSTER.to_json(orient="records", indent=2))
 
 @roster.command(name="deactivate")
 @click.option(
@@ -596,7 +677,9 @@ def project_create():
     click.echo("The following team has been added to the roster")
     click.echo(NEW_TEAM)
 
-    ROSTER = current_roster()
+    ROSTER = current_roster(include_inactive=True)
+    
+    n_roster = ROSTER.shape[0]
 
     while True:
         click.echo("The following students have not yet been assigned a team:")
@@ -634,6 +717,10 @@ def project_create():
         click.echo(f"- {nm}")
 
     click.confirm("Should I create this team?", abort=True)
+    
+    if ROSTER.shape[0] != n_roster:
+        click.echo("Roster has changed length!!")
+        import pdb; pdb.set_trace()
 
     with open(teams_file(), "w+") as f:
         f.write(NEW_TEAMS.to_json(orient="records", indent=2))
@@ -642,7 +729,7 @@ def project_create():
         f.write(ROSTER.to_json(orient="records", indent=2))
 
 
-@project.command(name="modify")
+@project.command(name="edit")
 @click.option("-N", "--number", default=0, help="Number of team to modify")
 @click.option(
     "-A",
@@ -653,19 +740,19 @@ def project_create():
     help="Which action to take?",
     prompt="Which modification should be performed?",
 )
-def project_modify(number, action):
+def project_edit(number, action):
     "Add or remove students from a team or change team name"
 
     TEAMS = current_teams()
     N_TEAMS, _ = TEAMS.shape
 
     if number > N_TEAMS or number < 0:
-        raise click.Abort("Invalid team number provided.")
+        raise click.ClickException("Invalid team number provided.")
 
     if number == 0:
         click.echo("The current teams are:")
-        for row in TEAMS.itertuples():
-            click.echo(f"Team Number {row.number} - {row.name}")
+        for ix, row in enumerate(TEAMS.itertuples(), start=1):
+            click.echo(f"{ix:02g}. Team Number {row.number} - {row.name}")
 
         number = click.prompt(
             "Which team would you like to modify?",
@@ -684,9 +771,10 @@ def project_modify(number, action):
     TEAM = BIG_ROSTER[BIG_ROSTER["project_team"] == number]
 
     click.echo("You are about to assign modify the team consisting of:")
-    for row in TEAM.itertuples():
-        click.echo(f"{row.name} (GH: {row.github}; EMAIL: {row.email})")
-    click.echo("\n")
+    click.echo("--------")
+    for ix, row in enumerate(TEAM.itertuples(), start=1):
+        click.echo(f"{ix:02g}. {row.name} (GH: {row.github}; EMAIL: {row.email})")
+    click.echo("--------")
 
     if action != "Rename":
         raise NotImplementedError
@@ -766,7 +854,7 @@ def project_grade(element, number, skip_email):
     N_TEAMS, _ = TEAMS.shape
 
     if number > N_TEAMS or number < 0:
-        raise click.Abort("Invalid team number provided.")
+        raise click.ClickException("Invalid team number provided.")
 
     if number == 0:
         click.echo("The current teams are:")
@@ -1201,7 +1289,7 @@ def _mini_verify(project_id, github):
         EXPECTED_URL = re.search(URL_REGEX, BODY, re.IGNORECASE)
 
         if EXPECTED_URL is None:
-            raise click.Abort("Could not find expected URL in MP Instructions")
+            raise click.ClickException("Could not find expected URL in MP Instructions")
 
         if SUB_URL is None:
             click.echo("No URL found in submission")
@@ -1354,7 +1442,8 @@ def _peer_assignment_mapping(project_id, n_peers=None):
 
     if project_id_s not in INDEX_DICT:
         if not n_peers:
-            raise click.Abort("Cannot assign peer feedback with 0 peers")
+            raise click.ClickException("Invalid team number provided.")
+        
         ALL_PREVIOUS = [ix for mp in INDEX_DICT.values() for ix in mp]
         ALL_POSSIBLE = range(len(MASTER_MAPPING))
         AVAILABLE = set(ALL_POSSIBLE) - set(ALL_PREVIOUS)
@@ -1514,7 +1603,7 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip):
         post_glob = glob(op.join(PF_DIR, "assignments", f"{gh}_issue*.md"))
 
         if len(post_glob) != 1:
-            raise click.Abort(f"Cannot find unique PF assignment script for {gh}")
+            raise click.ClickException(f"Cannot find unique PF assignment script for {gh}")
 
         post_file = post_glob[0]
 
@@ -1547,7 +1636,7 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip):
                     f"Peer Feedback successfully assigned for {gh}'s MP#0{project_id}"
                 )
             else:
-                raise click.Abort("Could not post issue for {gh} at #{gh_issue_num}")
+                raise click.ClickException(f"Could not post issue for {gh} at #{gh_issue_num}")
         else:
             title = f"MP #0{project_id} Peer Feedback for {gh} [INSTRUCTOR OPENED]"
             resp = gh_issue_create(title, post_md)
@@ -1563,7 +1652,7 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip):
                 new_file = post_file.replace("issue0", f"issue{new_issue_num}")
                 os.rename(post_file, new_file)
             else:
-                raise click.Abort("Could not post issue for {gh} at #{gh_issue_num}")
+                raise click.ClickException(f"Could not post issue for {gh} at #{gh_issue_num}")
 
 
 @cache
@@ -1774,7 +1863,7 @@ def peer_collect(project_id, rearchive, skip_pdf, force, github):
             try:
                 issue_num = int(issue_num)
             except ValueError:
-                raise click.Abort("I could not interpret your input as an issue number")
+                raise click.ClickException("I could not interpret your input as an issue number")
 
             KEY_ISSUE = [r for r in RELEVANT_ISSUES if r["number"] == issue_num][0]
         else:
@@ -1903,10 +1992,7 @@ def peer_grade(project_id):
         try:
             ALL_PEER_FEEDBACK = json.loads(f.read() or '{}')
         except ValueError:
-            click.echo(
-                "ERROR: Feedback file appears to be empty. Run 'peer collect' first."
-            )
-            raise click.Abort()
+            raise click.ClickException("Feedback file appears to be empty. Run 'peer collect' first.")
 
     template = Environment(
         loader=FileSystemLoader("_cissoid/templates"), autoescape=select_autoescape()
@@ -2043,13 +2129,13 @@ def peer_meta(project_id, rearchive, skip_pdf, force):
     mg_file = _peer_feedback_meta_file(project_id)
 
     if not op.exists(pf_file):
-        raise click.Abort("Peer feedback file not found: run `peer collect -N {project_id}` to create feedback file at {pf_file}")
+        raise click.ClickException(f"Peer feedback file not found: run `peer collect -N {project_id}` to create feedback file at {pf_file}")
 
     with open(pf_file, "r") as f:
         try:
             ALL_PEER_FEEDBACK = json.loads(f.read())
         except ValueError:
-            raise click.Abort("Peer feedback appears to be empty. Run `peer collect -N {project_id}` to create feedback file at {pf_file}")
+            raise click.ClickException(f"Peer feedback appears to be empty. Run `peer collect -N {project_id}` to create feedback file at {pf_file}")
         
     NUM_PEER_FEEDBACK = sum([isinstance(v, dict) for f in ALL_PEER_FEEDBACK.values() for v in f.values()])
 
