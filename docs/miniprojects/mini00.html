@@ -198,7 +198,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#build_site.r" id="toc-build_site.r" class="nav-link" data-scroll-target="#build_site.r"><code>build_site.R</code></a></li>
   </ul>
 </li>
-  <li><a href="#stage-4-github-pages-deployment" id="toc-stage-4-github-pages-deployment" class="nav-link" data-scroll-target="#stage-4-github-pages-deployment">Stage 4: GitHub Pages Deployment</a></li>
+  <li>
+<a href="#stage-4-github-pages-deployment" id="toc-stage-4-github-pages-deployment" class="nav-link" data-scroll-target="#stage-4-github-pages-deployment">Stage 4: GitHub Pages Deployment</a>
+  <ul class="collapse">
+<li><a href="#activate-github-pages-server" id="toc-activate-github-pages-server" class="nav-link" data-scroll-target="#activate-github-pages-server">Activate GitHub Pages Server</a></li>
+  <li><a href="#disable-issue-submission" id="toc-disable-issue-submission" class="nav-link" data-scroll-target="#disable-issue-submission">Disable Issue Submission</a></li>
+  </ul>
+</li>
   <li>
 <a href="#stage-5-submission" id="toc-stage-5-submission" class="nav-link" data-scroll-target="#stage-5-submission">Stage 5: Submission</a>
   <ul class="collapse">
@@ -575,21 +581,45 @@ if(!quarto::quarto_binary_sitrep()){
     stop("Something is wrong with your quarto installation.")
 }
 quarto::quarto_render(".")
+
 system("git add docs/*")
+if(file.exists("index.qmd")){
+    system("git add index.qmd")
+}
+if(length(Sys.glob("mp0*.qmd")) &gt; 0){
+    system("git add mp0*.qmd")
+}
+
 if(!any(grepl("rstudio", search()))){q("no")}</code></pre>
-<p>Click the <code>Source</code> button in the top-right corner of the editor pane to run this code. If everything works, it will build your website and automatically stage it. Stage <code>build_site.R</code> as well.</p>
+<p>Click the <code>Source</code> button in the top-right corner of the editor pane to run this code. If everything works, it will build your website and automatically stage it the built files. Stage <code>build_site.R</code> as well.</p>
 <p>Finally, <code>Commit</code> all these staged files and <code>Push</code> them to GitHub. You have now created a website and just need to turn on a web server so you can access it.</p>
 </section></section><section id="stage-4-github-pages-deployment" class="level2"><h2 class="anchored" data-anchor-id="stage-4-github-pages-deployment">Stage 4: GitHub Pages Deployment</h2>
+<section id="activate-github-pages-server" class="level3"><h3 class="anchored" data-anchor-id="activate-github-pages-server">Activate GitHub Pages Server</h3>
 <p>Return to the GitHub repo you created; recall that the URL is something like:</p>
+<blockquote class="blockquote">
 <p><code>https://github.com/&lt;GITHUB_ID&gt;/STA9750-2025-FALL/</code></p>
-<p>Open the “Settings” menu and proceed to the “Pages” submenu. You should see a page that looks like this:</p>
+</blockquote>
+<p>Open the “Settings” menu at the top of the page and proceed to the “Pages” submenu. You should see a page that looks like this:</p>
 <p><img src="../images/pages_window.png" class="img-fluid"></p>
+<p>Alternatively, you can go directly to this page by visiting:</p>
+<blockquote class="blockquote">
+<p><code>https://github.com/&lt;GITHUB_ID&gt;/STA9750-2025-FALL/settings/pages</code></p>
+</blockquote>
 <p>Under <code>Build and Deployment</code>, set the <code>main</code> branch to deploy and select the <code>docs</code> directory on that branch. Hit save and your website will go live!</p>
 <p>To check your website is working, proceed to</p>
 <p><code>https://&lt;GITHUB_ID&gt;.github.io/STA9750-2025-FALL</code></p>
 <p>If everything works, you will see your site! (If you used the <code>Render</code> feature in RStudio, it should look familiar.)</p>
 <p>If you get stuck, use the course discussion board to seek help from your classmates and, if necessary, the instructor.</p>
-</section><section id="stage-5-submission" class="level2"><h2 class="anchored" data-anchor-id="stage-5-submission">Stage 5: Submission</h2>
+</section><section id="disable-issue-submission" class="level3"><h3 class="anchored" data-anchor-id="disable-issue-submission">Disable Issue Submission</h3>
+<p>Return to your repository home page, go to the top of the page, hit the <code>Settings</code> button, and scroll down to <code>Features</code>. Alternatively, just go to</p>
+<blockquote class="blockquote">
+<p><code>https://github.com/&lt;GITHUB_ID&gt;/STA9750-2025-FALL/settings#features</code></p>
+</blockquote>
+<p>Once there, uncheck the checkbox for <code>Issues</code> to prevent accidental posting of content to your repository. All course submissions and follow-on discussion will take place in <em>my</em> repository at:</p>
+<blockquote class="blockquote">
+<p><code>https://github.com/michaelweylandt/STA9750-2025-FALL/issues</code></p>
+</blockquote>
+</section></section><section id="stage-5-submission" class="level2"><h2 class="anchored" data-anchor-id="stage-5-submission">Stage 5: Submission</h2>
 <p>Once your site is live, you will submit it to the instructor in two ways:</p>
 <ol type="1">
 <li>Log into the course discussion board (Piazza) and send me your GitHub name so I can link it to my gradebook.</li>
@@ -609,7 +639,7 @@ if(!any(grepl("rstudio", search()))){q("no")}</code></pre>
 </section><section id="instructor-tagging" class="level3"><h3 class="anchored" data-anchor-id="instructor-tagging">Instructor Tagging</h3>
 <p>Finally, you’re going to contact me through <code>GitHub</code>: go to<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
 <p><code>https://github.com/michaelweylandt/STA9750-2025-FALL/issues/new</code></p>
-<p>to open a new issue. Title the issue <code>STA 9750 &lt;GITHUB_ID&gt; MiniProject #00</code> and fill in the following text for the issue:</p>
+<p>to open a new issue. Title the issue <code>STA 9750 &lt;GITHUB_ID&gt;  MiniProject #00</code> and fill in the following text for the issue:</p>
 <div id="submission-text">
 <pre><code>Hi @michaelweylandt!
 

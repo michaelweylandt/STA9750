@@ -640,27 +640,42 @@ if(!quarto::quarto_binary_sitrep()){
     stop("Something is wrong with your quarto installation.")
 }
 quarto::quarto_render(".")
+
 system("git add docs/*")
+if(file.exists("index.qmd")){
+    system("git add index.qmd")
+}
+if(length(Sys.glob("mp0*.qmd")) > 0){
+    system("git add mp0*.qmd")
+}
+
 if(!any(grepl("rstudio", search()))){q("no")}
 ```
 
-Click the `Source` button in the top-right corner of the editor pane to run this code. 
-If everything works, it will build your website and automatically stage it. Stage
-`build_site.R` as well. 
+Click the `Source` button in the top-right corner of the editor pane to run 
+this code. If everything works, it will build your website and automatically 
+stage it the built files. Stage `build_site.R` as well. 
 
 Finally, `Commit` all these staged files and `Push` them to GitHub. You have now
 created a website and just need to turn on a web server so you can access it. 
 
 ## Stage 4: GitHub Pages Deployment
 
+### Activate GitHub Pages Server
+
 Return to the GitHub repo you created; recall that the URL is something like:
 
-`https://github.com/<GITHUB_ID>/{{< var course.repo >}}/`
+> `https://github.com/<GITHUB_ID>/{{< var course.repo >}}/`
 
-Open the "Settings" menu and proceed to the "Pages" submenu. You should see a 
-page that looks like this: 
+
+Open the "Settings" menu at the top of the page and proceed to the "Pages" 
+submenu. You should  see a  page that looks like this: 
 
 ![](../images/pages_window.png)
+
+Alternatively, you can go directly to this page by visiting: 
+
+> `https://github.com/<GITHUB_ID>/{{< var course.repo >}}/settings/pages`
 
 Under `Build and Deployment`, set the `main` branch to deploy and
 select the `docs` directory on that branch. Hit save and your website
@@ -675,6 +690,19 @@ feature in  RStudio, it should look familiar.)
 
 If you get stuck, use the course discussion board to seek help from
 your classmates and, if necessary, the instructor. 
+
+### Disable Issue Submission
+
+Return to your repository home page,  go to the top of the page, hit the 
+`Settings` button, and scroll down to `Features`. Alternatively, just go to 
+
+> `https://github.com/<GITHUB_ID>/{{< var course.repo >}}/settings#features`
+
+Once there, uncheck the checkbox for `Issues` to prevent accidental posting 
+of content to your repository. All course submissions and follow-on
+discussion will take place in _my_ repository at: 
+
+> `https://github.com/michaelweylandt/{{< var course.repo >}}/issues`
 
 ## Stage 5: Submission
 
@@ -711,7 +739,8 @@ Finally, you're going to contact me through `GitHub`: go to[^sub]
 
 `https://github.com/michaelweylandt/{{< var course.repo >}}/issues/new`
 
-to open a new issue. Title the issue `{{< var course.short >}} <GITHUB_ID> MiniProject #{{< meta mp_num >}}` and fill in the following text for the issue:
+to open a new issue. Title the issue `{{< var course.short >}} <GITHUB_ID> 
+MiniProject #{{< meta mp_num >}}` and fill in the following text for the issue:
 
 ::: {#submission-text}
 
@@ -796,4 +825,3 @@ If you are using your real name, this is a great place to state that you are a B
 your expected graduation date, your field of employment (current or desired), and one or two
 personal facts. This, along with a LinkedIn page, will quickly become one of the first
 things that comes up when a potential employer searches your name, so make a good impression!
-
