@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Standard Library
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from functools import cache
 from datetime import datetime
 from glob import glob
@@ -36,6 +36,94 @@ Issue = namedtuple(
 )
 
 Comment = namedtuple("Comment", ["commenter", "text", "ctime", "url"])
+
+class PeerFeedback:
+    _template_url = "https://michael-weylandt.com/STA9750/miniprojects.html"
+    
+    resp = r.get(_template_url)
+        
+    if not resp.ok:
+        raise click.ClickException("Could not download peer feedback template")
+        
+    template = BS(resp.text, features="lxml").\
+        find(id="peer-feedback-template").\
+        text.strip()
+    
+    template = re.sub("\s*\n", "\\\\s*\n", template).\
+        replace("OPTIONAL TEXT", "(.*)").\
+        replace("NN", "(\\d+)(?:/10)?").\
+        replace("TEXT TEXT TEXT", "(.*)")
+        
+    def __init__(self, submittor, evaluator, project_id):
+        self.submittor  = submittor
+        self.evaluator  = evaluator
+        self.project_id = project_id
+        
+        self._posts     = None
+        self._file      = None
+        self._issue_num = None
+        self._template = None
+        self._status = None
+        self._scores = None
+        
+        
+    @property
+    def assign_dir(self):
+        return op.join(
+            course_dir(), 
+            f"mp0{self.project_id}", 
+            "assignments"
+        )
+        
+    @property
+    def issue_num(self):
+        if self._issue_num is None:
+            for fname in os.listdir(self.assign_dir):
+                if match := re.match(f"{self.submittor}_issue(\d+).md", fname):
+                    self._issue_num = int(match.group(1))
+            
+        return self._issue_num
+        
+    @property 
+    def file(self):
+        if self._file is None:
+            self._file = op.join(latest_issues_dir(), f"issue{self.issue_num:03g}.json")
+        return self._file
+    
+    @property
+    def posts(self):
+        if self._posts is None:
+            with open(self.file, "r") as f:
+                issue_contents = json.loads(f.read())
+                
+            self._posts = "\n".join(c["text"] for c in issue_contents["comments"] if c["commenter"] == self.evaluator)
+            
+        return self._posts
+    
+    @property 
+    def status(self):
+        if self._status is None:
+            if not self.posts: 
+                self._status = "NOT SUBMITTED"
+            else: 
+                if re.match(self.template, self.posts, flags=re.DOTALL):
+                    self._status = "PROPERLY FORMATTED"
+                else: 
+                    self._status = "IMPROPERLY FORMATTED"
+            
+        return self._status
+    
+    @property
+    def missing(self):
+        return self.status == "NOT SUBMITTED"
+    
+    @property
+    def improper(self):
+        return self.status == "IMPROPERLY FORMATTED"
+    
+    @property
+    def ok(self):
+        return self.status == "PROPERLY FORMATTED"
 
 # FIXME: This technically isn't sufficient for arbitrary URLs, but it
 # seems to cover the whole GitHub API, which is enough for us.
@@ -211,6 +299,9 @@ def course_dir():
 
     return op.expanduser(course_config["gradedir"])
 
+@cache 
+def latest_issues_dir():
+    return op.join(course_dir(), "latest", "issues")
 
 @cache
 def load_issues():
@@ -810,6 +901,11 @@ def project_list():
         left_on="project_team",
         right_on="number",
     )
+    
+    n_teams = (BIG_ROSTER["number"].notna()).sum()
+    
+    click.echo(f"{n_teams} of {ROSTER.shape[0]} students are on a project team")
+    click.echo("--------------")
 
     for team_num in sorted(BIG_ROSTER["project_team"].unique()):
         if pd.isna(team_num):
@@ -817,20 +913,24 @@ def project_list():
 
         team_name = TEAMS[TEAMS["number"] == team_num]["name"].item()
 
+        SUB_ROSTER = BIG_ROSTER[BIG_ROSTER["number"] == team_num]
+        
+
         click.echo(
-            f"Team Number {int(team_num)} (current name {team_name}) has the following members:"
+            f"Team Number {int(team_num)} (current name {team_name}) has the following {SUB_ROSTER.shape[0]} members:"
         )
 
-        SUB_ROSTER = BIG_ROSTER[BIG_ROSTER["number"] == team_num]
-        for nm in SUB_ROSTER["name"]:
-            click.echo(f"- {nm}")
+        for ix, nm in enumerate(SUB_ROSTER["name"], start=1):
+            click.echo(f"- {ix:02g}. {nm}")
         click.echo("--------------")
 
-    click.echo("The following students have not yet been assigned a team:")
     SUB_ROSTER = BIG_ROSTER[BIG_ROSTER["project_team"].isna()]
 
-    for nm in SUB_ROSTER["name"]:
-        click.echo(f"- {nm}")
+    click.echo(f"The following {SUB_ROSTER.shape[0]} students have not yet been assigned a team:")
+    
+
+    for ix, nm in enumerate(SUB_ROSTER["name"], start=1):
+        click.echo(f"- {ix:02g}. {nm}")
 
 
 @project.command(name="grade")
@@ -1105,7 +1205,8 @@ def mini_archive(project_id, github, skip_pdf):
     return _mini_archive(project_id, github, skip_pdf)
 
 
-def _mini_archive(project_id, github, skip_pdf=False):
+def _mini_archive(project_id, github, skip_pdf=False, 
+                  archive_submissions=True, archive_issues=True):
     "Actual implementation of mini_archive. Can be called directly"
     if not github:
         github = current_roster().github.values
@@ -1113,76 +1214,79 @@ def _mini_archive(project_id, github, skip_pdf=False):
     latest_dir = op.join(course_dir(), "latest")
     os.makedirs(latest_dir, exist_ok=True)
     now = datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S_%Z")
+    
+    if archive_submissions:
 
-    for gh in github:
-        click.echo(f"Archiving Mini-Project #0{project_id} for User {gh}")
+        for gh in github:
+            click.echo(f"Archiving Mini-Project #0{project_id} for User {gh}")
+    
+            click.echo("Syncronizing Git Repository")
+    
+            student_dir = op.join(course_dir(), "students", gh)
+            student_git_dir = op.join(student_dir, "git")
+            # Don't worry too much about race conditions / file system issues
+            os.makedirs(student_git_dir, exist_ok=True)
+    
+            if op.exists(op.join(student_git_dir, ".git")):
+                subprocess.run(["git", "-C", student_git_dir, "pull"])
+            else:
+                student_repo_url = f"https://github.com/{gh}/{course_repo()}"
+                subprocess.run(["git", "clone", student_repo_url, student_git_dir])
+    
+            if skip_pdf:
+                continue
+    
+            click.echo("Exporting Web Page as PDF")
+    
+            student_web_dir = op.join(student_dir, "pdfs", now)
+            # Don't worry too much about race conditions / file system issues
+            os.makedirs(student_web_dir, exist_ok=True)
+            if project_id > 0:
+                student_mp_url = f"https://{gh}.github.io/{course_repo()}/mp0{project_id}"
+                student_mp_pdf = op.join(student_web_dir, f"mp0{project_id}.pdf")
+            else:
+                student_mp_url = f"https://{gh}.github.io/{course_repo()}/"
+                student_mp_pdf = op.join(student_web_dir, "index.pdf")
+    
+            rr = print_web_to_pdf(student_mp_url, student_mp_pdf)
+    
+            if rr.returncode:
+                click.echo(f"Failed to export {student_mp_url} to PDF.")
+    
+            latest_pdf_dir = op.join(latest_dir, "pdfs")
+            os.makedirs(latest_pdf_dir, exist_ok=True)
+    
+            pdf_symlink = op.join(latest_pdf_dir, f"{gh}_mp{project_id}.pdf")
+            try:
+                os.remove(pdf_symlink)
+            except FileNotFoundError:
+                pass
+            os.symlink(student_mp_pdf, pdf_symlink, target_is_directory=True)
 
-        click.echo("Syncronizing Git Repository")
-
-        student_dir = op.join(course_dir(), "students", gh)
-        student_git_dir = op.join(student_dir, "git")
+    if archive_issues:
+        # Now export all comments from my course issues repository
+        issues_dir = op.join(course_dir(), "issues", now)
         # Don't worry too much about race conditions / file system issues
-        os.makedirs(student_git_dir, exist_ok=True)
-
-        if op.exists(op.join(student_git_dir, ".git")):
-            subprocess.run(["git", "-C", student_git_dir, "pull"])
-        else:
-            student_repo_url = f"https://github.com/{gh}/{course_repo()}"
-            subprocess.run(["git", "clone", student_repo_url, student_git_dir])
-
-        if skip_pdf:
-            continue
-
-        click.echo("Exporting Web Page as PDF")
-
-        student_web_dir = op.join(student_dir, "pdfs", now)
-        # Don't worry too much about race conditions / file system issues
-        os.makedirs(student_web_dir, exist_ok=True)
-        if project_id > 0:
-            student_mp_url = f"https://{gh}.github.io/{course_repo()}/mp0{project_id}"
-            student_mp_pdf = op.join(student_web_dir, f"mp0{project_id}.pdf")
-        else:
-            student_mp_url = f"https://{gh}.github.io/{course_repo()}/"
-            student_mp_pdf = op.join(student_web_dir, "index.pdf")
-
-        rr = print_web_to_pdf(student_mp_url, student_mp_pdf)
-
-        if rr.returncode:
-            click.echo(f"Failed to export {student_mp_url} to PDF.")
-
-        latest_pdf_dir = op.join(latest_dir, "pdfs")
-        os.makedirs(latest_pdf_dir, exist_ok=True)
-
-        pdf_symlink = op.join(latest_pdf_dir, f"{gh}_mp{project_id}.pdf")
+        os.makedirs(issues_dir, exist_ok=True)
+    
+        click.echo(f"Exporting GitHub Issues to {issues_dir}")
+    
+        ISSUES = [issue._asdict() for issue in gh_list_issues().values()]
+    
+        for issue in ISSUES:
+            click.echo(f" - Exporting Issue #{issue['number']}")
+            issue["comments"] = [c._asdict() for c in gh_list_comments(issue["number"])]
+            issue_file = op.join(issues_dir, f"issue{issue['number']:03}.json")
+    
+            with open(issue_file, "w") as f:
+                f.write(json.dumps(issue, indent=4))
+    
+        issue_symlink = op.join(latest_dir, "issues")
         try:
-            os.remove(pdf_symlink)
+            os.remove(issue_symlink)
         except FileNotFoundError:
             pass
-        os.symlink(student_mp_pdf, pdf_symlink, target_is_directory=True)
-
-    # Now export all comments from my course issues repository
-    issues_dir = op.join(course_dir(), "issues", now)
-    # Don't worry too much about race conditions / file system issues
-    os.makedirs(issues_dir, exist_ok=True)
-
-    click.echo(f"Exporting GitHub Issues to {issues_dir}")
-
-    ISSUES = [issue._asdict() for issue in gh_list_issues().values()]
-
-    for issue in ISSUES:
-        click.echo(f" - Exporting Issue #{issue['number']}")
-        issue["comments"] = [c._asdict() for c in gh_list_comments(issue["number"])]
-        issue_file = op.join(issues_dir, f"issue{issue['number']:03}.json")
-
-        with open(issue_file, "w") as f:
-            f.write(json.dumps(issue, indent=4))
-
-    issue_symlink = op.join(latest_dir, "issues")
-    try:
-        os.remove(issue_symlink)
-    except FileNotFoundError:
-        pass
-    os.symlink(issues_dir, issue_symlink, target_is_directory=True)
+        os.symlink(issues_dir, issue_symlink, target_is_directory=True)
 
 
 @mini.command(name="verify")
@@ -1690,6 +1794,103 @@ def meta_dir(project_id):
 
     return dirname
 
+@peer.command(name="verify")
+@click.option(
+    "-N",
+    "--number",
+    "project_id",
+    help="Mini-project to process peer feedback",
+    prompt="Which mini-project to collect peer feedback for?",
+    type=click.IntRange(min=0, max=4),
+)
+@click.option(
+    "--use-existing",
+    "rearchive",
+    is_flag=True,
+    default=True,
+    help="Skip archiving and use cached issue comments",
+)
+@click.option(
+    "--dry-run", "dry_run", help="Skip posting to GitHub", default=False, is_flag=True
+)
+def peer_verify(project_id, rearchive, dry_run):
+    """Confirm peer feedback has been appropriately formatted
+    
+    Check peer feedback comments for formatting and post to GitHub"""
+    if rearchive:
+        _mini_archive(project_id, [], skip_pdf=True, archive_submissions=False)
+        
+    PF_MAPPING = _peer_assignment_mapping(project_id)
+    PF_ASSIGNMENT_DIR = op.join(course_dir(), f"mp0{project_id}", "assignments")
+    
+    PF_ASSIGNMENT_FILES = [op.join(PF_ASSIGNMENT_DIR, fname) for fname in os.listdir(PF_ASSIGNMENT_DIR)]
+    
+    PF_ASSIGNMENT_COMMENTER = {}
+    PF_ASSIGNMENT_COMMENTEE = {}
+    
+    ALL_PF = []
+    PF_BY_EVALUATOR = defaultdict(list)
+    
+    for pf_file in os.listdir(PF_ASSIGNMENT_DIR):
+        submittor, issue_num = re.match('(.*)_issue(\d+).md', pf_file).groups()
+
+        with open(op.join(PF_ASSIGNMENT_DIR, pf_file), "r") as f:
+            pf_text = f.read()
+
+        potential_evaluators = PF_MAPPING[submittor]
+
+        for evaluator in potential_evaluators:
+            if evaluator in pf_text:
+                pf = PeerFeedback(submittor, evaluator, project_id)
+                ALL_PF.append(pf)
+                PF_BY_EVALUATOR[evaluator].append(pf)
+    
+    STUDENTS_COMPLETED = [k for k, V in PF_BY_EVALUATOR.items() if all(v.ok for v in V)]
+    STUDENTS_ALL_MISSING = [k for k, V in PF_BY_EVALUATOR.items() if all(v.missing for v in V)]
+    
+    STUDENTS_UNIFORM = STUDENTS_COMPLETED + STUDENTS_ALL_MISSING
+
+    click.echo("--------")    
+    if STUDENTS_COMPLETED: 
+        click.echo(f"The following {len(STUDENTS_COMPLETED)} students have completed all peer feedback properly:")
+        for ix, s in enumerate(STUDENTS_COMPLETED, start=1):
+            click.echo(f"- {ix:02g}. {s}")
+        click.echo("--------")
+        
+    if STUDENTS_ALL_MISSING:
+        click.echo(f"The following {len(STUDENTS_ALL_MISSING)} students not started peer feedback:")
+        for ix, s in enumerate(STUDENTS_ALL_MISSING, start=1):
+            click.echo(f"- {ix:02g}. {s}")
+        click.echo("--------")
+        
+    if len(STUDENTS_UNIFORM) != len(PF_BY_EVALUATOR):
+        click.echo(f"The following {len(PF_BY_EVALUATOR) - len(STUDENTS_UNIFORM)} students have additional work to do:")
+        
+    for student, feedbacks in PF_BY_EVALUATOR.items():
+        if student not in STUDENTS_UNIFORM: 
+            proper_submittors   = [" [✓] " + f.submittor for f in feedbacks if f.ok]
+            missing_submittors  = [" [M] " + f.submittor for f in feedbacks if f.missing]
+            improper_submittors = [" [✗] " + f.submittor for f in feedbacks if f.improper]
+ 
+            status_string = "".join(missing_submittors + improper_submittors + proper_submittors)
+            
+            n_ok = len(proper_submittors)
+            n_all = len(feedbacks)
+            click.echo(f"- {student} ({n_all - n_ok}/{n_all}):{status_string}")
+            
+    if len(STUDENTS_UNIFORM) != len(PF_BY_EVALUATOR):
+        click.echo(" [✓] = Submitted with proper formatting")
+        click.echo(" [✗] = Submitted with improper formatting")
+        click.echo(" [M] = Missing submission")
+        
+    click.echo("---------")
+    
+    if dry_run: 
+        return
+    
+    click.echo("GIT HUB POSTING NOT YET IMPLEMENTED")
+    raise click.Abort()
+    
 @peer.command(name="collect")
 @click.option(
     "-N",
