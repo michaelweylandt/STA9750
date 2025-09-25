@@ -2,7 +2,11 @@
 title: "{{< var course.short >}} Week {{< meta pa_num >}} Pre Assignment: {{< meta pa_title >}}"
 pa_num: 7
 pa_title: "Lots of Plots"
+format: live-html
+engine: knitr
 ---
+
+{{< include _gradethis_init.qmd >}}
 
 ```{r}
 #| message: false
@@ -101,14 +105,14 @@ been using for the past several weeks.
 
 Let's begin by using `ggplot2` to explore our `penguins` data: 
 
-```{r}
+```{webr}
 library(ggplot2)
 ggplot(penguins)
 ```
 
 Somewhat underwhelming... 
 
-`ggplot2`, like many of the tools in this course, do exactly what we ask, and 
+`ggplot2`, like many of the tools in this course, does exactly what we ask, and 
 no more. Because we have not specified any of the Grammar of Graphics elements,
 we only get a blank canvas. Let's now begin by adding an _aesthetic_ to map
 some of the elements of our data to aspects of our plot. 
@@ -117,7 +121,7 @@ Specifically, suppose we want to see how flipper length correlates with
 body mass. Let's make a scatter plot with flipper length on the $x$-axis
 and body mass on the $y$-axis.[^1]
 
-```{r}
+```{webr}
 ggplot(penguins, aes(x=flipper_len, y=body_mass))
 ```
 
@@ -128,15 +132,19 @@ as we wanted, but we still don't see anything.
 We need a `geom` to actually put "ink to paper". The simplest `geom` is 
 a point, useful for making scatter plots. 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, y=body_mass)) + 
     geom_point()
 ```
 
+Note the warning about dropping two points for missing (`NA`) values. This is 
+fine and safe to ignore because we know our data has some `NA`s, but if you are
+getting this in unexpected circumstances, you may want to look into it further.
+
 Pretty nifty! Before we go forward, note that `ggplot2` _adds_ elements to
 create ever more complex plots. This is different than `dplyr` where we 
-"piped" data from one step to the next, refining it along the way. 
+"piped" (`|>`) data from one step to the next, refining it along the way. 
 
 How can we improve the plot above? Before anything else, let's clean up
 the $x$ and $y$ axis labels. While the default behavior of showing variable
@@ -144,7 +152,7 @@ names is helpful for exploratory data analysis, we never want to let variable
 names "leak" in plots we intend to share with others. We should instead use
 meaningful (and attractive) axis labels. 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, y=body_mass)) + 
     geom_point() + 
@@ -156,9 +164,9 @@ We can also take advantage of the `theme` mechanisms of `ggplot2` to change
 the color of the "infrastructure" of our plot. The `theme` mechanism doesn't
 change how the data itself is visualized, but it controls how things like
 the background, font sizing, *etc* behave. I tend to prefer the black and
-white theme over the grey default: 
+white theme (`theme_bw()`) over the grey default: 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, y=body_mass)) + 
     geom_point() + 
@@ -174,7 +182,7 @@ and body size may vary across species. Let's add some color to our plot:
 since color maps a data element (`species`) to a graphical aspect (color)
 we add it to our aesthetic mapping (`aes`). 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
@@ -199,11 +207,12 @@ $x, y$ coordinates, but until this point, we were just using the default (black)
 color. 
 
 To improve the look of the colors, we can choose a different color scale. 
-I tend to like the colors of the [Color Brewer](https://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3) project,
-though strictly speaking these are designed for use in maps, not scatter plots.
-You can access these in `ggplot2` as follows: 
+I tend to like the colors of the 
+[Color Brewer](https://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3)
+project, though strictly speaking these are designed for use in maps, not
+scatter plots. You can access these in `ggplot2` as follows: 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
@@ -224,7 +233,7 @@ Next, let's improve the look of the legend. As before, we see that it is
 by default titled with the variable name (`species`). We can provide
 a proper title instead: 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
@@ -243,7 +252,7 @@ element of the plot, so we go through the theme machinery.
 [`theme()`](https://ggplot2.tidyverse.org/reference/theme.html) allows an 
 enormous number of possible changes, but here we want `legend.position`:
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
@@ -271,7 +280,7 @@ This is a new geometric element, called a `smoother`. `ggplot2` allows
 many possible smoothers, but let's use the `lm` (linear model) version, which
 we specify by setting the `method` argument:
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
@@ -291,7 +300,7 @@ By default, `ggplot2` is giving us confidence intervals around the linear trend.
 These are sometimes useful, but perhaps a bit crowded for now, so let's turn
 them off: 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
@@ -314,7 +323,7 @@ avoid the "overlaps" of the different species. Here, let's break out a
 
 In `ggplot2` speak, this is called a faceted plot: 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
@@ -335,7 +344,7 @@ ggplot(penguins,
 Not too shabby. But now it's a bit too hard to tell the lines from the points. 
 Let's override the color used: 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
@@ -360,7 +369,7 @@ advantage of the _enormous_ number of [`ggplot2` extension
 packages](https://exts.ggplot2.tidyverse.org/). It turns out that the `ggpmisc`
 package supports what we need, so let's download and install it: 
 
-```{r}
+```{webr}
 #| warning: false
 #| message: false
 if(!require("ggpmisc")) install.packages("ggpmisc")
@@ -373,7 +382,7 @@ statistical transformations or modeling. Generally, these are applied
 "automagically" for us, as in `geom_smooth`, but here we need to build
 our regression models explicitly: 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
@@ -402,7 +411,7 @@ We are almost done, but every figure needs a bit of final polish. Firstly,
 we should add a title, using the `ggtitle` function. (`R` has a built-in
 `title` function but that won't help us here)
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
@@ -426,7 +435,7 @@ In good academic practice, we should always add a footnote citing the source
 of our data. The [`palmerpenguins` site](https://allisonhorst.github.io/palmerpenguins/) has appropriate source
 information: 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
@@ -451,7 +460,7 @@ At this point, the bottom of our figure looks a bit crowded. To clear out
 some space, let's remove the legend from the bottom, since it simply repeats
 the facet labels: 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
@@ -482,7 +491,7 @@ elements of the plot.
 To make our point even clearer, it is sometimes useful to add a short 
 "summary" to a plot like this: 
 
-```{r}
+```{webr}
 ggplot(penguins, 
        aes(x=flipper_len, 
            y=body_mass, 
