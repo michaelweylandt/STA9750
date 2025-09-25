@@ -11,39 +11,124 @@ class_date:
            Item.Number == session) |>
     pull(Date) |> format('%a %Y-%m-%d'); 
     paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+filters:
+    - highlight-text
 ---
 
 {{< include _setup.qmd >}}
 
 ```{r}
-#| echo: false
+#| include: false
 #| warning: false
 #| message: false
 library(tidyverse)
-DATES <- readr::read_csv("key_dates.csv") |>
-    rename(element=`Course Element`,
-           item=`Item Number`) |>
-    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
-                          TRUE ~ paste(Date, "at", Time)))
-```
+DATES   <- read_csv("key_dates.csv")
+TODAY   <- DATES |> 
+    filter(`Course Element` == "Class Session", 
+           `Item Number` == session)
 
+TODAY_TUESDAY  <- TODAY |> 
+    filter(Section == "Tuesday")  |> 
+    pull(Date)
+TODAY_THURSDAY <- TODAY |> 
+    filter(Section == "Thursday") |> 
+    pull(Date)
+
+TODAY_TOPIC <- TODAY |>
+    filter(str_detect(Details, "Lecture")) |>
+    pull(Details)
+
+ROSTERS <- DATES |> 
+    filter(Details == "Team Roster Submission") |>
+    pull(Date)
+
+PROPOSALS <- DATES |> 
+    filter(str_detect(Details, "Project Proposal")) |> 
+    pull(Date) |> 
+    strftime("%A %b %d") |> 
+    paste(collapse=" and ")
+
+library(jsonlite)
+library(yaml)
+
+N_TEAMS <- read_yaml("_teaching.yml")$gradedir |>
+    file.path("roster.json") |> 
+    read_json(simplify=TRUE) |> 
+    pull(project_team) |> 
+    max(na.rm=TRUE)
+
+N_ON_TEAM <- read_yaml("_teaching.yml")$gradedir |>
+    file.path("roster.json") |> 
+    read_json(simplify=TRUE) |> 
+    filter(!is.na(project_team)) |> 
+    NROW()
+
+N_NO_TEAM <- read_yaml("_teaching.yml")$gradedir |>
+    file.path("roster.json") |> 
+    read_json(simplify=TRUE) |> 
+    filter(is.na(project_team)) |> 
+    NROW()
+```
+    
+## {{< var course.short >}} Week {{< meta session >}} 
+
+Today: 
+
+- Tuesday Section: `r TODAY_TUESDAY`
+- Thursday Section: `r TODAY_THURSDAY`
+
+`r TODAY_TOPIC`
 
 # Today
 
 ## Today
 
+- Special Presentation
 - Course Administration
-- PA#05 Review
-- PA#05 FAQs
+- Review
 - Diving Deeper into Multi-Table Verbs
+- PA#05 FAQs
 - Wrap-Up
   - Life Tip of the Day
+  
+# Special Presentation
 
-## {{< var course.short >}} Mini-Project #01
+## Baruch Data Resources
 
-Due in **6 Days** Four already submitted - fantastic! 
+[Jason Amey](https://www.baruch.cuny.edu/profiles/faculty/Jason-Amey)
 
-(Hopefully an excess of preparedness, not a last minute panic)
+[Newman Library, Baruch College CUNY](https://library.baruch.cuny.edu/)
+
+- [Research Guide: Open Data](https://guides.newman.baruch.cuny.edu/opendata)
+
+# Course Administration
+
+## MP#00 Peer Feedback
+
+
+Mini-Project #00 Peer Feedback deadline: 
+
+::: {.smaller}
+
+- Hopefully you benefitted from interaction with peers (giving and receiving comments)
+- As of 10:30am Wednesday: 
+  - 37 completed properly
+  - 46 completed *with formatting issues*
+  - 13 not yet started
+  
+:::
+  
+. . . 
+
+Remember you can use `mp_feedback_verify` to confirm proper formatting: 
+
+- Need to get structure (`##`), not just arrangement
+- Mixing of scores and text
+
+
+## {{< var course.short >}} MP #01
+
+Due on `r get_mp_deadline(1)` (+ grace period)
 
 . . .
 
@@ -52,12 +137,10 @@ Due in **6 Days** Four already submitted - fantastic!
   - Less "last minute" tech support going forward
 - Use Piazza and use your peers
 
-*Very impressed* by Detailed Analyses, Fancy Tables, Graphics
-
-You don't need fancy graphics yet, but I love to see 
+You don't need fancy graphics yet, but I of course love to see 
 *above and beyond*
 
-## {{< var course.short >}} Mini-Project #01
+## {{< var course.short >}} MP #01
 
 Make sure your code is included in your submission
 
@@ -72,89 +155,25 @@ Follow submission instructions
 
 - Helper function can verify submission is properly formatted
 
-## {{< var course.short >}} Mini-Project #01
-
-Your classmates have asked several excellent questions on Piazza. 
-
-Reminders: 
-
-- This data is _messy_ because NYC is messy
-- Can handle by either (or a mix): 
-  1) By fixing as many issues as possible
-  2) By using 'robust' methods
-- Document your choices and do your best
-  
-
-## {{< var course.short >}} Mini-Project #01 - Peer Feedback
-
-To be assigned on GitHub in one week (March 5th):
-
-- $\approx 4$ feedbacks each 
-- Take this seriously: around 20\% of this assignment is "meta-review"
-- Goal: _rigorous_ _constructive_ critique
-
-Use [helper functions](https://michael-weylandt.com/STA9750/tips.html#find-peer-feedback-assigned-to-me) 
-to find submissions assigned to you. Ask on Piazza if still having
-trouble.
-
-## {{< var course.short >}} Mini-Project #01 - Peer Feedback
-
-Submissions may not map perfectly to rubric - use your best judgement
-
-. . .
-
-Learn from this! What can you adapt for MP#02? 
-
-## {{< var course.short >}} Mini-Project #02
-
-[MP#02 released](../miniprojcts/mini02.html) - Public Transit
-
-. . .
-
-**Due `r get_mp_deadline(2)`**
-
-- GitHub post (used for peer feedback) AND Brightspace
-- One Month: don't wait until the very end
-
-. . .
-
-Pay attention to [the rubric](../miniprojects/mini02.html#rubric)
-
--   Writing and presentation are about 50% of your grade
--   Evaluated on *rigor* and *thoughtfulness*, not necessarily correctness
-
-## Upcoming Mini-Projects
-
-Topics
-
--   MP#03: Spotify Analytics - `r get_mp_deadline(3)`
--   MP#04: Political Analysis - `r get_mp_deadline(4)`
-
 ## Pre-Assignments
 
-Brightspace - Wednesdays at 11:45
+Brightspace - day before class at 11:45
 
 - Reading, typically on course website
 - Brightspace auto-grades
   - I have to manually change to completion grading
-
-Next pre-assignment is **March 20th** - few weeks off
-
+- Two "drops" + otherwise free points
+  
 . . . 
 
-Apologies for misleading question this week. I forgot to change it when giving
-the extension
+**No pre-assignment next week!**
 
 ## Course Support
 
 - Synchronous
   - Office Hours 2x / week
 - Asynchronous
-  - Piazza (<30 minute average response time)
-
-. . . 
-
-Long list of helpful resources added on Piazza, esp. [https://learnr.numbat.space/](https://learnr.numbat.space/)
+  - Piazza ($\approx$ 20 minute average response time)
 
 . . . 
 
@@ -164,28 +183,60 @@ Social contract: I push you hard, but I also provide lots of support.
 
 ## Course Project
 
-2 teams already formed
+Roster formation deadline: `r ROSTERS`
 
-- Team 1: DL + DS + SG + VH
-- Team 2: VG
-- More to come
-    
-All team commitments due via email 
-**`{r} DATES |> filter(str_detect(Details, "Team Roster Submission")) |> pull(dt)`**
+. . . 
+
+- `r N_TEAMS` teams already formed (`r N_ON_TEAM` students)
+- `r N_NO_TEAM` students still need a team
+
+. . . 
+
+I've started setting teams up. If you don't have a team and want to be randomly
+assigned, let me know. 
 
 
-## March 13th - Project Proposal Presentations
+## Proposal Presentations
+
+Next Week - Project Proposal Presentations (`r PROPOSALS`)
 
 [Official Description](https://michael-weylandt.com/STA9750/project.html#project-proposal-presentations)
+
+::: {.incremental .smaller}
 
 - **6 minute presentation**
 - Key topics: 
   - _Animating Question_
   - _Team Roster_
-- Also discuss: Possible specific questions, 
-  data sources, analytical plan, anticipated challenges
+- Also discuss: Possible specific questions, data sources, analytical plan, anticipated challenges
 
-# Pre-Assignment #05
+:::
+
+. . . 
+
+Aims: make sure you've started thinking seriously, not locking you in to answers
+
+# Review from Last Week
+
+## Single-Table Verbs
+
+`dplyr` single-table verbs
+
+::: {.incremental}
+
+- `select`, `filter`: Selecting rows and columns
+- `rename`, `mutate`: Changing rows and columns
+- `summarize`, `group_by`: Combining multiple rows
+- `arrange`, `slice_min/max`: Re-ordering
+
+:::
+
+. . . 
+
+[Lab #05 Review Activity](../labs/lab05.qmd#review)
+
+
+# Review of [PA#05](../preassigns/pa05.qmd)
 
 ## Multi-Table Analysis
 
@@ -194,28 +245,42 @@ All team commitments due via email
 - More insights than from a single table
 - Maintain 'tidy' structure throughout
 
-Will create new (compound) rows - be ware of accidental over-duplication
+Will create new (compound) rows: 
 
-## Primary Keys {.smaller}
+- Dangers: *drops* and *(over) duplication*
+
+## Primary Keys
+
+::: {.small}
 
 _Keys_ are unique identifiers for individual records
 
 - Primary (one column) or compound (multiple columns together) 
 
+:::
+
 . . . 
+
+::: {.small}
 
 The history of corporate IT is largely one of (failed) primary keys
 
 - Finance: Tickers, Tickers + Exchange, Tickers + Share Class, CUSIP, ISIN,
   SEDOL, ... 
   
+:::
+  
 . . . 
+
+::: {.small}
 
 Meaningful true keys are vanishingly rare - cherish them when you find them
 
 Often 'unique enough' for an analysis
 
-`dplyr::count` is helpful here
+`dplyr::group_by() + dplyr::count()` is helpful here
+
+:::
 
 ## Joins
 
@@ -228,7 +293,7 @@ In `dplyr`, we use the `join_by` function:
 ```{r}
 #| eval: false
 #| echo: true
-join_by(table_1_name == table_2_name)
+dplyr::join_by(table_1_name == table_2_name)
 ```
 
 Here `table_1_name` and `table_2_name` are column names from two tables
@@ -237,26 +302,39 @@ Here `table_1_name` and `table_2_name` are column names from two tables
 
 Join rows where these values are equal (advanced joins possible)
 
-
-## Inner and Outer Joins {.smaller}
+## Inner and Outer Joins
 
 When tables are perfectly matched, not an issue: 
 
 ```{r}
-#| echo: true
+#| echo: false
 library(dplyr)
-x <- tribble(~college, ~campus_borough, 
+cunys <- tribble(~college, ~campus_borough, 
              "CCNY", "Manhattan",
              "Baruch", "Manhattan", 
              "CSI", "Staten Island",
              "York", "Queens")
 
-y <- tribble(~borough_name, ~bus_code,
-             "Manhattan", "M",
-             "Staten Island", "S", 
-             "Queens", "Q")
+routes <- tribble(~borough_name, ~bus_code,
+                  "Manhattan", "M",
+                  "Staten Island", "S", 
+                  "Queens", "Q")
+```
 
-inner_join(x, y, join_by(campus_borough == borough_name))
+```{r}
+cunys
+```
+
+```{r}
+routes
+```
+
+## Inner and Outer Joins
+
+When tables are perfectly matched, not an issue: 
+
+```{r}
+inner_join(cunys, routes, join_by(campus_borough == borough_name))
 ```
 
 Default to `inner` but irrelevant
@@ -269,40 +347,430 @@ How to handle 'unaligned' values?
 
 ```{r}
 #| echo: true
-x <- tribble(~college, ~campus_borough, 
-             "CCNY", "Manhattan",
-             "Baruch", "Manhattan", 
-             "CSI", "Staten Island",
-             "York", "Queens", 
-             "Medgar Evers", "Brooklyn")
+cunys <- tribble(~college, ~campus_borough, 
+                 "CCNY", "Manhattan",
+                 "Baruch", "Manhattan", 
+                 "CSI", "Staten Island",
+                 "York", "Queens", 
+                 "Medgar Evers", "Brooklyn")
 
-inner_join(x, y, join_by(campus_borough == borough_name))
+inner_join(cunys, routes, join_by(campus_borough == borough_name))
 ```
 
-MEC vanished!
+. . . 
 
-## Inner and Outer Joins {.smaller}
+[MEC vanished!]{color="red"}
+
+## Inner and Outer Joins
 
 ```{r}
 #| echo: true
-left_join(x, y, join_by(campus_borough == borough_name))
+left_join(cunys, routes, join_by(campus_borough == borough_name))
 ```
 
 MEC stays, but no bus code - `NA` value
 
 . . . 
 
+::: {.smaller}
+
 - `inner_join` - Keep only matches
 - `left_join` - Keep all rows in left (first) table even w/o matches
 - `right_join` - Keep all rows in right (second) table even w/o matches
 - `full_join` - Keep all rows from both tables, even w/o matches
 
+:::
+
 `left_` and `right_` are types of 'outer' joins
 
+## Pivoting
+
+The `pivot_*` functions change the **shape** of data
+
+::: {.incremental}
+
+- Values are not created or destroyed, just moved around
+- **wider** data sets are formed by forming multiple rows into columns
+- **longer** data sets are splitting columns from the same row into new rows
+
+:::
+
+. . . 
+
+These functions come from the `tidyr` package - not `dplyr`
+
+```{r}
+library(tidyr) # included in library(tidyverse)
+```
+
+## Pivoting
+
+Untidy example from last week: 
+
+```{r}
+#| echo: false
+library(tibble)
+BARUCH_UNTIDY <- tribble(
+    ~Semester, ~Course,      ~Number, ~Type,
+       "Fall", "Accounting",     200, "Enrollment",
+       "Fall", "Accounting",     250, "Cap",
+       "Fall", "Law",        100, "Enrollment",
+       "Fall", "Law",        125, "Cap",
+       "Fall", "Statistics", 200, "Enrollment",
+       "Fall", "Statistics", 200, "Cap",
+       "Spring", "Accounting",     300, "Enrollment",
+       "Spring", "Accounting",     350, "Cap",
+       "Spring", "Law",        50, "Enrollment",
+       "Spring", "Law",        100, "Cap",
+       "Spring", "Statistics", 400, "Enrollment",
+       "Spring", "Statistics", 400, "Cap"
+)
+BARUCH_UNTIDY
+```
+
+## Pivoting
+
+This data was untidy because it split a single unit (course) across multiple rows
+
+`pivot_wider` to get to the right format
+
+. . . 
+
+```{r}
+#| echo: true
+pivot_wider(BARUCH_UNTIDY, names_from=Type, values_from=Number)
+```
+
+## Pivots
+
+`pivot_` changes the shape of a data set. Purposes: 
+
+- Get ready for presentation
+- Prep for a join
+- Combine rows before looking at 'cross-row' structure
+
+## Pivots
+
+Which penguin species has the largest between-sex mass difference? 
+
+```{r}
+#| echo: true
+library(tidyr)
+avg_mass_tbl <- penguins |> drop_na() |> 
+    group_by(sex, species) |> 
+    summarize(avg_mass = mean(body_mass), .groups="drop")
+    # .groups="drop" is equivalent to |> ungroup()
+avg_mass_tbl
+```
+
+## Pivots
+
+We want data that is _wider_ than our current data: 
+
+| species   | male_avg | female_avg | 
+|-----------|----------|-------------
+| Adelie    |...|...|
+| Chinstrap |...|...|
+| Gentoo    |...|...|
+
+
+## Pivots
+
+```{r}
+#| echo: true
+pivot_wider(avg_mass_tbl, 
+            id_cols = species, 
+            names_from=sex, 
+            values_from=avg_mass)
+```
+
+```{r}
+#| echo: true
+pivot_wider(avg_mass_tbl, 
+            id_cols = species, 
+            names_from=sex, 
+            values_from=avg_mass) |>
+    mutate(sex_diff = male - female) |>
+    slice_max(sex_diff)
+```
+
+## Pivots
+
+`pivot_wider` Arguments:
+
+::: {.small}
+
+- `id_cols`: kept as 'keys' for new table
+- `names_from`: existing column 'spread' to create new
+                columns names
+- `values_from`: values in new table
+
+:::
+
+. . . 
+
+`pivot_longer`: 
+
+::: {.small}
+
+- 'Inverse' operation
+- Spread one row + multiple columns => one col + multiple rows
+
+:::
+
+. . . 
+
+::: {.small}
+
+`pivot_wider` and `pivot_longer` have many additional arguments for dealing with
+repeats / missing values. The help page (+ experimenting) is your friend
+
+:::
+
+## Legos of Data Analysis
+
+These functions are like Legos: 
+
+- Simple individually
+- Combine for complex structures
+
+## Legos of Data Analysis
+
+**Q: How many distinct flights left NYC in 2013?**
+
+```{r}
+library(dplyr)
+library(nycflights13)
+flights |> 
+    n_distinct()
+```
+
+. . . 
+
+Not quite what we wanted...
+
+## Legos of Data Analysis
+
+**Q: How many distinct flights left NYC in 2013?**
+
+. . . 
+
+How many unique combinations of `carrier` + `flight` (*e.g.*, United 101)?
+
+```{r}
+flights |>
+    select(carrier, flight) |>
+    n_distinct()
+```
+
+## Legos of Data Analysis
+
+**Q: How many distinct flights left NYC in 2013?**
+
+::: {.small}
+
+💡 Did airlines re-use flight numbers for different destinations? 
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    # Find reuse of number across different destinations
+    # Shorthand for group_by + summarize(n = n())
+    count(carrier, flight) 
+```
+
+:::
+
+. . . 
+
+Seems so!
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Find examples of re-use: 
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n)
+```
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Finding most re-used flight number: 
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n) |> 
+    left_join(flights, join_by(carrier == carrier, flight == flight)) |>
+    pull(dest) |> # pull out column as vector
+    table() # frequency table
+```
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Finding most re-used flight number: 
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n)
+```
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Seeing where our most reused number went:
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n) |>
+    inner_join(flights, join_by(carrier == carrier, flight == flight)) |>
+    count(flight, carrier, dest)
+```
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Additional join to get airport information + formatting:
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n) |>
+    inner_join(flights, join_by(carrier == carrier, flight == flight)) |>
+    count(flight, carrier, dest) |> 
+    inner_join(airports, join_by(dest == faa)) |>
+    select(name, n, carrier, flight) |>
+    arrange(desc(n)) |>
+    rename(`Destination Airport` = name, 
+           `Number of Times Flown` = n, 
+           `Carrier Code` = carrier, 
+           `Flight Number`= flight)
+```
+
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+::: {.small}
+
+Extra join to match to `airlines` as well: 
+
+```{r}
+head(airlines, 3)
+```
+
+:::
+
+. . . 
+
+Also has a column named `name` - need to disambiguate!
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Additional join to get airport information + formatting:
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n) |>
+    inner_join(flights, join_by(carrier == carrier, flight == flight)) |>
+    count(flight, carrier, dest) |>  
+    inner_join(airports, join_by(dest == faa)) |>
+    select(name, n, carrier, flight) |>
+    rename(dest_name = name) |> 
+    inner_join(airlines, join_by(carrier == carrier)) |> 
+    arrange(desc(n)) |>
+    select(-carrier) |> 
+    rename(`Destination Airport` = dest_name, 
+           `Number of Times Flown` = n, 
+           `Carrier` = name, 
+           `Flight Number`= flight)
+```
+
+## Legos of Data Analysis
+
+Question: What does this do I can't do in `Excel`? 
+
+. . . 
+
+*Technically*, nothing. All programming languages of sufficient complexity are
+equally powerful (Turing equivalence). 
+
+</br>
+
+. . . 
+
+In actuality, quite a lot: 
+
+- `filter` allows more complex filtering than clicking on values
+- `group_by` + `summarize` extend array formulas
+- `*_join` provides more complex matching than `VLOOKUP`
+- `pivot_*` provide general formulation of pivot tables
+
++ everything else you can do in `R`. 
+
+Ability to *script* minimizes "hard-coding" of names and values. 
+
+## But truthfully
+
+```{r}
+fortunes::fortune(59)
+```
+
+. . . 
+
+```{r}
+fortunes::fortune(222)
+```
+
+
+# Diving Deeper into Multi-Table Verbs
+
+## Diving deeper Into Joins
+
+Data Set: [`nycflights13`](https://nycflights13.tidyverse.org/)
+
+Exercises: [Lab #05](../labs/lab05.html)
+
+## Additional dplyr Tricks
+
+::: {.incremental}
+
+- Ranking functions
+  - `row_number`, `min_rank`, `dense_rank`: differ in ties
+  - Use with `desc()` to flip ordering
+  - `cum_dist`, `percent_rank`: compute quantiles
+- Cumulative Statistics
+  - `cummean`, `cummax`, `cummin`, ...
+- _Conditional_ mutation
+  - `if_else`, `case_when`, default `TRUE` trick
+  
+:::
 
 # Pre-Assignment #05 FAQs
 
-## FAQ: Subqueries
+## Subqueries
 
 > [W]ill we be learning how to perform joins within a subquery?
 
@@ -324,7 +792,7 @@ collector_ids <- sales |> pull(collector_id)
 collectors |> filter(id %in% collector_ids) |> select(first_name, last_name)
 ```
 
-## FAQ: Data Integrity
+## Data Integrity
 
 > [H]ow can we ensure that the information [resulting from a join]
 > is accurate and not repeated? 
@@ -333,7 +801,7 @@ collectors |> filter(id %in% collector_ids) |> select(first_name, last_name)
 2. Pay attention to all warnings
 3. Manually examine the result of any joins
 
-## FAQ: Performance on Large Data Sets
+## Performance
 
 > Will joining large data sets [...] affect performance?
 
@@ -344,37 +812,21 @@ Bigger danger is "bad joins" creating huge data automatically.
 Note that `R` is less "smart" than `SQL`, so won't optimize
 execution order for you automatically.
 
-## FAQ: What is the Role of `pivot_wider`?
-
-> Is [`pivot_wider`] just for formatting? 
-
-```{r}
-#| echo: true
-#| eval: true
-library(dplyr); library(tidyr)
-penguins |> drop_na() |> 
-    group_by(sex, species) |> 
-    summarize(weight = mean(body_mass)) |>
-    pivot_wider(id_cols=species, 
-                names_from=sex,
-                values_from=weight) |>
-    mutate(gender_diff = male - female)
-```
-
-## FAQ: `dplyr` joins vs `SQL` joins
+## dplyr joins vs SQL joins
 
 > What is the difference between `dplyr` and `SQL` joins?
 
 Not too much - biggest difference is no `INDEX` or `FOREIGN KEY`
 in `R` so less guarantees of data integrity.
 
-## FAQ: When to use `anti_join`?
+## When to use anti_join()?
 
 Rare: looking for _unmatched_ rows. 
+
 - Useful to find data integrity issues or 'implicit' missingness. 
 - I use an `anti_join` to find students who haven't submitted an assignment.
 
-## FAQ: `many-to-many` Warning
+## many-to-many Warning
 
 Tricky to address, but fortunately pretty rare. 
 
@@ -384,7 +836,7 @@ Tricky to address, but fortunately pretty rare.
   - Can occur with "fancy" joins (rolling, inequality)
 - Add additional join variables to break "duplication"
 
-## FAQ: How to Check Efficiency? 
+## How to Check Efficiency? 
 
 No automatic way. Some rules of thumb: 
 
@@ -393,7 +845,7 @@ No automatic way. Some rules of thumb:
 - `full_outer` join is a bit dangerous
 - `cross_join` is _rarely_ the right answer
 
-## FAQ: `tidyr` vs `dplyr`
+## tidyr vs dplyr
 
 > Is `tidyr` more efficient than `dplyr`? 
 
@@ -401,9 +853,9 @@ Nope - different packages from the same developers.
 
 Designed to work together elegantly. 
 
-## FAQ: Rare Joins
+## Rare Joins
 
-> Please explain what `cross_join`, filter joins, and `nest_join` are?
+> What are `cross_join`, filter joins, and `nest_join`?
 
 - `cross_join`: dangerous. 
   - Creates "all pairs" of rows. Useful for 'design' problems 
@@ -413,111 +865,43 @@ Designed to work together elegantly.
 - `nest_join`: beyond this course. 
   - `left_join` with extra structure to output.
 
-## FAQ: How to Pick a Join
-
-> How do I decide which type of join is most approriate for a given analysis? 
-
-Topic of today's work.
-
-# Today
-
-## Diving Deeper with `dplyr` - Joins and Pivots
-
-Data Set: [`nycflights13`](https://nycflights13.tidyverse.org/)
-
-Exercise: [Lab #05](../labs/lab05.html)
-
-## Pivots
-
-`pivot_` changes the shape of a data set
-
-- Get ready for presentation
-- Prep for a join
-- Combine rows before looking at 'cross-row' structure
-
-## Pivots
-
-Q: Which penguin species has the largest between-sex mass difference? 
-
-```{r}
-#| echo: true
-library(tidyr)
-avg_mass_tbl <- penguins |> drop_na() |> 
-    group_by(sex, species) |> 
-    summarize(avg_mass = mean(body_mass)) |> 
-    ungroup()
-avg_mass_tbl
-```
-
-## Pivots
-
-We want data that is _wider_ than our current data: 
-
-| species   | male_avg | female_avg | 
-|-----------|----------|-------------
-| Adelie    |...|...|
-| Chinstrap |...|...|
-| Gentoo    |...|...|
-
-
-## Pivots
-```{r}
-#| echo: true
-pivot_wider(avg_mass_tbl, 
-            id_cols = species, 
-            names_from=sex, 
-            values_from=avg_mass)
-```
-
-```{r}
-#| echo: true
-pivot_wider(avg_mass_tbl, 
-            id_cols = species, 
-            names_from=sex, 
-            values_from=avg_mass) |>
-    mutate(sex_diff = male - female) |>
-    slice_max(sex_diff)
-```
-
-## Pivots
-
-`pivot_wider` Aguments:
-
-- `id_cols`: kept as 'keys' for new table
-- `names_from`: existing column 'spread' to create new
-                columns names
-- `values_from`: values in new table
-
-. . . 
-
-`pivot_longer`: 
-
-- 'Inverse' operation
-- Spread one row + multiple columns => one col + multiple rows
 
 # Wrap-Up
 
-## Upcoming Two Weeks
 
-Next Wednesday (March 5th) at 11:45pm:
+## Review
 
-- MP#01 Initial Submission due
-- Team membership due
+Multi-Table `dplyr`: 
 
-. . . 
-
-**No class on March 6th**
+- `inner_join` and `left_join`
+- `join_by` specifications
+- `pivot_longer` and `pivot_wider` to get data into optimal formats (`tidyr`)
 
 . . . 
 
-Following Wednesday (March 12th) at 11:45pm:
+Additional `dplyr`: 
 
-- MP#01 Peer Feedback Due
-- No Pre-Assignment
+- Ranking, cumulative, and shift functions
+- _Conditional_ mutation
 
-. . . 
+## Upcoming Work
 
-**March 13th: Proposal Presentations**
+Upcoming work from [course calendar](../index.qmd#calendar)
 
-{{< include ../advice/barnette.qmd >}}
+::: {.incremental}
 
+- [Pre-Assignment #0`r session+2`](../preassigns/pa07.html) due `r get_pa_deadline(session+2)`
+- [Mini-Project #01](../miniprojects/mini01.html) due on `r get_mp_deadline(1)`
+- Project Teams by `r ROSTERS`
+- Project Proposals on `r PROPOSALS`
+
+:::
+
+
+{{< include ../advice/gmail_dupes.qmd >}}
+
+## Musical Treat
+
+</br>
+
+{{< video https://www.youtube.com/watch?v=ohDqL6pjpjY width="80%" height="400px">}}

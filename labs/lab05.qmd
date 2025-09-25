@@ -1,21 +1,21 @@
 ---
 title: "{{< var course.short >}} Week 5 In-Class Activity: Let us `JOIN` Our Tables Together"
+format: live-html
 engine: knitr
 ---
 
-```{r}
-#| include: false
-if(!require("tidyverse")) install.packages("tidyverse")
-if(!require("nycflights13")) install.packages("nycflights13")
-library(tidyverse)
+{{< include _gradethis_init.qmd >}}
+
+```{webr}
+#| echo: false
+webr::install(c("tidyverse","nycflights13"), quiet=TRUE)
+suppressPackageStartupMessages(library(tidyverse))
 library(nycflights13)
 ```
 
-# Welcome!
+# [Slides](../slides/slides03.qmd)
 
-[Slides](../slides/slides05.html)
-
-# Review Practice
+# Review Practice {#review}
 
 The file ["births.csv"](https://github.com/michaelweylandt/STA9750/blob/main/births.csv) 
 in the course repository contains daily US birth counts for 20 years from 1969
@@ -24,9 +24,7 @@ and read it into `R` and answer the following review questions with your group.
 
 The following code may be useful: 
 
-```{r}
-#| eval: false
-#| echo: true
+```{webr}
 if(!file.exists("births.csv")){
     download.file("https://raw.githubusercontent.com/michaelweylandt/STA9750/main/births.csv", 
                   destfile="births.csv")
@@ -51,8 +49,8 @@ The columns here are:
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-```{r}
-#| eval: false
+```{webr}
+#| eval: true
 births |> filter(day==1, month==1, year==1984)
 ```
 
@@ -62,8 +60,7 @@ births |> filter(day==1, month==1, year==1984)
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-```{r}
-#| eval: false
+```{webr}
 births |> filter(year==1984) |> summarize(sum(births))
 ```
 
@@ -73,8 +70,7 @@ births |> filter(year==1984) |> summarize(sum(births))
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-```{r}
-#| eval: false
+```{webr}
 births |> group_by(year) |> summarize(n_births = sum(births))
 ```
 
@@ -85,8 +81,7 @@ births |> group_by(year) |> summarize(n_births = sum(births))
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-```{r}
-#| eval: false
+```{webr}
 births |> 
     group_by(year) |>
     summarize(n_births = sum(births)) |>
@@ -99,8 +94,7 @@ births |>
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-```{r}
-#| eval: false
+```{webr}
 births |> 
     group_by(month) |>
     summarize(avg_births = mean(births)) |>
@@ -115,34 +109,33 @@ advanced questions with your group.
 # Multi Table Operations
 
 This week, we are going to dive into the most useful "multi-table" `dplyr`
-operations, the `join` family. We will focus on the "big three" joins: 
+operations, the `join` family. We will focus on the "big two" joins: 
 
 - `inner_join`
-- `full_join`
 - `left_join`
 
-These inspired by the `SQL` joins, `INNER JOIN`, `FULL [OUTER] JOIN`, and
-`LEFT JOIN`.[^1] We will apply them to the various tables in the
-`nycflights13` data set. Recall the structure of each of these tables: 
+These inspired by the `SQL` joins, `INNER JOIN` and`LEFT JOIN`.[^1] We will 
+apply them to the various tables in the `nycflights13` data set. Recall the 
+structure of each of these tables: 
 
-```{r}
+```{webr}
 library(nycflights13)
 glimpse(flights)
 ```
 
-```{r}
+```{webr}
 glimpse(airlines)
 ```
 
-```{r}
+```{webr}
 glimpse(airports)
 ```
 
-```{r}
+```{webr}
 glimpse(planes)
 ```
 
-```{r}
+```{webr}
 glimpse(weather)
 ```
 
@@ -163,8 +156,7 @@ these logical tests to construct their output.
 The simplest and most useful logical test to use in a join is an equality test. 
 In `dplyr`, these are simply written as
 
-```{r}
-#| eval: false
+```{webr}
 join_by(left_name == right_name)
 ```
 
@@ -175,8 +167,7 @@ first (left) argument matches the value in the `right_name` column of the second
 For example, if I wanted to join the `origin` column of `flights` table to the
 `faa` column of the `airports` table, I might use something like the following: 
 
-```{r}
-#| eval: true
+```{webr}
 inner_join(flights, airports, join_by(origin == faa))
 ```
 
@@ -201,8 +192,7 @@ and `weather` table on _many_ columns:
 
 In this case, we'd pass 5 equality conditions to `join_by`: 
 
-```{r}
-#| eval: true
+```{webr}
 inner_join(flights, 
            weather, 
            join_by(origin == origin,
@@ -219,8 +209,7 @@ results.
 Note that it is relatively common for matched columns to have the same name in
 both tables: to support this case, `dplyr` reads a single column name as "self-equality". So the above code can be more concisely written as: 
 
-```{r}
-#| eval: true
+```{webr}
 inner_join(flights, 
            weather, 
            join_by(origin, 
@@ -239,12 +228,44 @@ below, time allowing.
 We now turn to specific joins. All of these joins use the `join_by` operator
 but they construct results differently based on its output.
 
+::: {.callout-note title="Doubling Names"}
+
+Note that `data.frame`s cannot have multiple columns with the same name. If a 
+name is duplicated coming out of a join, `dplyr` will add `.x` and `.y` to 
+the column names: 
+
+```{webr}
+flights |> 
+    inner_join(airlines, join_by(carrier == carrier)) |> 
+    inner_join(airports, join_by(origin == faa)) 
+```
+
+Here the output has two `name` columns: one from `airlines`, the name of the airline, 
+and one from `airports`, the name of the origin airport. To resolve this
+ambiguity, the columns are automatically renamed to `name.x`, coming from the
+first table, here `airlines` and `name.y`, coming from the second table, 
+here `airports`. If you want to change these suffixes, you can provide them
+explicitly: 
+
+```{webr}
+flights |> 
+    inner_join(airlines, join_by(carrier == carrier)) |> 
+    inner_join(airports, 
+               join_by(origin == faa), 
+               suffix = c("_airline", "_origin_airport")) 
+```
+
+Now we get `name_airline` and `name_origin_airport` instead, which may be easier
+to use. They are certainly clearer to read. 
+
+:::
+
 ## Inner Joins
 
 The most common and most important join in data analysis is the `inner_join`.
-The inner join returns _matches_ between two tables. Conceptually, the inner join
-constructs all possible pairs of rows between the two tables (so 
-`{r eval=FALSE} NROW(x) * NROW(y)` total rows) and then filters down to 
+The inner join returns _matches_ between two tables. Conceptually, the inner
+join constructs all possible pairs of rows between the two tables (so 
+`NROW(x) * NROW(y)` total rows) and then filters down to 
 those which pass the `join_by` test. In practice, more efficient algorithms 
 are used to prevent wasteful computation. 
 
@@ -259,28 +280,28 @@ west coast airports is. We do not have enough information to answer this using
 the `flights` table alone. To identify west coast airports, let's filter
 `airports` on `tzone`: 
 
-```{r}
+```{webr}
 west_coast_airports <- airports |> filter(tzone == "America/Los_Angeles")
 ```
 
 We can now join this to the original flights table to find only those flights
 with destination matches in `west_coast_airports`:
 
-```{r}
+```{webr}
 inner_join(flights, west_coast_airports, join_by(dest == faa))
 ```
 
 Here, we have only a subset of our original `flights` table. From this, we
 can compute our relevant summary statistic: 
 
-```{r}
+```{webr}
 inner_join(flights, west_coast_airports, join_by(dest == faa)) |>
     summarize(mean(arr_delay, na.rm=TRUE))
 ```
 
 Is this any better than the following alternative approach: 
 
-```{r}
+```{webr}
 inner_join(flights, airports, join_by(dest == faa)) |>
     filter(tzone == "America/Los_Angeles") |>
     drop_na() |>
@@ -301,7 +322,7 @@ the order in which you perform steps.
 
 Both approaches are also equivalent to: 
 
-```{r}
+```{webr}
 inner_join(flights, 
            airports |> filter(tzone == "America/Los_Angeles"), 
            join_by(dest == faa)) |>
@@ -315,14 +336,224 @@ evaluation orders in a confusing manner. Avoid this!
 
 Work with your group to answer the following questions using `inner_join`. 
 
-1. What is the name of the airline with the longest average departure delay?
-2. What is the name of the origin airport with the longest average departure delay?
-3. What is the name of the destination airport with the longest average departure delay?
-4. Are average delays longer for East-coast destinations or West-coast destinations?
-5. Which plane (`tailnum`) flew the most times leaving NYC? Who manufactured it?
-6. Which manufacturer has the most planes flying out of NYC airports? 
-7. Which manufacturer has the longest average flight? 
-8. What model of plane has the smallest average delay leaving NYC?
+1.  What is the name of the airline with the longest average departure delay?
+
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    ```{webr}
+    flights |> 
+        group_by(carrier) |> 
+        summarize(mean_dep_delay = mean(dep_delay, na.rm=TRUE)) |> 
+        inner_join(airlines, join_by(carrier == carrier)) |> 
+        slice_max(name) |> 
+        pull(name)
+    ```
+    
+    :::
+
+2.  What is the name of the origin airport with the longest average departure delay?
+
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    ```{webr}
+    flights |> 
+        group_by(origin) |> 
+        summarize(mean_dep_delay = mean(dep_delay, na.rm=TRUE)) |> 
+        inner_join(airports, join_by(origin == faa)) |> 
+        slice_max(name) |> 
+        pull(name)
+    ```
+    
+    :::
+
+3.  What is the name of the destination airport with the longest average departure delay?
+
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    ```{webr}
+    flights |> 
+        group_by(dest) |> 
+        summarize(mean_dep_delay = mean(dep_delay, na.rm=TRUE)) |> 
+        inner_join(airports, join_by(dest == faa)) |> 
+        slice_max(name) |> 
+        pull(name)
+    ```
+    
+    :::
+
+4.  Are average delays longer for East-coast destinations or West-coast destinations?
+
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    To answer this, let's define East/West coast by time zones. 
+    
+    ```{webr}
+    flights |> 
+        group_by(dest) |> 
+        summarize(mean_dep_delay = mean(dep_delay, na.rm=TRUE)) |> 
+        inner_join(airports, join_by(dest == faa)) |> 
+        group_by(tzone) |> 
+        summarize(mean_dep_delay = mean(mean_dep_delay, na.rm=TRUE)) |> 
+        filter(tzone %in% c("America/New_York", "America/Los_Angeles")) |> 
+        slice_max(mean_dep_delay) |> 
+        pull(tzone)
+    ```
+    
+    So it looks like East Coast flights actually do take off a bit later on
+    average. 
+    
+    This analysis is not quite right however as it treats all airports as being
+    equally important when computing the time zone averages, instead of 
+    weighting them by total number of flights. To do this properly, we should
+    probably keep track of i) the number of flights to each airport; and ii)
+    the total minutes of delays to that airport. Putting these together, we'll 
+    be able to appropriately weight our answers. 
+    
+    ```{webr}
+    flights |> 
+        group_by(dest) |> 
+        summarize(total_dep_delay = sum(dep_delay, na.rm=TRUE), 
+                  n_flights = n()) |> 
+        inner_join(airports, join_by(dest == faa)) |> 
+        group_by(tzone) |> 
+        summarize(total_dep_delay = sum(total_dep_delay, na.rm=TRUE), 
+                  n_flights = sum(n_flights)) |> 
+        filter(tzone %in% c("America/New_York", "America/Los_Angeles")) |> 
+        mutate(mean_dep_delay = total_dep_delay / n_flights) |> 
+        slice_max(mean_dep_delay) |> 
+        pull(tzone)
+    ```
+    
+    In this case, the answer doesn't actually change, but it's good to know we
+    did the right thing. 
+    
+    :::
+
+5.  Which plane (`tailnum`) flew the most times leaving NYC? Who manufactured it?
+
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    ```{webr}
+    flights |> 
+        filter(!is.na(tailnum)) |> 
+        group_by(tailnum) |> 
+        summarize(n_flights = n()) |> 
+        slice_max(n_flights) |> 
+        inner_join(planes, join_by(tailnum == tailnum))
+    ```
+    
+    Hmmm.... That's odd. Let's see if we can figure out what happened. 
+    
+    Whenever we get back a zero row join result, it's usually a sign that the
+    quantity (key) being joined doesn't exist in both tables. We can verify this
+    manually: 
+    
+    ```{webr}
+    top_tailnum <- flights |> 
+        filter(!is.na(tailnum)) |> 
+        group_by(tailnum) |> 
+        summarize(n_flights = n()) |> 
+        slice_max(n_flights) |> 
+        pull(tailnum)
+    ```
+    
+    and
+    
+    ```{webr}
+    top_tailnum %in% (planes |> pull(tailnum))
+    ```
+    
+    How should we deal with this? Two options: 
+    
+    1) We can acknowledge that it's a frequently used plane with
+       missing information, likely because it's a private plane; and/or
+    2) We can modify our analysis to instead return the most common plane 
+       _for which we have info_. 
+       
+    To do the latter, we need to move our filtering to _after_ the join: 
+    
+    ```{webr}
+    flights |> 
+        filter(!is.na(tailnum)) |> 
+        group_by(tailnum) |> 
+        summarize(n_flights = n()) |> 
+        inner_join(planes, join_by(tailnum == tailnum)) |> 
+        slice_max(n_flights) |> 
+        select(tailnum, manufacturer) 
+    ```
+    
+    Note that the use of an `inner_join` here guarantees us that our selected
+    `tailnum` is indeed one for which we have information. 
+    
+    :::
+
+
+6.  Which manufacturer has the most planes flying out of NYC airports? 
+
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    There is a bit of ambiguity, but if we interpret as the most _flights_
+    per manufacturer, we get the following: 
+    
+    ```{webr}
+    flights |> 
+        inner_join(planes, join_by(tailnum == tailnum)) |> 
+        count(manufacturer) |> 
+        slice_max(n) |> 
+        pull(manufacturer)
+    ```
+    
+    If instead we look just at pure plane count, treating all planes as equal
+    even if they only departed NYC once, we could instead: 
+    
+    ```{webr}
+    flights |> 
+        distinct(tailnum) |> 
+        inner_join(planes, join_by(tailnum == tailnum)) |> 
+        count(manufacturer) |> 
+        slice_max(n) |> 
+        pull(manufacturer)
+    ```
+    
+    :::
+
+7.  Which manufacturer has the longest average flight? 
+
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    As with the earlier question about timezones, there is a bit of ambiguity
+    in how we want to interpret this -- should `longest` be interpreted as time
+    or distance? -- but the answer is something like the following: 
+    
+    ```{webr}
+    flights |> 
+        inner_join(planes, join_by(tailnum == tailnum)) |> 
+        group_by(manufacturer) |> 
+        summarize(mean_air_time = mean(air_time, na.rm=TRUE)) |> 
+        slice_max(mean_air_time) |> 
+        pull(manufacturer)
+    ```
+    
+    :::
+    
+8.  What model of plane has the smallest average delay leaving NYC?
+
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    Something like: 
+    
+    ```{webr}
+    flights |> 
+        inner_join(planes, join_by(tailnum == tailnum)) |> 
+        group_by(model) |> 
+        summarize(mean_dep_delay = mean(dep_delay, na.rm=TRUE)) |> 
+        slice_max(mean_dep_delay) |> 
+        pull(model)
+    ```
+    
+    though as before there is some ambiguity in how we should weight the average.
+    
+    :::
 
 ## Left Join
 
@@ -330,7 +561,7 @@ Left joins are useful when you don't want to dropped unmatched columns
 in one table. For instance, suppose we misplace some rows from our
 `airlines` table: 
 
-```{r}
+```{webr}
 airlines_major <- airlines |>
     filter(carrier %in% c("AA", "DL", "UA", "WN", "B6", "AS"))
 ```
@@ -338,7 +569,7 @@ airlines_major <- airlines |>
 If we inner join on `airlines_major`, we _loose_ many of the rows
 in `flights`. 
 
-```{r}
+```{webr}
 NROW(flights)
 inner_join(flights, 
            airlines_major, 
@@ -349,7 +580,7 @@ inner_join(flights,
 Sometimes this is what we want, but not always. If we instead use
 a left join, we keep all of the rows in `flights`: 
 
-```{r}
+```{webr}
 NROW(flights)
 left_join(flights, 
           airlines_major, 
@@ -362,7 +593,7 @@ Rows lacking a pair in `airlines_major` fill the missing columns with
 these flights should have some carrier name, but given the data at hand, 
 we don't know what it is. 
 
-```{r}
+```{webr}
 NROW(flights)
 left_join(flights, 
           airlines_major, 
@@ -374,32 +605,441 @@ left_join(flights,
 `left_join`s are useful if we want to join two tables, but want to avoid
 dropping any rows from a 'gold standard' table.
 
-## Outer Join
 
-## Advanced Join Specifications
+We're not going to say much about `right_join` since it's really just a flipped
+`left_join`: 
 
-# Multi-Column Operations
+```{r}
+#| eval: false
 
-# Analytical Functions
+left_join(x, y, join_by(name_x == name_y))
 
-## Cumulative Operators
+# is the same as
 
-## `*_rank`
+right_join(y, x, join_by(name_y == name_x))
+```
 
-# Other `dplyr` functionality
+Sometimes one form is more convenient than the other, particularly when one table
+requires lots of pre-processing that you want to put earlier in the pipeline. 
 
-## Advanced Joins
+## Selecting Join Types
 
-### `cross_join`
+At this point, you are probably asking yourself when you should use which type
+of join. There unfortunately isn't a one-size fits all answer. For me, the choice
+of join is essentially equivalent to how you want to handle missing values. 
 
-### `semi_join`
+An `inner_join` is essentially the same as automatically passing `na.rm=TRUE` to
+all downstream analysis, while a `left_join` or similar will produce `NA`s you
+have to deal with later. If the `NA`s are going to be relevant - *e.g.*, if you
+want to report the number of unmatched values - I'd use a `left_join`, but
+otherwise I find myself reaching for `inner_join` by default. 
 
-### `anti_join`
+It is sometimes worthwhile to abstract this a bit to think about _why_ your data
+is missing: in statistics, we often think about three models of missingness: 
 
-### `nest_join`
+- Missing Completely at Random (MCAR)
+- Missing at Random (MAR)
+- Missing Not at Random (MNAR)
 
-## `bind_rows` and `bind_columns`
+MCAR missingness - when the missingness is truly random and unrelated to 
+any variables of interst - is a strong and rare condition, but it's really the 
+only situation where it's totally safe to just drop missing values. 
 
+Dealing with missing data is a bit of an art and often easier to discuss on
+concrete problems than in the abstract. *E.g*, in our `flights` data, the missing
+values (`is.na(arr_delay) == TRUE`) correspond to cancelled flights. These aren't
+MCAR and they are actually MNAR (the worst case): they are missing precisely because
+they would have been _huge_ delays. If you simply throw them out, you are technically
+reporting an accurate value, but you are obscuring a deeper underlying truth. 
+
+
+::: {.callout-caution title="Extra: Going Deeper with Joins" collapse="true"}
+
+We won't discuss them here, but there are several additional types of joins
+you might use on rare occasion. I wouldn't worry about mastering them now, but
+for completeness: 
+
+- `full_join`: this essentially combines the `left_join` and `right_join` and
+  never drops rows from either table, even if unmatched
+- `semi_join`: this is essentially an `inner_join(x, y)` that then throws away
+  the `y` columns and only keeps `x`. This is primarily useful when you are 
+  checking that you have data that can be properly joined later in the analysis
+  or if you have a "gold standard" table you want to be sure you are only looking
+  at subsets of. 
+- `anti_join`: this is the opposite of an `inner_join` or `semi_join`. 
+  `anti_join(x, y)` returns the rows of `x` that don't have a match in `y`. This
+  is mainly used for finding missing data. *E.g.*, I use an `anti_join` in some
+  of my code to find students who haven't submitted an assignment by anti-joining 
+  my list of students with the list of submissions I have received. 
+- `cross_join`: the cross join is essentially the "maximal" join and it returns
+  all possible combinations without doing any subsetting or filtering, *i.e.*, 
+  no `join_by` statement. This is a bit dangerous to use on anything but small
+  data sets since it can create many rows quickly. 
+  
+You can also pass more complex operations to the `join_by` operator: 
+
+- Inequality joins: you can do something like `join_by(x >= y)`. This can be used
+  to do things like cumulative operators for time series: 
+  
+  ```{webr}
+  library(tibble)
+  ts_df <- tribble(~date,       ~value, 
+                   Sys.Date(),       3, 
+                   Sys.Date() - 1,   2, 
+                   Sys.Date() - 2,   1, 
+                   Sys.Date() - 3,   0)
+  dy_df <- data.frame(date = Sys.Date() - (0:3)) |>
+               mutate(weekday = strftime(date, "%A"))
+  left_join(ts_df, dy_df, join_by(date >= date)) |> 
+     group_by(date.y) |> 
+     summarize(mean(value))
+  ```
+  
+  This is rather advanced. 
+  
+- In other circumstances, you won't have exact equality to match on and can do
+  "nearest" joins using the `closest()` or `between()` functions. 
+  
+
+:::
+
+# Additional `dplyr` functionality
+
+`dplyr` provides some additional functionality that is often useful. While these
+functions are not as important as the SQL-type verbs we've covered above, it
+is worth being aware of them so that you have a starting point if these types
+of questions come up in your mini-projects or course project. Unlike the 
+`*_join` family, there isn't really an overarching "theory" of these
+functions: they are just things that come up in data analysis. 
+
+## Vector Functions
+
+Most of the functions we have discussed to this point in the course are either
+fully vectorized (`+`, `cos`, `sqrt`) or fully summarizing (`length`, `sum`, `min`). 
+There is a third class of functions which are vector-in+vector-out but that also
+need to look at the whole vector. I divide these broadly into the three 
+categories below. 
+
+### Ranking Values
+
+Often, you will want to put "ranks" or "orders" next to values, so that you can
+see what is the highest, second highest, etc. While you can get the highest or
+lowest values rather easily with `min` and `max`, getting other ranks is harder.
+
+These three functions - `row_number`, `min_rank`, and `dense_rank` - are best
+illustrated by an example: 
+
+```{r}
+#| message: false
+library(dplyr)
+data.frame(x = c(1.5, 3, 10, 15, 10, 4)) |> 
+    mutate(rn = row_number(x), 
+           mn = min_rank(x), 
+           dr = dense_rank(x))
+```
+
+As you can see, these differ in how they handle ties (here the two `x=10` rows): 
+
+- `row_number` gives the lower rank to whichever row comes first
+- `min_rank` gives them both the lower rank and then "skips" to make up
+- `dense_rank` gives them both the lower rank, like `min_rank`, but doesn't skip
+  values to account for the tie
+
+This brings up an important element of these types of functions: they are the 
+first things we have seen that are sensitive to row order! This makes them a bit
+unpredictable so if you need tight quality control of outputs, it's usually a
+good idea to have an `arrange` just before using them. 
+
+In more statistical contexts, we might use percentiles instead of ranks: 
+
+```{r}
+data.frame(x = c(1.5, 3, 10, 15, 10, 4)) |> 
+    mutate(pr = percent_rank(x), 
+           cd = cume_dist(x))
+```
+
+Here the percentiles let us say, e.g., 60\% of other rows are below this row. The
+methods differ essentially in how they treat the endpoints. 
+
+### Cumulative (Running) Values
+
+Particularly when dealing with temporal data, *cumulative* statistics may be useful: 
+
+```{r}
+data.frame(date = Sys.Date() - seq(7, 1), 
+           value = c(1, 5, 10, 25, 50, 100, 500)) |>
+    mutate(cum_mean = cummean(value), 
+           cum_sum  = cumsum(value), 
+           cum_max  = cummax(value), 
+           cum_min  = cummin(value))
+```
+
+Clearly, this sort of cumulative value is highly sensitive to row order. 
+
+It is also worth distinguishing *cumulative* values - which include _all_ values
+up to that point - from *running* values - which only use a fixed lookback window. 
+Running statistics are not included in `dplyr` and will require other packages. 
+
+### Shift Functions
+
+Similarly, in time series, it is useful to look at the previous or next values 
+to compute things like percent change. Here the `lead` and `lag` functions may
+be helpful: 
+
+```{r}
+data.frame(date = Sys.Date() - seq(7, 1), 
+           value = c(1, 5, 10, 25, 50, 100, 500)) |>
+    mutate(prev_value = lag(value), 
+           pct_change = 100 *(value / prev_value - 1))
+```
+
+## Conditional Manipulations
+
+As we have seen, the `mutate` command can be used to perform a transformation
+to all rows. Sometimes, we only want to perform a transformation to certain rows
+or to perform different transformations depending on the values of one or
+more columns. In this context, things like `if_else` and `case_when` may be
+useful: 
+
+
+```{r}
+data.frame(x = c(-3, -2, -1, 0, 1, 2, 3)) |>
+    mutate(x_pos_squared = if_else(x > 0, x^2, 0))
+```
+
+Here, the `if_else` command checks whether the condition is true (if `x` is positive):
+if it is, we get the value of the first argument (`x^2`); if it is not true, we get
+the second (`0`).
+
+The `case_when` operator generalizes this to 3 or more cases: 
+
+```{r}
+data.frame(x = c(-3, -2, -1, 0, 1, 2, 3), 
+           group=c("cos", "sin", "tan", "cos", "sin", "sin", "tan")) |>
+    mutate(x_trig = case_when(
+        group == "cos" ~ cos(x), 
+        group == "sin" ~ sin(x), 
+        group == "tan" ~ tan(x)
+    ))
+```
+
+Here, the `case_when` checks the conditions in order to figure out 
+which transformation to apply. The syntax is a bit funny: the expression
+to the left of the `~` is the thing checked to see if it is true; the value
+on the right of the `~` is the value returned. Because of this, you can set
+defaults by putting a `TRUE ~` in the final case: 
+
+```{r}
+data.frame(x = c(-3, -2, -1, 0, 1, 2, 3), 
+           group=c("cos", "sin", "unknown", "cos", "sin", "sin", "unknown")) |>
+    mutate(x_trig = case_when(
+        group == "cos" ~ cos(x), 
+        group == "sin" ~ sin(x), 
+        TRUE  ~ NA
+    ))
+```
+
+Note that this is all still evaluated row-by-row independently. If you want to
+do groupwise operations, you need a `group_by` and likely a `summarize` to follow. 
+
+```{r}
+penguins |>
+    group_by(species) |>
+    mutate(label = case_when(
+        body_mass == max(body_mass, na.rm=TRUE) ~ "Biggest of Species", 
+        body_mass == min(body_mass, na.rm=TRUE) ~ "Smallest of Species", 
+        TRUE ~ "In the middle"
+    ))
+```
+
+Here, as always, the `min` and `max` are computed groupwise, *i.e.*, per species,
+because of the `group_by` that comes before. 
+
+::: {.callout-caution title="Extra: Multi-Column Operations" collapse="true"}
+
+We sometimes do need to put multiple columns together, *e.g.*, to get
+the student's highest score on three attempts at a test. This *can* be done with
+the `c_across` operator, but I honestly find it a bit confusing and prefer to
+do some pivot magic: 
+
+```{r}
+student_grades <- tribble(
+    ~name,    ~test1, ~test2, ~test3, 
+    "Alice",      90,     80,    100,
+    "Bob",        90,     90,     80,
+    "Carol",      50,    100,    100,
+    "Dave",      100,      0,      0)
+
+student_grades |> 
+    rowwise() |> # Make each row its own group so that we don't accidentally combine
+    mutate(max_test = max(c_across(c(test1, test2, test3))), 
+           avg_test = mean(c_across(c(test1, test2, test3))))
+```
+
+This is pretty fragile and a bit slow due to the `rowwise()` operator which makes
+every row its own groups, so I personally find the `pivot` approach easier 
+for this: 
+
+```{r}
+library(tidyr) # For pivot_longer
+student_grades |>
+    pivot_longer(cols=c(test1, test2, test3), 
+                 names_to="test", 
+                 values_to="score") |>
+    group_by(name) |>
+    summarize(max_test = max(score), 
+              avg_test = mean(score)) 
+```
+
+But *chacun à son goût*.
+
+:::
+
+## Exercises
+
+Answer the following questions using the various techniques described above. 
+
+1.  Identify the top 5 days by largest fraction of flights delayed. 
+
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    ```{webr}
+    flights |> 
+        group_by(year, month, day) |> 
+        summarize(frac_delayed = mean(dep_delay > 0, na.rm=TRUE)) |> 
+        ungroup() |> 
+        mutate(delayed_rank = dense_rank(desc(frac_delayed))) |>
+        slice_max(frac_delayed, n=5)
+    ```
+    
+    Note a few points of danger to be aware of here: 
+    
+    1. `dense_rank` and company sort in ascending order, so we need to use the
+        `desc` modifier to reverse the rankings. 
+    2. You have to `ungroup` after `summarize` or you will do rankings _within_
+       each group (here, month), which gives incorrect values.
+       
+    If you want to modify your code to make the result a bit more attractive,
+    this snippet has some useful tricks: 
+    
+    ```{webr}
+    flights |> 
+        group_by(year, month, day) |> 
+        summarize(frac_delayed = mean(dep_delay > 0, na.rm=TRUE), 
+                  n_delayed = sum(dep_delay > 0, na.rm=TRUE), 
+                  n_total = n()) |> 
+        ungroup() |> 
+        mutate(delayed_rank = dense_rank(desc(frac_delayed))) |>
+        slice_max(frac_delayed, n=5) |>
+        mutate(date = ymd(paste(year, month, day, sep="-")), 
+               Date = strftime(date, "%B %d, %Y"), 
+               `Percent Delayed` = round(frac_delayed * 100, 2), 
+               `Ranking` = delayed_rank) |>
+        select(Ranking, `Percent Delayed`, Date)
+    ```
+    :::
+
+2.  Create a table of the daily YTD mean average departure delay for all flights 
+    departing Newark airport. 
+    
+    *Hint*: You can first group by days and compute daily averages, then compute
+    the YTD quantities or you can compute a cumulative statistic over all flights
+    and then take end of day values using `last()`. These are slightly different,
+    but should not differ greatly, as they essentially just vary in whether
+    days are weighted by number of flights.
+    
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    First approach: 
+    
+    ```{webr}
+    flights |> 
+        filter(origin == "EWR", 
+               !is.na(dep_delay)) |>
+        group_by(year, month, day) |>
+        summarize(mean_dep_delay  = mean(dep_delay)) |> 
+        ungroup() |>
+        mutate(ytd_mean_dep_delay = cummean(mean_dep_delay))
+    ```
+    
+    Second approach: 
+    
+    ```{webr}
+    flights |> 
+        filter(origin == "EWR", 
+               !is.na(dep_delay)) |> 
+        arrange(year, month, day, dep_time) |>
+        mutate(ytd_avg_delay = cummean(dep_delay)) |>
+        group_by(year, month, day) |> 
+        summarize(ytd_avg_delay = last(ytd_avg_delay)) |> 
+        ungroup() 
+    ```
+    
+    :::
+    
+3.  Which day had the largest increase in number of delayed flights over the
+    previous day? 
+    
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    ```{webr}
+    flights |> 
+        group_by(year, month, day) |> 
+        summarize(n_delayed = sum((dep_delay > 0) | (is.na(dep_delay)))) |> 
+        ungroup() |> 
+        mutate(increase_delays = n_delayed - lag(n_delayed)) |>
+        slice_max(increase_delays, n=5)
+    ```
+    
+    :::
+    
+    
+4.  To this point, we have looked at average delay using both the positive and
+    negative values in that column. This gives airlines 'credit' for flights
+    that leave early, but may understate the true delays experienced by passengers.
+    Create a new column measuring _real_ delays by setting negative delays (early
+    departures) to zero and compute the average delay per airline. 
+    
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    ```{webr}
+    flights |> 
+        filter(!is.na(dep_delay)) |> 
+        mutate(real_dep_delay = if_else(dep_delay < 0, 0, dep_delay)) |>
+        group_by(carrier) |> 
+        summarize(avg_real_delay = mean(real_dep_delay, na.rm=TRUE)) |>
+        arrange(desc(avg_real_delay))
+    ```
+    
+    :::
+    
+5.  Using your average real delay statistics, which airline has the largest
+    difference in average delay with and without credit for early departures. 
+    
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    ```{webr}
+    flights |> 
+        filter(!is.na(dep_delay)) |> 
+        mutate(real_dep_delay = if_else(dep_delay < 0, 0, dep_delay)) |>
+        group_by(carrier) |> 
+        summarize(
+            avg_delay = mean(dep_delay, na.rm=TRUE), 
+            avg_real_delay = mean(real_dep_delay, na.rm=TRUE)) |>
+        mutate(diff_delay = avg_real_delay - avg_delay) |>
+        inner_join(airlines, join_by(carrier == carrier)) |>
+        arrange(desc(avg_real_delay)) |>
+        rename(Airline = name, 
+               `Avg Delay (with credit)` = avg_delay, 
+               `Avg Delay (w/o credit)` = avg_real_delay, 
+               `Difference` = diff_delay) |>
+        select(Airline, everything()) |>
+        select(-carrier)
+    ```
+    
+    I have included a few extra steps to optimize formatting near the end.
+    
+    :::
 
 [^1]: Note that some `SQL` engines use `LEFT OUTER JOIN` than `LEFT JOIN`. 
 Because `OUTER` is a bit ambiguous, `dplyr` emphasizes `full_` vs `left_` in
