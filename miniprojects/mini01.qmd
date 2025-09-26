@@ -318,6 +318,12 @@ str(GLOBAL_TOP_10)
 glimpse(GLOBAL_TOP_10)
 ```
 
+Note that these both provide essentially the same information, just formatted
+slightly differently: `glimpse` is a bit more legible, especially for large
+tables, while `str` is more general (working on non-`data.frame` objects) and
+provides a bit more detail. In general, you do not need to use both of these - 
+just use the one that has the formatting you prefer.
+
 From these print-outs, we can see various useful pieces of information: 
 
 - The number of rows and columns
@@ -332,9 +338,10 @@ a proper `NA` value. This however isn't too hard to fix using a `mutate` command
 
 ::: {.callout-tip title="Task 2: Data Cleaning"}
 
-Complete the following code snippet and copy it into your Quarto document. This
-will convert `"N/A"` values to proper `NA`s. After fixing this issue, use a 
-`str()` or `glimpse()` command to confirm the issue has been addressed. 
+Complete the following code snippet by replacing the three `...` with valid 
+`R` code and copy it into your Quarto document. This will convert `"N/A"` values
+to proper `NA`s. After fixing this issue, use a `str()` or `glimpse()` command
+to confirm the issue has been addressed. 
 
 ```{r}
 #| eval: false
@@ -406,6 +413,17 @@ GLOBAL_TOP_10 |>
     datatable(options=list(searching=FALSE, info=FALSE))
 ```
 
+
+::: {.callout-note title="Display of `NA` Values" collapse="true"}
+
+Note that, due to some fundamental differences in the way `R` and JavaScript
+represent missing values, `R` `NA`s appear as blank cells in an
+interactive `datatable()`. If you are getting some blank cells, that means you
+completed Tasks 01 and 02 correctly. My examples here maintain the `"N/A"`
+because I have not made that adjustment to the data.
+
+:::
+
 This table has several issues: 
 
 i) The column names are not well-formatted. They are formatted as `R` variables
@@ -429,6 +447,7 @@ GLOBAL_TOP_10 |>
     datatable(options=list(searching=FALSE, info=FALSE)) |>
     formatRound(c('Weekly Hours Viewed', 'Weekly Views'))
 ```
+
 
 This is a closer to a publication-quality title. We should also drop the
 `season_title` since here at least we are only showing films. 
