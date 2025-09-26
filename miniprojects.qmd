@@ -48,7 +48,7 @@ Each Mini-Project will be submitted via `GitHub`, an industry-standard code
 management platform, as both raw analysis code and as a HTML document 
 hosted on GitHub pages.
 
-After each Mini-Project is submitted, 2-3 peer reviewers will 
+After each Mini-Project is submitted, 2-4 peer reviewers will 
 be assigned to give feedback and to assign an initial grade following
 an instructor provided rubric. This feedback will be given *via* GitHub Issues. 
 
@@ -193,8 +193,8 @@ source("https://michael-weylandt.com/STA9750/load_helpers.R")
 mp_submission_verify(3, "michaelweylandt")
   ```
   
-  Submissions that do not pass these automated checks will have a
-  penalty applied. 
+  **Submissions that do not pass these automated checks will have a
+  penalty applied.** 
   
 - If the work is submitted on GitHub, but not on Brightspace, the instructor
   will assign a 5 point (10%) penalty. Note that this will be applied by
@@ -224,6 +224,175 @@ Note that students are still expected to participate in the peer feedback
 cycle even if their own submission was not completed on time. Difficulty
 with the technologies used (Brightspace, `quarto`, GitHub, *etc.*) is not
 a recognized excuse for late submission.
+
+### Mini-Project Formatting
+
+Each mini-project requires submission of _at a minimum_ two files on GitHub: 
+
+1) The `mp0N.qmd` file containing the *source code* of your submission. 
+   (Replace `N` with the number of the mini-project; *e.g.*, `mp04.qmd` for 
+   Mini-Project #04) This is required so that the instructor, TAs, and 
+   peer-evaluators can see your actual submission. In particular, if code does 
+   not execute properly or you submit an improperly rendered `html` file, this
+   serves as a backstop for evaluation.
+2) The `mp0N.html` file containing the *rendered output* of your submission. 
+   (Replace `N` with the number of the mini-project; *e.g.*, `mp04.html` for 
+   Mini-Project #04) This is what is primarily used for evaluation. 
+   
+Note that MP#00 is different: in order to create a website, the home page must
+be called `index.html`, so the source file is `index.qmd`, not `mp00.qmd`.
+
+#### Make Sure to Submit All Helper Files
+
+For some projects, where you are asked to create data visualizations, you will
+need to ensure that other documents are also properly uploaded. In particular,
+data visualizations will be saved automatically by `quarto` as `png` files in
+your `docs` folder. These need to be included in your GitHub repository so that
+your website will render properly: if you omit these, you will get a "missing 
+image" icon and empty box instead of the desired visualization. For other projects,
+you may need to ensure various `css` or `js` files are uploaded to ensure all
+components of your site work properly. You will not need to create or edit these
+files directly, but if you don't have them, your page will not appear online
+as it does locally. As a general rule, you should `git add`, 
+`commit` and `push` _all_ files in the `docs` folder just to be safe. If you
+are not seeing something on your page that you observed locally, it is usually
+a sign that one of these files are missing.[^inspector]
+
+[^inspector]: If you want to debug this and identify which files are missing on 
+GitHub, right click anywhere on the page and open "Developer Tools" or "Inspect"
+(depending on the browser you are using). Navigate to the "Network" tab and 
+reload the page. You will then see a long list of all of the components that
+are used to run your site. Look for files marked with `404` -- the internet code
+for missing -- and make sure that the equivalent file is pushed to GitHub in your
+`docs` folder. This is a bit advanced and just running `git add docs/*` at the
+`Terminal` (not `Console`) adds everything and is easier than hunting down
+specific files. 
+
+#### Code Folding
+
+Because you are submitting a single document for both your input (`qmd`) and 
+output (`html`), it can be a bit tricky to seamlessly integrate code and text. 
+In particular, long chunks of code may ruin the flow of your text. Quarto's 
+[code-folding](https://quarto.org/docs/output-formats/html-code.html#folding-code)
+functionality can help address this. 
+
+Code folding keeps the code on a page, but hides it behind a "click-to-display"
+`<details>` HTML element, by default labelled as `Code`. For example, 
+
+```{r}
+#| code-fold: true
+# Example adopted from ?filled.contour
+x <- 10*1:nrow(volcano)
+y <- 10*1:ncol(volcano)
+filled.contour(x, y, volcano,
+    color.palette = function(n) hcl.colors(n, "terrain"),
+    plot.title = title(main = "The Topography of Maunga Whau",
+    xlab = "Meters North", ylab = "Meters West"),
+    plot.axes = { axis(1, seq(100, 800, by = 100))
+                  axis(2, seq(100, 600, by = 100)) },
+    key.title = title(main = "Height\n(meters)"),
+    key.axes = axis(4, seq(90, 190, by = 10)))  # maybe also asp = 1
+mtext(paste("filled.contour(.) from", R.version.string),
+      side = 1, line = 4, adj = 1, cex = .66)
+```
+
+Above, by default, you see only the output (image) but the
+code is hidden unless someone wants to view it. It's pretty easy
+to adopt code folding in your own `qmd` files. If you have a code block that 
+looks like this: 
+
+````{md}
+```{r}
+x <- c(1, 2, 3)
+mean(x)
+```
+````
+
+`quarto` will by default print _both that code and its output_. If you want that
+code to be foldable, you need to add an _execution option_ to the top of the 
+chunk. It will look like this: 
+
+````{md}
+```{r}
+#| code-fold: true
+x <- c(1, 2, 3)
+mean(x)
+```
+````
+
+Now, when you render this document, you will just get the output with a little 
+"click to expand" thing hiding the code. 
+
+Two note about the syntax: 
+
+- The line has to literally start with `#| `. There can't be a space at the 
+  start of the line and there has to be one after the `|` (bar). 
+- It also has to appear before any "actual code", so generally it should be the
+  first thing in a chunk. 
+
+The syntax for these sort of options is `variable: value`. You should recognize
+this from the `_quarto.yml` file in [MP#00](./miniprojects/mini00.qmd) which used
+a similar syntax. Here, `code-fold` defaults to `false` (no folding), so we set
+it to `true` to turn on folding.[^quarto_flags]
+
+If you want to turn on code-folding for all blocks and change the default from
+`true` to `false`, add the following line to the header (lines between the `---`)
+of your document: 
+
+```{md}
+code-fold: true
+```
+
+This will set all code blocks to default turn on code-folding. If you want to
+disable code-folding for a particular block, add the execution option 
+`#| code-fold: false` to override this new default. 
+
+While code folding is probably the most useful execution option, there are 
+other options that you may occasionally find useful. The `echo` option looks
+like this: 
+
+````{md}
+```{r}
+#| echo: false
+x <- c(1, 2, 3)
+mean(x)
+```
+````
+
+By default, `quarto` will usually repeat your code back to you before printing
+the output. If you just want it to print the output, but no code, set `echo` 
+to `false` and it won't echo (repeat back) the code. I do this all the time 
+in my notes where I want to compute something, *e.g.*, a due date, and just 
+print the result (the date), but I don't want to include the code that calculates
+it as it would make my document less clear. When in doubt, you should default to
+include your code in your `qmd` document, so you might not use this too often. 
+
+The complement of the `echo` option is `eval`: 
+
+````{md}
+```{r}
+#| eval: false
+x <- c(1, 2, 3)
+mean(x)
+```
+````
+
+This will turn off `evaluation` (running) of the code: here, `quarto` will only 
+print the code with nice formatting, but it won't attempt to run it. You won't 
+use this much, but I use it all the time when trying to give examples of bad 
+code. 
+
+There are [many more](https://quarto.org/docs/computations/execution-options.html)
+but I'd say `code-fold` and `echo` are the main ones in this class. 
+
+Use of `code-folding` is *not required*, but it is *strongly recommended*.
+
+[^quarto_flags]: One thing that can be a bit confusing: these execution
+options are written using `quarto` syntax, not `R` syntax. In particular, these
+flags are used by `quarto` and not `R` since they control whether `quarto` 
+even runs the code or not: these decisions get made before `R` even starts.
+In `quarto`, we turn things on by setting them to `true` (lower case); in 
+`R`, we set them to `TRUE` (all caps).
 
 ### Mini-Project Peer Feedback {#peer-feedback}
 
@@ -339,3 +508,6 @@ will be assessed by the instructor independently as part of meta-review grades.
 | 3 | Weak | No Feedback |  |
 
 : Meta-Review Rubric
+
+Note that if your comment is not properly formatted, as determined
+by `mp_feedback_verify`, a penalty will be applied to your meta-review score. 
