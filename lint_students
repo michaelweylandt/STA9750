@@ -1,0 +1,58 @@
+#! /usr/bin/env Rscript
+library(dplyr)
+library(glue)
+library(lintr)
+library(stringr)
+library(yaml)
+
+GRADE_DIR <- read_yaml("_teaching.yml")$gradedir
+
+ARGS <- commandArgs(trailingOnly=TRUE)
+
+GRADE_DIR <- "~/Dropbox/Baruch/Teaching/AY-2024-Spring/STA9750"
+if(length(ARGS) != 1){
+    stop("Could not tell which MP you want me to lint.")
+}
+
+SUBMISSION_CODE <- ARGS
+
+`%not.in%` <- Negate(`%in%`)
+
+if(SUBMISSION_CODE %not.in% paste0("mp0", 0:4)){
+    stop("Unrecognized mini-project to lint")
+}
+
+if(SUBMISSION_CODE == "mp00"){
+    SUBMISSION_FILE <- "index.qmd"
+} else {
+    SUBMISSION_FILE <- paste0(SUBMISSION_CODE, ".qmd")
+}
+
+LINT_TEMPDIR <- file.path(tempdir(), "temp_lint_dir")
+dir.create(LINT_TEMPDIR)
+
+LINT_OUTPUT_DIR <- file.path(GRADE_DIR, SUBMISSION_CODE, "lint")
+dir.create(LINT_OUTPUT_DIR, recursive=TRUE)
+
+
+SUBMISSIONS <- Sys.glob(file.path(GRADE_DIR, "students", "**", "git", SUBMISSION_FILE))
+
+for(student_file in SUBMISSIONS){
+    student_name <- str_extract(student_file, "students/(.*)/git", group=1)
+    dest_file <- file.path(LINT_TEMPDIR, paste0(student_name, "_", SUBMISSION_FILE))
+    file.copy(student_file, dest_file)
+}
+
+ALL_LINT_RESULTS <- lint_dir(LINT_TEMPDIR)
+
+LINTED_FILES <- unique(names(ALL_LINT_RESULTS))
+
+for(input_file in LINTED_FILES){
+    lint_output <- ALL_LINT_RESULTS[names(ALL_LINT_RESULTS) == input_file]
+
+    lint_output_txt <- capture.output(print(lint_output))
+
+    output_file <- file.path(LINT_OUTPUT_DIR, str_replace(input_file, ".qmd", "_lintr_output.txt"))
+
+    cat(lint_output_txt, sep="\n", file=output_file)
+}
