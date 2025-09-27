@@ -551,10 +551,21 @@ def roster_list(include_inactive, include_emplid):
         
     if not include_inactive:
         full_roster = full_roster.drop(["active"], axis=1)
+        
+    full_roster = full_roster.rename(columns={
+        "github": "GitHub ID", 
+        "email": "Student Email", 
+        "name": "Student Name", 
+        "team_name": "Project Team Name", 
+        "active": "Status",
+        "emplid": "Student ID"
+    })
     
     click.echo(full_roster.to_markdown(index=True))
-    click.echo(f"{full_roster.shape[0]} students registered.")
-
+    if include_inactive:
+        click.echo(f"{full_roster.shape[0]} total students registered (including inactive).")
+    else: 
+        click.echo(f"{full_roster.shape[0]} active students registered.")
 
 @roster.command(name="add")
 @click.option(
@@ -738,7 +749,102 @@ def roster_deactivate(github):
     """Deactivate a student on the course roster.
 
     This function is not yet implemented."""
-    raise NotImplementedError
+    ROSTER = current_roster(include_inactive=True)
+ 
+    if not github:
+        click.echo("The current roster contains the following active students:")
+        for row in ROSTER.itertuples():
+            if row.active:
+                click.echo(f"{row.Index:02g}. {row.name} - {row.github}")
+
+        number = click.prompt(
+            "Which student would you like to deactivate?",
+            type=click.IntRange(min=ROSTER.index.min(), max=ROSTER.index.max()),
+        )
+        
+        github = ROSTER.loc[number].github
+        
+    if github not in ROSTER.github.values:
+        raise click.ClickException(f"No student with GitHub ID {github} found")
+        
+    roster_ix = (ROSTER.github == github).where(lambda x: x).dropna().index.values[0]
+    
+    if ROSTER.loc[roster_ix, 'active'] is False:
+        raise click.ClickException(f"Student {github} is already inactive.")
+
+    click.echo("-------")
+    click.echo("You are about to deactivate the following student:")
+    
+    click.echo(f"Name: {ROSTER.loc[roster_ix, 'name']}")
+    click.echo(f"GitHub: {ROSTER.loc[roster_ix, 'github']}")
+    click.echo(f"Email: {ROSTER.loc[roster_ix, 'email']}")
+    click.echo(f"EmplID: {ROSTER.loc[roster_ix, 'emplid']}")
+    click.echo("-------")
+
+    ROSTER.loc[roster_ix, "active"] = False
+    
+    click.confirm(
+            f"Are you sure you would like to deactivate this student?",
+            abort=True,
+        )
+        
+    with open(roster_file(), "w+") as f:
+        f.write(ROSTER.to_json(orient="records", indent=2))
+
+
+@roster.command(name="reactivate")
+@click.option(
+    "--github",
+    help="Student's GitHub ID",
+    prompt="What is the Student's GitHub ID?",
+    prompt_required=False,
+    default=None,
+)
+def roster_reactivate(github):
+    """Reactivate a student on the course roster.
+
+    This function is not yet implemented."""
+    ROSTER = current_roster(include_inactive=True)
+ 
+    if not github:
+        click.echo("The current roster contains the following inactive students:")
+        for row in ROSTER.itertuples():
+            if not row.active:
+                click.echo(f"{row.Index:02g}. {row.name} - {row.github}")
+
+        number = click.prompt(
+            "Which student would you like to reactivate?",
+            type=click.IntRange(min=ROSTER.index.min(), max=ROSTER.index.max()),
+        )
+        
+        github = ROSTER.loc[number].github
+        
+    if github not in ROSTER.github.values:
+        raise click.ClickException(f"No student with GitHub ID {github} found")
+        
+    roster_ix = (ROSTER.github == github).where(lambda x: x).dropna().index.values[0]
+    
+    if ROSTER.loc[roster_ix, 'active'] is True:
+        raise click.ClickException(f"Student {github} is already active.")
+
+    click.echo("-------")
+    click.echo("You are about to reactivate the following student:")
+    
+    click.echo(f"Name: {ROSTER.loc[roster_ix, 'name']}")
+    click.echo(f"GitHub: {ROSTER.loc[roster_ix, 'github']}")
+    click.echo(f"Email: {ROSTER.loc[roster_ix, 'email']}")
+    click.echo(f"EmplID: {ROSTER.loc[roster_ix, 'emplid']}")
+    click.echo("-------")
+
+    ROSTER.loc[roster_ix, "active"] = True
+    
+    click.confirm(
+            f"Are you sure you would like to reactivate this student?",
+            abort=True,
+        )
+        
+    with open(roster_file(), "w+") as f:
+        f.write(ROSTER.to_json(orient="records", indent=2))
 
 @course_manager.group()
 def project():
@@ -777,7 +883,8 @@ def project_create():
         NO_TEAM = ROSTER[ROSTER["project_team"].isna()]["name"].to_dict()
 
         for k, v in NO_TEAM.items():
-            click.echo(f"- {k}: {v}")
+            if ROSTER[ROSTER.name == v].active.item():
+                click.echo(f"- {k}: {v}")
 
         id_to_add = click.prompt(
             "Enter the number of a student to add to this team. (Leave blank to finish team creation.)",
@@ -904,10 +1011,14 @@ def project_list():
     
     n_teams = (BIG_ROSTER["number"].notna()).sum()
     
-    click.echo(f"{n_teams} of {ROSTER.shape[0]} students are on a project team")
+    click.echo(f"{n_teams} of {ROSTER.shape[0]} students are on a project team.")
+    click.echo(f"{TEAMS.shape[0]} total teams have been registered.")
     click.echo("--------------")
+    
+    TEAM_NUMS = BIG_ROSTER["project_team"].unique()
+    TEAM_NUMS.sort()
 
-    for team_num in sorted(BIG_ROSTER["project_team"].unique()):
+    for team_num in TEAM_NUMS:
         if pd.isna(team_num):
             continue
 
@@ -1274,7 +1385,7 @@ def _mini_archive(project_id, github, skip_pdf=False,
         ISSUES = [issue._asdict() for issue in gh_list_issues().values()]
     
         for issue in ISSUES:
-            click.echo(f" - Exporting Issue #{issue['number']}")
+            click.echo(f" - Exporting Issue #{issue['number']:03g}")
             issue["comments"] = [c._asdict() for c in gh_list_comments(issue["number"])]
             issue_file = op.join(issues_dir, f"issue{issue['number']:03}.json")
     
