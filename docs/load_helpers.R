@@ -4,11 +4,11 @@ course_repo  <- variables$course$repo
 course_short <- variables$course$short
 
 mp_submission_create <- function(N, github_id){
-  library(rvest)
-  library(glue)
-  library(tidyverse)
-  library(httr2)
-  library(gh)
+  if(!require("yaml")) install.packages("yaml"); library(yaml)
+  if(!require("gh")) install.packages("gh"); library(gh)
+  if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
+  if(!require("rvest")) install.packages("rvest"); library(rvest)
+  if(!require("glue")) install.packages("glue"); library(glue)
   
   if(missing(N)){
     N <- menu(title="Which Mini-Project would you like to submit on GitHub?", 
@@ -22,6 +22,10 @@ mp_submission_create <- function(N, github_id){
   if(missing(github_id)){
     github_id <- readline("What is your GitHub ID? ")
   }
+  
+  variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+  course_repo  <- variables$course$repo
+  course_short <- variables$course$short
   
   title <- glue("{course_short} {github_id} MiniProject #0{N}")
   
@@ -38,12 +42,12 @@ mp_submission_create <- function(N, github_id){
 }
 
 mp_submission_verify <- function(N, github_id){
-  library(rvest)
-  library(glue)
-  library(tidyverse)
-  library(httr2)
-  library(gh)
-    
+  if(!require("yaml")) install.packages("yaml"); library(yaml)
+  if(!require("gh")) install.packages("gh"); library(gh)
+  if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
+  if(!require("rvest")) install.packages("rvest"); library(rvest)
+  if(!require("glue")) install.packages("glue"); library(glue)
+  
   if(missing(N)){
     N <- menu(title="Which Mini-Project would you like to check was properly submitted on GitHub?", 
               choices=c(0, 1, 2, 3, 4))
@@ -56,6 +60,10 @@ mp_submission_verify <- function(N, github_id){
   if(missing(github_id)){
     github_id <- readline("What is your GitHub ID? ")
   }
+  
+  variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+  course_repo  <- variables$course$repo
+  course_short <- variables$course$short
   
   title <- glue("{course_short} {github_id} MiniProject #0{N}")
   
@@ -193,12 +201,12 @@ mp_submission_verify <- function(N, github_id){
 }
 
 mp_feedback_locate <- function(N, github_id){
-    library(rvest)
-    library(glue)
-    library(tidyverse)
-    library(httr2)
-    library(gh)
-    
+  if(!require("yaml")) install.packages("yaml"); library(yaml)
+  if(!require("gh")) install.packages("gh"); library(gh)
+  if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
+  if(!require("rvest")) install.packages("rvest"); library(rvest)
+  if(!require("glue")) install.packages("glue"); library(glue)
+  
     if(missing(N)){
         N <- menu(title="Which Mini-Project's Peer Feedback cycle is it currently?", 
                   choices=c(0, 1, 2, 3, 4))
@@ -210,6 +218,10 @@ mp_feedback_locate <- function(N, github_id){
     
     page <- 1
     issues <- list()
+    
+    variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+  course_repo  <- variables$course$repo
+  course_short <- variables$course$short
   
     while((length(issues) %% 100) == 0){
         new_issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all&per_page=100&page={page}", 
@@ -246,12 +258,12 @@ mp_feedback_locate <- function(N, github_id){
 }
 
 mp_feedback_submit <- function(N, peer_id){
-  library(rvest)
-  library(glue)
-  library(tidyverse)
-  library(httr2)
-  library(gh)
-  library(clipr)
+  if(!require("yaml")) install.packages("yaml"); library(yaml)
+  if(!require("gh")) install.packages("gh"); library(gh)
+  if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
+  if(!require("rvest")) install.packages("rvest"); library(rvest)
+  if(!require("glue")) install.packages("glue"); library(glue)
+  if(!require("clipr")) install.packages("clipr"); library(clipr)
     
   if(missing(N)){
     N <- menu(title="Which Mini-Project's Peer Feedback would you like to check was properly submitted on GitHub?", 
@@ -261,6 +273,10 @@ mp_feedback_submit <- function(N, peer_id){
   if(missing(peer_id)){
     peer_id <- readline("What is your Peer's GitHub ID? ")
   }
+    
+  variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+  course_repo  <- variables$course$repo
+  course_short <- variables$course$short
     
   title <- glue("{course_short} {peer_id} MiniProject #0{N}")
 
@@ -351,11 +367,11 @@ mp_feedback_submit <- function(N, peer_id){
 
 
 mp_feedback_verify <- function(N, github_id, peer_id){
-  library(rvest)
-  library(glue)
-  library(tidyverse)
-  library(httr2)
-  library(gh)
+  if(!require("yaml")) install.packages("yaml"); library(yaml)
+  if(!require("gh")) install.packages("gh"); library(gh)
+  if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
+  if(!require("rvest")) install.packages("rvest"); library(rvest)
+  if(!require("glue")) install.packages("glue"); library(glue)
     
   if(missing(N)){
     N <- menu(title="Which Mini-Project's Peer Feedback would you like to check was properly submitted on GitHub?", 
@@ -369,6 +385,10 @@ mp_feedback_verify <- function(N, github_id, peer_id){
   if(missing(peer_id)){
     peer_id <- readline("What is your Peer's GitHub ID? ")
   }
+    
+  variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+  course_repo  <- variables$course$repo
+  course_short <- variables$course$short
  
   template_url <- "https://michael-weylandt.com/STA9750/miniprojects.html"
   
@@ -469,11 +489,12 @@ count_words <- function(url){
 }
 
 lint_submission <- function(N, peer_id){
-  library(rvest)
-  library(glue)
-  library(tidyverse)
-  library(httr2)
-  library(lintr)
+  if(!require("yaml")) install.packages("yaml"); library(yaml)
+  if(!require("gh")) install.packages("gh"); library(gh)
+  if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
+  if(!require("rvest")) install.packages("rvest"); library(rvest)
+  if(!require("glue")) install.packages("glue"); library(glue)
+  if(!require("lintr")) install.packages("lintr"); library(lintr)
 
   if(missing(N)){
     N <- menu(title="Which Mini-Project submission would you like to lint?", 
@@ -483,6 +504,10 @@ lint_submission <- function(N, peer_id){
   if(missing(peer_id)){
     peer_id <- readline("What is your Peer's GitHub ID? ")
   }
+    
+  variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+  course_repo  <- variables$course$repo
+  course_short <- variables$course$short
     
   raw_url <- glue("https://raw.githubusercontent.com/{peer_id}/{course_repo}/refs/heads/main/mp0{N}.qmd")
   
