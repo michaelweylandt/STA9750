@@ -394,6 +394,103 @@ even runs the code or not: these decisions get made before `R` even starts.
 In `quarto`, we turn things on by setting them to `true` (lower case); in 
 `R`, we set them to `TRUE` (all caps).
 
+#### Using the `contents` Shortcode
+
+Often, when completing a mini-project, you will want to include text near the 
+beginning of the document, such as an Executive Summary, Abstract, or Headline.
+The best versions of this introductory text will include the results of your 
+analysis later in the document. In particular, if you are putting your code into
+a sort of 'technical appendix', almost all of the 'main text' will preceed any
+code. You can address this in two ways: 
+
+i) Hard-code the results of your analysis in the intro text: *i.e.*, run the
+   code and copy the results into the intro text. 
+ii) Using the [`quarto` `contents` shortcode](https://quarto.org/docs/authoring/contents.html).
+
+A major advantage of using a tool like `quarto` is avoiding hardcoding values
+in the text, so I recommend exploring the `contents` shortcode. In brief, the
+`contents` shortcode lets you move the _results_ of code to somewhere else
+in the document. This is a somewhat advanced trick and not required for this
+course, but it can be helpful if you are trying to put a high level of polish
+on your submissions.
+
+Here's an example: 
+
+````{r}
+#| eval: false
+---
+title: "An example of the `contents` shortcode"
+format: html
+---
+
+## Summary
+
+My grandpa always said, {{< contents best_number >}}, but I also really like
+{{< contents y_def >}} and I format it strangely because I am a scientist.
+
+## I am using a Shortcode
+
+`quarto` "shortcodes" can be used to do some magic when writing a document.
+In this document we use the `contents` shortcode to move _output_ of code 
+above the actual code. The [official docs](https://quarto.org/docs/authoring/contents.html)
+are not super clear, so hopefully this example helps. 
+
+## Much later in the document
+
+You can see how we find the best number using a very advanced algorithm: 
+
+```{r}
+compute_best_number <- function(){
+    return(3)
+}
+
+x <- compute_best_number()
+
+y <- x + 3
+```
+
+We will define some 'snippets' here, but they do not get printed here because 
+we instead move the output up earlier in the document. 
+
+[The very best number is `{{r}} x`]{#best_number}
+
+[`{{r}} formatC(y, format="e", digits=2)`]{#y_def}
+````
+
+A few things to note here: 
+
+i) Like always, the code runs top-to-bottom, so we have to define `x` in the 
+   `{{r}}` chunk before using it. 
+ii) Once we have defined `x` and `y`, we then use _inline code syntax_ to
+    put them inside text. 
+iii) The text is given an identifier using the `[text with inline code]{#id}`
+     syntax. This is _almost_ the link syntax, but with curly braces instead of
+     parenthesis and a mandatory `#` symbol. 
+iv)  We then move the named text snippets elsewhere in the document using the
+     `{{{< contents NAME >}}}` syntax. Here `NAME` is the name you assigned
+     to the snippet, *i.e.*, the text after the `#`. `NAME`s should only contain
+     letters, numbers, and underscores.
+v) You can use a snippet in multiple places: the code is only run once, but
+   the results will be printed as many times as you use the `contents` shortcode.
+
+When you render this document, `quarto` will first run the chunk to define
+`x` and `y`; then it will put them in inline text snippets; then it will move
+those snippets elsewhere in the document. That last step is something that does
+not happen with basic `quarto` usage. 
+
+As this example shows, a snippet may include text but it can also just be some
+inline code that will print a variable with the desired formatting. 
+
+Note that a snippet **cannot be the only thing on a line**. If you have a line
+which is only `{{{< contents NAME >}}}`, you will get a warning message that
+states: "This might happen because the shortcode is used in div context, while 
+the id corresponds to a span. Removing from document." It is possible to work
+around this, but it requires a different syntax. If you need to have contents
+alone on a line, typically because you want to move a code chunk, instead of
+inline code, a different syntax is required: contact the instructor for details. 
+
+**Use of the `contents` shortcode is advanced and not required.**
+
 ### Mini-Project Peer Feedback {#peer-feedback}
 
 The *peer feedback cycle* is an important element of the {{< var course.short >}}
@@ -472,7 +569,7 @@ automatically format peer feedback according to the required template.
 
 The `mp_feedback_verify` function in the 
 [course helper functions](./tips.qmd#mp_feedback_verify) can be used to 
-verify that you have submitted a comment with the correct formatting.[^1]
+verify that you have submitted a comment with the correct formatting.
 
 ::: {.callout-caution title="Peer Grade Required for **All** Assigned Work"}
 

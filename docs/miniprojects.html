@@ -420,6 +420,67 @@ Mini-Project Submission Grace Period
 <p>There are <a href="https://quarto.org/docs/computations/execution-options.html">many more</a> but I’d say <code>code-fold</code> and <code>echo</code> are the main ones in this class.</p>
 <p>Use of <code>code-folding</code> is <em>not required</em>, but it is <em>strongly recommended</em>.</p>
 </section>
+<section id="using-the-contents-shortcode" class="level4">
+<h4 class="anchored" data-anchor-id="using-the-contents-shortcode">Using the <code>contents</code> Shortcode</h4>
+<p>Often, when completing a mini-project, you will want to include text near the beginning of the document, such as an Executive Summary, Abstract, or Headline. The best versions of this introductory text will include the results of your analysis later in the document. In particular, if you are putting your code into a sort of ‘technical appendix’, almost all of the ‘main text’ will preceed any code. You can address this in two ways:</p>
+<ol type="i">
+<li>Hard-code the results of your analysis in the intro text: <em>i.e.</em>, run the code and copy the results into the intro text.</li>
+<li>Using the <a href="https://quarto.org/docs/authoring/contents.html"><code>quarto</code> <code>contents</code> shortcode</a>.</li>
+</ol>
+<p>A major advantage of using a tool like <code>quarto</code> is avoiding hardcoding values in the text, so I recommend exploring the <code>contents</code> shortcode. In brief, the <code>contents</code> shortcode lets you move the <em>results</em> of code to somewhere else in the document. This is a somewhat advanced trick and not required for this course, but it can be helpful if you are trying to put a high level of polish on your submissions.</p>
+<p>Here’s an example:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="sc">---</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>title<span class="sc">:</span> <span class="st">"An example of the `contents` shortcode"</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>format<span class="sc">:</span> html</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="sc">---</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="do">## Summary</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>My grandpa always said, {{<span class="sc">&lt;</span> contents best_number <span class="sc">&gt;</span>}}, but I also really like</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>{{<span class="sc">&lt;</span> contents y_def <span class="sc">&gt;</span>}} and I format it strangely because I am a scientist.</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="do">## I am using a Shortcode</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="st">`</span><span class="at">quarto</span><span class="st">`</span> <span class="st">"shortcodes"</span> can be used to do some magic when writing a document.</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>In this document we use the <span class="st">`</span><span class="at">contents</span><span class="st">`</span> shortcode to move _output_ of code </span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>above the actual code. The [official docs](https<span class="sc">:</span><span class="er">//</span>quarto.org<span class="sc">/</span>docs<span class="sc">/</span>authoring<span class="sc">/</span>contents.html)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>are not super clear, so hopefully this example helps. </span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="do">## Much later in the document</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>You can see how we find the best number using a very advanced algorithm<span class="sc">:</span> </span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="st">```</span><span class="at">{r}</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="at">compute_best_number &lt;- function(){</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="at">    return(3)</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="at">}</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="at">x &lt;- compute_best_number()</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="at">y &lt;- x + 3</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="st">```</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>We will define some <span class="st">'snippets'</span> here, but they do not get printed here because </span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>we instead move the output up earlier <span class="cf">in</span> the document. </span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>[The very best number is <span class="st">`</span><span class="at">{r} x</span><span class="st">`</span>]{<span class="co">#best_number}</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>[<span class="st">`</span><span class="at">{r} formatC(y, format="e", digits=2)</span><span class="st">`</span>]{<span class="co">#y_def}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A few things to note here:</p>
+<ol type="i">
+<li>Like always, the code runs top-to-bottom, so we have to define <code>x</code> in the <code>{r}</code> chunk before using it.</li>
+<li>Once we have defined <code>x</code> and <code>y</code>, we then use <em>inline code syntax</em> to put them inside text.</li>
+<li>The text is given an identifier using the <code>[text with inline code]{#id}</code> syntax. This is <em>almost</em> the link syntax, but with curly braces instead of parenthesis and a mandatory <code>#</code> symbol.</li>
+<li>We then move the named text snippets elsewhere in the document using the <code>{{&lt; contents NAME &gt;}}</code> syntax. Here <code>NAME</code> is the name you assigned to the snippet, <em>i.e.</em>, the text after the <code>#</code>. <code>NAME</code>s should only contain letters, numbers, and underscores.</li>
+<li>You can use a snippet in multiple places: the code is only run once, but the results will be printed as many times as you use the <code>contents</code> shortcode.</li>
+</ol>
+<p>When you render this document, <code>quarto</code> will first run the chunk to define <code>x</code> and <code>y</code>; then it will put them in inline text snippets; then it will move those snippets elsewhere in the document. That last step is something that does not happen with basic <code>quarto</code> usage.</p>
+<p>As this example shows, a snippet may include text but it can also just be some inline code that will print a variable with the desired formatting.</p>
+<p>Note that a snippet <strong>cannot be the only thing on a line</strong>. If you have a line which is only <code>{{&lt; contents NAME &gt;}}</code>, you will get a warning message that states: “This might happen because the shortcode is used in div context, while the id corresponds to a span. Removing from document.” It is possible to work around this, but it requires a different syntax. If you need to have contents alone on a line, typically because you want to move a code chunk, instead of inline code, a different syntax is required: contact the instructor for details.</p>
+<p><strong>Use of the <code>contents</code> shortcode is advanced and not required.</strong></p>
+</section>
 </section>
 <section id="peer-feedback" class="level3">
 <h3 class="anchored" data-anchor-id="peer-feedback">Mini-Project Peer Feedback</h3>
@@ -428,46 +489,46 @@ Mini-Project Submission Grace Period
 <p>Peer feedback comments should use the following format:</p>
 <div id="peer-feedback-template">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Scores </span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Written Communication: NN </span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Project Skeleton: NN</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Formatting &amp; Display: NN</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Code Quality: NN</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Data Preparation: NN</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Extra Credit: NN</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="fu">## Comments</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>OPTIONAL TEXT</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="fu">### Written Communication</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>TEXT TEXT TEXT</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="fu">### Project Skeleton</span></span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>TEXT TEXT TEXT</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="fu">### Formatting &amp; Display</span></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>TEXT TEXT TEXT</span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="fu">### Code Quality</span></span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>TEXT TEXT TEXT</span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="fu">### Data Preparation</span></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>TEXT TEXT TEXT</span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="fu">### Extra Credit</span></span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>TEXT TEXT TEXT</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## Scores </span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Written Communication: NN </span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Project Skeleton: NN</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Formatting &amp; Display: NN</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Code Quality: NN</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Data Preparation: NN</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Extra Credit: NN</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="fu">## Comments</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>OPTIONAL TEXT</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="fu">### Written Communication</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>TEXT TEXT TEXT</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="fu">### Project Skeleton</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>TEXT TEXT TEXT</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="fu">### Formatting &amp; Display</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>TEXT TEXT TEXT</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="fu">### Code Quality</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>TEXT TEXT TEXT</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="fu">### Data Preparation</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>TEXT TEXT TEXT</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="fu">### Extra Credit</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>TEXT TEXT TEXT</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <p>For each element, the <code>NN</code> should be replaced by a numerical value between 0 and 10. (It is not necessary to provide a sum; the instructor will calculate this.) Similarly, the <code>TEXT TEXT TEXT</code> should be replaced by comments justifying the assigned score. If you have overall comments on the assignment, not appropriate for a single category, please place them in the <code>OPTIONAL TEXT</code> section. (If you have no overall comments for this section, just delete this.) Not all mini-projects have opportunities for Extra Credit, but please leave those blocks in place (with a 0 for the score and something to the effect of “No extra credit available” for the comment) so the course backend automation works properly. The <code>mp_feedback_submit</code> function in the <a href="./tips.html#mp_feedback_submit">course helper functions</a> can be used to automatically format peer feedback according to the required template.</p>
-<p>The <code>mp_feedback_verify</code> function in the <a href="./tips.html#mp_feedback_verify">course helper functions</a> can be used to verify that you have submitted a comment with the correct formatting.[^1]</p>
+<p>The <code>mp_feedback_verify</code> function in the <a href="./tips.html#mp_feedback_verify">course helper functions</a> can be used to verify that you have submitted a comment with the correct formatting.</p>
 <div class="callout callout-style-default callout-caution callout-titled" title="Peer Grade Required for **All** Assigned Work">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
