@@ -9,6 +9,7 @@ mp_submission_create <- function(N, github_id){
   if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
   if(!require("rvest")) install.packages("rvest"); library(rvest)
   if(!require("glue")) install.packages("glue"); library(glue)
+  if(!require("httr2")) install.packages("httr2"); library(httr2)
   
   if(missing(N)){
     N <- menu(title="Which Mini-Project would you like to submit on GitHub?", 
@@ -47,7 +48,8 @@ mp_submission_verify <- function(N, github_id){
   if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
   if(!require("rvest")) install.packages("rvest"); library(rvest)
   if(!require("glue")) install.packages("glue"); library(glue)
-  
+  if(!require("httr2")) install.packages("httr2"); library(httr2)  
+
   if(missing(N)){
     N <- menu(title="Which Mini-Project would you like to check was properly submitted on GitHub?", 
               choices=c(0, 1, 2, 3, 4))
@@ -206,7 +208,8 @@ mp_feedback_locate <- function(N, github_id){
   if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
   if(!require("rvest")) install.packages("rvest"); library(rvest)
   if(!require("glue")) install.packages("glue"); library(glue)
-  
+  if(!require("httr2")) install.packages("httr2"); library(httr2)
+    
     if(missing(N)){
         N <- menu(title="Which Mini-Project's Peer Feedback cycle is it currently?", 
                   choices=c(0, 1, 2, 3, 4))
@@ -264,7 +267,8 @@ mp_feedback_submit <- function(N, peer_id){
   if(!require("rvest")) install.packages("rvest"); library(rvest)
   if(!require("glue")) install.packages("glue"); library(glue)
   if(!require("clipr")) install.packages("clipr"); library(clipr)
-    
+  if(!require("httr2")) install.packages("httr2"); library(httr2)
+        
   if(missing(N)){
     N <- menu(title="Which Mini-Project's Peer Feedback would you like to check was properly submitted on GitHub?", 
               choices=c(0, 1, 2, 3, 4))
@@ -495,7 +499,8 @@ lint_submission <- function(N, peer_id){
   if(!require("rvest")) install.packages("rvest"); library(rvest)
   if(!require("glue")) install.packages("glue"); library(glue)
   if(!require("lintr")) install.packages("lintr"); library(lintr)
-
+  if(!require("httr2")) install.packages("httr2"); library(httr2)
+    
   if(missing(N)){
     N <- menu(title="Which Mini-Project submission would you like to lint?", 
               choices=c(1, 2, 3, 4))
