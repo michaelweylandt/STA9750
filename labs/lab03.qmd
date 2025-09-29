@@ -880,3 +880,177 @@ Write *functions* to perform each of the following tasks.
    :::
 
 [^1]: ANL is basically the application of calculus techniques to prove properties of prime numbers: it's a surprisingly powerful approach.
+
+## Executing Code in `R`
+
+Now that you're executing `R` code, it's worth taking a moment and walking through
+some of the details of _how_ `R` and `RStudio` go about executing code. There
+are quite a few details here -- and not all of them will make complete sense at 
+first -- so bookmark this session and come back to it as needed. If something
+is still confusing, contact the instructor and I'll provide some more details. 
+
+In particular, save this section and refer back to it when you start 
+[Mini-Project #01](../miniprojects/mini01.qmd), as that will be the first time
+you need to write a large amount of `R` code in a `qmd` document over several
+sessions. 
+
+All `R` code gets executed in a "session" - you can think of this as a 'place'
+or 'environment' where computations are performed, variables get stored, 
+packages loaded, *etc.* Sessions are isolated, so whatever happens in session A 
+has no effect on session B or *vice versa*. In particular, if you create a variable
+in Session A, but then try to use it in Session B, you will get an "object not 
+found" error since Session B can’t see what you did in Session A. There are really
+only two ways to do things in `R` that translate across sessions - and that's 
+because they involve saving files to your computer that can be accessed by the
+other session: 
+
+1) Installing packages. Just like you don't have to `install.packages` a package
+   more than once over time, you also don't need to install it in multiple sessions.
+   All `R` packages live in a globally accessible directory, so all `R` sessions
+   can see all installed packages by default. 
+2) Saving data files. If you save a data file, like a `csv` in one `R` session, 
+   you can read that `csv` into a different `R` session. There's really nothing
+   special about the fact both the 'reader' and 'writer' are `R` sessions here.
+   In general, files saved by one program can be accessed by another program on
+   the same computer. That fact that our reader and writer are both `R` sessions
+   just gives us a better chance of avoiding file-type compatability issues. 
+
+So - except for those two "global" actions - whenever you run code, it’s 
+important to distinguish *which session* is being used to run your code. 
+
+_Anything_ that gets executed in the `Console` in `RStudio` runs in the same 
+session, unless you specifically restart `RStudio` or otherwise create a new 
+session. (This normally only happens when things go wrong and `RStudio` has to 
+abort your current session to avoid even worse problems.) Code can be executed 
+in the `Console` session in several different ways:
+
+- You can type something directly into the Console. This is the simplest model,
+  but unless you are a perfect typist, this doesn't really scale to larger or
+  more complex commands. 
+
+- You can type something in a `.R` file, *i.e.*, an "R Script" and then run
+  it in the console by either i) highlighting and `Run`ning relevant lines; or
+  by ii) or `Source`ing the entire `.R` file. Either way, when you do this, 
+  you will see that the code is copied into the `Console` automatically and 
+  executed there.[^source]
+  
+- You can execute one-or-more code blocks from a `Quarto` (`.qmd`) document in 
+  the `Console` session. This happens whenever you press the little green 
+  "Run Current Chunk" arrow buttons to the top-right of a code chunk[^vcr] or if
+  you use the `Run` button near the top of the Window to run one or more chunks
+  
+[^vcr]: If you are of a certain age, they look like an old-school VCR right 
+arrow / play button.
+  
+[^source]: Sometimes the settings on `Source` button will be set to run your code,
+printing only the output and suppressing the input. I find this behavior a bit
+confusing - I want to see the code that was executed! - so I tend to disable it.
+If editing a `.R` file, click the tiny-little down arrow button next to the
+`Source` button and select `Source with Echo` to ensure the code is printed
+before execution. 
+
+So, wherever you happen to type the code - it gets run in the same session if it
+is run in any of these three ways. 
+
+So why is it worth talking about sessions at all if it all code to the same 
+place to be executed? It turns out there’s one exception - but it’s a very 
+important one.
+
+When you hit the `Render` button for a `.qmd` document (or hit the `Save` button
+if you have `Render-on-Save` enabled), all of the code chunks in that document 
+– and only the code chunks in that document – get run in a _brand-new session_. 
+In particular, you get a new session every time you hit `Render`, so hitting
+`Render` twice will execute your code twice in two different (and not connected) 
+sessions. 
+
+Because you're starting from a clean state at every render, it is important that
+_all of the code you need exists_ in a code chunk in the `.qmd` file. If you 
+only define a variable in the `Console` session and not in a code chunk in your
+`.qmd` file, but try to reference that variable within the `.qmd` `Render`ing 
+process, you will get a "object not found" error. This is because the 
+`Render`-session can't 'see' what you've done anywhere else:  
+the `Render`-session does not have access to whatever you've done in the `Console`
+session. In particular, if you run the same code chunk once in the `Console` 
+session using a `Run` button and later in a `Render`-induced different session,
+the two executions will be totally isolated, even though it is the same code.
+
+So why is this second session worth it? Why does `quarto` insist on doing things
+in a new session instead of giving us maximum flexibility to write and run our 
+code wherever is most convenient? The use of a 'clean-room' session guarantees
+_reproducibility_ and _self-containedness_. If the `.qmd` `Render`ing uses
+_all of the code_ in the  `.qmd` document and only the code in the `.qmd` 
+document, then the `.qmd` document must be a perfect record of those 
+calculations.
+
+If you do something directly in the `Console`, but never save the code, then 
+there's no guarantee that the code you have in your document actually matches 
+the output that gets printed. Even worse, the code that only exists in the 
+`Console` may be lost if it is not recorded elsewhere in a `.qmd` or similar
+document. 
+
+::: {.callout-tip title="Recommend Quarto Workflow" collapse="true"}
+
+When writing code in a Quarto document, I tend to work in parallel tracks. 
+As I'm figuring out what I want to do, I try a bunch of different things in the
+`Console` session, either writing them directly or, more commonly, in a `.R`
+script that gets executed in the same session. Then, once I've settled on 
+code that does what I want -- or at least seems to do what I want -- I copy it
+into a new chunk in my `.qmd` document. As I work through the project, my 
+`.qmd` document contains only my "good code" and the scraps of my earlier attemps
+are lost in the aether. 
+
+I also regularly re-`Render` the `.qmd` file to ensure that it has everything 
+it needs to execute properly. If I forgot to put some necessary code into a 
+`.qmd` code block, I will get an error when I move on to the next code block 
+that depends on the missing code block. I try to `Render` about as often as 
+possible: this makes debugging easier. In particular, if I re-`Render` any time
+I add or edit a code chunk and I observe an error, I know that it is coming
+from the chunk I just worked on. Finding the error may still take a bit of effort,
+but it's far simpler than finding it in the entire document without any context.
+
+In particular, I *don't write code directly in my `.qmd` document* and I 
+*don't use the `Run` button or the little `Run` arrows* to run `.qmd` code chunks
+in the `Console` session. I find it easier to think of `Console`-land and 
+`Render`-land as two distinct "places" and avoid mixing them. 
+`R` won’t get them crossed, but I do everytime I break this separation, so I do
+my best to avoid going down that path. It takes a bit more copy and paste work, 
+but it's worth it as it makes the mental bookkeeping easier. 
+
+There is one rough edge to this workflow. When you `Render` a `.qmd` file - and
+all code is executed in a new session - but an error is encountered it can sometimes
+be a bit hard to figure out the root cause of the error. In particular, `quarto` 
+will print out the text of the error in the `Background Jobs` tab, but there's
+no way to 'pause' mid-`Render` and take a look around. Quarto tries to help a 
+little by giving line numbers identifying the chunk where the error occurred but
+that’s only a 'symptom' the actual cause may be much earlier. *E.g.*, if I define
+a variable in Chunk 1 but misspell its name, and then I wait to use that variable
+until Chunk 50 where I spell the name correctly, I will get a `object not found` 
+error in Chunk 50, not Chunk 1. 
+
+As noted above, frequent re-`Render`ing certainly makes it easier - though not 
+100% painless - to find the source of an error. Because `Render`ing takes place
+in a separate session, specifically in a `Background Job`, I can set a long
+document to render while I continue to write new code and only need to interrupt
+my flow if an error is encountered in the background `Render` process.
+
+:::
+
+
+Wrapping up, it doesn't matter where you _write_ the code: it matters where it 
+gets _executed_, *i.e.*, in which session. Sessions are interchangeable with 
+tabs in RStudio: the primary session you'll use for writing and trying out code 
+is associated with the `Console` tab. I use this session to keep iterating on 
+code until I’m happy with it.
+
+The other session is associated with the `Render` button of a `.qmd` file and 
+with the `Background Jobs` tab. `Quarto` uses this to run all the code in a 
+`.qmd `file in a "clean room" as part of rendering a document. I only put my 
+'finished' code in a `.qmd` file code block. I `Render` regularly to make sure 
+that those code blocks are working as expected.
+
+Finally, and hopefully this goes without saying, all the interactive blocks
+on this page are a totally different session than anything you do through 
+`RStudio`. But all blocks on this page share the same session, which lasts until
+you refresh or exit the page. This is why we could define a function in one
+chunk of the Exercises and test it in the next chunk - they are both executed
+in the same session and have the same access to our functions (once defined).
