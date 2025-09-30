@@ -1014,7 +1014,28 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoiTlJPVyhmbGlnaHRzKVxubGVm
 </div>
 <p>Sometimes one form is more convenient than the other, particularly when one table requires lots of pre-processing that you want to put earlier in the pipeline.</p>
 </section><section id="selecting-join-types" class="level2"><h2 class="anchored" data-anchor-id="selecting-join-types">Selecting Join Types</h2>
-<p>At this point, you are probably asking yourself when you should use which type of join. There unfortunately isn’t a one-size fits all answer. For me, the choice of join is essentially equivalent to how you want to handle missing values.</p>
+<p>Section 19.4 of the <a href="https://r4ds.hadley.nz/joins#how-do-joins-work"><code>R</code> for Data Science</a> textbook provides useful visualizations of the different types of joins. We adapt their Figures 19.2 - 19.8 here.</p>
+<p>Suppose we seek to join two tables, <code>x</code> and <code>y</code>:</p>
+<p><img src="../images/r4ds_2e_join_figs/fig19_2.png" class="img-fluid"></p>
+<p>Here, we see that that these tables have some shared rows (<code>1</code> and <code>2</code>) but some non-shared rows (<code>3</code> in table <code>x</code> and <code>4</code> in table <code>y</code>). Ultimately, different joins will differ in how they treat those non-shared rows.</p>
+<p>To set up a join, you can <em>conceptually</em> think of starting with all possible pairs. For this data set, that’s <span class="math inline">\(9 = 3 \times 3\)</span> total possible pairings:</p>
+<p><img src="../images/r4ds_2e_join_figs/fig19_3.png" class="img-fluid"></p>
+<p>You do not generally want to <em>actually</em> make all these pairs when dealing with large data - this is just a mental tool.</p>
+<p>When you add a join key (<code><a href="https://dplyr.tidyverse.org/reference/join_by.html">join_by()</a></code>) you are specifying which of these possible pairs you are possibly interested in. All joins will capture the proper matches (<code>1</code> and <code>2</code>) - the only difference is in the treatment of unmatched pairs.</p>
+<p>The most restrictive join – the <code>inner_join</code> – only captures <em>true matches</em>:</p>
+<p><img src="../images/r4ds_2e_join_figs/fig19_4.png" class="img-fluid"></p>
+<p>Here the green and purple (<code>1</code> and <code>2</code>) rows have matches so we keep them. There is no match for the orange or yellow rows so the <code>inner_join</code> discards them.</p>
+<p>If we want to keep the unmatched orange <code>3</code>, we might use a <code>left_join</code>:</p>
+<p><img src="../images/r4ds_2e_join_figs/fig19_5.png" class="img-fluid"></p>
+<p>Here you’re seeing that we keep everything in the left (<code>x</code> table). We don’t have a matching row in the <code>y</code> table, but that’s ok - we just fill it in with our <em>missing</em> value <code>NA</code>.</p>
+<p>The <code>right_join</code> is the exact opposite:</p>
+<p><img src="../images/r4ds_2e_join_figs/fig19_6.png" class="img-fluid"></p>
+<p>Here, we keep everything from the right / bottom / second table. Specifically, we keep the yellow <code>4</code>, but discard the orange <code>3</code>. As before, we fill in the missing value for the <code>x</code> column with an <code>NA</code>.</p>
+<p>Finally, the <code>full_join</code> keeps everything:</p>
+<p><img src="../images/r4ds_2e_join_figs/fig19_7.png" class="img-fluid"> Note importantly that this doesn’t force a match for orange <code>3</code> or yellow <code>4</code>. They are still both unmatched, so they both wind up with <code>NA</code> values. Because the missing data comes from different tables, we now have an <code>NA</code> in both columns.</p>
+<p>If you think this all sounds like Venn diagrams and set theory, you aren’t wrong:</p>
+<p><img src="../images/dplyr_joins.svg" class="img-fluid"></p>
+<p>At this point, you are probably asking yourself <em>when</em> you should use which type of join. There unfortunately isn’t a one-size fits all answer. For me, the choice of join is essentially equivalent to how you want to handle missing values.</p>
 <p>An <code>inner_join</code> is essentially the same as automatically passing <code>na.rm=TRUE</code> to all downstream analysis, while a <code>left_join</code> or similar will produce <code>NA</code>s you have to deal with later. If the <code>NA</code>s are going to be relevant - <em>e.g.</em>, if you want to report the number of unmatched values - I’d use a <code>left_join</code>, but otherwise I find myself reaching for <code>inner_join</code> by default.</p>
 <p>It is sometimes worthwhile to abstract this a bit to think about <em>why</em> your data is missing: in statistics, we often think about three models of missingness:</p>
 <ul>
@@ -1128,13 +1149,13 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeSh0aWJibGUpXG50
 <span>           cum_min  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cummin</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        date value  cum_mean cum_sum cum_max cum_min
-1 2025-09-22     1  1.000000       1       1       1
-2 2025-09-23     5  3.000000       6       5       1
-3 2025-09-24    10  5.333333      16      10       1
-4 2025-09-25    25 10.250000      41      25       1
-5 2025-09-26    50 18.200000      91      50       1
-6 2025-09-27   100 31.833333     191     100       1
-7 2025-09-28   500 98.714286     691     500       1</code></pre>
+1 2025-09-23     1  1.000000       1       1       1
+2 2025-09-24     5  3.000000       6       5       1
+3 2025-09-25    10  5.333333      16      10       1
+4 2025-09-26    25 10.250000      41      25       1
+5 2025-09-27    50 18.200000      91      50       1
+6 2025-09-28   100 31.833333     191     100       1
+7 2025-09-29   500 98.714286     691     500       1</code></pre>
 </div>
 </div>
 <p>Clearly, this sort of cumulative value is highly sensitive to row order.</p>
@@ -1148,13 +1169,13 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeSh0aWJibGUpXG50
 <span>           pct_change <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span><span class="op">(</span><span class="va">value</span> <span class="op">/</span> <span class="va">prev_value</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        date value prev_value pct_change
-1 2025-09-22     1         NA         NA
-2 2025-09-23     5          1        400
-3 2025-09-24    10          5        100
-4 2025-09-25    25         10        150
-5 2025-09-26    50         25        100
-6 2025-09-27   100         50        100
-7 2025-09-28   500        100        400</code></pre>
+1 2025-09-23     1         NA         NA
+2 2025-09-24     5          1        400
+3 2025-09-25    10          5        100
+4 2025-09-26    25         10        150
+5 2025-09-27    50         25        100
+6 2025-09-28   100         50        100
+7 2025-09-29   500        100        400</code></pre>
 </div>
 </div>
 </section></section><section id="conditional-manipulations" class="level2"><h2 class="anchored" data-anchor-id="conditional-manipulations">Conditional Manipulations</h2>
