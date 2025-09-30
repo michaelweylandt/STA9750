@@ -648,6 +648,38 @@ Display of <code>NA</code> Values
 </div>
 </div>
 <p>Much better.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Using `DT` with a Dark Theme">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Using <code>DT</code> with a Dark Theme
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>If you are using a “dark” bootswatch theme, you need to manually adjust the formatting of <code>datatable</code> by passing additional arguments to <code>style</code> and <code>options</code> as follows:</p>
+<div class="cell">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">GLOBAL_TOP_10</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>`runtime_(minutes)` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fl">60</span> <span class="op">*</span> <span class="va">runtime</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">season_title</span>, </span>
+<span>           <span class="op">-</span><span class="va">runtime</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">format_titles</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">20</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/DT/man/datatable.html">datatable</a></span><span class="op">(</span>style<span class="op">=</span> <span class="st">"bootstrap5"</span>, , </span>
+<span>              options<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>searching<span class="op">=</span><span class="cn">FALSE</span>, </span>
+<span>                           info<span class="op">=</span><span class="cn">FALSE</span>, </span>
+<span>              initComplete <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/htmlwidgets/man/JS.html">JS</a></span><span class="op">(</span></span>
+<span>        <span class="st">'function() {$("html").attr("data-bs-theme", "dark");}'</span></span>
+<span>             <span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/DT/man/formatCurrency.html">formatRound</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'Weekly Hours Viewed'</span>, <span class="st">'Weekly Views'</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Even if you turn on the search bar and remove <code>info=FALSE</code>, you still need to pass <code>options = list(initComplete = JS('function() {$("html").attr("data-bs-theme", "dark");}'))</code> as an argument to <code><a href="https://rdrr.io/pkg/DT/man/datatable.html">datatable()</a></code> to make it work correctly with a dark theme.</p>
+</div>
+</div>
+</div>
 <p>We are now ready to begin some EDA.</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Task 4: Exploratory Questions">
 <div class="callout-header d-flex align-content-center">

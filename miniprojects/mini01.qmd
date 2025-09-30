@@ -478,6 +478,35 @@ GLOBAL_TOP_10 |>
 
 Much better.
 
+::: {.callout-note title="Using `DT` with a Dark Theme" collapse="true"}
+
+If you are using a "dark" bootswatch theme, you need to manually adjust the
+formatting of `datatable` by passing additional arguments to `style` and `options` 
+as follows: 
+
+```{r}
+#| eval: false
+GLOBAL_TOP_10 |> 
+    mutate(`runtime_(minutes)` = round(60 * runtime)) |>
+    select(-season_title, 
+           -runtime) |>
+    format_titles() |>
+    head(n=20) |>
+    datatable(style= "bootstrap5", , 
+              options=list(searching=FALSE, 
+                           info=FALSE, 
+              initComplete = JS(
+        'function() {$("html").attr("data-bs-theme", "dark");}'
+             ))) |>
+    formatRound(c('Weekly Hours Viewed', 'Weekly Views'))
+```
+
+Even if you turn on the search bar and remove `info=FALSE`, you still need to pass
+`options = list(initComplete = JS('function() {$("html").attr("data-bs-theme", "dark");}'))`
+as an argument to `datatable()` to make it work correctly with a dark theme. 
+
+:::
+
 We are now ready to begin some EDA.
 
 ::: {.callout-tip title="Task 4: Exploratory Questions"}
