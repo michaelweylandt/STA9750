@@ -624,7 +624,66 @@ requires lots of pre-processing that you want to put earlier in the pipeline.
 
 ## Selecting Join Types
 
-At this point, you are probably asking yourself when you should use which type
+Section 19.4 of the [`R` for Data Science](https://r4ds.hadley.nz/joins#how-do-joins-work)
+textbook provides useful visualizations of the different types of joins. We
+adapt their Figures 19.2 - 19.8 here. 
+
+Suppose we seek to join two tables, `x` and `y`: 
+
+![](../images/r4ds_2e_join_figs/fig19_2.png)
+
+Here, we see that that these tables have some shared rows (`1` and `2`) but some
+non-shared rows (`3` in table `x` and `4` in table `y`). Ultimately, different 
+joins will differ in how they treat those non-shared rows. 
+
+To set up a join, you can _conceptually_ think of starting with all possible
+pairs. For this data set, that's $9 = 3 \times 3$ total possible pairings: 
+
+![](../images/r4ds_2e_join_figs/fig19_3.png)
+
+You do not generally want to _actually_ make all these pairs when dealing
+with large data - this is just a mental tool. 
+
+When you add a join key (`join_by()`) you are specifying which of these possible
+pairs you are possibly interested in. All joins will capture the proper matches
+(`1` and `2`) - the only difference is in the treatment of unmatched pairs. 
+
+The most restrictive join -- the `inner_join` -- only captures _true matches_: 
+
+![](../images/r4ds_2e_join_figs/fig19_4.png)
+
+Here the green and purple (`1` and `2`) rows have matches so we keep them. There
+is no match for the orange or yellow rows so the `inner_join` discards them. 
+
+If we want to keep the unmatched orange `3`, we might use a `left_join`: 
+
+![](../images/r4ds_2e_join_figs/fig19_5.png)
+
+Here you're seeing that we keep everything in the left (`x` table). We don't
+have a matching row in the `y` table, but that's ok - we just fill it in with
+our _missing_ value `NA`. 
+
+The `right_join` is the exact opposite: 
+
+![](../images/r4ds_2e_join_figs/fig19_6.png)
+
+Here, we keep everything from the right / bottom / second table. Specifically, 
+we keep the yellow `4`, but discard the orange `3`. As before, we fill in the
+missing value for the `x` column with an `NA`. 
+
+Finally, the `full_join` keeps everything: 
+
+![](../images/r4ds_2e_join_figs/fig19_7.png)
+Note importantly that this doesn't force a match for orange `3` or yellow `4`. 
+They are still both unmatched, so they both wind up with `NA` values. Because
+the missing data comes from different tables, we now have an `NA` in both
+columns. 
+
+If you think this all sounds like Venn diagrams and set theory, you aren't wrong:
+
+![](../images/dplyr_joins.svg)
+
+At this point, you are probably asking yourself _when_ you should use which type
 of join. There unfortunately isn't a one-size fits all answer. For me, the choice
 of join is essentially equivalent to how you want to handle missing values. 
 
@@ -651,7 +710,6 @@ values (`is.na(arr_delay) == TRUE`) correspond to cancelled flights. These aren'
 MCAR and they are actually MNAR (the worst case): they are missing precisely because
 they would have been _huge_ delays. If you simply throw them out, you are technically
 reporting an accurate value, but you are obscuring a deeper underlying truth. 
-
 
 ::: {.callout-caution title="Extra: Going Deeper with Joins" collapse="true"}
 
