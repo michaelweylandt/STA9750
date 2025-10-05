@@ -112,7 +112,96 @@ any of them, run
 
 and then run the name of the relevant script. 
 
-### Mini-Project Submission
+### Mini-Projects
+
+#### Start a New Mini-Project
+
+This function will create a new file for a mini-project and pre-populate it
+with a basic skeleton and some licensing information. Note that this function
+should only be used for the graded Mini-Projects (MP#01 to MP#04) and not for
+MP#00. 
+
+```{r}
+#| label: mp_start
+mp_start <- function(N, github_id){
+    if(!require("yaml")) install.packages("yaml"); library(yaml)
+    if(!require("gh")) install.packages("gh"); library(gh)
+    if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
+    if(!require("rvest")) install.packages("rvest"); library(rvest)
+    if(!require("glue")) install.packages("glue"); library(glue)
+    if(!require("httr2")) install.packages("httr2"); library(httr2)
+    
+    if(missing(N)){
+        N <- menu(title="Which Mini-Project would you like to submit on GitHub?", 
+                  choices=c(1, 2, 3, 4))
+    }
+    
+    `%not.in%` <- Negate(`%in%`)
+    
+    if(N %not.in% c(1, 2, 3, 4)){
+        stop("Mini-Project Number not Recognized")
+    }
+    
+    
+    fname <- glue("mp0{N}.qmd")
+    
+    
+    if(file.exists(fname)){
+        stop(paste0("A ", sQuote(fname), " file already exists in this directory."))
+    }
+    
+    
+    mp_url <- glue("https://michael-weylandt.com/STA9750/miniprojects/mini0{N}.html")
+    
+    if(missing(github_id)){
+        github_id <- readline("What is your GitHub ID? ")
+    }
+    
+    variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+    course_repo  <- variables$course$repo
+    course_short <- variables$course$short
+    
+    if(!endsWith(getwd(), course_repo)){
+        stop(paste("This command should be run in your", course_repo, "directory only."))
+    }
+    
+    mp_skeleton_url <- "https://michael-weylandt.com/STA9750/mp_template.qmd"
+    mp_instructions_url <- glue("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/miniprojects/mini0{N}.qmd")
+    
+    mp_instructions <- readLines(mp_instructions_url)
+    
+    dash_lines <- which(str_equal(mp_instructions, "---"))
+    
+    mp_header <- mp_instructions[(dash_lines[1] + 1):(dash_lines[2]-1)]
+    
+    mp_variables <- yaml.load(mp_header)
+    
+    mp_skeleton <- mp_skeleton_url |> 
+        readLines() |> 
+        str_replace_all(fixed("{GITHUB_ID}"), github_id) |>
+        str_replace_all(fixed("{N}"), N) |>
+        str_replace_all(fixed("{MP_TITLE}"), mp_variables$mp_title) |>
+        str_replace_all(fixed("{MP_SKILLS}"), mp_variables$mp_skills |> str_split(", ")  |> pluck(1) |> paste(collapse = "/")) |>
+        str_replace_all(fixed("{MP_DATA}"), mp_variables$mp_application |> str_split(", ")  |> pluck(1) |> paste(collapse = "/"))
+    
+    writeLines(mp_skeleton, fname)
+    
+    if("tools:rstudio" %in% search()){
+        cat("Opening miniproject file")
+        invisible(rstudioapi::documentOpen(fname))
+    } else {
+        cat("You can now open", sQuote(fname), "and begin the mini-project.")
+    }
+}
+```
+
+#### Push Mini-Project to GitHub
+
+`TODO`
+
+#### Check Mini-Project Prior to Submission
+
+`TODO`
 
 #### Submit Mini-Project via GitHub Issue
 
