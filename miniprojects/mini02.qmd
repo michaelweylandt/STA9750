@@ -406,6 +406,7 @@ The following code will download the latest NAICS data schema and manipulate it
 into a format suitable for analysis. 
 
 ```{r}
+#| message: false
 ensure_package(httr2)
 ensure_package(rvest)
 get_bls_industry_codes <- function(){
@@ -459,11 +460,10 @@ INDUSTRY_CODES <- get_bls_industry_codes()
 Finally, the BLS Quarterly Census of Employment and Wages
 
 ```{r}
-#| eval: false
 ensure_package(httr2)
 ensure_package(rvest)
 get_bls_qcew_annual_averages <- function(start_year=2009, end_year=2023){
-    fname <- glue("bls_qcew_{start_year}_{end_year}.csv")
+    fname <- glue("bls_qcew_{start_year}_{end_year}.csv.gz")
     fname <- file.path("data", "mp02", fname)
     
     if(!file.exists(fname)){
@@ -492,10 +492,14 @@ get_bls_qcew_annual_averages <- function(start_year=2009, end_year=2023){
                        YEAR) |>
                 filter(nchar(industry_code) <= 5, 
                        str_starts(area_fips, "C")) |>
-                rename(FIPS = area_fips, 
+                mutate(FIPS = area_fips, 
                        INDUSTRY = as.integer(industry_code), 
-                       EMPLOYMENT = as.integerannual_avg_emplvl, 
+                       EMPLOYMENT = as.integer(annual_avg_emplvl), 
                        TOTAL_WAGES = total_annual_wages) |>
+                select(-area_fips, 
+                       -industry_code, 
+                       -annual_avg_emplvl, 
+                       -total_annual_wages) |>
                 # 10 is a special value: "all industries" , so omit
                 filter(INDUSTRY != 10) |> 
                 mutate(AVG_WAGE = TOTAL_WAGES / EMPLOYMENT)
@@ -518,7 +522,13 @@ instructor on the course discussion platform if you have issues.
 
 Some of these files are large, especially the QCEW data, and may take a bit of
 time to download and initially process. You are *strongly encouraged* to do this
-step as soon as possible so that you can seek help from the instructor if necessary. 
+step as soon as possible so that you can seek help from the instructor 
+if necessary. 
+
+The QCEW data is rather large and totals about 1.1G raw, before we down sample
+and compress into a single file. Once you have run this code once and created
+`data/mp02/bls_qcew_2009_2023.csv.gz` you can delete all of the annual 
+`qcew_annual_singlefile.zip` files to save space. 
 
 :::
 
