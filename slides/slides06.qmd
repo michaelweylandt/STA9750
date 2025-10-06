@@ -15,77 +15,205 @@ class_date:
 
 {{< include _setup.qmd >}}
 
-## {{< var course.short >}} Mini-Project #01
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES   <- read_csv("key_dates.csv")
+TODAY   <- DATES |> 
+    filter(`Course Element` == "Class Session", 
+           `Item Number` == session)
 
-👏 Thank you to everyone who took part in peer feedback! 👏
+TODAY_TUESDAY  <- TODAY |> 
+    filter(Section == "Tuesday")  |> 
+    pull(Date)
+TODAY_THURSDAY <- TODAY |> 
+    filter(Section == "Thursday") |> 
+    pull(Date)
 
-I will start processing grades and uploading to Brightspace soon. 
-(Moving day for me...)
+TODAY_TOPIC <- TODAY |>
+    pull(Details) |>
+    unique()
 
-. . .
+ROSTERS <- DATES |> 
+    filter(Details == "Team Roster Submission") |>
+    pull(Date)
 
-I've started reading some submissions - really excellent work! 
+PROPOSALS <- DATES |> 
+    filter(str_detect(Details, "Project Proposal")) |> 
+    pull(Date) |> 
+    strftime("%A %b %d") |> 
+    paste(collapse=" and ")
 
-- Plots (exciting!), sophisticated and insightful analyses, creative policymaking
+library(jsonlite)
+library(yaml)
+
+N_TEAMS <- read_yaml("_teaching.yml")$gradedir |>
+    file.path("roster.json") |> 
+    read_json(simplify=TRUE) |> 
+    pull(project_team) |> 
+    max(na.rm=TRUE)
+
+N_ON_TEAM <- read_yaml("_teaching.yml")$gradedir |>
+    file.path("roster.json") |> 
+    read_json(simplify=TRUE) |> 
+    filter(!is.na(project_team)) |> 
+    NROW()
+
+N_NO_TEAM <- read_yaml("_teaching.yml")$gradedir |>
+    file.path("roster.json") |> 
+    read_json(simplify=TRUE) |> 
+    filter(is.na(project_team)) |> 
+    NROW()
+```
+    
+## {{< var course.short >}} Week {{< meta session >}} 
+
+Today: 
+
+- Tuesday Section: `r TODAY_TUESDAY`
+- Thursday Section: `r TODAY_THURSDAY`
 
 . . . 
 
-Hopefully automated checks and personalized emails helpful (new this year)
+`r TODAY_TOPIC`
 
-If you have ideas for other useful automated 'supports' let me know
+# Today
 
-## {{< var course.short >}} Mini-Project #01
+## Today
 
-Some popular tips:
+- Course Administration
+- Mini-Project #01 Reflection
+- Project Proposal Presentations
+- Wrap-Up
+  - Life Tip of the Day
+- *Time Allowing*: `dplyr` vs `SQL`
 
-- The [`kable`](https://bookdown.org/yihui/rmarkdown-cookbook/kable.html) function
-  makes nice tables
-- The [`gt`](https://gt.rstudio.com/) package makes very nice tables
-- `Quarto` allows "code folding": useful for hiding long boring code blocks
+## MP #01 - Peer Feedback
 
-```{r}
-#| echo: true
-#| code-fold: true
-#| code-summary: "Show the code"
-1 + 1
-```
+Assigned on GitHub - due on `r get_mp_pf_deadline(1)`
 
-You can set this globally. You also want to keep `echo: true`.
+- $\approx 4$ feedbacks each 
+- Take this seriously: around 20\% of this assignment is "meta-review"
+- Goal: _rigorous_ _constructive_ critique
 
-## {{< var course.short >}} Mini-Project #02
+Use [helper functions](https://michael-weylandt.com/STA9750/tips.html#find-peer-feedback-assigned-to-me) 
+to find submissions assigned to you. Ask on Piazza if still having
+trouble.
 
-[MP#02 in process now](../miniprojcts/mini02.html) - `r get_mp_title(2)`
+## MP #01 - Peer Feedback
+
+Submissions may not map perfectly to rubric - use your best judgement
 
 . . .
 
-**Due `r get_mp_deadline(2)`**
+Learn from this! What can _you_ adapt for MP#02? 
 
--   GitHub post (used for peer feedback) AND Brightspace
+## MP#01 - Impressions
+
+👏 Thank you for excellent work here! 👏
+
+. . .
+
+I've started reading some submissions - really impressive! 
+
+- Plots (exciting!)
+- Sophisticated and Insightful Analyses
+- Lots of *K-Pop Demon Hunters*
+- Fun for me to get to learn your interests
+
+. . . 
+
+Hopefully automated checks helpful. If you have ideas for
+other useful automated 'supports' let me know
+
+## MP#01 - Common Questions
+
+Q: Why doesn't my site look the same on GitHub as it does on my laptop?
+
+. . . 
+
+A: Missing `css` and `js` files. Need to _upload_ everything in `docs`. 
+
+. . . 
+
+New helper function: 
+
+```{r}
+#| eval: false
+#| echo: true
+source("https://michael-weylandt.com/STA9750/load_helpers.R")
+mp_submission_ready()
+```
+
+Tries to make sure all 'secondary' files are present. 
+
+## MP#01 - Common Questions
+
+Q: Why doesn't my submission have the right URL? 
+
+. . . 
+
+A: _Most_ computers have case-sensitive file names, Mac doesn't, and Windows is iffy. 
+
+. . . 
+
+New helper function: 
+
+```{r}
+#| eval: false
+#| echo: true
+source("https://michael-weylandt.com/STA9750/load_helpers.R")
+mp_start()
+```
+
+Generates a very basic `qmd` file with the correct file name and some relevant
+context. 
+
+
+## Mini-Project #02
+
+[MP#02 released](../miniprojcts/mini02.html) - Housing Affordability
+
+. . .
+
+**Due ~~`r get_mp_deadline(2)`~~** 2025-10-31 🎃
+
+- GitHub post (used for peer feedback) AND Brightspace
+- $\approx$ One Month: don't wait until the very end
 
 . . .
 
 Pay attention to [the rubric](../miniprojects/mini02.html#rubric)
 
 -   Writing and presentation are about 50% of your grade
--   Evaluated on *rigor* and *thoughtfulness*
--   Use what you learned from MP #01
+-   Evaluated on *rigor* and *thoughtfulness*, not necessarily correctness
+
+::: {.smallest}
+
+Thanks to HI for help with Windows-compatibility!
+
+:::
 
 ## Upcoming Mini-Projects
 
-Topics
+Tentative Topics
 
--   MP#03: `r get_mp_title(3)`
--   MP#04: `r get_mp_title(4)`
+-   MP#03: NYC Trees - `r get_mp_deadline(3)`
+-   MP#04: US Employment Surveys - `r get_mp_deadline(4)`
+
+Likely will push back 1 week each - TBD
 
 ## Pre-Assignments
 
-Brightspace - Wednesdays at 11:45
+Brightspace - day before class
 
 - Reading, typically on course website
 - Brightspace auto-grades
   - I have to manually change to completion grading
 
-Next pre-assignment is **`r get_pa_deadline(7)`**
+Next pre-assignment is **`r get_pa_deadline(next_session)`**
 
 . . . 
 
@@ -95,23 +223,23 @@ in the next few days
 ## Course Support
 
 - Synchronous
-  - Office Hours 2x / week
+  - Virtual Office Hours 2x / week on Class Days
 - Asynchronous
-  - Piazza ($<30$ minute average response time)
+  - Piazza ($<20$ minute average response time)
 
 ## Upcoming Week
 
 Due Wednesday at 11:45pm:
 
 - Pre-Assignment #07 (Brightspace)
-  * Introduction to plotting with `ggplot2`
+  - **Introduction to plotting with `ggplot2`**
 
 Expect back:
 
--   MP#01 consolidated grades
+-   MP#01 grades
 -   Project proposal instructor feedback
 
-## Project Proposal Presentations
+## Project Proposals
 
 [Official Description](https://michael-weylandt.com/STA9750/project.html#project-proposal-presentations)
 
@@ -126,7 +254,7 @@ Expect back:
 
 Most important: team names! 
 
-Last semester: Rat Pack, Subway Surfers, Going for Gold, EVengers, *etc.*
+Previous: Rat Pack, Subway Surfers, Going for Gold, *etc.*
 
 ## After Proposals
 
@@ -134,30 +262,114 @@ Last semester: Rat Pack, Subway Surfers, Going for Gold, EVengers, *etc.*
 
 - `SQL` is a very common Data Scientist interview topic so if you're not taking
   a database course, might be useful
-  
-## Reminder: CUNY Citizenship Now!
-
-- Free and confidental immigration law services provided by CUNY
-- Targeted at CUNY students and families, but open to all NYers
-
-To access: 
-
-- [Callback Request Form](https://www.cuny.edu/about/administration/offices/communications-marketing/citizenship-now/about/callback/)
-- [Locations throughout NYC](https://www.cuny.edu/about/administration/offices/communications-marketing/citizenship-now/about/#locations)
-
-## Reminder: ISS Workshops
-
-See Brightspace Announcement
 
 # On to the Show!
 
-## Course Project Presentations
+## Tuesday Presentations {.scrollable}
 
-| Order | Members           |   | Team | Members             |
-|-------|-------------------|---|------|---------------------|
-| 1     | VH + SG + DS + DL |   | 6    | VG                  |
-| 2     | HZ + JLL + CA     |   | 7    | EM + AK + GMdS + JL |
-| 3     | MT + CW           |   | 8    | SJB + JC + SB + ZS  |
-| 4     | SD + GO + CFGF    |   | 9    | GS                  |
-| 5     | GB + RJ + FS + MH |   | 10   | CWo.                |
+```{r}
+#| echo: false
+library(jsonlite)
+library(yaml)
+
+ROSTER <- read_yaml("_teaching.yml")$gradedir |> 
+    file.path("roster.json") |> 
+    read_json(simplify=TRUE)
+
+TEAMS <- read_yaml("_teaching.yml")$gradedir |> 
+    file.path("teams.json") |> 
+    read_json(simplify=TRUE)
+
+library(DT)
+
+PRESENTATIONS <- ROSTER |>
+    select(github, active, project_team) |> 
+    filter(active) |>
+    left_join(TEAMS, join_by(project_team == number)) |>
+    mutate(team_shortname = str_extract(name, "(.*) \\(([TR])\\)", group=1), 
+           team_day = str_extract(name, "(.*) \\(([TR])\\)", group=2)) |>
+    group_by(team_shortname) |>
+    summarize(team_day = first(team_day), 
+              members = paste(github, collapse=", "))
+```
+
+::: {.smaller}
+
+```{r}
+#| echo: false
+set.seed(9750)
+PRESENTATIONS |>
+    filter(team_day == "T") |>
+    slice_sample(n=100) |>
+    select(-team_day) |> 
+    rename(`Team Name` = team_shortname, 
+           Members=members) |> 
+    mutate(`Presentation Order` = row_number()) |>
+    select(`Presentation Order`, `Team Name`, Members) |>
+    datatable(options=list(info=FALSE,
+                           paging=FALSE,
+                           searching=FALSE,
+                           ordering=FALSE), 
+              rownames=FALSE)
+```
+
+:::
+
+## Thursday Presentations {.scrollable}
+
+::: {.smaller}
+
+```{r}
+#| echo: false
+set.seed(9750)
+PRESENTATIONS |>
+    filter(team_day == "R") |>
+    slice_sample(n=100) |>
+    select(-team_day) |> 
+    rename(`Team Name` = team_shortname, 
+           Members=members) |> 
+    mutate(`Presentation Order` = row_number()) |>
+    select(`Presentation Order`, `Team Name`, Members) |>
+    datatable(options=list(info=FALSE,
+                           paging=FALSE,
+                           searching=FALSE,
+                           ordering=FALSE), 
+              rownames=FALSE)
+```
+
+:::
+
+# Wrap-Up
+
+## Orientation
+
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R`  ✅
+- Data Visualization in `R`  ⬅️
+- Getting Data into `R`
+- Statistical Modeling in `R`
+
+## Upcoming Work
+
+Upcoming work from [course calendar](../index.qmd#calendar)
+
+::: {.incremental}
+
+- [Mini-Project #01 Peer Feedback](../miniprojects.html) due on `r get_mp_pf_deadline(1)`
+- [Pre-Assignment #0`r next_session`](../preassigns/pa07.html) due `r get_pa_deadline(next_session)`
+- [Mini-Project #02](../miniprojects/mini02.html) due on ~~`r get_mp_deadline(2)`~~ 2025-10-31 at 11:59pm
+
+:::
+
+
+{{< include ../advice/register_to_vote.qmd >}}
+
+## Musical Treat
+
+</br>
+
+{{< video https://www.youtube.com/watch?v=LBIo5QuEeaA width="80%" height="400px">}}
+
+# Optional Material (Time Allowing)
 
