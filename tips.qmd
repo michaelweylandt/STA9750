@@ -584,8 +584,10 @@ mp_feedback_locate <- function(N, github_id){
     pf_urls <- issues |> 
         keep(~ str_detect(.x$title, glue("#0{N}"))) |>
         keep(~ !str_equal(.x$user$login, github_id, ignore_case=TRUE)) |>
-        map(~data.frame(html=.x$html_url, comments=.x$comments_url)) |>
-        keep(~any(str_detect(map_chr(gh(.x$comments), "body"), github_id))) |>
+        map(~data.frame(html=.x$html_url, comments=.x$comments_url, body=.x$body)) |>
+        keep(~any(str_detect(map_chr(gh(.x$comments), "body"), github_id) | 
+                  str_detect(.x$body, github_id)
+                  )) |>
         map("html") |>
         list_c()
     
