@@ -933,7 +933,7 @@ def project_create():
     "-A",
     "--action",
     type=click.Choice(
-        ["Rename", "Add-student", "Remove-Student"], case_sensitive=False
+        ["Rename", "Add-Student", "Remove-Student"], case_sensitive=False
     ),
     help="Which action to take?",
     prompt="Which modification should be performed?",
@@ -958,6 +958,8 @@ def project_edit(number, action):
         )
 
     ROSTER = current_roster()
+    n_roster = ROSTER.shape[0]
+    
     BIG_ROSTER = pd.merge(
         ROSTER,
         TEAMS.rename(columns={"name": "team_name"}),
@@ -974,10 +976,87 @@ def project_edit(number, action):
         click.echo(f"{ix:02g}. {row.name} (GH: {row.github}; EMAIL: {row.email})")
     click.echo("--------")
 
-    if action != "Rename":
-        raise NotImplementedError
+    if action == "Remove-Student":
+        click.echo("These students are presently on that team:")
+        click.echo("------")
+        for ix in TEAM.index:
+            student = TEAM.loc[ix]
+            
+            if student["active"]:
+                click.echo(f"- {ix}: {student['name']}")
+        click.echo("------")
+        
+        id_to_drop = click.prompt(
+            "Enter the number of the student to drop from this team.",
+            show_default=False,
+            type=click.Choice([str(k) for k in TEAM.index])
+        )
 
-    if action == "Rename":
+        try:
+            id_to_drop = int(id_to_drop)
+        except ValueError:
+            raise click.ClickException("I was expecting an integer.")
+        
+        ROSTER.at[id_to_drop, "project_team"] = math.nan
+        
+        click.echo("The new roster of this team is:")
+        for nm in ROSTER[ROSTER["project_team"] == number]["name"]:
+            click.echo(f"- {nm}")
+            
+        click.echo("------")
+        click.echo("The following students have no team:")
+        for nm in ROSTER[ROSTER["project_team"].isna()]["name"]:
+            click.echo(f"- {nm}")
+
+        click.confirm("Should I make this change?", abort=True)
+    
+        if ROSTER.shape[0] != n_roster:
+            click.echo("Roster has changed length!!")
+            import pdb; pdb.set_trace()
+
+        with open(roster_file(), "w+") as f:
+            f.write(ROSTER.to_json(orient="records", indent=2))
+
+
+    elif action == "Add-Student":
+        NO_TEAM = ROSTER[ROSTER["project_team"].isna()]["name"].to_dict()
+
+        click.echo("These students are not presently on a team:")
+        click.echo("--------")
+        
+        for k, v in NO_TEAM.items():
+            if ROSTER[ROSTER.name == v].active.item():
+                click.echo(f"- {k}: {v}")
+                
+        click.echo("--------")
+
+        id_to_add = click.prompt(
+            "Enter the number of a student to add to this team.",
+            show_default=False,
+            type=click.Choice([str(k) for k in NO_TEAM.keys()])
+        )
+
+        try:
+            id_to_add = int(id_to_add)
+        except ValueError:
+            raise click.ClickException("I was expecting an integer.")
+
+        ROSTER.at[id_to_add, "project_team"] = number
+        
+        click.echo("The new roster of this team is:")
+        for nm in ROSTER[ROSTER["project_team"] == number]["name"]:
+            click.echo(f"- {nm}")
+
+        click.confirm("Should I create this team?", abort=True)
+    
+        if ROSTER.shape[0] != n_roster:
+            click.echo("Roster has changed length!!")
+            import pdb; pdb.set_trace()
+
+        with open(roster_file(), "w+") as f:
+            f.write(ROSTER.to_json(orient="records", indent=2))
+
+    elif action == "Rename":
         current_name = TEAM["team_name"].iloc[0]
         click.echo(f"The current name of this team is {current_name}.")
         new_name = click.prompt("What should the new name of this team be?")
@@ -1037,11 +1116,11 @@ def project_list():
 
     SUB_ROSTER = BIG_ROSTER[BIG_ROSTER["project_team"].isna()]
 
-    click.echo(f"The following {SUB_ROSTER.shape[0]} students have not yet been assigned a team:")
+    if SUB_ROSTER.shape[0]:
+        click.echo(f"The following {SUB_ROSTER.shape[0]} students have not yet been assigned a team:")
     
-
-    for ix, nm in enumerate(SUB_ROSTER["name"], start=1):
-        click.echo(f"- {ix:02g}. {nm}")
+        for ix, nm in enumerate(SUB_ROSTER["name"], start=1):
+            click.echo(f"- {ix:02g}. {nm}")
 
 
 @project.command(name="grade")
