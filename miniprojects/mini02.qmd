@@ -194,7 +194,7 @@ and fill in the following text for the issue:
 
 ::: {#submission-text}
 
-```         
+```
 Hi @michaelweylandt!
 
 I've uploaded my work for MiniProject #**{{< meta mp_num >}}** - check it out!
@@ -221,19 +221,6 @@ of facts answering questions. Add introductions, conclusions, and your own
 commentary. You should be practicing both raw *coding* skills and written
 *communication* in all mini-projects. There is little value in data points 
 stated without context or motivation.
-
-
-::: {#submission-text}
-
-```         
-Hi @michaelweylandt!
-
-I've uploaded my work for MiniProject #{{< meta mp_num >}} - check it out!
-
-https://<GITHUB_ID>.github.io/{{< var course.repo >}}/mp{{< meta mp_num >}}.html
-```
-
-:::
 
 [^sub]: Throughout this section, replace `<GITHUB_ID>` with your GitHub ID from
 [Mini-Project #00](./mini00.html), making sure to remove the angle brackets. Note
@@ -466,20 +453,24 @@ get_bls_qcew_annual_averages <- function(start_year=2009, end_year=2023){
     fname <- glue("bls_qcew_{start_year}_{end_year}.csv.gz")
     fname <- file.path("data", "mp02", fname)
     
+    YEARS <- seq(start_year, end_year)
+    YEARS <- YEARS[YEARS != 2020] # Drop Covid year to match ACS
+    
     if(!file.exists(fname)){
-        YEARS <- seq(start_year, end_year)
-        YEARS <- YEARS[YEARS != 2020] # Drop Covid year to match ACS
-        
-        ALL_DATA <- map(YEARS, .progress=TRUE, function(yy){
+        ALL_DATA <- map(YEARS, .progress=TRUE, possibly(function(yy){
             fname_inner <- file.path("data", "mp02", glue("{yy}_qcew_annual_singlefile.zip"))
             
             if(!file.exists(fname_inner)){
                 request("https://www.bls.gov") |> 
-                req_url_path("cew", "data", "files", yy, "csv",
-                             glue("{yy}_annual_singlefile.zip")) |>
-                req_headers(`User-Agent` = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:143.0) Gecko/20100101 Firefox/143.0") |> 
-                req_error(is_error = \(resp) FALSE) |>
-                req_perform(fname_inner)
+                    req_url_path("cew", "data", "files", yy, "csv",
+                                 glue("{yy}_annual_singlefile.zip")) |>
+                    req_headers(`User-Agent` = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:143.0) Gecko/20100101 Firefox/143.0") |> 
+                    req_retry(max_tries=5) |>
+                    req_perform(fname_inner)
+            }
+            
+            if(file.info(fname_inner)$size < 755e5){
+                warning(sQuote(fname_inner), "appears corrupted. Please delete and retry this step.")
             }
             
             read_csv(fname_inner, 
@@ -492,6 +483,7 @@ get_bls_qcew_annual_averages <- function(start_year=2009, end_year=2023){
                        YEAR) |>
                 filter(nchar(industry_code) <= 5, 
                        str_starts(area_fips, "C")) |>
+                filter(str_detect(industry_code, "-", negate=TRUE)) |>
                 mutate(FIPS = area_fips, 
                        INDUSTRY = as.integer(industry_code), 
                        EMPLOYMENT = as.integer(annual_avg_emplvl), 
@@ -503,12 +495,23 @@ get_bls_qcew_annual_averages <- function(start_year=2009, end_year=2023){
                 # 10 is a special value: "all industries" , so omit
                 filter(INDUSTRY != 10) |> 
                 mutate(AVG_WAGE = TOTAL_WAGES / EMPLOYMENT)
-        }) |> bind_rows()
+        })) |> bind_rows()
         
         write_csv(ALL_DATA, fname)
     }
     
-    read_csv(fname, show_col_types=FALSE)
+    ALL_DATA <- read_csv(fname, show_col_types=FALSE)
+    
+    ALL_DATA_YEARS <- unique(ALL_DATA$YEAR)
+    
+    YEARS_DIFF <- setdiff(YEARS, ALL_DATA_YEARS)
+    
+    if(length(YEARS_DIFF) > 0){
+        stop("Download failed for the following years: ", YEARS_DIFF, 
+             ". Please delete intermediate files and try again.")
+    }
+    
+    ALL_DATA
 }
 
 WAGES <- get_bls_qcew_annual_averages()
