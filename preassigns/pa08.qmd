@@ -1,7 +1,7 @@
 ---
 title: "{{< var course.short >}} Week {{< meta pa_num >}} Pre Assignment: {{< meta pa_title >}}"
 pa_num: 8
-pa_title: "More Plots"
+pa_title: "Taking Plots to the Next Level"
 ---
 
 ```{r}
@@ -24,12 +24,12 @@ due_date_str <- read_csv("key_dates.csv") |>
 **Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
 
 
-This week, we will dive deeper into the world of data visualization, with a focus on tools for interactive (and
-animated) data visualization. Before doing so, let's 
-pause and consolidate everything we've done to date: 
+This week, we will dive deeper into the world of data visualization, with a 
+focus on tools for interactive (and animated) data visualization. Before doing 
+so, let's  pause and consolidate everything we've done to date: 
 
-1. If you did not finish [last week's in-class
-   lab](../labs/lab07.html), do so now.
+1. If you did not finish [last week's in-class lab](../labs/lab07.html), 
+   do so now.
 
 2. Explore the [R Graphics Gallery "Best Charts"
    collection.](https://r-graph-gallery.com/best-r-chart-examples)
@@ -42,30 +42,19 @@ pause and consolidate everything we've done to date:
    iv) Do you believe that story? 
    v) How could it tell the story more effectively?
    
-::: {.callout-tip title="Optional Enrichment: Myth Busting and Apophenia in Data Visualization" collapse="true"}
-
-Watch [Prof. Di Cook](https://www.dicook.org/)'s lecture "Myth busting
-and apophenia in data visualisation: is what you see really there?". As
-we discussed in class, plots are an excellent way to explore data, but we
-always want to be careful that what we think find truly exists. Prof.
-Cook discusses relationships between effective statistical visualization
-and effective statistical practice.
-
-{{<video https://www.youtube.com/watch?v=coGeZIHCk38 >}}
-
-:::
-
-Ok - we're now ready to move forward. This week, we will explore various
-technologies for interactive data visualization. These can be divided into
-two broad categories: 
+After doing that, we're ready to move on to new material. This week, we will 
+explore various technologies for interactive data visualization. These can be 
+divided into two broad categories: 
 
 - Server Based: When the user makes a change to a plot, it is sent to a 
   server where the new plot is rendered and returned to the user. 
 - Browser Based: When the user makes a change to a plot, the new plot is 
-  created _in the browser_ and re-rendered 'on site'. 
+  created _in the browser_ and re-rendered 'on site'. (This is the strategy
+  I have used through some of these notes, where you are able to type `R` code
+  and run it directly in your browser.)
   
-Generally, server-based approaches are more flexible (and a bit easier to 
-implement) while browser-based approaches are more responsive and scalable.
+Generally, server-based approaches are more flexible and a bit easier to 
+implement, while browser-based approaches are more responsive and scalable.
 Since the browser work is done locally on the user's computer (or phone or 
 tablet), they are also cheaper and safer to run as there's no need to have
 a server constantly responding to user input. 
@@ -91,3 +80,168 @@ versions of [`shiny`](https://shiny.posit.co/py/) and
 
 After finishing these activities, complete the Weekly Pre-Assignment Quiz on
 Brightspace.
+
+## Optional Enrichment: Myth Busting and Apophenia in Data Visualization"
+
+Watch [Prof. Di Cook](https://www.dicook.org/)'s lecture "Myth busting
+and apophenia in data visualisation: is what you see really there?". As
+we discussed in class, plots are an excellent way to explore data, but we
+always want to be careful that what we think find truly exists. Prof.
+Cook discusses relationships between effective statistical visualization
+and effective statistical practice.
+
+{{<video https://www.youtube.com/watch?v=coGeZIHCk38 >}}
+
+
+## Optional: Check Software Install
+
+This upcoming week, we will use several new `R` packages. These packages depend 
+on  additional software external to `R`; while this is not typically an issue, 
+and `R` attempts to install these additional libraries "auto-magically" for you,
+issues do occasionally arise. In preparation for class, I recommend that you
+attempt to install these additional libraries so that you will be able to easily
+follow along in class. 
+
+In particular, there are three `R` packages you should install and confirm work
+as expected: 
+
+1. `shiny` - A library for interactive dashboard creation
+2. `sf` - A library for working with geospatial data
+3. `gganimate` - A library for producing _animated_ graphics. 
+
+I provide code to install and run a small example of each software below. If
+you can run all of these without issue, you should be good to go. (You do not
+need to _understand_ this code just yet, but you are welcome to work through it.)
+If you have issues installing this software, please reach out for help on the
+course discussion board or in office hours. 
+
+### `shiny`
+
+The following script will install `shiny`: 
+
+```{r}
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+if(!require("shiny", quietly=TRUE)){
+    install.packages("shiny")
+}
+library(shiny)
+```
+
+Once `shiny` is installed, confirm that it works as desired by 
+running the  following code: 
+
+```{r}
+#| eval: false
+shinyApp(
+    ui = fluidPage(
+      numericInput("n", "n", 1),
+      plotOutput("plot")
+    ),
+    server = function(input, output) {
+      output$plot <- renderPlot( plot(head(cars, input$n)) )
+    }
+  )
+```
+
+If this works, it will bring up a very simple window where you can enter 
+a number and see that many random points plotted. 
+
+### `sf`
+
+The `sf` library provides a unified interface for manipulating geospatial
+data. We will primarily use it for visualizing _spatial_ data, *i.e.*, maps.
+
+`sf` depends on several other packages, so we will make sure these are
+all installed as needed: 
+
+```{r}
+ensure_package <- function(pkg){
+    pkg <- as.character(substitute(pkg))
+    options(repos = c(CRAN = "https://cloud.r-project.org"))
+    if(!require(pkg, character.only=TRUE, quietly=TRUE)) install.packages(pkg)
+    stopifnot(require(pkg, character.only=TRUE, quietly=TRUE))
+}
+ensure_package(sf)
+```
+
+Once these packages have been installed, run the following code to confirm
+correct installation. 
+
+```{r}
+library(sf)
+library(ggplot2)
+system.file("shape/nc.shp", package = "sf") |>
+    sf::st_read(quiet=TRUE) |>
+    ggplot(aes(geometry=geometry, 
+               fill=NAME)) + 
+      geom_sf() + 
+      guides(fill="none")
+```
+
+This should produce a multi-colored map of North Carolina. 
+
+### `gganimate`
+
+The `gganimate` package can be used to create _animated_ graphics. To do so,
+it generates a series of `png` files using "standard" `ggplot2` and then
+invokes an external library to combine those `png` files into a `gif`. 
+The simplest tool for the `png`-to-`gif` transformation is called `gifski`,
+so we will try to install it first:
+
+```{r}
+ensure_package <- function(pkg){
+    pkg <- as.character(substitute(pkg))
+    options(repos = c(CRAN = "https://cloud.r-project.org"))
+    if(!require(pkg, character.only=TRUE, quietly=TRUE)) install.packages(pkg)
+    stopifnot(require(pkg, character.only=TRUE, quietly=TRUE))
+}
+ensure_package(gifski)
+ensure_package(gganimate)
+```
+
+Once installed, please run the following command to verify your installation
+was successful. 
+
+```{r}
+#| eval: false
+library(ggplot2)
+library(gganimate)
+library(dplyr)
+penguins |>
+    drop_na() |>
+    ggplot(aes(x = flipper_len, 
+               y = body_mass, 
+               color = species)) + 
+    geom_point() + 
+    theme_bw() + 
+    theme(legend.position="bottom") + 
+    xlab("Flipper Length (mm)") + 
+    ylab("Body Mass (g)") + 
+    scale_color_brewer(name="Species", 
+                       type="qual", 
+                       palette=2) + 
+    transition_time(year) + 
+    ggtitle("Penguins in Year {frame_time}")
+```
+
+```{r}
+#| echo: false
+#| eval: false
+gganimate_to_quarto <- function(filename, gganimate_obj){
+   #docs_filename <- file.path("docs", filename)
+   docs_filename <- filename
+   anim_save(docs_filename, gganimate_obj)
+   knitr_hook <- knitr::include_graphics(docs_filename)
+
+   knitr_hook[] <- filename
+   knitr_hook
+}
+gganimate_to_quarto("preassigns/pa08_files/penguins.gif", penguin_gif)
+```
+
+This should create a moving scatter plot of penguin measurements over a three
+year window. Note that this is not a particularly good use of an animated
+visualization - the penguins are not measured repeatedly year-over-year so
+re-use of a point is misleading. 
+
+
