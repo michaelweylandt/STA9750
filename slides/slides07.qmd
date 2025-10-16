@@ -2,11 +2,13 @@
 session: "`r session <- 7; session`"
 class_date:
   "`r library(tidyverse); 
-    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
+    tuesday_date <- read_csv('key_dates_tuesday.csv', 
+                             name_repair='universal') |>
     filter(Course.Element == 'Class Session', 
            Item.Number == session) |>
     pull(Date) |> format('%a %Y-%m-%d'); 
-    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
+    thursday_date <- read_csv('key_dates_thursday.csv', 
+                               name_repair='universal') |>
     filter(Course.Element == 'Class Session', 
            Item.Number == session) |>
     pull(Date) |> format('%a %Y-%m-%d'); 
@@ -15,116 +17,1367 @@ class_date:
 
 {{< include _setup.qmd >}}
 
-## {{< var course.short >}} Mini-Project #01
 
-Grades returned this afternoon.
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES   <- read_csv("key_dates.csv")
+TODAY   <- DATES |> 
+    filter(`Course Element` == "Class Session", 
+           `Item Number` == session)
 
-Review [regrade policy](https://michael-weylandt.com/STA9750/syllabus.html#regrading-policy) and [late work policy](https://michael-weylandt.com/STA9750/resources.html#late-work-policy) if you have questions.
+TODAY_TUESDAY  <- TODAY |> 
+    filter(Section == "Tuesday")  |> 
+    pull(Date)
+TODAY_THURSDAY <- TODAY |> 
+    filter(Section == "Thursday") |> 
+    pull(Date)
 
-## {{< var course.short >}} Mini-Project #02
+TODAY_TOPIC <- TODAY |>
+    filter(str_detect(Details, "Lecture")) |>
+    pull(Details)
 
+```
+    
+## {{< var course.short >}} Week {{< meta session >}} 
+
+::: {.smaller}
+
+Today: 
+
+- Tuesday Section: `r TODAY_TUESDAY`
+- Thursday Section: `r TODAY_THURSDAY`
+
+`r TODAY_TOPIC`
+
+:::
+
+. . . 
+
+::: {.smaller}
+
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R`  ✅
+- Data Visualization in `R`  ⬅️
+  - Static Plots  ⬅️
+  - Interactivity, Maps, Animated Plots
+- Getting Data into `R`
+- Statistical Modeling in `R`
+
+:::
+
+## Schedule Tweak
+
+Today: 
+
+- Static Plots
+
+Next Week: 
+
+- Maps (moved!)
+- Interactive Tools
+- Animated Plots (Time Allowing)
+
+# Today
+
+## Today
+
+- Course Administration
+- Warm-Up Exercises
+- Introduction to `ggplot2`
+- PA#07 FAQs
+- Wrap-Up
+  - Life Tip of the Day
+
+# Course Administration
+
+## GTA 
+
+Teaching Assistant finally hired -- Charles E. Ramirez!
+
+
+:::: {.columns}
+
+::: {.column}
+
+![](../images/cer_headshot.jpg){width="60%"}
+
+:::
+
+::: {.column}
+
+::::: {.incremental}
+
+- Office Hour (student support) on Wednesdays at 6pm (see Brightspace)
+- Review of peer grading
+- Took STA 9750 in Spring 2024; TA in Fall 2024
+
+:::::
+
+:::
+
+::::
+
+## Mini-Project #02
 
 [MP#02](../miniprojects/mini02.html) - `r get_mp_title(2)`
+
+::: {.small}
 
 **Due `r get_mp_deadline(2)`**
 
 -   GitHub post (used for peer feedback) AND Brightspace
 -   Start early to avoid Git issues
 
+:::
+
 . . .
+
+::: {.smaller}
 
 Pay attention to [the rubric](../miniprojects/mini02.html#rubric)
 
 -   Writing and presentation are about 50% of your grade
 -   Evaluated on *rigor* and *thoughtfulness*
 -   Use what you learned from MP#01
-- Turn in *something* - 20% 'free points' are nothing to scoff at
 
-## {{< var course.short >}} Mini-Project #02
-
-A few students have reported issues with rate-limiting on the EIA
-SEP site. Re-running the code seems to resolve issues. 
-
-My download code is written to save the files locally, so only needs
-to succeed once. 
+:::
 
 . . . 
 
+::: {.small}
 
-One student reported `NA` conversion warnings in processing the NTD
-data. These were harmless, but I've modified the provided code to 
-suppress these warnings. 
+Rubric updated to clarify opportunities for and limits to extra credit
 
-In brief: update to NTD now uses dashes in a few places for missing
-data and `NA` warning came up when trying to conver these to numeric
-values
+:::
 
-## {{< var course.short >}} Mini-Project #02
+## Mini-Project #02
 
-Remember that "non-standard" column names require use of backticks:
+Rare issues downloading BLS-QCEW data files
 
-```{r}
-#| eval: false
-#| echo: true
-NTD_ENERGY_RAW |> 
-    select(-c(`Reporter Type`, 
-              `Reporting Module`, 
-              `Other Fuel`, 
-              `Other Fuel Description`)) |>
-    mutate(`Bunker Fuel` = ...)
-```
+:::: {.columns}
 
-## Feedback
+::: {.column}
 
-- I've started to return Proposal Feedback (via email) - will finish 
-tomorrow
+- My code only downloads files once
+- If files are corrupted, please delete and try again
+- Post on Piazza for help debugging
 
-- MP#01 grades to follow
+:::
 
+::: {.column}
+
+![](https://images.seeklogo.com/logo-png/44/1/u-s-bureau-of-labor-statistics-bls-logo-png_seeklogo-441185.png){width="50%"}
+
+:::
+
+::::
+
+
+## Mini-Project #02
+
+Key Questions:
+
+::: {.incremental}
+
+- Where is housing (relatively) cheap? 
+- Are changes in house prices associated with building new housing?
+- Are large cities building enough housing?
+
+:::
+
+. . . 
+
+Tools:
+
+::: {.incremental}
+
+- `join`s to combine Census and BLS data
+- `dplyr` to standardize and explore high/low CBSAs
+- _Visualization_ to find outliers and trends
+
+:::
+
+## Mini-Project #01
+
+Grades returned on Friday
+
+[Regrade policy](https://michael-weylandt.com/STA9750/syllabus.html#regrading-policy)
+
+- 48 hours after grades returned (I will send an email)
+- Regrading 'from scratch'
+- Identify rubric elements on which were misgraded
+
+. . . 
+
+I will open a *Brightspace Quiz* where you can request instructor re-grading
+
+
+## Project Proposal Feedback
+
+Distributed Monday
 
 ## Pre-Assignments
 
-Brightspace - Wednesdays at 11:45
+Brightspace:
 
 -   Reading, typically on course website
--   Brightspace auto-grades
-    -   I have to manually change to completion grading
+-   Brightspace auto-grades for completion
 
-Next pre-assignment is **`r get_pa_deadline(8)`**: 
+Next PA is due **`r get_pa_deadline(8)`**: 
 
-- Includes an optional (but really great) lecture on data
-  visualization from Di Cook (Monash B School (AUS))
+- Introduces tools for interactive data tools, *i.e.*, dashboards
+- Includes optional (great!) lecture on data
+  viz from [Di Cook (Monash B School (AUS))](https://www.dicook.org/)
 
-. . .
 
-Thank you for FAQs and (honest) team feedback. Keep it coming!
 
 ## Course Support
 
 -   Synchronous
-    -   Office Hours 2x / week
-        -   MW Office Hours on **Tuesdays** + **Thursday** for rest of semester
-        -   No OH during Spring Break
--   Asynchronous
-    -   Piazza ($<30$ minute average response time)
-    
-Thanks to DS for helping peers on Piazza!
+    -   MW Office Hours 2x / week: **Tuesdays + Thursdays 5pm**
+        - Rest of Semester except Thanksgiving (Nov 27th)
+    - GTA Office Hours: **Wednesdays at 6pm**
+-   Asynchronous: Piazza ($<20$ minute *average* response time)
 
-## Upcoming Week
+. . . 
 
-Due Wednesday at 11:45pm:
+::: {.smaller}
 
-- Pre-Assignment #08 (Brightspace)
-  - Interactive Tools for Data Visualization
--   MP #02 on GitHub AND Brightspace
+Piazza response time is _an average_, not a guarantee
 
-## Teaching Observation
+See [Week 02 Slides](./slides02.html) for advice on asking good questions
+  - Good questions get faster answers
 
-On April 3rd, Prof. Brandwein will sit in and observe class
+Ask early for help with MPs
 
-- You don't need to do anything different - just an FYI
+:::
+
+# Review Exercise
+
+## Global Temperature Anomaly {.scrollable}
+
+[CDIAC](https://www.esd.ornl.gov/iab/iab2-15.htm) estimates of global temperature
+
+- Global Mean Temperature Anomaly (difference from baseline)
+- This is the "2°" reference of the [2015 Paris Climate Accords](https://en.wikipedia.org/wiki/Paris_Agreement)
+
+. . . 
+
+`cdiac` data in `CVXR` package: 
+
+```{r}
+data(cdiac, package="CVXR")
+cdiac
+```
+
+## Global Temperature Anomaly {.scrollable}
+
+In breakout rooms: 
+
+1. In what year was the highest annual anomaly observed? The lowest?
+2. For how many months was 2015 the highest anomaly recorded? 
+3. For how many years did July have the largest anomaly of that year?
+
+See [Lab #07](../labs/lab07.html#review) for details.
+
+# Plotting with `ggplot2`
+
+## ggplot2
+
+`ggplot2`: 
+
+::: {.incremental}
+
+- **G**rammar of **G**raphics **Plot**ing, Version 2
+- Structured Plotting
+  - Plotting to express _statistical visualization_
+  - Not raw shapes and colors ("graphics primitives")
+- Make it easy to make _good_ visualizations
+:::
+
+## Why Visualization?
+
+Why do we visualize data? 
+
+::: {.incremental}
+
+- Data exploration and understanding
+- Hypothesis generation
+- Data communication
+- Humans are better at visuals than numbers
+- Allow the data to _surprise_ you
+
+:::
+
+## Why Visualization?
+
+::: {.center}
+
+![](../images/datasaurus.gif){width="80%"}
+
+:::
+
+. . . 
+
+Same $\mu_X, \mu_Y, \sigma_X, \sigma_Y, \rho_{XY}, \beta_{Y|X}, \dots$ - OLS can't distinguish
+
+## Why Visualization?
+
+::: {.center}
+
+![](../images/datasaurus.gif){width="80%"}
+
+:::
+
+Modeling and visualizing are not sequential: 
+
+- Build a model, where does it fail?
+- See a pattern, does it hold up in a model / test?
+
+## ggplot2
+
+`ggplot2` provides a system ("grammar") for visualizations:
+
+::: {.incremental}
+
+- `geom_`s: the actual thing to be plotted (points, lines, *etc.*)
+- `aes` (aesthetics): mapping of aspects of data 
+- `scale_`s: control mapping from 'data space' to 'graphics space'
+- `theme`: basic non-data-dependent plot elements
+- `guide`s: legends
+- `stat_`s: transformations of data used to plot (CDF, histogram counts)
+
+:::
+
+## ggplot2 - Worked Example
+
+Let's plot the `penguins` data. To avoid warnings, use a no-`NA` version:
+
+```{r}
+#| message: false
+#| results: hide
+library(tidyverse)
+penguins_ok <- penguins |> drop_na()
+ggplot(penguins_ok)
+```
+
+## ggplot2 - Worked Example
+
+Need to map specific variables to aspects of plots: `aes` mapping
+
+. . . 
+
+```{r}
+#| code-line-numbers: "|2"
+#| eval: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass))
+```
+
+:::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass))
+```
+
+:::
+
+::: {.column}
+
+::::: {.incremental}
+
+- Map `flipper_len` to $x$-axis
+- Map `body_mass` to $y$-axis
+- Basic labels and ticks auto-generated
+- Still nothing in the plot!
+
+::::
+
+:::
+
+::::
+
+
+## ggplot2 - Worked Example
+
+Add a `geom_` to draw plot elements
+
+. . . 
+
+```{r}
+#| code-line-numbers: "|3"
+#| eval: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass)) + 
+       geom_point()
+```
+
+:::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass)) + 
+       geom_point()
+```
+
+:::
+
+::: {.column}
+
+::::: {.incremental}
+
+- $(x, y)$ coordinates inherited from `aes`
+- Default simple points
+- Plot elements are **added**
+  - Combining elements into a single plot, not sequencing (no `|>`)
+::::
+
+:::
+
+::::
+
+
+## ggplot2 - Worked Example
+
+Replace default labels: 
+
+. . . 
+
+```{r}
+#| code-line-numbers: "|4-6"
+#| eval: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass)) + 
+       geom_point() + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins")
+```
+
+:::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| fig-height: 3
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass)) + 
+       geom_point() + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins")
+```
+
+:::
+
+::: {.column}
+
+::::: {.incremental}
+
+- Helper functions `xlab`, `ylab`, `ggtitle`
+- Can also use `labs()` directly with named arguments: 
+  ```{r}
+  #| eval: false
+  + labs(x = "Flipper Length(mm)", 
+         y = "Body Mass (g)", 
+         title="Body Mass vs Flipper Length for 333 Penguins")
+  ```
+::::
+
+:::
+
+::::
+
+
+## ggplot2 - Worked Example
+
+Replace default labels: 
+
+. . . 
+
+```{r}
+#| code-line-numbers: "|2"
+#| eval: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point() + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins")
+```
+
+:::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| fig-height: 3
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point() + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins")
+```
+
+:::
+
+::: {.column}
+
+::::: {.incremental}
+
+- Additional aesthetic (`color`) inherited by `geom_point`
+- Automatic identification of _categorical_ (factor) data
+::::
+
+:::
+
+::::
+
+
+## ggplot2 - Worked Example
+
+Replace default color scale: 
+
+. . . 
+
+```{r}
+#| code-line-numbers: "|7"
+#| eval: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point() + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       scale_color_brewer(name="Species", type="qual", palette=2)
+```
+
+:::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| fig-height: 3
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point() + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       scale_color_brewer(name="Species", type="qual", palette=2)
+```
+
+:::
+
+::: {.column}
+
+::::: {.incremental}
+
+- Override default color scale with `scale_color_brewer`
+- Colors taken from work of [Cynthia Brewer (PSU)](https://colorbrewer2.org)
+- Using a `qual`itative palette here because no order to species
+
+::::
+
+:::
+
+::::
+
+
+## ggplot2 - Worked Example
+
+Change `theme` for non-data elements:
+
+. . . 
+
+```{r}
+#| code-line-numbers: "|8"
+#| eval: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point() + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       scale_color_brewer(name="Species", type="qual", palette=2) + 
+       theme_bw()
+```
+
+:::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| fig-height: 3
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point() + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       scale_color_brewer(name="Species", type="qual", palette=2) + 
+       theme_bw()
+```
+
+:::
+
+::: {.column}
+
+::::: {.incremental}
+
+- Default `theme_grey()`
+- Replace by `theme_bw()` (Black & White)
+- *Many* more themes available
+
+::::
+
+:::
+
+::::
+
+
+
+## ggplot2 - Worked Example
+
+Override default aesthetic to change shape of points: 
+
+. . . 
+
+```{r}
+#| code-line-numbers: "|3"
+#| eval: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point(shape=15) + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       scale_color_brewer(name="Species", type="qual", palette=2) + 
+       theme_bw()
+```
+
+:::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| fig-height: 3
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point(shape=15) + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       scale_color_brewer(name="Species", type="qual", palette=2) + 
+       theme_bw()
+```
+
+:::
+
+::: {.column}
+
+::::: {.incremental}
+
+- Override default `shape` aesthetic
+- Provide _directly_ to `geom_point`, not via `aes` since not data dependent
+- See ?`scale_shape_discrete` for table of values
+
+::::
+
+:::
+
+::::
+
+
+
+
+## ggplot2 - Worked Example
+
+Add trend lines with `stat_smooth`:
+
+. . . 
+
+```{r}
+#| code-line-numbers: "|4"
+#| eval: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point(shape=15) + 
+       stat_smooth(method="lm", se=FALSE) + 
+       xlab("Flipper Length (mm)") + ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       scale_color_brewer(name="Species", type="qual", palette=2) + 
+       theme_bw()
+```
+
+:::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| message: false
+#| fig-height: 3
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point(shape=15) + 
+       stat_smooth(method="lm", se=FALSE) + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       scale_color_brewer(name="Species", type="qual", palette=2) + 
+       theme_bw()
+```
+
+:::
+
+::: {.column}
+
+::::: {.incremental}
+
+- `stat_`s implement _transformations_
+- `stat_smooth` marks a trend 
+- Specify use of OLS (`lm` = linear model) + disable SE shading
+
+::::
+
+:::
+
+::::
+
+
+
+
+## ggplot2 - Worked Example
+
+Break data into subplots ("facets") to avoid over-plotting: 
+
+. . . 
+
+```{r}
+#| code-line-numbers: "|7"
+#| eval: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point(shape=15) + stat_smooth(method="lm", se=FALSE) + 
+       xlab("Flipper Length (mm)") + ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       scale_color_brewer(name="Species", type="qual", palette=2) + 
+       theme_bw() + facet_wrap(~species)
+```
+
+:::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| fig-height: 3
+#| message: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point(shape=15) + 
+       stat_smooth(method="lm", se=FALSE) + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       scale_color_brewer(name="Species", type="qual", palette=2) + 
+       theme_bw() + 
+       facet_wrap(~species)
+```
+
+:::
+
+::: {.column}
+
+::::: {.incremental}
+
+- `facet_wrap` (split by one grouping) or `facet_grid` (show all pairs of groups)
+- `group_by` of plotting
+- Called "small multiples"
+
+::::
+
+:::
+
+::::
+
+
+
+
+
+## ggplot2 - Worked Example
+
+Remove redundant legend:
+
+. . . 
+
+```{r}
+#| code-line-numbers: "|8"
+#| eval: false
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point(shape=15) + stat_smooth(method="lm", se=FALSE) + 
+       xlab("Flipper Length (mm)") + ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       scale_color_brewer(name="Species", type="qual", palette=2) + 
+       theme_bw() + facet_wrap(~species) + 
+       guides(color="none")
+```
+
+:::: {.columns}
+
+::: {.column}
+
+```{r}
+#| echo: false
+#| message: false
+#| fig-height: 3
+ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point(shape=15) + 
+       stat_smooth(method="lm", se=FALSE) + 
+       xlab("Flipper Length (mm)") + 
+       ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       scale_color_brewer(name="Species", type="qual", palette=2) + 
+       theme_bw() + 
+       facet_wrap(~species) + 
+       guides(color="none")
+```
+
+:::
+
+::: {.column}
+
+::::: {.incremental}
+
+- `guides` controls legends (also via `scale_*`)
+- Here redundant with facet labels
+
+::::
+
+:::
+
+::::
+
+## ggplot2 Workflow
+
+_Take a sad plot and make it better_
+
+. . . 
+
+Start with _exploratory_ graphics: 
+
+::: {.smaller}
+
+- Quick and easy
+- Find the story you want to tell
+- Let the data drive you
+- More use of raw data
+
+:::
+
+. . . 
+
+Iterate to _publication-quality_ graphics: 
+
+::: {.smaller}
+
+- Repeat to improve quality
+- Tell a story to your reader
+- More use of transformations
+
+:::
+
+## ggplot2 Workflow
+
+- Many `geom_` choices [in documentation](https://ggplot2.tidyverse.org/reference/index.html#geoms)
+- Individual pages list [required and optional aesthetics](https://ggplot2.tidyverse.org/reference/geom_point.html)
+
+. . . 
+
+Many ways to get the same result
+
+## Practice Exercise
+
+`ggplot2` provides `diamonds` data of ~54K diamonds
+
+- Size, quality, price
+- 4 C's of Diamonds: Color, Cut, Clarity, Carat (Weight)
+
+Return to breakout rooms for [Practice Activity #01](../labs/lab07.html#practice01)
+
+## ggplot2 Customization - Themes {.scrollable}
+
+The `theme` mechanism provides _extensive_ opportunities to customize:
+
+```{r}
+library(ggplot2)
+theme_grey() # Default theme
+```
+
+## ggplot2 Customization - Themes
+
+Best practice: 
+
+- Pick a starting theme you like and customize
+- `theme_STARTER() + theme(things.i.change="to.new.values")`
+
+## ggplot2 Customization - Themes
+
+`ggplot2` has 8 built-in themes. The `ggthemes` and `ThemePark` packages has _many_ more!
+
+Let's define a basic theme and see how it is rendered in different themes:
+
+```{r}
+my_plot <- ggplot(penguins_ok, 
+       aes(x=flipper_len, y=body_mass, color=species)) + 
+       geom_point(shape=15) + stat_smooth(method="lm", se=FALSE) + 
+       xlab("Flipper Length (mm)") + ylab("Body Mass (g)") + 
+       ggtitle("Body Mass vs Flipper Length for 333 Penguins") + 
+       facet_wrap(~species) + guides(color="none")
+```
+
+*Reminder: `ggplot2` only displays plot _when printed_ so assign to variable if you want to keep modifying*
+
+## ggplot2 Customization - Themes
+
+Default theme (`theme_grey()`)
+
+```{r}
+#| message: false
+my_plot + theme_grey() # Default: can omit
+```
+
+## ggplot2 Customization - Themes
+
+Black-and-White theme (`ggplot2::theme_bw()`) - MW's favorite
+
+```{r}
+#| message: false
+my_plot + theme_bw()
+```
+
+## ggplot2 Customization - Themes
+
+Minimal theme (`ggplot2::theme_minimal()`) 
+
+```{r}
+#| message: false
+my_plot + theme_minimal()
+```
+
+## ggplot2 Customization - Themes
+
+Light theme (`ggplot2::theme_light()`) 
+
+```{r}
+#| message: false
+my_plot + theme_light()
+```
+
+## ggplot2 Customization - Themes
+
+Dark theme (`ggplot2::theme_dark()`) 
+
+```{r}
+#| message: false
+my_plot + theme_dark()
+```
+
+## ggplot2 Customization - Themes
+
+Old-school MS Excel theme (`ggthemes::theme_excel()`) 
+
+```{r}
+#| message: false
+library(ggthemes)
+my_plot + theme_excel()
+```
+
+## ggplot2 Customization - Themes
+
+Google Docs theme (`ggthemes::theme_gdocs()`) 
+
+```{r}
+#| message: false
+library(ggthemes)
+my_plot + theme_gdocs()
+```
+
+## ggplot2 Customization - Themes
+
+*Economist* theme (`ggthemes::theme_economist()`) 
+
+```{r}
+#| message: false
+library(ggthemes)
+my_plot + theme_economist()
+```
+
+## ggplot2 Customization - Themes
+
+*Wall St Journal* theme (`ggthemes::theme_wsj()`) 
+
+```{r}
+#| message: false
+library(ggthemes)
+my_plot + theme_wsj()
+```
+
+## ggplot2 Customization - Themes
+
+[Edward Tufte](https://www.edwardtufte.com/) theme (`ggthemes::theme_tufte()`) 
+
+```{r}
+#| message: false
+library(ggthemes)
+my_plot + theme_tufte()
+```
+
+## ggplot2 Customization - Themes
+
+*Barbie* theme (`ThemePark::theme_barbie()`) 
+
+```{r}
+#| message: false
+library(ThemePark)
+my_plot + theme_barbie()
+```
+
+## ggplot2 Customization - Themes
+
+*Oppenheimer* theme (`ThemePark::theme_oppenheimer()`) 
+
+```{r}
+#| message: false
+library(ThemePark)
+my_plot + theme_oppenheimer()
+```
+
+## ggplot2 Customization - Themes
+
+*Avatar* theme (`ThemePark::theme_avatar()`) 
+
+```{r}
+#| message: false
+library(ThemePark)
+my_plot + theme_avatar()
+```
+
+## ggplot2 Customization - Themes
+
+*Spiderman* theme (`ThemePark::theme_spiderman()`) 
+
+```{r}
+#| message: false
+library(ThemePark)
+my_plot + theme_spiderman()
+```
+
+## ggplot2 Customization - Themes
+
+*Game of Thrones* theme (`ThemePark::theme_gameofthrones()`) 
+
+```{r}
+#| message: false
+library(ThemePark)
+my_plot + theme_gameofthrones()
+```
+
+## ggplot2 Customization - Themes
+
+*Avatar* theme (`ThemePark::theme_avatar()`) 
+
+```{r}
+#| message: false
+library(ThemePark)
+my_plot + theme_avatar()
+```
+
+## ggplot2 Customization - Themes
+
+Most of these are silly
+
+- But `ggplot2` has a large community you can tap into
+- [`R` Graph Gallery](https://r-graph-gallery.com/ggplot2-package.html) has
+  many worked examples of `ggplot2`
+- [`ggplot2` Extensions Gallery](https://exts.ggplot2.tidyverse.org/) for
+  'add-ins' providing additional visualizations
+  
+Adapt and extend!
+
+## Color Palettes
+
+Three types of color palettes: 
+
+:::: {.small}
+
+::: {.incremental}
+
+- **Sequential**: ordered from 0 to "high"
+  - Example: rain forecast in different areas
+- **Diverging**: ordered from -X to +Y with meaningful 0 in the middle
+  - Example: political leaning
+- **Qualitative**: no ordering
+  - Example: penguin species
+  
+:::
+
+::::
+
+. . . 
+
+Two ways to make a color scale for quantitative variables:
+
+:::: {.small}
+
+::: {.incremental}
+
+- Binned: $[0, 1)$ light green, $[1, 3)$ medium green; $[3, 5]$ dark green
+- Continuous
+
+:::
+
+::::
+
+## Color Palettes
+
+I often rely on the work of Cynthia Brewer
+
+> <https://colorbrewer2.org>
+
+. . . 
+
+- Officially for cartography, but generally useful
+- Different (punny) `ggplot2` names for different derived scales
+
+## Color Palettes
+
+`scale_color_brewer()` for discrete scales
+
+```{r}
+#| echo: true
+#| fig-height: 4
+library(ggplot2)
+ggplot(penguins_ok, aes(x=bill_len, y=bill_dep, color=species)) + 
+    geom_point() + theme_bw() + 
+    scale_color_brewer(type="qual") # Qualitative
+```
+
+## Color Palettes
+
+`scale_color_distiller()` for continuous scales
+
+```{r}
+#| echo: true
+#| fig-height: 4
+library(ggplot2)
+ggplot(penguins_ok, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
+    geom_point() + theme_bw() + 
+    scale_color_distiller(type="seq") # Continuous
+```
+
+## Color Palettes
+
+`scale_color_fermenter()` for binned scales
+
+```{r}
+#| echo: true
+#| fig-height: 4
+library(ggplot2)
+ggplot(penguins_ok, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
+    geom_point() + theme_bw() + 
+    scale_color_fermenter(type="seq") # Binned
+```
+
+## Color Palettes
+
+```{r}
+#| echo: true
+#| fig-height: 4
+library(ggplot2)
+ggplot(penguins_ok, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
+    geom_point() + theme_bw() + 
+    scale_color_fermenter(type="seq") # Binned + Sequential
+```
+
+## Color Palettes
+
+```{r}
+#| echo: true
+#| fig-height: 4
+library(ggplot2)
+ggplot(penguins_ok, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
+    geom_point() + theme_bw() +
+    scale_color_fermenter(type="qual") # Binned + Qualitative
+```
+
+## Color Palettes
+
+```{r}
+#| echo: true
+#| fig-height: 4
+library(ggplot2)
+ggplot(penguins_ok, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
+    geom_point() + theme_bw() + 
+    scale_color_fermenter(type="div") # Binned + Diverging
+```
+
+## "Hard-coding" Colors
+
+`scale_color_identity` will take color names from a column:
+
+```{r}
+#| code-line-numbers: "5"
+#| echo: true
+#| fig-height: 4
+penguins_ok |>
+    mutate(color_column = if_else(species == "Adelie", "blue", "red")) |>
+    ggplot(aes(x=bill_len, y=bill_dep, color=color_column)) + 
+    geom_point() + theme_bw() + 
+    scale_color_identity(name="Species")
+```
+
+## Practice Exercise
+
+Return to the `cdiac` data from the Warm-Up
+
+- Visualize trends in time series
+- `geom_line` to create _line plots_
+
+Return to breakout rooms for 
+[Practice Activity #02](../labs/lab07.html#practice02)
+
+## Simpson's Paradox
+
+Data Visualization can be used to find counterintuitive trends in data: 
+
+```{r}
+#| code-fold: true
+#| warning: false
+#| echo: false
+library(datasauRus)
+library(dplyr)
+simpsons_paradox <- datasauRus::simpsons_paradox |>
+  filter(dataset == "simpson_2") |>
+  mutate(group = cut(x + y, c(0, 55, 80, 120, 145, 200), 
+       labels = LETTERS[1:5])) |>
+  select(- dataset)
+```
+
+```{r}
+ggplot(simpsons_paradox, aes(x=x, y=y)) + 
+    geom_point() + geom_smooth(method="lm")
+```
+
+## Simpson's Paradox
+
+Overall trend does not need to match trend _within groups_
+
+```{r}
+ggplot(simpsons_paradox, aes(x=x, y=y, color=group)) + 
+    geom_point() + geom_smooth(method="lm") + facet_grid(~group)
+```
+
+Modeling: ANCOVA or Mixed-Effects Regression
+
+## UCB Graduate Admissions
+
+1973: UC Berkeley was concerned about bias in Grad School Admissions
+
+::: {.small}
+
+- Higher fraction of men admitted than women
+- Bickel, Hammell, O'Connell asked to study
+  - When they try to find the source of this bias, there is none!
+  - Each department admits women at a higher rate than men
+  - Women applied to more selective programs at a higher rate
+
+This phenomenon occurs _throughout_ the social sciences: the best
+doctors have the worst patient outcomes
+
+:::
+
+. . . 
+  
+  
+::: {.small}
+
+BHO note: 
+
+> Women are shunted by their socialization and education
+toward fields of graduate study that are generally more
+crowded, less productive of completed degrees, and less
+well funded, and that frequently offer poorer professional
+employment prospects.
+
+:::
+
+## Red State Blue State
+
+::: {.center}
+
+![](../images/gelman_cover.jpg)
+
+:::
+
+## Red State Blue State
+
+Facts about US politics (*c.* 2008): 
+
+::: {.incremental}
+
+1. Rich **people** vote R at **higher** rates
+2. Rich **states** vote R at **lower** rates
+3. Rich **states** are rich because they have richer people
+
+:::
+
+. . . 
+
+How can we reconcile this? 
+
+## Red State Blue State
+
+::: {.center}
+
+![](../images/gelman_regr.png)
+
+:::
+
+Figure from Gelman *et al*, *Q.J.Poli.Sci.* 2007. 
+
+. . . 
+
+For more, see [this
+presentation](https://sites.stat.columbia.edu/gelman/presentations/redbluetalkubc.pdf).
 
 ## Additional Resources
+
+Textbook: *[R for Data Science, Part II: Visualize](https://r4ds.hadley.nz/visualize.html)*
+
+. . . 
+
+More on data visualization:
 
 -   C. Wilke. [*Fundamentals of Data Visualization*](https://clauswilke.com/dataviz/)
 -   K. Healy. [*Data Visualization*](https://socviz.co/)
@@ -132,11 +1385,13 @@ On April 3rd, Prof. Brandwein will sit in and observe class
 
 . . .
 
+General advice on data science projects:
+
 -   B. Yu and R. Barter [*Veridical Data Science*](https://vdsbook.com/)
 
 # Pre-Assignment #07 FAQs
 
-## FAQ: `ggplot2` vs `Tableau`
+## ggplot2 vs Tableau
 
 -   Tableau
     -   \$\$\$
@@ -147,7 +1402,7 @@ On April 3rd, Prof. Brandwein will sit in and observe class
     -   Can use arbitrary data sources, with effort
     -   Flexible / customizable
 
-## FAQ: `ggplot2` vs `matplotlib`
+## ggplot2 vs matplotlib
 
 -   `ggplot2`
     -   *Data* visualizations
@@ -159,24 +1414,27 @@ On April 3rd, Prof. Brandwein will sit in and observe class
 
 Closest Python analogue to `ggplot2` is `seaborn`
 
-## FAQ: Why use `+` instead of `|>`
+## Why use + instead of |>
 
 -   `ggplot2` is older than `|>`
 -   Per H. Wickham: if `ggplot3` ever gets made, will use `|>`
 -   Unlikely to change: too much code depends on it
 
-## FAQ: Performance
+## Performance
 
 > I tried an interactive plot with $n=132,000$ points, but it brought my computer to a halt. *\[Ed. Paraphrased\]*
 
 That's a lot of plots!!
 
-`ggplot2` is itself pretty fast, but it depends on (possibly slow) graphics backends
+`ggplot2` is itself pretty fast, but it depends on 
+(possibly slow) graphics backends
 
 - Different file types implement graphics differently.
 - You should also think about overplotting / pre-processing
 
-## FAQ: Overplotting
+We'll talk more about interactivity next week
+
+## Overplotting
 
 Large data sets can lead to _overplotting_:
 
@@ -188,58 +1446,64 @@ Ways to address:
 - `geom_jitter`
 - `geom_hex`
   
-## FAQ: Overplotting
+## Overplotting {.scrollable}
 
 Jitter: add a bit of random noise so points don't step on each other
 
 ```{r}
 #| echo: true
 #| warning: false
+#| fig-height: 4
+#| fig-width: 7
 library(ggplot2); library(patchwork)
 p <- ggplot(mpg, aes(cyl, hwy))
 p1 <- p + geom_point() + ggtitle("geom_point")
 p2 <- p + geom_jitter() + ggtitle("geom_jitter")
-p1 + p2
+p1 + p2 # Patchwork lets us "add" plots
 ```
 
-## FAQ: Hexagonal Binning
+## Hexagonal Binning {.scrollable}
 
 Little "heatmaps" of counts. Hexagons to avoid weird rounding artifacts
 
 ```{r}
 #| echo: true
+#| fig-height: 4
+#| fig-width: 7
 library(ggplot2); library(patchwork)
 p <- ggplot(diamonds, aes(carat, price))
 p1 <- p + geom_point() + ggtitle("geom_point")
 p2 <- p + geom_hex() + ggtitle("geom_hex")
-p1 + p2
+p1 + p2 # Patchwork lets us 'add' plots
 ```
 
 
-## FAQ: Inside vs. Outside `aes()`
+## Inside vs. Outside aes()
 
 `aes` maps *data to values*. Outside of `aes`, set constant value
 
 ```{r}
 #| echo: true
+#| fig-height: 4
 library(ggplot2)
-ggplot(penguins, 
+ggplot(penguins_ok, 
        aes(x=bill_len, y=bill_dep, color=species)) +
     geom_point()
 ```
 
-## FAQ: Inside vs. Outside `aes()`
+## Inside vs. Outside `aes()`
 
 `aes` maps *data to values*. Outside of `aes`, set constant value
 
 ```{r}
 #| echo: true
+#| fig-height: 4
 library(ggplot2)
-ggplot(penguins, 
+ggplot(penguins_ok, 
        aes(x=bill_len, y=bill_dep))+ geom_point(color="blue")
 ```
 
-## FAQ: Global vs `geom_` specific `aes()`
+## Global vs geom_ specific aes()
 
 -   Elements set in `ggplot()` apply to entire plot
 -   Elements set in specific `geom` apply there only
@@ -247,298 +1511,88 @@ ggplot(penguins,
 
 ```{r}
 #| echo: true
+#| fig-height: 4
+#| message: false
 library(ggplot2)
-ggplot(penguins, 
+ggplot(penguins_ok, 
        aes(x=bill_len, y=bill_dep, color=species))+
-    geom_smooth() + 
-    geom_point(color="blue")
+    stat_smooth() + geom_point()
 ```
 
-## FAQ: How to choose plot types
+## Global vs geom_ specific aes()
+
+-   Elements set in `ggplot()` apply to entire plot
+-   Elements set in specific `geom` apply there only
+    -   Override globals
+
+```{r}
+#| echo: true
+#| fig-height: 4
+#| message: false
+library(ggplot2)
+ggplot(penguins_ok, 
+       aes(x=bill_len, y=bill_dep)) +
+    geom_smooth() + geom_point(mapping=aes(color=species))
+```
+
+## How to Select geoms
 
 Two "modes"
 
-- Exploratory data analysis. Quick, rapid iteration, for your eyes only
+- Exploratory data analysis: Quick, rapid iteration, for your eyes only
   - Let the data tell you a story
   - Low pre-processing: scatter plots, lines, histograms
-- "Publication quality". Polished, 
+- "Publication quality": Polished, for someone else
   - You tell the reader a story
   - More processing, more modeling: trends, line segments, ribbons
 
-## FAQ: Color Palettes
-
-Three types of color palettes: 
-
-- Sequential: ordered from 0 to "high"
-  - Example: rain forecast in different areas
-- Diverging: ordered from -X to +X with meaningful 0 in the middle
-  - Example: political leaning
-- Qualitative: no ordering
-
-. . . 
-
-When mapping quantitative variables to palettes (sequential/diverging), two approaches: 
-
-- Binned: $[0, 1)$ light green, $[1, 3)$ medium green; $[3, 5]$ dark green
-- Continuous
-
-## FAQ: Color Palettes
-
-```{r}
-#| echo: true
-library(ggplot2)
-ggplot(penguins, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
-    geom_point() + theme_bw() + 
-    scale_color_distiller(type="seq") # Continuous
-```
-
-## FAQ: Color Palettes
-
-```{r}
-#| echo: true
-library(ggplot2)
-ggplot(penguins, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
-    geom_point() + theme_bw() + 
-    scale_color_fermenter(type="seq") # Binned
-```
-
-## FAQ: Color Palettes
-
-```{r}
-#| echo: true
-library(ggplot2)
-ggplot(penguins, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
-    geom_point() + theme_bw() + 
-    scale_color_fermenter(type="seq") # Binned + Sequential
-```
-
-## FAQ: Color Palettes
-
-```{r}
-#| echo: true
-library(ggplot2)
-ggplot(penguins, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
-    geom_point() + theme_bw() +
-    scale_color_fermenter(type="qual") # Binned + Qualitative
-```
-
-## FAQ: Color Palettes
-
-```{r}
-#| echo: true
-library(ggplot2)
-ggplot(penguins, aes(x=bill_len, y=bill_dep, color=body_mass)) + 
-    geom_point() + theme_bw() + 
-    scale_color_fermenter(type="div") # Binned + Diverging
-```
-
-## FAQ: How to "hard-code" colors
-
-```{r}
-#| echo: true
-library(dplyr)
-data <- data.frame(x = rnorm(5), 
-                   y = rnorm(5), 
-                   group = c("a", "a", "b", "b", "b"))
-
-data |> 
-    group_by(group) |>
-    mutate(n_count = n()) |>
-    ungroup() |>
-    mutate(color = ifelse(n_count == max(n_count), "red", "black")) |>
-    ggplot(aes(x=x, y=y, shape=group, color=color)) + 
-    geom_point() + 
-    scale_color_identity()
-```
-
-
-## FAQ: How to Customize Themes
-
-Built-in themes + `ggthemes` package: 
-
-```{r}
-#| echo: true
-#| warning: false
-library(ggplot2); library(ggthemes); library(ggpmisc)
-p <- ggplot(penguins, 
-       aes(x=flipper_len, 
-           y=body_mass, 
-           color=species)) + 
-    geom_point() + 
-    stat_poly_line(se=FALSE, 
-                   color="black") +
-    stat_poly_eq() + 
-    xlab("Flipper Length (mm)") + 
-    ylab("Body Mass (g)") + 
-    scale_color_brewer(type="qual", 
-                       palette=2, 
-                       name="Species") + 
-    facet_wrap(~species)
-```
-
-## FAQ: Themes
-
-Default theme (`ggplot2::theme_grey()`):
-
-```{r}
-p
-```
-
-## FAQ: Themes
-
-Black and White theme (`ggplot2::theme_bw()`):
-
-```{r}
-p + theme_bw()
-```
-
-## FAQ: Themes
-
-Minimal theme (`ggplot2::theme_minimal()`):
-
-```{r}
-p + theme_minimal()
-```
-
-## FAQ: Themes
-
-Light theme (`ggplot2::theme_light()`):
-
-```{r}
-p + theme_light()
-```
-
-## FAQ: Themes
-
-Dark theme (`ggplot2::theme_dark()`):
-
-```{r}
-p + theme_dark()
-```
-
-## FAQ: Themes
-
-Excel theme (`ggthemes::theme_excel()`):
-
-```{r}
-p + theme_excel()
-```
-
-## FAQ: Themes
-
-Google Docs theme (`ggthemes::theme_gdocs()`):
-
-```{r}
-p + theme_gdocs()
-```
-
-## FAQ: Themes
-
-*The Economist* theme (`ggthemes::theme_economist()`):
-
-```{r}
-p + theme_economist()
-```
-
-## FAQ: Themes
-
-*The Economist* theme (`ggthemes::theme_economist()`):
-
-```{r}
-p + theme_economist()
-```
-
-## FAQ: Themes
-
-*Solarized* theme (`ggthemes::theme_solarized()`):
-
-```{r}
-p + theme_solarized()
-```
-
-## FAQ: Themes
-
-*Solarized2* theme (`ggthemes::theme_solarized_2()`):
-
-```{r}
-p + theme_solarized_2()
-```
-
-
-## FAQ: Themes
-
-Stata theme (`ggthemes::theme_stata()`):
-
-```{r}
-p + theme_stata()
-```
-
-## FAQ: Themes
-
-Tufte theme (`ggthemes::theme_tufte()`):
-
-```{r}
-p + theme_tufte()
-```
-
-## FAQ: Themes
-
-*Wall Street Journal* theme (`ggthemes::theme_wsj()`):
-
-```{r}
-p + theme_wsj()
-```
-
-## FAQ: Themes
-
-Many more online:
-
-- [ThemePark](https://github.com/MatthewBJane/ThemePark) for movie themes
-
-## FAQ: Order of Layers
+## Order of Layers
 
 Order of layers _technically_ matters, but the effect is small
 
 ```{r}
 #| echo: true
-p1 <- ggplot(penguins, aes(x=bill_len, y=flipper_len)) +
+#| fig-height: 4
+#| message: false
+p1 <- ggplot(penguins_ok, aes(x=bill_len, y=flipper_len)) +
         geom_point(color="black") + 
         geom_smooth(color="blue", method="lm") + ggtitle("Line on points")
-p2 <- ggplot(penguins, aes(x=bill_len, y=flipper_len)) +
+p2 <- ggplot(penguins_ok, aes(x=bill_len, y=flipper_len)) +
         geom_smooth(color="blue", method="lm") + 
         geom_point(color="black") + ggtitle("Points on line")
 p1 + p2
 ```
 
-## FAQ: Order of layers
+## Order of Layers
 
 Order matters more with theme. Adding a `theme_*()` will override any
 `theme()` customization you did: 
 
 ```{r}
 #| echo: true
+#| fig-height: 4
+#| message: false
 p1 <- p + theme_bw() + theme(legend.position="bottom")
 p2 <- p + theme(legend.position="bottom") + theme_bw() 
 p1 + p2
 ```
 
-## FAQ: `stat_poly_{line,eq}` vs `geom_smooth`
+## stat_poly_line vs stat_smooth
 
-By default `geom_smooth` fits a _generalized additive model_ (GAM)
+By default `stat_smooth` fits a _generalized additive model_ (GAM)
 
-`ggpmisc::stat_poly_{line,eq}` fit linear models, so they can expose more machinery. 
+`ggpmisc::stat_poly_line` and `stat_poly_eq` fit linear models, so 
+they can expose more machinery. 
 
 . . . 
 
 What is a GAM?
 
 - Take 9890 with me (typically Spring semester) to find out!
-- Free Course: ["GAMs in R"](https://noamross.github.io/gams-in-r-course/) from
-  Noam Ross
+- Free Course: ["GAMs in R"](https://noamross.github.io/gams-in-r-course/)
+  from Noam Ross
 
-
-
-## FAQ: Titles and Captions
+## Titles and Captions
 
 ```{r}
 #| echo: true
@@ -549,7 +1603,7 @@ ggplot() +
 
 `+ggtitle("text")` is just shorthand for `+labs(title="text")`
 
-## FAQ: Relative Importance of Aesthetics
+## Importance of Aesthetics
 
 Perceptually: 
 
@@ -566,78 +1620,26 @@ Facets are `group_by` for plots. Useful for
 - Distinguishing intra- vs inter-group trends
 - Avoiding overplotting
 
-## FAQ: Simpson's Paradox
 
-```{r}
-#| code-fold: true
-#| warning: false
-#| label: "Create Data"
-library(datasauRus)
-library(dplyr)
-simpsons_paradox <- datasauRus::simpsons_paradox |>
-  filter(dataset == "simpson_2") |>
-  mutate(group = cut(x + y, c(0, 55, 80, 120, 145, 200), 
-       labels = LETTERS[1:5])) |>
-  select(- dataset)
-```
-
-```{r}
-ggplot(simpsons_paradox, aes(x=x, y=y)) + 
-    geom_point() + geom_smooth(method="lm")
-```
-
-## FAQ: Simpson's Paradox
-
-```{r}
-ggplot(simpsons_paradox, aes(x=x, y=y, color=group)) + 
-    geom_point() + geom_smooth(method="lm") + facet_grid(~group)
-```
-
-## FAQ: UCB Graduate Admissions {.smaller}
-
-1973: UC Berkeley was concerned about bias in Grad School Admissions
-
-- Higher fraction of men admitted than women
-- Bickel, Hammell, O'Connell asked to study
-  - When they try to find the source of this bias, there is none!
-  - Each department admits women at a higher rate than men
-  - Women applied to more selective programs at a higher rate
-  
-
-This phenomenon occurs _throughout_ the social sciences: the best doctors have
-the worst patient outcomes
-
-. . . 
-  
-BHO note: 
-
-> Women are shunted by their socialization and education
-toward fields of graduate study that are generally more
-crowded, less productive of completed degrees, and less
-well funded, and that frequently offer poorer professional
-employment prospects.
-
-. . . 
-
-## FAQ: Twin Axes Plots
+## Twin Axes Plots
 
 > How can I implement a dual (twin) axis plot in `ggplot2`?
 
 Disfavored. But if you must ...
 
-[sec.axis](https://r-graph-gallery.com/line-chart-dual-Y-axis-ggplot2.html)
+> [`sec.axis`](https://r-graph-gallery.com/line-chart-dual-Y-axis-ggplot2.html)
 
 Doesn't allow *arbitrary* secondary axes; allows *transformed* axes 
 (e.g., Celsius and Fahrenheit)
 
 
-## FAQ: Embedding images in `ggplot`
+## Embedding Images
 
 See the `ggimage` or `ggflags` package for images as "points":
 
 ```{r}
 #| echo: true
-if(!require("ggflags")){
+if(!require("ggflags", quiet=TRUE)){
     devtools::install_github("jimjam-slam/ggflags"); 
 }
 library(ggflags)
@@ -645,16 +1647,16 @@ d <- data.frame(x=rnorm(50), y=rnorm(50),
                 country=sample(c("ar","fr", "nz", "gb", "es", "ca"), 50, TRUE), 
                 stringsAsFactors = FALSE)
 ggplot(d, aes(x=x, y=y, country=country, size=x)) + 
-  geom_flag() + 
-  scale_country()
+  geom_flag() + scale_country()
 ```
 
-## FAQ: Embedding Images
+## Embedding Images
 
 See `cowplot::draw_image()` for image background: 
 
 ```{r}
 #| echo: true
+#| message: false
 library(cowplot)
 p <- ggplot(iris, aes(x = Sepal.Length, fill = Species)) +
   geom_density(alpha = 0.7) +
@@ -669,68 +1671,35 @@ ggdraw() +
   draw_plot(p)
 ```
 
-# Today
 
-## Diving Deeper with `ggplot2`
-
-Data Sets: 
-
-- [`diamonds`](https://ggplot2.tidyverse.org/reference/diamonds.html) from the `ggplot2` package
-- `cdiac` from the `CVXR` package
-- `gapminder` from the `gapminder` package
-
-You need to install `CVXR` and `gapminder` now.
-
-Exercise: [Lab #07](../labs/lab07.html)
-
-## Diving Deeper: Learning Goals
-
-Today: 
-
-- Fluency with basic `geom`s
-- Animation (Just a bit)
-
-Next Week: 
-
-- Interactive graphics
-- Dashboards
-- Spatial Data (time allowing)
-
-## Breakout Rooms
-
-| Room | Team                     |   | Room | Team                |
-|-------|-------------------------|---|------|---------------------|
-| 1     | VH + SG + DS + DL       |   | 5    | GB + RJ + FS + MH   |  
-| 2     | HZ + JLL + CA           |   | 6    | EM + AK + GMdS + JL |
-| 3     | MT + CW + VG + GS + CWo.|   | 7    | SJB + JC + SB + ZS  |
-| 4     | SD + GO + CFGF          |   |      |                     |
 
 # Wrap-Up
 
-## Looking Ahead
+## Review
 
-Course Structure: 
+`ggplot2`: 
 
-- One more week on analyzing data you already have
-- Then 3 weeks on getting data into `R`
-- One brief week on statistical modeling
+- Structured graphics for _statistical visualization_
+- Grammar of Graphics for structured plotting
+  - `geom`, `stat`, `scale`, `aes`, *etc.*
+- Integrates with `dplyr`, `tidyr` to get into suitable format
 
-. . . 
 
-Course Projects: 
+## Upcoming Work
 
-- Very excited by your proposals! 
-- Please send me questions anytime - my goal is to help you achieve your goals
+Upcoming work from [course calendar](../index.qmd#calendar)
 
-## Looking Ahead
+::: {.incremental}
 
-My Learning Goals: 
+- [Pre-Assignment #0`r session+1`](../preassigns/pa07.html) due `r get_pa_deadline(session+1)`
+- [Mini-Project #02](../miniprojects/mini02.html) due on `r get_mp_deadline(2)`
 
-- (IMO) Most 'practical' course we offer
-  - Exposure to tools and, more importantly, _techniques_ for data analysis
-- My goal is to give you tools to achieve your goals in 3, 6, 12, 48 months
-- Biggest failure for me is catching up with you in 2-3 years and hearing you
-  feel held back by lack of skills. 
-- Investment of time now, but payoff throughout your career
+:::
 
-{{< include ../advice/amazon.qmd >}}
+{{< include ../advice/interview_tips.qmd >}}
+
+## Musical Treat
+
+</br>
+
+{{< video https://www.youtube.com/watch?v=vb-_qqmOcCI width="80%" height="400px">}}
