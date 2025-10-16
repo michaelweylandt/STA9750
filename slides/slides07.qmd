@@ -333,10 +333,14 @@ Same $\mu_X, \mu_Y, \sigma_X, \sigma_Y, \rho_{XY}, \beta_{Y|X}, \dots$ - OLS can
 
 :::
 
+::: {.smaller}
+
 Modeling and visualizing are not sequential: 
 
 - Build a model, where does it fail?
 - See a pattern, does it hold up in a model / test?
+
+:::
 
 ## ggplot2
 
@@ -1285,8 +1289,9 @@ simpsons_paradox <- datasauRus::simpsons_paradox |>
 ```
 
 ```{r}
+#| message: false
 ggplot(simpsons_paradox, aes(x=x, y=y)) + 
-    geom_point() + geom_smooth(method="lm")
+    geom_point() + stat_smooth(method="lm")
 ```
 
 ## Simpson's Paradox
@@ -1294,8 +1299,9 @@ ggplot(simpsons_paradox, aes(x=x, y=y)) +
 Overall trend does not need to match trend _within groups_
 
 ```{r}
+#| message: false
 ggplot(simpsons_paradox, aes(x=x, y=y, color=group)) + 
-    geom_point() + geom_smooth(method="lm") + facet_grid(~group)
+    geom_point() + stat_smooth(method="lm") + facet_grid(~group)
 ```
 
 Modeling: ANCOVA or Mixed-Effects Regression
@@ -1336,7 +1342,7 @@ employment prospects.
 
 ::: {.center}
 
-![](../images/gelman_cover.jpg)
+![](../images/gelman_cover.jpg){height="20%"}
 
 :::
 
@@ -1346,8 +1352,8 @@ Facts about US politics (*c.* 2008):
 
 ::: {.incremental}
 
-1. Rich **people** vote R at **higher** rates
-2. Rich **states** vote R at **lower** rates
+1. Rich **people** vote Republican at **higher** rates
+2. Rich **states** vote Republican at **lower** rates
 3. Rich **states** are rich because they have richer people
 
 :::
@@ -1356,11 +1362,11 @@ Facts about US politics (*c.* 2008):
 
 How can we reconcile this? 
 
-## Red State Blue State
+## Red State Blue State {.scrollable}
 
 ::: {.center}
 
-![](../images/gelman_regr.png)
+![](../images/gelman_regr.png){height="20%"}
 
 :::
 
@@ -1491,7 +1497,7 @@ ggplot(penguins_ok,
     geom_point()
 ```
 
-## Inside vs. Outside `aes()`
+## Inside vs. Outside aes()
 
 `aes` maps *data to values*. Outside of `aes`, set constant value
 
@@ -1532,7 +1538,7 @@ ggplot(penguins_ok,
 library(ggplot2)
 ggplot(penguins_ok, 
        aes(x=bill_len, y=bill_dep)) +
-    geom_smooth() + geom_point(mapping=aes(color=species))
+    stat_smooth() + geom_point(aes(color=species))
 ```
 
 ## How to Select geoms
@@ -1542,6 +1548,9 @@ Two "modes"
 - Exploratory data analysis: Quick, rapid iteration, for your eyes only
   - Let the data tell you a story
   - Low pre-processing: scatter plots, lines, histograms
+  
+. . . 
+
 - "Publication quality": Polished, for someone else
   - You tell the reader a story
   - More processing, more modeling: trends, line segments, ribbons
@@ -1556,9 +1565,9 @@ Order of layers _technically_ matters, but the effect is small
 #| message: false
 p1 <- ggplot(penguins_ok, aes(x=bill_len, y=flipper_len)) +
         geom_point(color="black") + 
-        geom_smooth(color="blue", method="lm") + ggtitle("Line on points")
+        stat_smooth(color="blue", method="lm") + ggtitle("Line on points")
 p2 <- ggplot(penguins_ok, aes(x=bill_len, y=flipper_len)) +
-        geom_smooth(color="blue", method="lm") + 
+        stat_smooth(color="blue", method="lm") + 
         geom_point(color="black") + ggtitle("Points on line")
 p1 + p2
 ```
@@ -1572,8 +1581,8 @@ Order matters more with theme. Adding a `theme_*()` will override any
 #| echo: true
 #| fig-height: 4
 #| message: false
-p1 <- p + theme_bw() + theme(legend.position="bottom")
-p2 <- p + theme(legend.position="bottom") + theme_bw() 
+p1 <- p1 + theme_bw() + theme(legend.position="bottom")
+p2 <- p2 + theme(legend.position="bottom") + theme_bw() 
 p1 + p2
 ```
 
@@ -1633,7 +1642,7 @@ Doesn't allow *arbitrary* secondary axes; allows *transformed* axes
 (e.g., Celsius and Fahrenheit)
 
 
-## Embedding Images
+## Embedding Images {.scrollable}
 
 See the `ggimage` or `ggflags` package for images as "points":
 
@@ -1650,7 +1659,7 @@ ggplot(d, aes(x=x, y=y, country=country, size=x)) +
   geom_flag() + scale_country()
 ```
 
-## Embedding Images
+## Embedding Images {.scrollable}
 
 See `cowplot::draw_image()` for image background: 
 
@@ -1702,4 +1711,4 @@ Upcoming work from [course calendar](../index.qmd#calendar)
 
 </br>
 
-{{< video https://www.youtube.com/watch?v=vb-_qqmOcCI width="80%" height="400px">}}
+{{< video https://youtu.be/UkaXAA8P4_8?si=9-1ISKdOnXEYvtDJ&t=484 width="80%" height="400px">}}
