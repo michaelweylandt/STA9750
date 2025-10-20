@@ -2355,6 +2355,9 @@ def peer_collect(project_id, rearchive, skip_pdf, force, github):
             "INSTRUCTOR" in KEY_ISSUE["title"]
         )
 
+    with open(pf_file, "w") as f:
+        f.write(json.dumps(ALL_PEER_FEEDBACK, indent=2))
+
     click.echo(f"All peer feedback processed for MP#0{project_id}")
     click.echo("You may now run 'peer grade' to compute actual grades")
 
@@ -2368,7 +2371,13 @@ def peer_collect(project_id, rearchive, skip_pdf, force, github):
     prompt="Which mini-project to grade using peer feedback?",
     type=click.IntRange(min=0, max=4),
 )
-def peer_grade(project_id):
+@click.option(
+    "--max-extra-credit", 
+    help="Cap extra credit at certain amount; set to 0 for no cap.",
+    prompt="What amount should extra credit be capped at? Set 0 for no cap.",
+    type=click.IntRange(min=0, max=10),
+)
+def peer_grade(project_id, max_extra_credit):
     """Consolidate collected peer feedback to assign grades
 
     After running 'collect', this function will parse the peer feedback
@@ -2410,11 +2419,6 @@ def peer_grade(project_id):
                 )
                 issue_num = click.prompt("What issue number should I use?", type=int)
 
-            if "submission_penalty" in evaluators:
-                evaluators.remove("submission_penalty")
-            if "issue_num" in evaluators:
-                evaluators.remove("issue_num")
-
             CATEGORIES = [
                 "Written Communication",
                 "Project Skeleton",
@@ -2428,6 +2432,9 @@ def peer_grade(project_id):
             COMMENTS_DICT = {c: [] for c in CATEGORIES}
 
             for evaluator in evaluators:
+                if evaluator in ["submission_penalty", "issue_num"]:
+                    continue
+                
                 e_feedback = feedback[evaluator]
 
                 for c in CATEGORIES:
@@ -2438,9 +2445,15 @@ def peer_grade(project_id):
 
                     if is_nan(e_feedback["scores"][c]):
                         continue
+                    
+                    score = e_feedback["scores"][c]
+                    comment = e_feedback["comments"][c]
+                    
+                    if max_extra_credit and c == "Extra Credit":
+                        score = min(score, max_extra_credit)
 
-                    SCORE_DICT[c].append(e_feedback["scores"][c])
-                    COMMENTS_DICT[c].append((evaluator, e_feedback["comments"][c]))
+                    SCORE_DICT[c].append(score)
+                    COMMENTS_DICT[c].append((evaluator, comment))
 
             try:
                 SCORES = {k: median(v) if v else nan for k, v in SCORE_DICT.items()}
@@ -2542,6 +2555,7 @@ def peer_meta(project_id, rearchive, skip_pdf, force):
     for submittor in STUDENTS: 
         FEEDBACK   = ALL_PEER_FEEDBACK[submittor]
         EVALUATORS = STUDENTS.intersection(FEEDBACK.keys())
+        META_RUBRIC = None
         RUBRIC = None
         
         for evaluator in EVALUATORS:
@@ -2563,19 +2577,27 @@ def peer_meta(project_id, rearchive, skip_pdf, force):
                 click.echo(f"Based on the above, what meta-review grade should be assigned to {evaluator}?")
             
                 while True: 
-                    score = click.prompt("Enter a score 0-10, hit r to print the rubric, or s to show the relevant submission:",
-                                        type=click.Choice(SCORES_STR + ['r', 's']))
+                    score = click.prompt("Enter a score 0-10, r for the meta-review rubric, s for the PDF archive, i for the GitHub issue, or R for the original MP rubric:",
+                                        type=click.Choice(SCORES_STR + ['r', 's', 'i', 'R', "h"]))
                                         
                     if score == "r":
-                        if not RUBRIC:
-                            RUBRIC = pd.read_html("https://michael-weylandt.com/STA9750/miniprojects.html")[0]
-                        click.echo(RUBRIC)
+                        if not META_RUBRIC:
+                            META_RUBRIC = pd.read_html("https://michael-weylandt.com/STA9750/miniprojects.html")[0]
+                        click.echo(META_RUBRIC)
                     elif score == "s":
                         latest_pdf = op.join(course_dir(), "latest", "pdfs", f"{submittor}_mp{project_id}.pdf")
                         if op.exists(latest_pdf):
                             subprocess.call(["open", latest_pdf])
                         else: 
                             import pdb; pdb.set_trace()
+                    elif score == "R": 
+                        if not RUBRIC:
+                            RUBRIC = pd.read_html(f"https://michael-weylandt.com/STA9750/miniprojects/mini0{project_id}.html")[1]
+                        click.echo(RUBRIC.T)
+                    elif score == "i": 
+                        webbrowser.open(f"https://github.com/michaelweylandt/{course_repo()}/issues/{FEEDBACK['issue_num']}")
+                    elif score == "h": 
+                        webbrowser.open(f"https:/{submittor}.github.io/{course_repo()}/mp0{project_id}.html")
                     else: 
                         score = int(score)
                         STANDARD_COMMENTS = [
