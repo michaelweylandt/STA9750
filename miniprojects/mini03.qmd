@@ -1,11 +1,12 @@
 ---
 mp_num: "03"
-mp_title: "TBD"
+mp_title: "Visualizing and Maintaining the Green Canopy of NYC"
 filters: 
  - list-table
-mp_skills: "Web Data, Big Data, 'Rectangling'"
-mp_application: "TBD"
-mp_rhetoric: "TBD"
+mp_skills: "API Use, Big Data, Geospatial Data"
+mp_application: "Municipal Data, Spatial Analysis"
+mp_rhetoric: "Program Design, Non-Profit Grant Writing"
+mp_max_ec: 4
 ---
 
 ```{r}
@@ -51,7 +52,23 @@ mp_file <- list(qmd=glue("`mp0{mp_id}.qmd`"),
 
 ## Introduction
 
-Welcome to Mini-Project #{{< meta mp_num >}}! TBD
+Welcome to Mini-Project #{{< meta mp_num >}}! 
+
+[NYC's many green spaces are beloved by the
+community](https://www.nytimes.com/2025/10/05/nyregion/new-york-city-green-space.html), 
+and represent a major ongoing investment by both city government and by a network
+of over 550 non-profit organizations and volunteer groups. With a budget of
+over $675,000,000 and over 5,000 full-time employees,[^1] the Department of Parks and
+Recreation (DPR) maintains over 30,000 acres of public parkland. DPR is also 
+responsible for almost 900,000 trees, representing over 500 different species,
+across the city. In this mini-project, we will explore the 
+[NYC TreeMap](https://tree-map.nycgovparks.org/tree-map) data set, with an eye
+towards creating compelling visualizations of this beloved element of NYC's
+urban fabric. Based on these visualizations, you will propose a new program
+for the NYC Parks Department that attempts to make the benefits of NYC trees
+available to all New Yorkers. 
+
+[^1]: See the NYC City Council's latest review of DPR at <https://council.nyc.gov/compliance/nycc-soc-report-card/parks-and-recreation/>. 
 
 Also note that this mini-project is intended to be a bit less demanding than
 [Mini-Project #02](./mini02.html). At this point in the course, you should be
@@ -83,35 +100,107 @@ Recall our basic analytic workflow and table of student responsibilities:
 
 : Students' Responsibilities in Mini-Project Analyses {.hover}
 
-In this project, I am no longer providing code to download and read the necessary data files. The data files I have selected for this mini-project are relatively easy to work with and should not provide a significant challenge, particularly after our in-class discussion of Data Import. See the modified rubric below which now includes a grade for data import.
+In this project, I am no longer providing code to download and read the 
+necessary data files. The data files I have selected for this mini-project are 
+relatively easy to work with and should not provide a significant challenge, 
+particularly after our in-class discussion of Data Import. See the modified 
+rubric below which now includes a grade for Data Preparation.
 
 ### Rubric
 
-{{< var course.short >}} Mini-Projects are evaluated using *peer grading* with *meta-review* by the course GTAs. Specifically, variants of the following rubric will be used for the mini-projects:
+{{< var course.short >}} Mini-Projects are evaluated using *peer grading* with 
+*meta-review* by the course GTAs. The following rubric will be used for this 
+mini-project:
 
-+-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------+
-| Course Element        | Excellent (9-10)                                                                                                                                                                            | Great (7-8)                                                                                                                                                     | Good (5-6)                                                                                            | Adequate (3-4)                                                                                                                                             | Needs Improvement (1-2)                                                                             | Extra Credit                                                                                   |
-+=======================+=============================================================================================================================================================================================+=================================================================================================================================================================+=======================================================================================================+============================================================================================================================================================+=====================================================================================================+================================================================================================+
-| Written Communication | Report is well-written and flows naturally. Motivation for key steps is clearly explained to reader without excessive detail. Key findings are highlighted and appropriately given context. | Report has no grammatical or writing issues. Writing is accessible and flows naturally. Key findings are highlighted, but lack suitable motivation and context. | Report has no grammatical or writing issues. Key findings are present but insufficiently highlighted. | Writing is intelligible, but has some grammatical errors. Key findings are obscured.                                                                       | Report exhibits significant weakness in written communication. Key points are difficult to discern. | Report includes extra context beyond instructor provided information.                          |
-+-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------+
-| Project Skeleton      | Code completes all instructor-provided tasks correctly. Responses to open-ended tasks are particularly insightful and creative.                                                             | Code completes all instructor-provided tasks satisfactorially.                                                                                                  | Response to one instructor provided task is skipped, incorrect, or otherwise incomplete.              | Responses to two instructor provided tasks are skipped, incorrect, or otherwise incomplete.                                                                | Response to three or ore instructor provided tasks are skipped, incorrect, or otherwise incomplete. | Report exhibits particularly creative insights drawn from thorough student-initiated analyses. |
-+-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------+
-| Formatting & Display  | Tables and figures are full 'publication-quality'.                                                                                                                                          | Tables have well-formatted column names, suitable numbers of digits, and attractive presentation.                                                               | Tables are well-formatted, but still have room for improvement.                                       | Tables lack significant 'polish' and need improvement in substance (filtering and down-selecting of presented data) or style.                              | Unfiltered 'data dump' instead of curated table.                                                    | Report includes interactive (not just animated) visual elements.                               |
-|                       |                                                                                                                                                                                             |                                                                                                                                                                 |                                                                                                       |                                                                                                                                                            |                                                                                                     |                                                                                                |
-|                       | Report includes at least one animated visualization designed to effectively communicate findings.                                                                                           | Figures are 'publication-quality', with suitable axis labels, well-chosen structure, attractive color schemes, titles, subtitles, and captions, *etc.*          | Figures are above 'exploratory-quality', but do not reach full 'publication-quality'.                 | Figures are suitable to support claims made, but are 'exploratory-quality', reflecting minimal effort to customize and 'polish' beyond `ggplot2` defaults. | Baseline figures that do not fully support claims made.                                             |                                                                                                |
-+-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------+
-| Code Quality          | Code is (near) flawless.                                                                                                                                                                    | Comments give context of the analysis, not simply defining functions used in a particular line.                                                                 | Code has well-chosen variable names and basic comments.                                               | Code executes properly, but is difficult to read.                                                                                                          | Code fails to execute properly.                                                                     | Code takes advantage of advanced `Quarto` features to improve presentation of results.         |
-|                       |                                                                                                                                                                                             |                                                                                                                                                                 |                                                                                                       |                                                                                                                                                            |                                                                                                     |                                                                                                |
-|                       | Code passes all `styler` and `lintr` type analyses without issue.                                                                                                                           |                                                                                                                                                                 |                                                                                                       |                                                                                                                                                            |                                                                                                     |                                                                                                |
-+-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------+
-| Data Preparation      | Data import is fully-automated and efficient, taking care to only download from web-sources if not available locally.                                                                       | Data is imported and prepared effectively, in an automated fashion with minimal hard-coding of URLs and file paths.                                             | Data is imported and prepared effectively, though source and destination file names are hard-coded.   | Data is imported in a manner likely to have errors.                                                                                                        | Data is hard-coded and not imported from an external source.                                        | Report uses additional data sources in a way that creates novel insights.                      |
-+-----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------+
+::: {.list-table width="1,1,1,1,1,1" aligns="c,l,l,l,l,l" header-rows=1 .hover #rubric_table}
 
-: Mini-Project Grading Rubric
+* - Course Element
+  - Excellent (9-10)
+  - Great (7-8)
+  - Good (5-6)
+  - Adequate (3-4)
+  - Needs Improvements (1-2)
+* - Written Communication
+  - Report is well-written and flows naturally. Motivation for key steps is
+    clearly explained to reader without excessive detail. Key findings are
+    highlighted and appropriately given context.
+  - Report has no grammatical or writing issues. Writing is accessible and 
+    flows naturally. Key findings are highlighted, but lack suitable motivation
+    and context.
+  - Report has no grammatical or writing issues. Key findings are present but 
+    insufficiently highlighted.
+  - Writing is intelligible, but has some grammatical errors. Key findings 
+    are obscured.
+  - Report exhibits significant weakness in written communication. Key points 
+    are difficult to discern.
+* - Project Skeleton
+  - Code completes all instructor-provided tasks correctly. Responses to 
+    open-ended tasks are particularly insightful and creative.
+  - Code completes all instructor-provided tasks satisfactorily.
+  - Response to one instructor provided task is skipped, incorrect, or 
+    otherwise incomplete.
+  - Responses to two instructor provided tasks are skipped, incorrect, or 
+    otherwise incomplete.
+  - Response to three or more instructor provided tasks are skipped, 
+    incorrect, or otherwise incomplete.
+* - Formatting & Display
+  - Tables and figures are full 'publication-quality.'
 
-Note that this rubric is designed with copious opportunities for extra credit if students go *above and beyond* the instructor-provided scaffolding. Students pursuing careers in data analytics are strongly encouraged to go beyond the strict ambit of the mini-projects to i) further refine their skills; ii) learn additional techniques that can be used in the final course project; and iii) develop a more impressive professional portfolio.
+    Report includes at least one animated visualization designed to effectively
+    communicate findings.
+  - Tables have well-formatted column names, suitable numbers of digits, and 
+    attractive presentation.
 
-Because students are encouraged to use {{< var course.short >}} mini-projects as the basis for a professional portfolio, the basic skeleton of each project will be released under a fairly permissive usage license. Take advantage of it!
+    Figures are 'publication-quality,' with suitable axis labels, well-chosen 
+    structure, attractive color schemes, titles, subtitles, and captions, *etc.*
+  - Tables are well-formatted, but still have room for improvement.
+
+    Figures are above 'exploratory-quality,' but do not reach full 
+    'publication-quality.'
+  - Tables lack significant 'polish' and need improvement in substance 
+    (filtering and down-selecting of presented data) or style.
+
+    Figures are suitable to support claims made, but are 'exploratory-quality,'
+    reflecting minimal effort to customize and 'polish' beyond `ggplot2` defaults.
+  - Unfiltered 'data dump' instead of curated table.
+
+    Baseline figures that do not fully support claims made.
+* - Code Quality
+  - Code is (near) flawless.
+
+    Code passes all `styler` and `lintr` type analyses without issue.
+  - Comments give context of the analysis, not simply defining functions 
+    used in a particular line.
+  - Code has well-chosen variable names and basic comments.
+  - Code executes properly, but is difficult to read.
+  - Code fails to execute properly.
+* - Data Preparation
+  - Data import is fully-automated and efficient, taking care to only download 
+    from web-sources if not available locally.
+  - Data is imported and prepared effectively, in an automated fashion with 
+    minimal hard-coding of URLs and file paths.
+  - Data is imported and prepared effectively, though source and destination 
+    file names are hard-coded.
+  - Data is imported in a manner likely to have errors.
+  - Data is hard-coded and not imported from an external source.
+  
+:::
+
+For this mini-project, no more than **{{< meta mp_max_ec >}}** total points of 
+extra credit can be be awarded. Opportunities for extra credit exist for students
+who go *above and beyond* the instructor-provided scaffolding. Specific 
+opportunities for extra credit can be [found below](#extra_credit).
+
+Students pursuing careers in data analytics are strongly encouraged to go 
+beyond the strict ambit of the mini-projects to 
+
+i) further refine their skills; 
+ii) learn additional techniques that can be used in the final course project; and
+iii) develop a more impressive professional portfolio.
+
+Because students are encouraged to use {{< var course.short >}} mini-projects as
+the basis for a professional portfolio, the basic skeleton of each project will be
+released under a fairly permissive usage license. Take advantage of it!
 
 ### Submission Instructions
 
@@ -192,10 +281,409 @@ stated without context or motivation.
 that the automated course infrastructure will be looking for precise formatting,
 so follow these instructions closely. 
 
-
 ## Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}
 
-## Extra Credit Opportunities
+### Data Acquisition
+
+#### NYC City Council Districts
+
+NYC is divided into 51 City Council Districts. As we intend to analyze the
+number and types of trees in each council district, we need to download a file
+containing the boundaries of these districts.[^water] These data can be found 
+[on the NYC Department of Planning
+site](https://www.nyc.gov/content/planning/pages/resources/datasets/city-council).
+
+This file is hosted as a _static file_ and does not require any special 
+techniques for access, so we will begin by downloading it. Identify the URL
+for the most recent NYC City Council data _as a `zip` file_.[^current] You 
+can then download this data into a local directory `data/mp03/`. Because this
+data is a `zip` file, we will need to unzip it before use. After the data is
+unzipped, you can read it into `R` using the `st_read` function from the 
+`sf` package.
+
+When downloading data, it is important to always be respectful of the data
+provider and not abuse their servers. In particular, whenever possible, you
+should avoid repeatedly downloading the same data as it drives up hosting costs
+for the data provider. 
+
+::: {.callout-tip title="Task 1: Download NYC Citcy Council District Boundaries"}
+
+Write a function to download the NYC City Council District Boundaries 
+_responsibly_. When this function is called, it should 
+
+i)  Create a directory called `data/mp03` (that is, a folder `mp03` within the
+    `data` folder from previous assignments) _only if needed_. 
+ii) Download the `zip` file containing the NYC District boundaries from NYC 
+    Planning into the `data/mp03` directory _only if needed_. Because this is a
+    simple file, you can use the `download.file` command. 
+iii) Unzip the `zip` file using the `unzip` command _only if needed_. 
+iv)  Read the `shp` file in the unzipped directory using `sf::st_read`. 
+v)   Transform the result of reading the `shp` file to 
+     [WGS 84](https://en.wikipedia.org/wiki/World_Geodetic_System) using 
+     the `st_transform` function like `st_transform(DATA, crs="WGS84")`. 
+     
+     (You do not need to understand this transformation: in brief, it transforms
+     the district boundaries from a NYC-specific coordinate system used by
+     the Planning Department to a more standard system. This will allow us to
+     align different data sets later in this Mini-Project.)
+vi) Return the transformed data to the user. 
+     
+:::
+
+Once this data has been downloaded and read into `R`, it can be manipulated
+using `dplyr` tools like a standard data frame. This `sf` object is a special
+kind of data frame that comes with additional _metadata_ describing the
+underlying map model used to represent this data. You will not need to directly
+interact with this metadata, but you may see it when printing results. This 
+`sf` data also comes with a `geometry` column that contains `MULTIPOLYGON`s 
+representing the shape of each district. (In essence, a list of points at the 
+corners of each district; by connecting this points in order, the district is
+traced out.)
+
+::: {.callout-note title="Hint: Look at Previous Mini-Projects" collapse="true"}
+
+Previous Mini-Projects provide a template for responsible downloading of public
+data sets. As you work to download the data for this Mini-Project, review the
+data downloading code from two prior Mini-Projects and see if it can be adapted
+to this Mini-Project. In particular, please refer back to 
+
+- [MP#01 Spring 2025](https://michael-weylandt.com/STA9750/archive/AY-2024-SPRING/miniprojects/mini01.html) (particularly for the Tree Points data below)
+- [MP#02 Fall 2025](./mini02.html)
+
+for inspiration.
+
+:::
+
+The NYC District shape files are very high resolution and can be somewhat slow
+to plot.[^coast] To speed up computation, you may want to simplify the district
+boundary lines using the `st_simplify` function from the `sf` package. This 
+function takes an argument `dTolerance` which specifies (in meters) the minimum
+resolution of the simplified representation. For example, setting `dTolerance=5`
+will remove any boundary edges shorter than 5 meters (about 16.5 feet). If you
+find plotting in later sections to be slow, consider simplifying these district
+boundaries, using a `mutate(geometry = st_simplify(geometry, ...))`-like command.
+I recommend plotting the resulting district boundaries and setting `dTolerance`
+as high as you can without suffering any visual degredation of the boundaries. 
+
+[^coast]: This is especially true for districts with waterfront as the 
+shape files capture every little in-and-out of the coastline. This complexity
+is historically important as it was a driving factor in the development of
+fractal mathematics, which attempted to resolve the so-called [Coastline Paradox](https://en.wikipedia.org/wiki/Coastline_paradox).
+
+[^water]: For some reason, I can only find the city council districts including
+water areas on the NYC OpenData site. Since we're looking at planted trees, the
+water area is not helpful to us and will make our maps look a bit funny.
+
+[^current]: As of the time of writing this assignment, the latest `zip` file
+can be downloaded by clicking the `Download Files` button for the "Clipped to
+Shoreline" data. Right click this button to get the necessary URL. 
+
+#### NYC Tree Points
+
+We next need to download the 
+[NYC Forestry Tree Points](https://data.cityofnewyork.us/Environment/Forestry-Tree-Points/hn5i-inap/about_data)
+from NYC OpenData using the provided API. To access this API, click "Export" near
+the top right corner of the NYC OpenData page. Then select "API endpoint" and
+"Data Format: GeoJSON" to get the base URL for this API. 
+
+By default, if you simply download directly from that URL you will only get
+the first 1000 trees in the data set. To download the full data set, you will
+need to adjust the `$limit` and `$offset` parameters in your API call. The
+
+- `$limit` controls the number of results returned per query. It defaults 
+   to 1000, but can be set much larger than this. Note that you do not 
+   necessarily want to set `$limit` *too large* as this decreases download times
+   and increases the chance of corruption or time-outs during download. 
+- `$offset` adjusts the results returned from a query. It defaults to 0, 
+   returning items 1 to 1000 (at the default `$limit` of 1000). If you set
+   `$offset` to 1000, you will instead retrieve rows 1001 to 2000 (at the
+   default `$limit` of 1000). By iteratively adjusting `$offset`, you can 
+   "page through" the entire data set. 
+   
+   If there are not `$limit` results remaining, you will get only as many 
+   results as can be returned after the offset. So, in a data set of 1500 
+   observations, a query with `$limit=1000` and `$offset=1000` will return
+   rows 1001 to 1500. The fact that this is less than `$limit` can be used
+   to identify the end of the data set. 
+   
+Using these two query parameters you will be able to download the NYC Tree Points
+data _responsibly_. 
+
+::: {.callout-tip title="Task 2: Download Tree Points"}
+
+Write a function to download the NYC Tree Points data _correctly_ and 
+_responsibly_. When this function is called, it should 
+
+i)  Download any data that is not stored locally
+ii) Read in all `GeoJSON` data files using the `st_read` function
+    from the `sf` package
+iii) Combine all data sets using the `bind_rows` function from the `dplyr` 
+     package. 
+     
+:::
+   
+To be responsible, your code to download the Tree Points data should: 
+
+i) Page through the entire data set, with a suitable use of `$limit` and 
+   `$offset` to ensure the entire data set is downloaded. 
+ii) Save the result of each query to a separate file in `data/mp03`. These files
+    should have a consistent naming schema. 
+iii) Only download files _if they are not already saved_. NYC OpenData is a free
+     resource and we do not want to abuse it by unnecessarily downloading many
+     copies of the same data set. 
+
+::: {.callout-caution title="API Usage **Required**"}
+
+**You must use `httr2` (not `httr`) to access the API directly to
+download this data**. 
+
+A primary learning goal of this Mini-Project is to practice use of programmatic
+APIs for data acquisition. The platform underlying NYCOpenData,
+[Socrata](https://dev.socrata.com/), is widely used and familiarity with this
+API will be useful for interacting with many government sources.
+
+If you download a data file manually, use the `RSocrata` package, or otherwise 
+avoid using the API directly, you will receive a 0 for the Project Skeleton, 
+Code Quality, and Data Preparation portions of your grade.
+
+:::
+
+After downloading this data, review [the data
+documentation](https://data.cityofnewyork.us/Environment/Forestry-Tree-Points/hn5i-inap/about_data)
+to ensure you understand the various columns in this data set. 
+
+::: {.callout-note title="Hint: Working with Large Data"}
+
+This tree points data set is quite large and working with it may be slow, 
+particularly if you have a computer with smaller memory. While this is not a 
+problem *per se*, it can make it difficult to maintain the recommended 'Render
+Regularly' workflow. Consider adopting the following techniques to make working
+with large data a bit easier: 
+
+1) Only work with a small subset of the data at first. 
+
+   Write all of your code using a small subset (say 10,000) of the trees and
+   then, when you are happy with everything, adjust your code to use the full
+   data set.
+   
+   You can implement this by either adding an additional argument to your Tree 
+   Points function that limits the amount of data read in (a bit more complicated)
+   or by subsetting your data after reading it, using a function like 
+   `slice_sample` (a bit simpler, but slower since it still requires you to read
+   all of the data at least once). Whichever you do, make sure to revert back to
+   the full data set before submitting your final product. 
+   
+2) Adopt a strategy of [_caching results_](https://en.wikipedia.org/wiki/Cache_(computing)).
+   
+   Caching is the practice of saving results and the code that generated them.
+   Then, before re-running some code, you can look up and see if you have already
+   saved the results. This lets you avoid repeating expensive steps unnecessarily.
+   
+   While simple in theory, the details of caching -- particularly _cache invalidation_
+   or knowing when to delete data from the cache -- are quite finicky. Thankfully,
+   `Quarto` has reasonably good support for caching
+   [built-in](https://quarto.org/docs/computations/caching.html#knitr-cache).
+   You can turn on caching document-wide (so all code chunks are cached) or on 
+   a chunk-by-chunk basis. 
+   
+   Caching can be a useful strategy, but it can occasionally lead to strange
+   bugs where old results are being used incorrectly. Because of this, deleting
+   the cache and running the whole document _from scratch_ is often necessary
+   to debug some problems. I also recommend deleting your cache and running
+   all code from scratch before submitting your final report in order to guarantee
+   that your code and results actually line up.
+   
+:::
+
+### Data Integration and Initial Exploration
+
+Before we can prepare our final report, it is worthwhile to visually inspect the
+distribution of trees in NYC. 
+
+#### Mapping NYC Trees
+
+::: {.callout-tip title="Task 3: Plot All Tree Points"}
+
+Create a `ggplot2` map that superimposes trees as points over the council 
+districts of NYC. 
+
+This will require a bit more advanced `ggplot2` than we have used so far. 
+In particular, we will want different _layers_ of the map to have different
+spatial elements: 
+
+- One layer will be the council district boundaries
+- One layer will be points representing each tree
+
+To do so, you will need to pass the `data` and `mapping` arguments directly to 
+the different `geom_sf()` layers, rather than setting them globally in the initial
+call to `ggplot`. `geom_sf` is smart enough to figure out what type of object
+to display based on the type of the `geometry` column (`POINT` vs `POLYGON`).
+
+Note that there are a _lot_ of trees in NYC. You may need to adjust some of the
+default settings (`alpha`, point size, *etc.*) to make your plot more legible.
+We will make a more focused plot later in this assignment, so you don't need to
+work too hard to make this one perfectly legible. 
+
+:::
+
+#### District-Level Analyses of Trees
+
+Before we can further analyze our NYC trees, we need to join the Tree Points data
+onto the District boundaries. This can be done using the `st_join` function, 
+which implements _spatial_ joins, not the simple equality joins we have used up
+to this point. This join requires a slightly different syntax, including 
+specification of the 'check' used to align rows: 
+
+- `st_contains`: Does the spatial region in the first table contain the points
+  in the second table? (Regions first argument, points second argument)
+- `st_intersects`: Does a point from the first table fall in a region from the
+  second table? (Points first argument, regions second argument)
+  
+These functions are passed (without parentheses or any arguments) as the 
+`join` argument of `st_join`. Either of these can work for this step; you simply
+need to make sure you're passing the `join` that corresponds to the order of the
+tables. 
+
+::: {.callout-tip title="Task 4: District-Level Analysis of Tree Coverage"}
+
+Join together the tree points and district boundaries using the steps outlined
+above and answer the following exploratory questions: 
+
+1. Which council district has the most trees? 
+
+2. Which council district has the highest density of trees? The `Shape_Area` 
+   column from the district shape file will be helpful here. 
+
+3. Which district has highest fraction of dead trees out of all trees?
+
+4. What is the most common tree species in Manhattan? 
+
+   To answer this question, you need to create a new column to the joined data
+   set. You can do this using a call to the `case_when` function in conjunction
+   with the following
+   
+   | Districts | Borough       |
+   |-----------|---------------|
+   | 1 - 10    | Manhattan     |
+   | 11 - 18   | Bronx         |
+   | 19 - 32   | Queens        |
+   | 33 - 48   | Brooklyn      |
+   | 48 - 51   | Staten Island | 
+
+5. What is the species of the tree closest to Baruch's campus? 
+
+   Computing distances from spatial data can be a little tricky. You first
+   need to create a point equipped with the relevant CRS and then can use the
+   `st_distance` function to compute distance. The following function will make
+   a suitable point object: 
+   
+   ```{r}
+   new_st_point <- function(lat, lon, ...){
+       st_sfc(point = st_point(c(lat, lon))) |>
+         st_set_crs("WGS84")
+   }
+   ```
+   
+   You can then use this point object as follows: 
+   
+   ```{r}
+   #| eval: false
+   ... |> mutate(distance = st_distance(geometry, my_point))
+   ```
+   
+   where `my_point` is a point you created above. 
+   
+
+:::
+
+### Government Project Design
+
+In NYC, members of the city council have significant influence -- official and 
+unofficial -- over the discretionary activities of the city government. You are
+a city council member - or more likely, a staffer to a city council member - who
+wants the parks department to dedicate some additional funding to a tree project
+in your district. Using the data sets from above, write a brief document 
+(no more than a page in length if it were printed separately) describing and
+making an argument for a new tree program. 
+
+Your proposal should include the following: 
+
+- A brief description of the proposed project. (This does not need to be 
+  data-driven.)
+- A quantitative statement of the desired scope of the project (X trees, 
+  Y stumps, Z new plantings, etc.)
+- A 'zoomed-in' map visualization of the trees in your district: visualize
+  either all trees or only the subset relevant to your proposed project. 
+  This visualization should _only show your district_ and the 'field of view' 
+  should be zoomed in accordingly. 
+- A quantitative comparison as to why your district is the right place for this
+  project. You should compare to at least 3 other districts on whatever factors
+  motivate this project. 
+  
+  These comparisons can be positive-spin (we have the most Species X trees) or 
+  negative-spin (we have one of the lowest tree densities), depending on the 
+  scope of your proposed projects. 
+  
+- At least one non-map graphic supporting the quantitative comparison (*i.e.*, 
+  visualize the results of the previous bullet).
+- A visualization showing 
+  - A map-based comparison of your district with at least one other district
+    in a manner relevant to your proposal; OR 
+  - A non-map visualization making an argument for the proposed scope of your
+    project.
+
+You can represent any district - the district where Baruch is located, the
+district where you grew up or where you currently live, or even a district which
+you just like visiting. 
+
+Your proposed project can be on anything tree-related you like, but here are 
+some ideas to get you started: 
+
+- Replacing dead trees in a region (*cf.*, the `tpcondition` column)
+- Planting new trees of a particular species (*cf.* the `genusspecies` column)
+- Performing maintenance on particularly risky trees (*cf.* the 
+  `riskrating`` column) to improve public safety
+- Advertising particularly notable (*i.e.*, large or old) trees as the focus of
+  a Parks-sponsored community event
+- Hosting a community event to celebrate the blooming of a particular tree 
+  species (similar to DC's famous 
+  [Cherry Blossom Festival](https://nationalcherryblossomfestival.org/))
+- Replacing residual stumps with new plantings
+- Eliminating invasive species
+
+::: {.callout-tip title="Task 5: NYC Parks Proposal"}
+
+Write up a one-page summary of your proposed district-level tree program for
+the NYC Parks Department.
+
+:::
+
+## Extra Credit Opportunities {#extra_credit}
+
+For this mini-project, no more than {{< meta mp_max_ec >}} total points of extra
+credit may be awarded.
+
+### Extra Credit Opportunity #01: Improved Tree Map Visualizations {#ec01}
+
+**Possible Extra Credit: Up to 2 Point**
+
+The map of all trees is a bit too dense to be truly legible. Modify that graph
+using some sort of animated (max 1 point) or interactive (max 2 points) 
+visualization to improve legibility. 
+
+### Extra Credit Opportunity #02: Additional Parks Data {#ec02}
+
+**Possible Extra Credit: Up to 2 Points**
+
+The Parks Department makes other data sets available including details of the
+[safety risk proposed by unhealthy trees](https://data.cityofnewyork.us/Environment/Forestry-Risk-Assessments/259a-b6s7/about_data) and
+[ongoing maintenance orders](https://data.cityofnewyork.us/Environment/Forestry-Work-Orders/bdjm-n7q4/about_data). 
+
+One point of extra credit is available for each of these data sets used in
+your analysis and proposal. To get the point of extra credit, you _must_ download
+this data 'politely' using the same approach used to download the Tree Points.
+(Note that this data should be downloaded as `csv` or `json`, not `geojson`, 
+and can be read into `R` using `readr::read_csv` or `jsonlite::read_json`.)
 
 ------------------------------------------------------------------------
 
