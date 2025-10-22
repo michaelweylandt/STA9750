@@ -1451,7 +1451,12 @@ def _mini_archive(project_id, github, skip_pdf=False,
                 os.remove(pdf_symlink)
             except FileNotFoundError:
                 pass
-            os.symlink(student_mp_pdf, pdf_symlink, target_is_directory=True)
+            
+            # Not sure why I need op.dirname, but I think relpath gets one
+            # level off when handed a file name that doesn't quite look like
+            # a file
+            rel_mp_pdf = op.relpath(student_mp_pdf, op.dirname(pdf_symlink))
+            os.symlink(rel_mp_pdf, pdf_symlink, target_is_directory=True)
 
     if archive_issues:
         # Now export all comments from my course issues repository
@@ -1476,7 +1481,9 @@ def _mini_archive(project_id, github, skip_pdf=False,
             os.remove(issue_symlink)
         except FileNotFoundError:
             pass
-        os.symlink(issues_dir, issue_symlink, target_is_directory=True)
+        
+        rel_issues_dir = op.relpath(issues_dir, op.dirname(issue_symlink))
+        os.symlink(rel_issues_dir, issue_symlink, target_is_directory=True)
 
 
 @mini.command(name="verify")
