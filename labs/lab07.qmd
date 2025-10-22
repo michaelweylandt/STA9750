@@ -358,6 +358,36 @@ cdiac |>
     # Specify palette from name (compare to ColorBrewer site)
     scale_color_brewer(name="Month", type="qual", palette="Paired")
 ```
+
+When dealing with this sort of 'spaghetti' (overlapping lines) plot,
+one of my favorite strategies is to plot some sort of _average_ in bolder line
+and to plot the individual entries that go into that average semi-transparently.
+For instance: 
+
+```{webr}
+cdiac |> 
+    pivot_longer(jan:dec, 
+                 names_to="month", 
+                 values_to="anomaly") |>
+    mutate(month=factor(month, 
+                        ordered=TRUE, 
+                        levels=tolower(month.abb), 
+                        labels=month.name)) |>
+    ggplot(aes(x=year)) + 
+        geom_line(aes(y=anomaly, color=month), alpha=0.2) + 
+        geom_line(aes(y=annual), linewidth=1.5, color="red4") + 
+    theme(legend.position="bottom") + 
+    scale_color_discrete(name="Month") + 
+    xlab("Year") + 
+    ylab("GMT Anomaly (Pre-Industrial Baseline) [K]") + 
+    theme_bw() + 
+    theme(legend.position="bottom") + 
+    guides(color=guide_legend(override.aes=list(alpha=1)))
+```
+
+This lets us see both the overall trend and use the month-to-month variability
+as a proxy for sampling variability. 
+
 :::
 
 3. Plot the monthly GMT anomaly series as one long line (with a point for 
