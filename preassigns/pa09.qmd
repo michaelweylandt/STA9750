@@ -23,12 +23,12 @@ due_date_str <- read_csv("key_dates.csv") |>
 
 **Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
 
-
 We now turn to the next "unit" of this course - acquiring data and preparing
 it for further analysis. In what follows, our goal will be go get data to a 
 "tidy" format suitable for use with `tidyverse` tools like `dplyr` and `ggplot2`.
 Unfortunately, this problem becomes a rather difficult one. While every "tidy"
-data set shares certain characteristics, non-tidy data, by definition, won't. 
+data set shares certain characteristics, non-tidy data, by definition, won't.
+
 Still - we are analysts and data scientists - so we soldier on and begin
 to work with the nasty and difficult data the real world often presents us with. 
 
@@ -43,6 +43,8 @@ In this pre-assignment, we're focusing on the first part of the first section:
 reading data from a file into `R`. This will be relatively fast - we've already
 done some of it this semester - but it's an essential skill set. 
 
+We will cover getting data from web services in class this week.
+
 ## What is a File?
 
 Before we work on getting data from files into `R`, it's worth taking a moment
@@ -53,7 +55,7 @@ services, but we're going back to basics.
 **A file is a long series of bits, with a well-defined beginning and end.**
 
 That's it - files aren't required to have extensions, formats, or anything else.
-Computers associated each file with a name, organized into a _file system_, but
+Computers associate each file with a name, organized into a _file system_, but
 this all lives outside the file. 
 
 That general definition - lots of bits - is not particularly helpful for sharing
@@ -98,14 +100,51 @@ and Linux) and one more popular on Windows-like machines.
 Most file formats - and especially most binary formats - begin with a "magic
 string" that clearly states what format is used to encode the file. By reading
 this, the operating system can tell what type of file format is used and 
-call the appropriate software. For instance, PDF files must start with the
+call the appropriate software. For instance, PDF files **must** start with the
 string  `%PDF - 1.4`. When your computer reads this, it knows it has a
 found a PDF and calls the appropriate software.
+
+Similarly, a PNG file, like 
+[the one I use for the my title slide](../images/baruch_title.png),
+starts with a magic string indicating it is a PNG file: 
+
+```{r}
+#| warning: false
+readLines("images/baruch_title.png")[1]
+```
+
+::: {.callout-note collapse="true" title="readLines() on Binary Files"}
+
+The `readLines()` function is designed to read in the text of a plain text file.
+When we apply it to a binary file, as we did above, we get _lots_ of warnings
+because it sees series of bits that can't be interpreted as text. Still, this is
+a useful way of "peeking" at the magic header string. 
+
+```{r}
+#| warning: false
+readLines("images/baruch_title.png")[1]
+```
+
+The `\x89` bit appearing before PNG in the magic header is interesting: that's a
+series of bits that _cannot_ appear in plain text, so it's a very clear sign that
+the file must be interpreted as binary. In fact, most text editing software will
+produce an error the instant it sees that first bit. 
+
+If we instead look just a bit later in the file, we see all sorts of 
+binary nonsense:
+
+```{r}
+#| warning: false
+readLines("images/baruch_title.png")[5]
+```
+
+This is clearly something other than plain text.
+:::
 
 This type of convention is powerful, though it sometimes struggles with very
 rare formats if the destination machine has never been programmed to handle
 that type of file. It has the advantage that the magic string is _inside_ the
-file. If the file is transferred without corruption, it's impossible to 
+file. As long as the file is transferred without corruption, it's impossible to 
 "misplace" the file format information. 
 
 The other convention used to identify file formats is the _extension_. A
@@ -115,9 +154,16 @@ the file name. We often adopt these extensions into our everyday discourse,
 is not part of the file and that it is a second piece of information _in
 addition_ to the file contents. As such, this is a second place where 
 things can be corrupted and mistakes can be made. This isn't a huge problem - 
-despite our best efforts, computers are pretty reliable - but it is something
-to be aware of.  Importantly, we can change the _extension_ without ever editing
-the file itself; this is a double-edged sword. 
+despite our best efforts to make things hard, computers are pretty reliable -
+but it is something to be aware of.  Importantly, we can change the _extension_ 
+without ever editing the file itself; this is a double-edged sword.[^ext_security]
+
+[^ext_security]: Overreliance on file extensions is actually a very common
+security hole in user-facing applications. If a system only checks whether a 
+file claims to be, say a PDF, before accepting it and processing it,
+it's very easy to get malicious code into the system by simply changing
+the extension. Cybersecurity can be hard, but the amount of problems created by
+this simple oversight is depressing. 
 
 In an attempt to be more user-friendly, certain operating systems - especially
 Microsoft Windows - are quite dogmatic about the use of file extensions,
@@ -156,12 +202,28 @@ Some of these functions are quite advanced, and can even automatically download
 and decompress files from web services, if you pass it a URL instead of a
 (local) file name.[^2]
 
-The `haven` package provides tools for reading data formats generated by
-other statistical software: 
+The `readxl` package provides tools for reading both older (`xls`) and newer
+(`xlsx`) spreadsheets. While you can use the `readxl::read_xls` and 
+`readxl::read_xlsx` functions directly, it is often better to use 
+`readxl::read_excel` which will attempt to automatically determine what type
+of Excel document is present and hand it off to the specialized reader. 
+
+You won't often use it, but the `haven` package provides tools for reading 
+data formats generated by other statistical software: 
 
 - `haven::read_stata`
 - `haven::read_spss`
 - `haven::read_sas`
+
+Due to the popularity of tools like `R` and `python`, these proprietary formats
+are not widely used for data transfer any more. You will still occasionally see
+government agencies with very old technology relying on these formats, but it's 
+unlikely that you'll be interacting with that sort of older technology in this
+course.[^fda]
+
+[^fda]: The FDA, for instance, still requires `.sas` files, the data format
+used by the [SAS software](https://www.sas.com), when analyzing drug safety 
+trial data. 
 
 In general, if you are reading a not-entirely bespoke file format into `R`,
 there is almost always a function for doing so. If you come across a format
@@ -175,7 +237,6 @@ the process is quite seamless:
 ```{r}
 library(readr)
 cars <- read_csv("https://github.com/tidyverse/readr/raw/main/inst/extdata/mtcars.csv")
-
 ```
 
 If the data provider produces well-formatted files, you usually do not
@@ -191,7 +252,7 @@ intervals. My usage data for 2024-10-24 looks something like this:
 cat(readLines("mw_coned_20241024.csv")[1:20], sep="\n")
 ```
 
-It's clear that this file is "csv-ish", but is not a standard CSV file. ConEd
+It's clear that this file is "CSV-ish", but is not a proper CSV file. ConEd
 includes a "header" of questionable utility. While we could edit this file
 by hand to only include the "data parts", we can also adjust our file reading
 code. 
@@ -208,7 +269,7 @@ are more columns in the middle of the file (where the data "should" be) than
 there are names in the first (blank) line of the file. 
 
 The improved `read_csv` function from the `readr` package tries harder and
-seems to succeed, but it also fails: 
+initially seems to succeed, but it also has significant problems: 
 
 ```{r}
 library(readr)
@@ -228,14 +289,25 @@ problems(con_ed)
 ```
 
 We see here that `R` expected only two columns, based on the top section of
-the file, but every row of "substance" beyond the ConEd-special header actually
-has six columns. Note that `R` is giving us a `warning` here - it could
+the file, but every row of "substance" beyond the ConEd-metadata header actually
+has six columns. 
+
+::: {.callout-caution title="Import Warnings" collapse="true"}
+
+Note that `R` is giving us a `warning` here - it could
 conceivably continue, here by smashing together the extra columns - so it does
 so. This type of warning is not uncommon in reading malformatted data. It is
 your responsibility as an analyst to investigate the warnings and see if they
 are true signs of trouble or false positives. A particularly common warning,
 which you have already encountered in this course, is when data sets use a
 non-standard way to encode `NA` values. 
+
+While some warnings can be safely ignored, it is always good practice 
+to investigate warnings issued by your data import functions. Any issues with
+data import can corrupt all subsequent analyses, so it's important to get 
+it right.
+
+:::
 
 In this case, there's actually an easy fix - we just want to skip those
 first rows for the header:  
@@ -258,10 +330,12 @@ We see lots of useful information in this read out. Our data has
   - Time (2)
   
 Here the logical column (`NOTES`) is a bit of a red herring; it's all empty
-for this file, so `R` interprets as the simplest data type that fits, 
+for this file, so `R` interprets as the simplest data type that fits. 
+(Boolean/logical values are essentially one-bit each representing TRUE / FALSE 
+-not even one byte!-so that's the baseline simplest type in `R`.)
 
 From here, I'm going to turn off printing of the data import message to keep
-this file readable, but you should always at least quickly eyeball them when
+this page readable, but you should always at least quickly eyeball them when
 importing a new data set. 
 
 At this point, we're ready to proceed with tidying up our data. 
@@ -307,17 +381,54 @@ read_csv("mw_coned_20241024.csv", skip = 6) |>
     geom_line()
 ```
 
-Can you see i) when my phone finished charting overnight; and ii) when I 
-started to make breakfast on my electric stovetop? 
+Can you see 
+
+i) when my phone finished charging overnight; and 
+ii) when I  started to make breakfast on my electric stovetop? 
 
 ::: {.callout-tip title="ConEd Practice"}
 
 If you have your own ConEd account, download [your Energy Usage
 data file](https://www.coned.com/en/accounts-billing/my-account/energy-use) 
-by hand and import it into `R`. Can you find patterns of your daily life
-in this data? 
+by hand and import it into `R`. (If you have a different electricity provider,
+they likely provide similar usage data exports.) Can you find patterns of your 
+daily life in this data? 
 
 :::
 
-After finishing this document, complete the Weekly Pre-Assignment Quiz
-on Brightspace.
+
+After finishing this document, go back through the Mini-Projects and Labs
+you have completed so far and identify what functions were used to get data into
+`R`. For each data source ask yourself: 
+
+1. Was the data available as a flat file or did the data source require 
+   more complex import logic? (If I used a function other than the `read_*`
+   sources above, it's fair to assume it was using a package to implement more 
+   complex logic.)
+2. Can you go online and find the original source? Was it a flat file or something
+   more complex? If a flat file, what type of file? How can you tell? 
+   
+   (You typically don't know how to go directly to the exact file 
+   you want, but you can find a page describing and linking to the various data
+   sets made available by that source.)
+
+   It may be useful to find any URLs hidden inside the import code. Sometimes 
+   you might not have an exact URL, but you can see how one is created, *e.g.*, 
+   if downloading multiple years from a source where we needed to access
+   `https://web.site/data/2020.csv`, `https://web.site/data/2021.csv`,
+   `https://web.site/data/2022.csv`, *etc.* 
+  
+- For the data sets where you can find a web presence for the original source,
+  can you determine how to find the actual URL we wound up using? Typically, you
+  can do this by finding a link to the data file and right-clicking on it: if
+  you copy the link, that will be a good starting point for getting the data
+  downloaded and into `R`. 
+  
+All websites organize their public data a bit differently, but it's worthwhile
+to study different sources and get a sense for the typical ways that they are
+organized. I try to use high-quality data sources in this course that make their
+data available in an organized (if sometimes complex) manner, so my code can be
+a good reference on how you might interact with similar sources.
+
+After reviewing the data import you have done so far in this semester, complete
+this week's Pre-Assignment Quiz on Brightspace.
