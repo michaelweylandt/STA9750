@@ -489,9 +489,9 @@ get_bls_industry_codes <- function(){
         naics_table <- naics_table |> 
             filter(depth == 4) |> 
             rename(level4_title=title) |> 
-            mutate(level1_code = str_sub(Code, end=2), 
-                   level2_code = str_sub(Code, end=3), 
-                   level3_code = str_sub(Code, end=4)) |>
+            mutate(level1_code = as.integer(str_sub(Code, end=2)), 
+                   level2_code = as.integer(str_sub(Code, end=3)), 
+                   level3_code = as.integer(str_sub(Code, end=4))) |>
             left_join(naics_table, join_by(level1_code == Code)) |>
             rename(level1_title=title) |>
             left_join(naics_table, join_by(level2_code == Code)) |>
