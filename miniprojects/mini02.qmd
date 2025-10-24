@@ -466,10 +466,13 @@ into a format suitable for analysis.
 library(httr2)
 library(rvest)
 get_bls_industry_codes <- function(){
-    fname <- fname <- file.path("data", "mp02", "bls_industry_codes.csv")
+    fname <- file.path("data", "mp02", "bls_industry_codes.csv")
+    library(dplyr)
+    library(tidyr)
+    library(readr)
     
     if(!file.exists(fname)){
-    
+        
         resp <- request("https://www.bls.gov") |> 
             req_url_path("cew", "classifications", "industry", "industry-titles.htm") |>
             req_headers(`User-Agent` = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:143.0) Gecko/20100101 Firefox/143.0") |> 
@@ -486,6 +489,22 @@ get_bls_industry_codes <- function(){
             mutate(depth = if_else(nchar(Code) <= 5, nchar(Code) - 1, NA)) |>
             filter(!is.na(depth))
         
+        # These were looked up manually on bls.gov after finding 
+        # they were presented as ranges. Since there are only three
+        # it was easier to manually handle than to special-case everything else
+        naics_missing <- tibble::tribble(
+            ~Code, ~title, ~depth, 
+            "31", "Manufacturing", 1,
+            "32", "Manufacturing", 1,
+            "33", "Manufacturing", 1,
+            "44", "Retail", 1, 
+            "45", "Retail", 1,
+            "48", "Transportation and Warehousing", 1, 
+            "49", "Transportation and Warehousing", 1
+        )
+        
+        naics_table <- bind_rows(naics_table, naics_missing)
+        
         naics_table <- naics_table |> 
             filter(depth == 4) |> 
             rename(level4_title=title) |> 
@@ -501,13 +520,14 @@ get_bls_industry_codes <- function(){
             select(-starts_with("depth")) |>
             rename(level4_code = Code) |>
             select(level1_title, level2_title, level3_title, level4_title, 
-                   level1_code,  level2_code,  level3_code,  level4_code)
-    
+                   level1_code,  level2_code,  level3_code,  level4_code) |>
+            drop_na() |>
+            mutate(across(contains("code"), as.integer))
+        
         write_csv(naics_table, fname)
     }
     
     read_csv(fname, show_col_types=FALSE)
-    
 }
 
 INDUSTRY_CODES <- get_bls_industry_codes()

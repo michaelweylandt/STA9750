@@ -577,10 +577,13 @@ Task 1: Data Import
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
 <span><span class="va">get_bls_industry_codes</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">fname</span> <span class="op">&lt;-</span> <span class="va">fname</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="st">"data"</span>, <span class="st">"mp02"</span>, <span class="st">"bls_industry_codes.csv"</span><span class="op">)</span></span>
+<span>    <span class="va">fname</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="st">"data"</span>, <span class="st">"mp02"</span>, <span class="st">"bls_industry_codes.csv"</span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://readr.tidyverse.org">readr</a></span><span class="op">)</span></span>
 <span>    </span>
 <span>    <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/files.html">file.exists</a></span><span class="op">(</span><span class="va">fname</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>    </span>
+<span>        </span>
 <span>        <span class="va">resp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://www.bls.gov"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>            <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"cew"</span>, <span class="st">"classifications"</span>, <span class="st">"industry"</span>, <span class="st">"industry-titles.htm"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>            <span class="fu"><a href="https://httr2.r-lib.org/reference/req_headers.html">req_headers</a></span><span class="op">(</span>`User-Agent` <span class="op">=</span> <span class="st">"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:143.0) Gecko/20100101 Firefox/143.0"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -597,6 +600,22 @@ Task 1: Data Import
 <span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>depth <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html">if_else</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html">nchar</a></span><span class="op">(</span><span class="va">Code</span><span class="op">)</span> <span class="op">&lt;=</span> <span class="fl">5</span>, <span class="fu"><a href="https://rdrr.io/r/base/nchar.html">nchar</a></span><span class="op">(</span><span class="va">Code</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">depth</span><span class="op">)</span><span class="op">)</span></span>
 <span>        </span>
+<span>        <span class="co"># These were looked up manually on bls.gov after finding </span></span>
+<span>        <span class="co"># they were presented as ranges. Since there are only three</span></span>
+<span>        <span class="co"># it was easier to manually handle than to special-case everything else</span></span>
+<span>        <span class="va">naics_missing</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html">tribble</a></span><span class="op">(</span></span>
+<span>            <span class="op">~</span><span class="va">Code</span>, <span class="op">~</span><span class="va">title</span>, <span class="op">~</span><span class="va">depth</span>, </span>
+<span>            <span class="st">"31"</span>, <span class="st">"Manufacturing"</span>, <span class="fl">1</span>,</span>
+<span>            <span class="st">"32"</span>, <span class="st">"Manufacturing"</span>, <span class="fl">1</span>,</span>
+<span>            <span class="st">"33"</span>, <span class="st">"Manufacturing"</span>, <span class="fl">1</span>,</span>
+<span>            <span class="st">"44"</span>, <span class="st">"Retail"</span>, <span class="fl">1</span>, </span>
+<span>            <span class="st">"45"</span>, <span class="st">"Retail"</span>, <span class="fl">1</span>,</span>
+<span>            <span class="st">"48"</span>, <span class="st">"Transportation and Warehousing"</span>, <span class="fl">1</span>, </span>
+<span>            <span class="st">"49"</span>, <span class="st">"Transportation and Warehousing"</span>, <span class="fl">1</span></span>
+<span>        <span class="op">)</span></span>
+<span>        </span>
+<span>        <span class="va">naics_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">naics_table</span>, <span class="va">naics_missing</span><span class="op">)</span></span>
+<span>        </span>
 <span>        <span class="va">naics_table</span> <span class="op">&lt;-</span> <span class="va">naics_table</span> <span class="op">|&gt;</span> </span>
 <span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">depth</span> <span class="op">==</span> <span class="fl">4</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html">rename</a></span><span class="op">(</span>level4_title<span class="op">=</span><span class="va">title</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -612,13 +631,14 @@ Task 1: Data Import
 <span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"depth"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html">rename</a></span><span class="op">(</span>level4_code <span class="op">=</span> <span class="va">Code</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">level1_title</span>, <span class="va">level2_title</span>, <span class="va">level3_title</span>, <span class="va">level4_title</span>, </span>
-<span>                   <span class="va">level1_code</span>,  <span class="va">level2_code</span>,  <span class="va">level3_code</span>,  <span class="va">level4_code</span><span class="op">)</span></span>
-<span>    </span>
+<span>                   <span class="va">level1_code</span>,  <span class="va">level2_code</span>,  <span class="va">level3_code</span>,  <span class="va">level4_code</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>            <span class="fu"><a href="https://tidyr.tidyverse.org/reference/drop_na.html">drop_na</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">contains</a></span><span class="op">(</span><span class="st">"code"</span><span class="op">)</span>, <span class="va">as.integer</span><span class="op">)</span><span class="op">)</span></span>
+<span>        </span>
 <span>        <span class="fu"><a href="https://readr.tidyverse.org/reference/write_delim.html">write_csv</a></span><span class="op">(</span><span class="va">naics_table</span>, <span class="va">fname</span><span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
 <span>    </span>
 <span>    <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html">read_csv</a></span><span class="op">(</span><span class="va">fname</span>, show_col_types<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
-<span>    </span>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">INDUSTRY_CODES</span> <span class="op">&lt;-</span> <span class="fu">get_bls_industry_codes</span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
