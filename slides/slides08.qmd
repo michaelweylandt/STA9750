@@ -36,7 +36,8 @@ TODAY_THURSDAY <- TODAY |>
 
 TODAY_TOPIC <- TODAY |>
     filter(str_detect(Details, "Lecture")) |>
-    pull(Details)
+    slice_head(n=1) |>
+    pull(Details) 
 
 ```
     
@@ -131,7 +132,7 @@ Rubric updated to clarify opportunities for and limits to extra credit
 
 Topics covered: 
 
-::: {.incremental}
+::: {.incremental .smaller}
 
 - Data Import
   - One static file
@@ -269,10 +270,11 @@ See [Lab #08](../labs/lab08.html#review) for details.
 
 ## Breakout Rooms {.scrollable}
 
+::: {.smaller}
+
 ```{r}
 #| echo: false
 set.seed(9750+session)
-library(DT)
 library(yaml)
 library(jsonlite)
 
@@ -283,8 +285,8 @@ TEAMS <- read_yaml("_teaching.yml") |>
   pull(name) |>
   sample()
 
-TUESDAY_TEAMS  <- TEAMS[str_detect(TEAMS, "(T)")]
-THURSDAY_TEAMS <- TEAMS[str_detect(TEAMS, "(R)")]
+TUESDAY_TEAMS  <- TEAMS[str_detect(TEAMS, fixed("(T)"))]
+THURSDAY_TEAMS <- TEAMS[str_detect(TEAMS, fixed("(R)"))]
 
 pad_with_NA <- function(x, length.out){
 
@@ -308,8 +310,10 @@ data.frame(t1 = TUESDAY_TEAMS, t2 = THURSDAY_TEAMS) |>
   TRUE ~ paste(t1, t2, sep=" + ")), 
          Breakout = row_number()) |> 
   select(Breakout, Teams) |> 
-  datatable(options(pageLength=25, searching = FALSE))
+  knitr::kable(row.names = FALSE)
 ```
+
+:::
 
 # Advanced `ggplot2`
 
@@ -390,7 +394,7 @@ For me:
 - Publication mode:
   - Very context specific
 
-## `ggplot2` Font Sizing
+## ggplot2 Font Sizing
 
 Theme machinery!
 
@@ -408,13 +412,13 @@ Student asked about "scatterblobs" - typo(?) but I love it!
 - Density based plotting: hexbins, histograms, rugplots
 - Data reduction: summarization or sub-sampling
 
-## Optimizing `ggplot2` Performance
+## Optimizing ggplot2 Performance
 
 Active project of `ggplot2` team - not much you can do
 
 *Practical advice*: plot less (see previous slide)
 
-## `ggplot2` Beyond Scatter and Line
+## ggplot2 Beyond Scatter and Line
 
 Some favorite semi-advanced plot types: 
 
@@ -424,7 +428,7 @@ Some favorite semi-advanced plot types:
 
 _Deep_ rabbit hole
 
-## `ggplot2` + High-Dimensional Data
+## ggplot2 + High-Dimensional Data
 
 High-dimensional data: measure many variables per observation ("wide")
 
@@ -438,7 +442,7 @@ Approaches:
 - PCA (or similar dimension reduction. Take 9890!)
 
 
-## Custom `ggplot2` Theme
+## Custom ggplot2 Theme
 
 ```{r}
 my_theme <- theme_bw() + theme(panel.background = element_rect(fill = 'lightblue'))
@@ -450,7 +454,7 @@ Advanced:
 - `theme_set()` - change `ggplot2` defaults
 - `.Rprofile` - set code to run every time you start `R`
 
-## `ggplot2` - When Not to Use 
+## ggplot2 - When Not to Use 
 
 `ggplot2` is designed to make good statistical graphics. Sub-par for: 
 
@@ -499,184 +503,3 @@ Topics for the next three weeks:
 </br>
 
 {{< video https://www.youtube.com/watch?v=vb-_qqmOcCI width="80%" height="400px">}}
-
-
-# Today
-
-## Warm-Up
-
-"Datasaurus Dozen": 
-
-- `install.packages("datasauRus")` (Note capital `R`)
-- `library(datasauRus); data(datasaurus_dozen)`
-
-Create an _animated_ (`gganimate`) plot: 
-
-- $x, y$ scatterplot
-- Animate different values of `dataset`
-
-If you are having trouble with `gganimate`, facet instead. 
-
-## Warm-Up
-
-![](https://blog.revolutionanalytics.com/downloads/DataSaurus%20Dozen.gif)
-
-## Diving Deeper into `ggplot2`
-
-First topic: maps!
-
-Install the [`sf` package](https://r-spatial.github.io/sf/): 
-**S**imple **F**eatures for Spatial Data 
-
-Exercise: [Lab #08](../labs/lab08.html)
-
-## Breakout Rooms
-
-| Room | Team           |  | Room | Team              |
-|------|----------------|--|------|-------------------|
-| 1    | Team Mystic    |  | 5    | Money Team + CWo. |
-| 2    | Subway Metrics |  | 6    | Lit Group         |
-| 3    | Noise Busters  |  | 7    | Cinephiles + VG   |
-| 4    | AI Imp. Coll.  |  |      |                   |
-
-## Topic Interactive Tools for Data Analysis 
-
-
-# Looking Ahead
-
-## Looking Ahead {.smaller}
-
-Due Wednesday at 11:45pm:
-
-- Pre-Assignment #0`r next_session` (Brightspace)
-  - Data Import
-- MP #02 Peer Feedback on GitHub AND Brightspace
-
-. . . 
-
-Next three weeks: 
-
-- Reading 'clean data' into `R`
-- Reading and parsing HTML
-- Parsing messy (text) data
-
-. . . 
-
-Teaching Observation by Prof. Brandwein - Next Week
-
-{{< include ../advice/galleries.qmd >}}
-
-
-
-# Just FYI: </br> Old Pre-Assignment #08 FAQs
-
-## FAQ: `ggplot2` - `aes()`
-
-What is the `aes` function - stands between data and `geom_`
-
-- Each `geom_` takes a fixed set of "coordinates"
-- Each data set has its own column names
-- `aes` ties these together
-
-```{r}
-library(ggplot2); library(patchwork)
-p1 <- ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width)) + geom_point()
-p2 <- ggplot(iris, aes(y=Sepal.Length, x=Sepal.Width)) + geom_point()
-p1 + p2
-```
-
-## FAQ: `ggplot2` - Why do Pie Charts have a bad reputation?
-
-- Use of _area_ and _angle_ over _length_: less accurate perception
-- Depends on `fill` to convey category - limited categories
-
-. . . 
-
-But honestly - "insider smugness"  and hate of `Excel`
-
-
-## FAQ: `ggplot2` - Plot Type Choice
-
-For me: 
-
-- Exploratory mode: 
-  - Simple: line, scatter, bar, frequency
-- Publication mode:
-  - Very context specific
-
-## FAQ: `ggplot2` - Font Sizing
-
-Theme machinery!
-
-```{r}
-ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width)) + 
-    geom_point() + theme(axis.text = element_text(size=24))
-```
-
-## FAQ: `ggplot2` - Overplotting / ScatterBlobs
-
-Student asked about "scatterblobs" - typo(?) but I love it!
-
-. . . 
-
-- Density based plotting: hexbins, histograms, rugplots
-- Data reduction: summarization or sub-sampling
-
-
-## FAQ: `ggplot2` - Optimizing Performance
-
-Active project of `ggplot2` team - not much you can do
-
-*Practical advice*: plot less (see previous slide)
-
-## FAQ: `ggplot2` - Beyond Scatter and Line
-
-Some favorite semi-advanced plot types: 
-
-- Violin plots: combination of boxplot and histogram
-- Ridgelines
-- Beeswarms
-
-_Deep_ rabbit hole
-
-## FAQ: `ggplot2` - Geospatial Visualizations
-
-That's our goal for today!
-
-## FAQ: `ggplot2` - High-Dimensional Data
-
-High-dimensional data: measure many variables per observation ("wide")
-
-High-dimensional data is _hard_ to visualize
-
-. . . 
-
-Approaches: 
-
-- Pair plots for "moderate" HDD
-- PCA (or similar dimension reduction. Take 9890!)
-
-
-## FAQ: `ggplot2` - Creating a Custom Theme
-
-```{r}
-my_theme <- theme_bw() + theme(panel.background = element_rect(fill = 'lightblue'))
-ggplot(iris, aes(x=Sepal.Length, y = Sepal.Width)) + geom_point() + my_theme
-```
-
-Advanced: 
-
-- `theme_set()` - change `ggplot2` defaults
-- `.Rprofile` - set code to run every time you start `R`
-
-## FAQ: `ggplot2` - When Not to Use 
-
-`ggplot2` is designed to make good statistical graphics. Sub-par for: 
-
-- Advanced interactivity
-- _Really_ big data
-- Hardcore customization / "infographics"
-
-## FAQ: `git` WTF
-
-Reference: [Happy Git with R](https://happygitwithr.com/)
