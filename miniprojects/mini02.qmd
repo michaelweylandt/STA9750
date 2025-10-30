@@ -688,18 +688,41 @@ together.
     
     Note that the Census Bureau and the BLS use different conventions when
     recording CBSA identification numbers. To join these tables together, you
-    will need to create a column formatting to work on. The following code may
-    help: 
+    will need to create a new column to join on. In particular, the BLS will 
+    record a code a "C1234" corresponding to a Census identifier of "12340"
+    for the same region. To match these up, it is easiest to create a new column
+    in the BLS tables which transforms values like "C1234" into "12340"-formatted
+    values. 
+    
+    The following code may help: 
     
     ```{r}
     #| eval: false
-    t1 <- _CENSUS TABLE_ |> mutate(std_cbsa = paste0("C", _CENSUS CBSA ID_))
-    t2 <- _BLS TABLE_ |> mutate(std_cbsa = paste0(_BLS CBSA ID_, "0"))
-    inner_join(t1, t2, join_by(std_cbsa == std_cbsa))
+    _BLS TABLE_ <- _BLS TABLE_ |> mutate(_NEW COLUMN_ = code_changing(_BLS CBSA ID_))
+    inner_join(_CENSUS TABLE_, _BLS TABLE_, join_by(CBSA == _NEW COLUMN_))
     ```
     
     You will need to insert appropriate table and column names replacing the 
-    names surrounded by underscores to adapt this for your own use. 
+    names surrounded by underscores to adapt this for your own use. You will
+    also need to replace `code_changing` with an actual set of function calls. 
+    
+    There are several ways to do this, but the most straightforward is probably
+    a combination of: 
+    
+    - `as.double`
+    - `str_remove`
+    - `paste0`
+    
+    To determine the right order to use these, define a variable `x <- "C1234"`
+    and figure out the sequence of function calls that satisfies: 
+    
+    ```{r}
+    #| eval: no
+    func1(func2(func3(x, argument?), argument?), argument?) == 12340
+    ```
+    
+    Here, substitute `func1`, `func2`, `func3`, with some combination of the
+    commands noted above and supply additional arguments where needed.
     
     *Hint*: Putting `filter` statements before `join` statements (when possible)
     typically leads to faster code. 
