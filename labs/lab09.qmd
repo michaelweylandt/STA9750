@@ -1,17 +1,481 @@
 ---
 title: "{{< var course.short >}} Week 9 In-Class Activity: Data Import"
 engine: knitr
+format: live-html
 ---
 
+
+{{< include _gradethis_init.qmd >}}
+
+```{webr}
+#| echo: false
+webr::install(c("tidyverse", "mgcv", "ggpmisc"), quiet=TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+# [Slides](../slides/slides09.qmd)
+
+# Review Practice {#review}
+
+{{< video https://www.youtube.com/watch?v=FjT35R8CC9Q width=1000 height=600 >}}
+
+The data can be found online at
+<https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv>. 
+
+The data looks like this:
+
 ```{r}
+#| echo: false
 #| message: false
 #| warning: false
 library(tidyverse)
+
+read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv") |> glimpse()
 ```
 
-[Week 9 Slides](../slides/slides09.html)
+Read this data into `R` using the `read_csv` function from the
+`readr` package; note that the `read_csv` function can take a URL 
+as an input so you don't need to directly download this data set.
 
-This week, we are going to practice accessing data from a nice 
+Once you have downloaded the candy data, create visualizations that
+address the following questions: 
+
+1. Do people prefer more sugary candies? (Think OLS)
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+library(tidyverse)
+library(ggpmisc)
+read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv") |>
+    mutate(winpercent = winpercent / 100) |>
+    ggplot(aes(x=sugarpercent, y=winpercent)) + 
+      xlab("Sugariness (Percentile)") + 
+      ylab("Popularity (Percentile)") + 
+      geom_point() + 
+      scale_x_continuous(labels = scales::percent) + 
+      scale_y_continuous(labels = scales::percent) + 
+      stat_smooth(method="lm") + 
+      stat_poly_eq(use_label("R2", "R2.CI", "P"), 
+                   color="red4", 
+                   size=5) + 
+      theme_bw()
+```
+
+:::
+
+2. Do people prefer more expensive candies? (Think OLS)
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+library(tidyverse)
+library(ggpmisc)
+read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv") |>
+    mutate(winpercent = winpercent / 100) |>
+    ggplot(aes(x=pricepercent, y=winpercent)) + 
+      xlab("Price (Percentile)") + 
+      ylab("Popularity (Percentile)") + 
+      geom_point() + 
+      scale_x_continuous(labels = scales::percent) + 
+      scale_y_continuous(labels = scales::percent) + 
+      stat_smooth(method="lm") + 
+      stat_poly_eq(use_label("R2", "R2.CI", "P"), 
+                   color="red4", 
+                   size=5) + 
+      theme_bw()
+```
+
+:::
+
+3. Do people prefer chocolate candies? (Think ANOVA)
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+For this question, we only know whether a candy is chocolate-based
+or not, so a linear model is not the most straightforward approach.
+We can instead use an ANOVA-inspired bar plot.[^anova]
+
+[^anova]: Note, however, that standard ANOVA is basically just a 
+very restricted linear model; *cf.* <https://lindeloev.github.io/tests-as-linear/>. 
+
+```{webr}
+library(tidyverse)
+read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv") |>
+    mutate(winpercent = winpercent / 100, 
+           chocolate = as.logical(chocolate)) |>
+    group_by(chocolate) |>
+    mutate(win_mean = mean(winpercent), 
+           win_sd   = sd(winpercent), 
+           n        = n(), 
+           win_se   = win_sd / sqrt(n)) |>
+    ungroup() |>
+    ggplot(aes(x=chocolate, y=winpercent)) + 
+    geom_jitter(height=0, width=0.2, alpha=0.3) + 
+    geom_errorbar(aes(ymin = win_mean - win_se, 
+                      ymax = win_mean + win_se),
+                  width=0.2, 
+                  color="red4") + 
+    stat_summary(fun="mean", 
+                 geom="col", 
+                 fill="lightblue", 
+                 color="blue4", 
+                 alpha=0.4) + 
+    geom_point(aes(y=win_mean), size=2, color="red4") + 
+    theme_bw() + 
+    xlab("Chocolate") + 
+    ylab("Popularity (Percentile)") + 
+    scale_y_continuous(labels = scales::percent, 
+                       limits = c(0, 1))
+```
+
+:::
+
+# Using the File System {#fs}
+
+## Exercises #01 {#exercise01}
+
+0. Use the `getwd()` to find your current working directory. For the following
+   exercises to be most useful, you will want to ensure that this is your 
+   `{{< var course.repo >}}` course directory. If you have somehow changed it
+   please use the `setwd()` function to return to the proper directory.
+
+1. In your `{{< var course.repo >}}` directory, you have a 
+   file called `index.qmd`. Use the `path` function from the 
+   `fs` package to create a `path` object pointing to that
+   file and then use the `path_abs` function to convert that
+   relative path to an absolute path. 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+   
+Note that these solutions will give different answers on your
+personal computer as opposed to this web interface. That is to be expected 
+since we are going outside of `R` and interacting with the 
+whole system and should not surprise you. 
+   
+```{webr}
+library(fs)
+path("index.qmd") |> path_abs()
+```
+
+:::
+
+2. A common pattern in working with files is wanting to find
+   all files whose names match a certain pattern. This is known
+   colloquially as _globbing_. The `dir_ls` function can be used
+   to list all files in a directory. First use it to list all
+   files in your `{{< var course.repo >}}` course directory; then
+   use the `glob` argument to list only the `qmd` files in that
+   directory. 
+   
+   *Hint: The `glob` argument should be a string with asterisks in it where
+   you will allow any match. For example, `*.csv` will match all CSV files, 
+   `abc*` will match all files whose names start with `abc`, and 
+   `abc*.csv` will match files whose names start with `abc` and end with
+   `.csv`.*
+   
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(fs)
+dir_ls() # Default is dir_ls("."): i.e., current working directory
+dir_ls(glob="*qmd")
+```   
+
+:::
+
+3. The `dir_info` function can be used to create a data frame with information
+   about all files in a directory. Use it and `dplyr` functionality to find the
+   largest file in your project folder. Then return its _absolute_ path. 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(fs)
+library(dplyr)
+dir_info() |> slice_max(size) |> pull(path) |> path_abs()
+```   
+
+:::   
+
+4. Often, we want to perform a search over all files and folders in a directory
+   *recursively* - that is, looking inside subfolders, not just at files in
+   the top level. The `recurse=TRUE` argument to `dir_info` will return
+   information about all files contained in any level of the directory. Use
+   `dir_info` to search the `data` directory you have created to store
+   Mini-Project data and find the _smallest_ data file. 
+   
+   *Hint: You will need to pass a `path` argument to `dir_info` so that you
+   search only your `data` folder and not your entire course directory.*
+   
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(fs)
+library(dplyr)
+dir_info("data", recurse=TRUE) |> slice_max(size) |> pull(path) |> path_abs()
+```   
+
+:::
+
+5. Determine how much storage is used by the 5 largest files in any part of 
+   your project directory. 
+
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(fs)
+library(dplyr)
+dir_info(recurse=TRUE) |> slice_max(size, n=5) |> summarize(total_size = sum(size))
+```   
+
+:::
+
+6. Use the `file_exists` function to determine whether you have started 
+   [Mini-Project #03](../miniprojects/mini03.html).
+
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(fs)
+file_exists("mp03.qmd")
+```   
+
+:::
+
+# HTTP and Web Access {#http}
+
+
+
+## Exercises #02 {#exercise02}
+
+Earlier, we used the fact that `read_csv` could download a file automatically
+for us to read in the 538 Candy Data. We are now going to download the same
+data using `httr2`. 
+
+1. Use the `httr2` package to build a suitable `request` object. You should
+   build your request in two steps: 
+   
+   i) Specify the domain using `request`
+   
+   ii) Add the path using `req_url_path`
+   
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(httr2)
+request("https://raw.githubusercontent.com") |>
+    req_url_path("fivethirtyeight", 
+                 "data",
+                 "refs",
+                 "heads",
+                 "master",
+                 "candy-power-ranking",
+                 "candy-data.csv") |>
+    req_perform() |>
+    resp_body_string() |> 
+    read_csv()
+```   
+
+:::
+   
+2. Now that you have built a request, _perform_ it and check to make sure
+   your request was successful. 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(httr2)
+request("https://raw.githubusercontent.com") |>
+    req_url_path("fivethirtyeight", 
+                 "data",
+                 "refs",
+                 "heads",
+                 "master",
+                 "candy-power-ranking",
+                 "candy-data.csv") |>
+    req_perform() |>
+    resp_check_status() |>
+```   
+
+:::
+   
+3. Because your request was successful, it will have a body. Extract this body
+   as a string and pass it to `read_csv` to read the data into `R`. 
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(httr2)
+library(readr)
+request("https://raw.githubusercontent.com") |>
+    req_url_path("fivethirtyeight", 
+                 "data",
+                 "refs",
+                 "heads",
+                 "master",
+                 "candy-power-ranking",
+                 "candy-data.csv") |>
+    req_perform() |>
+    resp_check_status() |>
+    resp_body_string() |> 
+    read_csv()
+```
+
+:::
+
+4. Modify your analysis to download your `mp01.qmd` file. To find the appropriate
+   URL, you will need to first find the file in the web interface for your GitHub
+   repository and then click the `Raw` button to a direct link to the file. 
+   Make a request to get this data and to check whether the request was successful. 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(httr2)
+request("https://raw.githubusercontent.com") |>
+    req_url_path(YOUR GITHUB ID
+                 COURSE REPO, 
+                 "refs",
+                 "heads",
+                 "main",
+                 "mp01.qmd") |>
+    req_perform() |>
+    resp_check_status() 
+```
+
+:::
+   
+5. Next, modify our analysis to check whether `mp04.qmd` has already
+   been uploaded. Note that this will throw an error because a `404` is returned,
+   indicating that you have not yet uploaded `mp04.qmd`. We will address this
+   in the next step. 
+
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(httr2)
+request("https://raw.githubusercontent.com") |>
+    req_url_path(YOUR GITHUB ID
+                 COURSE REPO, 
+                 "refs",
+                 "heads",
+                 "main",
+                 "mp04.qmd") |>
+    req_perform()
+```
+
+:::
+
+6. Obviously, that error is a bit of a problem. Let's change how our request
+   handles errors. The `req_error` function can be used to modify a request to
+   change whether an error is thrown. As its argument, it takes a _function_
+   that checks for an error. Since we want to never throw an error, define a
+   function with one argument `x` that always returns false and pass this to
+   `req_error`. (Note that `req_error` must come before `req_perform` since it
+   changes how a request is performed.) Use this in conjunction with the
+   `resp_is_error` function to check that your request fails. 
+
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(httr2)
+
+always_false <- function(x) FALSE
+
+request("https://raw.githubusercontent.com") |>
+    req_url_path(YOUR GITHUB ID
+                 COURSE REPO, 
+                 "refs",
+                 "heads",
+                 "main",
+                 "mp04.qmd") |>
+    req_error(is_error = always_false) |>
+    req_perform() |>
+    resp_is_error()
+```
+
+Using an _anonymous_ function, we can write this a bit more compactly as 
+
+```{webr}
+library(httr2)
+request("https://raw.githubusercontent.com") |>
+    req_url_path(YOUR GITHUB ID
+                 COURSE REPO, 
+                 "refs",
+                 "heads",
+                 "main",
+                 "mp04.qmd") |>
+    req_error(is_error = \(x) FALSE) |>
+    req_perform() |>
+    resp_is_error()
+```
+:::
+
+7. Package your code into a function that takes an integer argument and tests
+   whether that mini-project is missing from your GitHub.
+   
+   *Hint: The `glue` package may be useful to make strings here: 
+   `glue("mp0{N}.qmd")` will automatically substitute the value of the variable
+   `N` for you.*
+
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(httr2)
+library(glue)
+mp_is_missing <- function(N) {
+    request("https://raw.githubusercontent.com") |>
+        req_url_path(YOUR GITHUB ID
+                     COURSE REPO, 
+                     "refs",
+                     "heads",
+                     "main",
+                     glue("mp0{N}.qmd")) |>
+        req_error(is_error = \(x) FALSE) |>
+        req_perform() |>
+        resp_is_error()
+}
+```
+:::
+
+8. Finally, check which of your MPs have not yet been submitted. 
+
+   Unfortunately, your function is not _vectorized_ so this is not as 
+   simple as `func(1:4)`. Instead, we want to apply the same function separately
+   to each element of the vector `c(1,2,3,4)`. This is a use case for the `map`
+   family of functions. Since your function returns a logical value, we'll use
+   `map_lgl` here. 
+   
+   
+```{webr}
+library(httr2)
+library(glue)
+mp_is_missing <- function(N) {
+    request("https://raw.githubusercontent.com") |>
+        req_url_path(YOUR GITHUB ID
+                     COURSE REPO, 
+                     "refs",
+                     "heads",
+                     "main",
+                     glue("mp0{N}.qmd")) |>
+        req_error(is_error = \(x) FALSE) |>
+        req_perform() |>
+        resp_is_error()
+}
+
+map_lgl(1:4, mp_is_missing)
+```
+:::
+
+This example is maybe a bit silly, but it is essentially how I check whether
+your mini-projects have been submitted on time. (I map over students rather than
+the project numbers.) 
+
+# API Usage {#api}
+
+Next, we are going to practice accessing data from a nice 
 API using `httr2`. Specifically, we are going to interact with the
 `cranlogs` server, which keeps records of the most popular `R` packages
 based on download frequency. 
@@ -43,8 +507,7 @@ curl https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2
 
 Even though this is not `R` code, we can emulate this action in `R`. 
 
-```{r}
-#| cache: true
+```{webr}
 library(jsonlite)
 fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2")
 ```
@@ -52,14 +515,12 @@ fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2")
 And if we want to get download information for other packages, we can simply
 modify the URL: 
 
-```{r}
-#| cache: true
+```{webr}
 library(jsonlite)
 fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/dplyr")
 ```
 
-```{r}
-#| cache: true
+```{webr}
 library(jsonlite)
 fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/readr")
 ```
@@ -207,7 +668,7 @@ The result is a very nice little data frame:
 downloads_df
 ```
 
-## Your Turn!
+## Exercises #03 {#exercise03}
 
 Now it's your turn! In your breakout rooms, try the following: 
 
@@ -220,8 +681,9 @@ Now it's your turn! In your breakout rooms, try the following:
    
 ::: {.callout-note collapse="true" title="Solution"}
    
-```{r}
-#| cache: true
+```{webr}
+library(httr2)
+library(tidyverse)
 request("https://cranlogs.r-pkg.org") |>
     req_url_path_append("top") |>
     req_url_path_append("last-day") |>
@@ -234,6 +696,7 @@ request("https://cranlogs.r-pkg.org") |>
 ```
 
 :::
+
 3. Modify your query to get the daily downloads for the `ggplot2` package over
    the last month. This will require changes to how you process the response, so
    be sure to look at the raw JSON first. 
@@ -244,8 +707,9 @@ request("https://cranlogs.r-pkg.org") |>
 
 ::: {.callout-note collapse="true" title="Solution"}
    
-```{r}
-#| cache: true
+```{webr}
+library(httr2)
+library(tidyverse)
 request("https://cranlogs.r-pkg.org") |>
     req_url_path_append("downloads") |>
     req_url_path_append("daily") |>
@@ -260,6 +724,7 @@ request("https://cranlogs.r-pkg.org") |>
 ```
 
 :::
+
 4. 'Functionize' your daily downloads query as a function which takes an arbitrary
     package name and gets its daily downloads.
     
@@ -269,9 +734,9 @@ request("https://cranlogs.r-pkg.org") |>
     
 ::: {.callout-note collapse="true" title="Solution"}
    
-```{r}
-#| cache: true
-library(dplyr)
+```{webr}
+library(httr2)
+library(tidyverse)
 get_downloads <- function(pkg){
     request("https://cranlogs.r-pkg.org") |>
         req_url_path_append("downloads") |>
@@ -293,6 +758,7 @@ print(gg_downloads)
 ```
 
 :::
+
 5. Use your function to get daily downloads for the following `R` packages: 
    - `ggplot2`
    - `dplyr`
@@ -309,8 +775,7 @@ print(gg_downloads)
 ::: {.callout-note collapse="true" title="Solution"}
    
 
-```{r}
-#| cache: true
+```{webr}
 library(ggplot2)
 
 PACKAGES <- c("ggplot2", "dplyr", "httr2", "tibble", "purrr", "tidyr")
