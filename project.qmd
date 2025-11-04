@@ -3,6 +3,9 @@ title: "{{< var course.short >}} - Final Project"
 editor: 
   markdown: 
     wrap: 72
+format:
+  html:
+    toc-location: "left"
 filters:
   - list-table
 ---
@@ -687,14 +690,18 @@ it may be helpful.
 
 By the registrar-assigned 'final exam date' for this course, 
 (tentatively `{r} DATES |> filter(str_detect(Details, "Summary Report")) |> pull(dt)`),
-the team will post a *summary project report* of no more than 2000 words
-summarizing their findings. This is a "non-technical" document, suitable
-for someone who cares about the motivating question, not for a data
+the team will post a *summary project report* of approximately 2000 words
+summarizing their findings.[^wordcount] This is a "non-technical" document, 
+suitable for someone who cares about the motivating question, not for a data
 scientist. This document should focus on i) motivations and importance
 of analysis; ii) briefly how the specific analyses help to address the
 motivating question; iii) the choice of data used, including discussion
 of any limitations; iv) visualization of most important findings; v)
 relation to prior work ("the literature"); and vi) potential next steps.
+
+[^wordcount]: See [this function](tips.html#count_words) which can be used
+to count words on a Quarto-generated page. Code does not count towards word 
+limits.
 
 Furthermore, this document should link to *individual reports* (more
 detail below) which work through the project specific questions in
@@ -726,13 +733,184 @@ This summary document will be graded out of 75 points, divided as:
     overall narrative? Are they "basic static" plots or have the authors
     gone "above and beyond" in formatting and structure? Do they clearly
     convey relevant uncertainty and key analytic choices?
+    
+The following rubric will guide assessment of the final group report, 
+though the instructor may deviate in either direction as warranted. Note that
+all ranges are to be interpreted *cumulatively*: if your report includes one
+component from the "Excellent" category as a 'box checking exercise', but omits
+fails to deliver expectations from the Adequate, Good and Great categories, your
+final score for that sub-element may fall somewhere in the middle of the scale.
+
+::: {.list-table width="1,1,1,1,1,1" header-rows=1 .hover #rubric-group-report}
+
+* - Element
+  - Sub-Element
+  - Poor
+  - Adequate
+  - Good
+  - Great
+  - Excellent
+*  - []{rowspan=4} Writing (50)
+   - Motivation of OQ and SQs (10)
+   - OQ and SQs are stated without clear motivation. SQs are simply presented
+     as "we looked at X" without reason or context. (1-2)
+   - Motivation of OQ is muddled. SQs are arbitrary, but essentially are
+     disparate questions onto which an OQ has been grafted, rather than
+     clear steps towards analyzing OQ. (3-4)
+   - Motivation of OQ is clear, but limited. SQs are connected to OQ, but are
+     not self-evidently a clear approach to analyzing the problem. (5-6)
+   - Motivation of OQ is clear and compelling. SQs are clearly connected to OQ, 
+     but do not _comprehensively_ answer OQ; SQs are a list of related
+     sub-topics which make each sense on their own, but are not an exhaustive
+     division of a complex question. (7-8)
+   - Motivation of OQ is clear and compelling. SQs are well-motivated, 
+     meaningfully integrated, and follow clearly as a means of comprehensively 
+     answering OQ. (9-10)
+*  - Clarity of Stand-Alone SQ Findings (10)
+   - No SQ findings are described well. Significant questions about analytical
+     approach, data sources, and key findings remain for all SQs. (1-2)
+   - SQ findings are presented acceptably, but significant questions about
+     approach and data remain for several individual analyses. (3-4)
+   - SQ findings are described well, though some questions about
+     approach or data remain for at least 1 individual analysis. (5-6)
+   - All individual SQs are described well, with clear communication of analytical
+     approach, data sources, and key findings. (7-8)
+   - Uncertainty and limitations of individual SQs is clearly conveyed, along
+     with implications of these limitations for the broader project. (9-10)
+*  - Integration of SQ Findings to Answer OQ (20)
+   - SQ findings are not all integrated in answering the OQ. (1-4)
+   - SQ findings are not meaningfully integrated in answering OQ. OQ answer is
+     essentially a 'concatenation' of individual SQ findings. (5-8)
+   - SQ findings are qualitatively combined to give a partial answer to
+     OQ. Limited effort is made to combine quantative results of SQs in
+     answering OQ. (9-12)
+   - SQ findings are integrated straightforwardly, with clear and correct
+     efforts made to combine findings in answering OQ. (13-16)
+   - SQ findings are integrated in a sophisticated fashion, with significant
+     subsequent analysis used to combine findings into a comprehensive 
+     quantative story. OQ answer is clearly supported and takes full advantage
+     of all SQs. (17-20)
+*  - Engagement with Prior Literature (10)
+   - Report makes essentially no attempt to engage with prior literature. (1-2)
+   - Report engages only superficially with prior literature, describing
+     a limited subset of prior work. Key prior work almost certainly missed. (3-4)
+   - Report discusses prior literature, but does not provide clear discussion
+     of prior work and how it releates to present project. Key prior work
+     may have been missed, but most relevant work is cited. (5-6)
+   - Report engages with prior literature, giving context to question and
+     findings, but does not clearly address a clear gap in prior work. 
+     Key prior work unlikely to be missed. (7-8)
+   - Report clearly and comprehensively engages with prior literature, 
+     identifying a clear need, addressing it fully, 
+     and situating findings in broader context. (9-10)
+*  - []{rowspan=3} Visualization and Accessibility (25)
+   - Accessibility to Non-Technical Audience (10)
+   - Report is difficult to interpret, even for technical audience. Findings
+     are not clearly presented or related to OQ and SQs. (1-2)
+   - Report can be interpreted by technical audience with some effort. 
+     Key findings are present, but difficult to discern and not stated 
+     clearly. (3-4)
+   - Report requires moderate technical background to understand, but 
+     is easily interpreted by audience with sufficient background. Findings
+     are clearly stated, but no attempt is made to situate them in domain
+     context. (5-6)
+   - Report is accessible to non-technical audience familiar with underlying
+     subject matter, after additional background is provided. Findings are
+     understandable, but nuance may be lost on audience without technical
+     background. Results are clearly stated, but not immediately translated to 
+     'domain context.' (7-8)
+   - Report is immediately accessible to non-technical audience familiar
+     with underlying subject matter. No concerns that findings are lost. 
+     Care is taken to translate results into meaningful 'domain context'. (9-10)
+*  - Formatting and Presentation (10)
+   - Formatting and presentation actively distract from discussion of results. (1-2)
+   - Formatting and presentation are inoffensive, but have some clear issues that
+     should be addressed. Word count is less than 1500 or above 2500. (3-4)
+   - Formatting and presentation are clear, but inconsistent across different 
+     components of the report. Report lacks a 'single editorial voice.' 
+     Word count is between 1500 and 2500 words. (5-6)
+   - Formatting and presentation are clear and consistent throughout the report,
+     with only minor issues present. Word count is between 1650 and 
+     2350 words. (7-8)
+   - Formatting and presentation are well-designed and effective at conveying
+     findings and analysis. All components are seamlessly integrated into an
+     overall presentation and story. Word count is between 1800 and 
+     2200 words. (9-10)
+*  - Technical Content of Visualizations (5)
+   - Visualizations do not meaningfully convey SQ findings. (1)
+   - Visualizations attempt to convey SQ findings, but details are
+     unclear. Significant Inconsistencies across different visualizations 
+     make it difficult to compare and contrast findings. (2)
+   - Visualizations succeed in conveying SQ findings, but do not
+     naturally connect across SQs. Inconsistencies in formatting require
+     reader effort before SQs can be connected. (3)
+   - Visualizations are well-chosen for each SQ, but not clearly 
+     connected to the OQ. Minor inconsistencies in formatting and 
+     presentation do not make it difficult to connect results. (4)
+   - Visualizations are well-chosen for each SQ and clearly convey
+     key findings and implication for the OQ. No inconsistencies in 
+     formatting or presentation. (5)
+   
+:::
+
+
+::: {.callout-tip title="Integrating SQs Together" collapse="true"}
+
+Do not underestimate the importance of properly integrating your individual 
+SQs in an answer to an OQ. Too often, teams will analyze four or five factors, 
+each of which are relevant to some outcome of interest, but then fail to 
+_integrate_ their findings, resulting in an OQ answer of the form "Everything
+we looked at has some connection with our outcome of interest." 
+
+It is important to have a good strategy for integrating SQ findings. The 
+instructor is happy to discuss details in office hours or on the course
+discussion boards, but the following strategies have proven helpful in the past: 
+
+i) Build a joint model of the outcome, using a single feature (index) derived
+   from each SQ. For instance, if a project is examining suburban housing prices and
+   individual SQs come up with metrics of location, amenities, and public school
+   quality that each can be used to predict average home price, build a model
+   of the form 
+   
+   \[\text{House Price} \approx f(\text{Location}, \text{Amenities}, \text{Schools}) \]
+   
+   Then compare the performance of this model to 'LOCO' (leave-one-covariate-out)
+   models that only use 2 of the three features. The increase in performance from
+   the two feature model to the three feature model gives an estimate of how
+   important that third feature is.
+   
+   Note that you don't want to necessarily combine _all_ information from each
+   sub-analysis. I find it best to build a single 'composite' feature from each
+   sub-analysis and to combine these. 
+   
+   Any $f$ can be used, though I recommend using a standard robust 'black-box'
+   predictor like a random forest for this type of analysis. If you prefer a 
+   more interpretable model like linear regression, you don't have to do a LOCO
+   analysis and can instead get substantially similar findings with a series of
+   nested likelihood ratio tests (sequentially asking "does adding feature X 
+   improve accuracy / reduce error in a statistically significant way?"). 
+ii) Decompose your quantity of interest into separate quantities which can be 
+    straightforwardly aggregated. For example, in a project estimating the 
+    impact that being the Olympic host country has on medal counts, you might
+    divide that impact into several parts: 
+    
+    i) Medals gained from the host country's chosen sport to add to the games; 
+    ii) Medals gained from the host country's automatic qualification in sports
+        where it would not normally qualify; 
+    iii) Medals gained from overperformance of national teams due to home field
+         advantage. 
+         
+    Once these effects are separately estimated, they can simply be summed to
+    compute the total benefit of Olympic host status. 
+    
+:::
 
 ### Final Individual Report
 
 By the Registrar-assigned 'final exam date' for this course, 
 (tentatively `{r} DATES |> filter(str_detect(Details, "Individual Report")) |> pull(dt)`),
-each team member will post an *individual project report* of no more
-than 2000 words summarizing their work on the individual specific
+each team member will post an *individual project report* of approximately 2500 
+words summarizing their work on the individual specific
 question(s) for which they were responsible.[^3]
 
 [^3]: If students choose to take on multiple specific questions (perhaps
@@ -779,85 +957,152 @@ share code (suitably attributed) as appropriate. Students are encouraged
 to consider this project as a "series of posts" on a suitably technical
 blog.
 
-The following rubric will be used to assess the final individual report, 
-though the instructor may deviate to recognize exceptional work. 
+The following rubric will guide assessment of the final individual report, 
+though the instructor may deviate in either direction as warranted. Note that
+all ranges are to be interpreted *cumulatively*: if your report includes one
+component from the "Excellent" category as a 'box checking exercise', but omits
+fails to deliver expectations from the Adequate, Good and Great categories, your
+final score for that sub-element may fall somewhere in the middle of the scale.
 
-::: {.list-table width="1,1,1,1,1" aligns="c,l,l,l,l" header-rows=1 .hover #rubric-individual}
+::: {.list-table width="1,1,1,1,1,1" header-rows=1 .hover #rubric-individual}
 
-  * - Rubric Element
-    - **D**
-    - **C** 
-    - **B**
-    - **A** 
-  * - **Code Quality**
-    - The code runs on the instructor's machine without errors. 
-    - Everything mentioned before and: 
-    
-      - The code is well-organized, with good variable names and use of functions
-        (subroutines) to avoid repeated code.
-      - The code is well-formatted
-      - The code uses comments effectively
-      - Code is written efficiently, making use of `R`'s vectorized semantics
-    - Everything mentioned before and: 
-    
-      - Code is organized into sub-routines that could be easily adapted to 
-        support other analyses and are not overly specific to the particular
-        data being analyzed
-    - Everything mentioned before and: 
-    
-      - Code is suitable to be re-used for similar analysis without effort, 
-        *e.g.*, by organization into a readily-accessible `R` package
-  * - **Data Acquisition and Processing**[^realdata]
-    - The code loads data from a static web-based source[^static]
-    - Everything mentioned before and: 
-    
-      - The code uses a dynamic API or basic web-scraping techniques to download
-        data
-    - Everything mentioned before and: 
-    
-      - The code fully prepares and cleans the data, including fully investigating
-        and properly handling any outliers, missing data, or other irregularities
-        
-        (Note that discarding or Windsorizing is not necessarily 'properly handling'.)
-    - Everything mentioned before and: 
-    
-      - The code acquires data using techniques not presented in class,
-        such as headless browsers, logging into password-protected resources
-        using an `httr2` session, or scraping data from non-tabular HTML
-  * - **Data Analysis**
-    - The analysis consists primarily of basic descriptive statistics.
-    - Everything mentioned before and: 
-    
-      - Advanced descriptive statistics
-      - Basic "pre-packaged" tests used for all inferential statistics
-    - Everything mentioned before and: 
-    
-      - A computer-based inference strategy such as bootstrapping, permutation
-        testing, or cross-validation is used
-    - Everything mentioned before and: 
-    
-      - Sophisticated computer-based inference exceeding techniques presented
-        in class
-  * - **Communication and Presentation of Results**
-    - The report consists of: 
-      
-      - A static Markdown/Quarto document or presentation with basic graphics
-        and tables
-      - "Baseline" graphics that do not adapt the default formatting or styling
-    - Everything mentioned before and: 
-    
-      - Advanced / interactive graphics
-      - "Publication quality" graphics using advanced plotting functionality
-    - Everything mentioned before and: 
-    
-      - A basic interactive dashbaord[^interactivity]
-      
-    - Everything mentioned before and: 
-    
-      - A fully-interactive "dashboard" type product that reacts to data
-        in real-time and allows for customizable visualization and/or data export
-
+* - Element
+  - Sub-Element
+  - Poor
+  - Adequate
+  - Good
+  - Great
+  - Excellent
+*  - []{rowspan=2} Code Quality (20)
+   - Code Style and Legibility (10)
+   - Code can be interpreted and understood by instructor with moderate
+     effort. Code does not adhere to basic style guidelines. (1-2)  
+   - Code can be interpreted and understood by instructor with minimal
+     effort. Code generally adheres to basic style guidelines. (3-4)
+   - Code is meaningfully commented and clearly expresses intent. Variable
+     names are chosen clearly and code clearly adheres to consistent
+     style and formatting choices. (5-6) 
+   - Code documents and justifies key analytical choices. (7-8)
+   - Report uses 'literate programming' functionality to clearly express
+     intent and explain all key analytical choices. (9-10)
+*  - Code Effectiveness[^run_elsewhere] (10)
+   - (1-2) Code can be run on the instructor's machine after addressing simple
+     path / working-directory issues and installing necessary packages. 
+   - (3-4) Code can be run on the instructor's machine *as is* without 
+     any modification. Code properly installs and loads necessary packages, as
+     well as avoids hard-coding any paths or working directory. 
+   - (5-6) Code is well-organized, with clear variable names and makes effective
+     use of `R`'s vectorized and `tidyverse` semantics. 
+   - (7-8) Code is organized into meaningful 
+     [DRY](https://en.wikipedia.org/wiki/Don't_repeat_yourself) subroutines 
+     (functions), some of which could be rather easily adapted to support 
+     other analyses. 
+   - (9-10) Code is suitable to be re-used for similar analyses without 
+     significant effort, *e.g.*, by organization into a well-formatted and fully
+     document `R` script files, a stand-alone package, or similar. 
+*  - []{rowspan=2} Data Acquisition & Processing[^realdata] (20) 
+   - Data Acquisition[^static] (10)
+   - Data loaded from a static local file (1-2)
+   - Data loaded from a static web-hosted file (3-4)
+   - Data loaded from a standard web API (5-6)
+   - Data loaded by basic web-scraping of tabular HTML (7-8)
+   - Data loaded from an API requiring advanced techniques not presented 
+     in class, such as headless browsers, password-protection, or scraping 
+     from non-tabular HTML (9-10)
+*  - Data Cleaning, Preparation, and Exploration (10)
+   - (1-2) Minimal cleaning, preparation, or exploration. Data used 'as is' with
+     no supporting analysis or evidence of data quality. 
+   - (3-4) Acceptable data cleaning and preparation, with basic EDA. Clear errors
+     are handled, but quality is not assessed in a sophisticated manner.
+   - (5-6) Basic manual handling of outliers or other data errors. Extensive
+     EDA that does not deliver a meaningful 'story' to the reader. 
+   - (7-8) Robust 'rule-of-thumb' handling of outliers or other data errors. 
+     Meaningful 'story-telling' EDA identifying non-obvious patterns that do not
+     directly support the SQ. 
+   - Sophisticated, context-dependent, handling of outliers or other
+     data errors. Deep and 'story-telling' EDA identifying non-obvious patterns 
+     that are then used to drive further analysis in support of the SQ. (9-10) 
+*  - []{rowspan=2} Data Analysis & Visualization (30)
+   - Data Analysis (15)
+   - Basic descriptive statistics (1-3)
+   - Advanced descriptive statistics (4-6)
+   - Pre-packaged inferential statistics (*e.g.*, tests built using theoretical
+     sampling distributions) (7-9)
+   - Computer-based inference such as bootstrapping, permutation testing, or
+     cross-validation; OR construction and analysis of a basic predictive model
+     (10-12)
+   - Sophisticated computer-based inference exceeding techniques presented in
+     class; OR construction and analysis of a sophisticated predictive model
+     (13-15)
+*  - Data Visualization (15)
+   - Baseline graphics that do not adapt the default formatting or styling (1-3)
+   - Publication-quality graphics using 'core' `ggplot2` functionality (4-6)
+   - Publication-quality graphics using advanced `ggplot2` functionality or
+     `ggplot2` extension packages (7-9)
+   - Basic interactive dashboard[^interactivity] (10-12)
+   - A fully-interactive "dashboard" type product that reacts to sophisticated
+     user customization, accesses or allows upload of real-time data, or provides
+     export of customized visualization or analysis (13-15)
+*  - []{rowspan=3} Communication & Presentation (30)
+   - Presentation (10)
+   - Formatting significantly detracts from legibility of report. Tables and 
+     figures are unattractive, take too much space, or are otherwise 
+     counterproductive to reading experience. (1-2)
+   - Tables and figures are acceptably styled for the report, but have notable
+     issues. Formatting is unattractive, but legibile throughout. 
+     Total word count falls within 1500-3500 words. (3-4)
+   - Tables and figures are well-formatted and suitably styled for the report. 
+     Formatting is attractive and uses standard `Quarto` formatting. 
+     Total word count falls within 1750-3250 words. (5-6)
+   - Document uses advanced `Quarto` formatting to enhance legibility and
+     reading experience. Figure and table formatting is well-styled for 
+     the document.
+     Total word count falls within 2000-3000 words. (7-8)
+   - Document, figure, and table formatting is actively beneficial for legibility
+     reading experience. Total word count falls within 2250-2750 words. (9-10)
+*  - OQ Discussion (10)
+   - Connection between individual work and OQ is unclear. OQ is described poorly. 
+     (1-2)
+   - OQ is described clearly, but relationship to SQ is unclear. (3-4)
+   - OQ is described clearly and has a clear nexus to SQ. Report lacks
+     sufficient motivation for SQ or sufficient 'tie back' to original
+     motivation. (5-6)
+   - Individual work makes a clear contribution to analysis of OQ. SQ is 
+     well-posed and motivated from OQ, but not essential to answering OQ. (7-8)
+   - Individual work makes an irreplaceable contribution to analysis of OQ. 
+     SQ is clearly movitated from the OQ and results tie back cleanly and 
+     informatively. (9-10)
+*  - SQ Discussion (10)
+   - SQ answers are implausible and do not pass a 'sniff test'. Correctness
+     of findings is highly questionable. (1-2)
+   - SQ is answered superficially, without sufficient nuance of detail. Findings
+     are plausible but not fully supported. Analytical strategy is not a 
+     good fit for SQ. (3-4)
+   - SQ is answered with acceptable detail, but certain claims are not 
+     sufficiently supported. Findings are likely to be correct. Analytical
+     strategies are reasonable for the SQ, but not described clearly. (5-6)
+   - SQ is answered in detail. Findings are almost certainly correct, but 
+     questions and possible objection remains. Analytical strategies are
+     clearly described and suitable to the problem. (7-8)
+   - SQ is answered deftly and completely. Findings are described with sufficient
+     nuance and possible objections are anticipated and addressed. Analysis
+     uses insightful analytical strategies to isolate true effects of interest
+     (9-10). 
+  
 :::
+
+Note that this rubric is intentionally quite difficult. It is designed to 
+be able to properly recognize teams and individuals that go above and beyond 
+in specific elements of the course project. You should not try to do everything
+listed in this rubric as a pure box-checking exercise: it is better to focus
+on a few of the challenges most central to your project and to address them well.
+
+
+[^run_elsewhere]: In order to check that your code will run easily on the
+instructor's machine during reproducibility checks, I *highly* recommend sharing
+your analysis code with a classmate or friend *who is not on your project team*.
+If your code runs without issue on their machine, it will likely run on mine as
+well.
 
 [^interactivity]: There are several options for embedding an interactive
 dashboard in your final submission. The easiest is probably to host your 
@@ -868,12 +1113,6 @@ make everything truly seamless and integrated, you can also use the
 run `R` and your dashboard fully in-browser. To embed the resulting
 dashboard in your `qmd` document, you may need to use the
 [`shinylive` Quarto extension](https://github.com/quarto-ext/shinylive).
-
-Note that this rubric is intentionally quite difficult. It is designed to 
-be able to properly recognize teams and individuals that go above and beyond 
-in specific elements of the course project. You should not try to do everything
-listed in this rubric as a pure box-checking exercise: it is better to focus
-on a few of the challenges most central to your project and to address them well.
 
 [^static]: It is *insufficient* to simply read data from a static file hosted
 locally. That is, a command like `read_csv` should be preceeding by code 
@@ -886,6 +1125,83 @@ individual report is due.
 [^realdata]: Your report **must** import and analyze a *real data set*. 
 Hard-coded values will be penalized **heavily** without specific and
 highly compelling and pre-approved justification.
+
+::: {.callout-tip title="Moving Beyond Correlation" collapse="true"}
+
+![Correlation doesn't imply causation, but it does waggle its eyebrows 
+suggestively and gesture furtively while mouthing "look over there!"](https://imgs.xkcd.com/comics/correlation.png)
+
+Typically students identify "correlation is not causation" as a limitation of
+their analyses. While this is formally true, it belies a epistemic nihilism
+and an unwillingness to look far beyond the statistics of the early 1900s. 
+_Much_ work has been done over the past century to develop ways of estimating
+causal effects in complex data. We will not go deeply into this topic in our
+course, but I'll highlight two basic strategies that students have found useful
+in the past below. 
+
+If you would like to discuss these in more detail, or if you feel your analysis
+isn't quite a good fit for either of these strategies, please reach out to the
+instructor. 
+
+Causal inference is understood as a missing data problem: the causal effect of
+$X$ on $Y$ is simply the difference in $Y$ if we do $X$ *vs.* $Y$ if we don't
+do $X$. Unfortunately, we essentially never get to see both of these scenarios.
+Instead, we have to use some sort of statistical techniques to "guess" what
+we would have seen in the other scenario and to subtract what we actually saw 
+from our guess as to what we would have seen. The more accurate the guess, the
+better our estimate of the causal effect. 
+
+*Note: Doing this rigorously and formally can be _very, very_ hard. You will not
+be required to satisfy formal conditions for these strategies to work or to
+compute error estimates in this course. I'm intentionally skimming over many
+important technical details to keep this manageable in this course.*
+
+i) "Synthetic Control": If the causal effect is some pertubation away from a 
+  'base state', we can build a statistical model to predict the base state value
+  and to put it into our causal estimate. In the simplest case, if a neighborhood
+  has a one-year program to remove excess trash, we can use the average 
+  number of rat sightings in the 5 years before the program and the 5 years after
+  the program to get a sense of what would have happened in the program year
+  without the intervention. Subtract this from the actual number of rat sightings
+  in the program year and you have a basic estimate of the impact of the trash 
+  removal program. 
+  
+    Typically, a more complex approach may be needed and you might want to fit 
+    long-term time trend rather than assuming all years before and after are not
+    impacted and are otherwise equal. You might also think about omitting one or
+    two years immediately after the rat program ends, as benefits of that program
+    may still be present. 
+  
+ii) "Difference in differences:" Sometimes we know that a quantity changes and
+    that a 'steady state' baseline does not exist. Even though the baseline
+    is a moving target, we still want to ask _how much_ of the observed change
+    is due to a particular impact. 
+    For example, we may want to know how much of the rent increase in an NYC
+    neighborhood is due to a new crime prevention program in that neighborhood.
+    
+    In this case, we might adopt a "difference in differences" type strategy.
+    Here, we can see that the average rent across the city went up 10%, but the
+    rent in our neighborhood went up 20%. If our neighborhood doesn't have any
+    other special characteristics, we might estimate that 10% of the increase
+    is normal city-wide factors and 10% is due to the crime rate drop. 
+    
+    Here, we look at the _difference_ in how this neighorhood changed over time
+    vs the whole city: the use of two different 'axes' of comparison helps us to
+    minimize the impact of confounders ('everything else'). By looking at the 
+    same neighborhood over two years, we eliminate any impacts due to its location
+    or other factors causing it to have a high baseline rent; by looking at how
+    that neighborhood compares to the rest of the city, we can eliminate city-wide
+    factors like new tenants' rights laws. 
+    
+In practice, you will always use a blend of these two approaches: you might not
+compare your neighborhood to the _whole_ city rent increases, but just to 5 
+similar neighborhoods that didn't have the crime program. The subtleties of
+rigorous causal inference are nearly endless, but the strategy of 
+"find a meaningful guess of what would have happened if not for" often is a 
+helpful guide. 
+
+:::
+
 
 ### Final Peer Evaluations
 
