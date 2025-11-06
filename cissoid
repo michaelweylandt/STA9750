@@ -528,8 +528,29 @@ def current_teams():
     default=False,
     is_flag=True
 )
-def roster_list(include_inactive, include_emplid):
+@click.option(
+    "-g",
+    "--github",
+    help="If provided, only provide roster information for listed students",
+    multiple=True,
+)
+@click.option(
+    "-G",
+   "grep_flag",
+   help="If provided, grep all fields (case insensitive) to subset roster"
+)
+@click.option(
+    "--EMAIL",
+    "send_email",
+    help="Send email to listed students",
+    is_flag=True,
+    default=False
+)
+def roster_list(include_inactive, include_emplid, github, grep_flag, send_email):
     """Print current course roster"""
+    
+    if github and grep_flag: 
+        raise click.ClickException("Cannot pass -g and -G flags simultaneously")
     
     roster = current_roster(include_inactive=include_inactive)
     teams = current_teams()
@@ -561,7 +582,6 @@ def roster_list(include_inactive, include_emplid):
         "emplid": "Student ID"
     })
     
-    click.echo(full_roster.to_markdown(index=True))
     if include_inactive:
         click.echo(f"{full_roster.shape[0]} total students registered (including inactive).")
     else: 
