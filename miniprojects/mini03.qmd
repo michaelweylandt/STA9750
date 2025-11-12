@@ -35,6 +35,13 @@ mp_file <- list(qmd=glue("`mp0{mp_id}.qmd`"),
                 html_long=glue("`docs/mp0{mp_id}.html`"))
 ```
 
+```{r}
+#| eval: false
+library(sf)
+library(tidyverse)
+library(httr2)
+```
+
 ### Due Dates
 
 -   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
@@ -306,7 +313,7 @@ provider and not abuse their servers. In particular, whenever possible, you
 should avoid repeatedly downloading the same data as it drives up hosting costs
 for the data provider. 
 
-::: {.callout-tip title="Task 1: Download NYC Citcy Council District Boundaries"}
+::: {.callout-tip title="Task 1: Download NYC City Council District Boundaries"}
 
 Write a function to download the NYC City Council District Boundaries 
 _responsibly_. When this function is called, it should 
@@ -579,7 +586,8 @@ above and answer the following exploratory questions:
    
    ```{r}
    new_st_point <- function(lat, lon, ...){
-       st_sfc(point = st_point(c(lat, lon))) |>
+       # st_sfc expects x, y which flips the normal lat (N/S) + lon (W/E) ordering
+       st_sfc(point = st_point(c(lon, lat))) |>
          st_set_crs("WGS84")
    }
    ```
