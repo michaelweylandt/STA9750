@@ -410,13 +410,13 @@ I've uploaded my work for MiniProject #**03** - check it out!
 <p>NYC is divided into 51 City Council Districts. As we intend to analyze the number and types of trees in each council district, we need to download a file containing the boundaries of these districts.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> These data can be found <a href="https://www.nyc.gov/content/planning/pages/resources/datasets/city-council">on the NYC Department of Planning site</a>.</p>
 <p>This file is hosted as a <em>static file</em> and does not require any special techniques for access, so we will begin by downloading it. Identify the URL for the most recent NYC City Council data <em>as a <code>zip</code> file</em>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> You can then download this data into a local directory <code>data/mp03/</code>. Because this data is a <code>zip</code> file, we will need to unzip it before use. After the data is unzipped, you can read it into <code>R</code> using the <code>st_read</code> function from the <code>sf</code> package.</p>
 <p>When downloading data, it is important to always be respectful of the data provider and not abuse their servers. In particular, whenever possible, you should avoid repeatedly downloading the same data as it drives up hosting costs for the data provider.</p>
-<div class="callout callout-style-default callout-tip callout-titled" title="Task 1: Download NYC Citcy Council District Boundaries">
+<div class="callout callout-style-default callout-tip callout-titled" title="Task 1: Download NYC City Council District Boundaries">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Task 1: Download NYC Citcy Council District Boundaries
+Task 1: Download NYC City Council District Boundaries
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -619,7 +619,8 @@ Task 4: District-Level Analysis of Tree Coverage
 <p>Computing distances from spatial data can be a little tricky. You first need to create a point equipped with the relevant CRS and then can use the <code>st_distance</code> function to compute distance. The following function will make a suitable point object:</p>
 <div class="cell">
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">new_st_point</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">lat</span>, <span class="va">lon</span>, <span class="va">...</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="fu"><a href="https://r-spatial.github.io/sf/reference/sfc.html">st_sfc</a></span><span class="op">(</span>point <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st.html">st_point</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">lat</span>, <span class="va">lon</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="co"># st_sfc expects x, y which flips the normal lat (N/S) + lon (W/E) ordering</span></span>
+<span>    <span class="fu"><a href="https://r-spatial.github.io/sf/reference/sfc.html">st_sfc</a></span><span class="op">(</span>point <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st.html">st_point</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">lon</span>, <span class="va">lat</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>      <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_crs.html">st_set_crs</a></span><span class="op">(</span><span class="st">"WGS84"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
