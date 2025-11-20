@@ -488,7 +488,8 @@ Task 1: Download CES Total Nonfarm Payroll
 </tr>
 </tbody>
 </table>
-<p>continued through 2025-06-01.</p>
+<p>continued through 2025-06-01. (Note that this will require some clean-up, dplyr, and pivot work).</p>
+<p><em>Do not download the XLSX file and read that. The point of this exercise is to practice working with HTML.</em></p>
 </div>
 </div>
 <p>Replicating a suitable HTTP request in <code>R</code> using <code>httr2</code> can be subtle, so I recommend following these steps:</p>
@@ -526,7 +527,7 @@ API Usage <strong>Required</strong>
 <p>A primary learning goal of this Mini-Project is to practice use of web scraping for data acquisition. If you download a data file manually, from a different source, use a “wrapper” package, or otherwise avoid scraping the page directly, you will receive a 0 for the Project Skeleton, Code Quality, and Data Preparation portions of your grade.</p>
 </div>
 </div>
-<p>This does not need be a <em>long</em> bit of code when it is all done. My code to do all of these steps and to full clean and parse this data totals only 17 lines, generously formatted, after a bit of trial-and-error to see which elements of the HTTP request are not actually essential.</p>
+<p>This does not need to be a <em>long</em> bit of code when it is all done. My code to do all of these steps totals only 17 lines, generously formatted. Getting it right may require some effort, so make sure you are constantly printing output and checking it ‘manually’ to ensure your code is working as expected. It may also take a bit of trial-and-error to determine which elements of the HTTP request your browser makes are actually essential to replicate in <code>R</code> and which can be safely dropped.</p>
 </section><section id="ces-revisions" class="level4"><h4 class="anchored" data-anchor-id="ces-revisions">CES Revisions</h4>
 <p>Revisions to the CES Non-Farm Payroll Employment number are reported on a static page:</p>
 <p><a href="https://www.bls.gov/web/empsit/cesnaicsrev.htm" class="uri">https://www.bls.gov/web/empsit/cesnaicsrev.htm</a></p>
@@ -552,7 +553,7 @@ Task 2: Download CES Revisions Tables
 <tr class="odd">
 <td>1979-01-01</td>
 <td>325</td>
-<td>184</td>
+<td>243</td>
 <td>-82</td>
 </tr>
 <tr class="even">
@@ -576,7 +577,7 @@ Task 2: Download CES Revisions Tables
 </ul>
 </li>
 <li>
-<p>Write a function to extract the desired data from the <em>2024</em> table. (It will be easier to develop your function on the 2024 table rather than the incomplete 2025 table.) Your function should take a single year as input and return a twelve-row data frame structured with the five columns as above.</p>
+<p>Write a function to extract the desired data from the <em>2024</em> table. (It will be easier to develop your function on the 2024 table rather than the incomplete 2025 table.) Your function should take a single year as input and return a twelve-row data frame structured with the four columns as above.</p>
 <p>Some hints:</p>
 <ul>
 <li><p>The column names of these tables are difficult to access since they are spread across three rows. It will likely be easier to select only the relevant table body, pass it to <code><a href="https://rvest.tidyverse.org/reference/html_table.html">rvest::html_table</a></code> after disabling <code>header</code>, and to manually set the relevant column names.</p></li>
@@ -608,7 +609,7 @@ Task 2: Download CES Revisions Tables
 <p>The <code><a href="https://purrr.tidyverse.org/reference/list_c.html">purrr::list_rbind</a></code> or <code><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">dplyr::bind_rows</a></code> functions will be useful in combining the different years into a large single table.</p>
 </li>
 </ol>
-<p>This should not be a <em>long</em> bit of code when it is all done. My code to do all of these steps totals only 18 lines, generously formatted.</p>
+<p>This does not need to be a <em>long</em> bit of code when it is all done. My code to do all of these steps totals only 18 lines, generously formatted. Getting it right may require some effort, so make sure you are constantly printing output and checking it ‘manually’ to ensure your code is working as expected.</p>
 <div class="callout callout-style-default callout-caution callout-titled" title="API Usage **Required**">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -845,7 +846,8 @@ Task 5: Fact Checks of Claims about BLS
 <ul>
 <li>Providing a non-technical explanation of computationally-intensive statistical inference. By “non-technical”, I mean at a level suitable for inclusion in a general audience site like Politifact, not a statistics or economics textbook or research paper.</li>
 <li>Including an schematic visualization of how these computationally intensive methods work. (This is not a <code>ggplot</code> of a sampling distribution) This should be something in a “flowchart” or “how to guide” style, not the results of a specific analysis.</li>
-<li>Applying computationally intensive techniques in your fact check. (You need to perform a theory-based parametric test, so the <code>infer</code> usage here would be a second statistical test of the same underlying claim.)</li>
+<li>Applying computationally intensive techniques in your fact check. (You need to perform a theory-based parametric test for Task 4, so the <code>infer</code> usage here would be a second statistical test of the same underlying claim.)</li>
+<li>Implementing at least three different tests, with at least one testing the mean revision, median revision, and probability of positive revisions; <em>i.e.</em>, computational analogues of a <span class="math inline">\(t\)</span>-test, a Wilcoxon test, and a binomial proportion test.</li>
 </ul>
 <p>To earn any of these extra credit points, you must use <em>computationally-intensive</em> inference, <em>i.e.</em>, techniques like the bootstrap or permutation test. It is not enough to simply sample from a parametric null distribution using <code>infer</code>’s <code>hypothesize(type="draw")</code> mode.</p>
 <p>Part III of the book <a href="https://moderndive.com/"><em>Statistical Inference via Data Science</em></a> will provide useful background on these topics.</p>
