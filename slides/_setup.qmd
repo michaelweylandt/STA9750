@@ -124,5 +124,20 @@ get_mp_submitted <- function(N){
          n_need_work = N_NEED_WORK)
 }
 
+get_project_due_date <- function(element = c("individual_report", "group_report", "peer_evaluation")){
+    
+    element <- match.arg(element)
+    
+    search_string = case_match(element, 
+                               "individual_report" ~ "Individual Report", 
+                               "group_report" ~ "Summary Report",
+                               "peer_evaluation" ~ "Peer Evaluation")
+    
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Course Project", 
+               str_detect(Details, search_string)) |>
+        pull(Date)
+}
+
 next_session <- session + 1
 ```

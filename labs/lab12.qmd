@@ -8,7 +8,7 @@ format: live-html
 
 # [Slides](../slides/slides11.qmd)
 
-# Review Practice {#review}
+# Review and Warm-Up {#review}
 
 *Redux of [Exercise 03 from Last Week](./lab11.html#ex03)*
 
@@ -247,7 +247,7 @@ into
 by splitting the _amount_ (number) from the _ingredient_ (string). This type
 of manipulation is the major goal of today's class. 
 
-## Regular Expression Practice
+# Regular Expression Practice {#regex}
 
 Complete the following exercises using functionality from the
 `stringr` package. 
@@ -434,7 +434,7 @@ library(stringr)
 gradethis::grade_this_code()
 ```
 
-## Scraping Practice I: Cocktail Recipies (Part 2)
+# Scraping Practice I: Cocktails {#cocktails_finish}
 
 Last week, we began to scrape [Hadley's Cocktails](https://cocktails.hadley.nz/)
 with an (eventual) goal of creating a "spreadsheet" of recipes by ingredients.
@@ -442,7 +442,7 @@ with an (eventual) goal of creating a "spreadsheet" of recipes by ingredients.
 We found the following: 
 
 ```{r}
-#| eval: false
+#| cache: true
 library(rvest)
 BASE_URL <- "https://cocktails.hadley.nz/"
 
@@ -461,67 +461,101 @@ read_page <- function(stub){
     URL <- paste0(BASE_URL, stub)
     COCKTAILS <- read_html(URL) |> html_elements("article")
     
-    map_df(COCKTAILS, read_article)
+    map(COCKTAILS, read_article) |> list_rbind()
 }
 
 RECIPES_LONG <- map(PAGES, read_page) |> list_rbind()
 ```
 
 Take this output and use `stringr` and `tidyr` to complete the transition to
-a well-formated "wide" set of recipies. 
+a well-formatted "wide" set of recipes. 
 
-1. Clean up the `title` column. 
-2. Split the `ingredient` column into three new columns: 
-   1. Amount 
-   2. Unit
-   3. Ingredient Name
-   
-   The following functions may be useful to you: 
+1. Clean up the `title` column using `str_trim` and remove duplicate rows: 
+
+::: {.callout-note title="Solution" collapse="true"}
+
 ```{r}
-#| eval: false
-get_number_part <- function(x){
-    library(dplyr)
-    library(stringr)
-    x |>
-        str_replace_all("[A-Za-z,']", "") |>
-        str_trim() |>
-        case_match(
-            "1" ~ 1, 
-            "2" ~ 2,
-            "2½" ~ 2.5,
-            "1½" ~ 1.5,
-            "½" ~ 0.5, 
-            "¾" ~ 0.75,
-            "1¾" ~ 1.75,
-            "¼" ~ 0.25,
-            "1¼" ~ 1.25,
-            "3" ~ 3,
-            "4" ~ 4, 
-            "5" ~ 5, 
-            "6" ~ 6, 
-            "7" ~ 7, 
-            "8" ~ 8
-        )
-}
-
-get_cocktail_unit <- function(x){
-    library(dplyr)
-    library(stringr)
-    case_when(
-        str_detect(x, "oz") ~ "oz",
-        str_detect(x, "dash") ~ "dash",
-        str_detect(x, "drop") ~ "drop",
-        str_detect(x, " t ") ~ "t", 
-        str_detect(x, "chunk") ~ "chunk",
-        str_detect(x, "leaves") ~ "leaves",
-        str_detect(x, " cm ") ~ "cm"
-    )
-}
+RECIPES_LONG <- RECIPES_LONG |>
+    mutate(title = str_trim(title)) |>
+    distinct()
 ```
 
-   You will need to create a third helper function to pull out
-   the actual ingredient name. You can implement this with a (somewhat complex)
-   `str_replace_all`. 
+:::
+
+2. Split the `ingredient` column into three new columns: 
+
+   - Amount 
+   - Unit
+   - Ingredient Name
+   
+    We will approach this in three steps: 
+   
+    1.  First, write a function to pull out the "unit" (oz, dash, leaves) *etc.*
+   
+        The units found in this data are `oz`, `dash`, `drop`, `t`, `chunk`, 
+        `leaves`, and `cm`. 
+      
+        *Hint*: Use a `str_extract` and make sure to require a space before and 
+        after the unit so you don't pick up `t`s in the names of ingredients.
+      
+::: {.callout-note title="Solution" collapse="true"}
+
+```{r}
+RECIPES_LONG <- RECIPES_LONG |>
+    mutate(unit = str_extract(ingredient, 
+                              " (oz|dash|drop|t|chunk|leaves|cm) ", 
+                              group=1))
+```
+
+:::
+
+    2. Next, pull out the "number" part at the beginning of each ingredient.
+    Note that some fractional amounts are included, so the following function
+    may be useful: 
+    
+```{r}
+standardize_number <- function(x){
+    library(stringr)
+    x |> str_replace("(\\d)½", "\\1.5") |> 
+        str_replace("½", "0.5") |>
+        str_replace("(\\d)¾", "\\1.75") |> 
+        str_replace("¾", "0.75") |>
+        str_replace("(\\d)¼", "\\1.25") |> 
+        str_replace("¼", "0.25")
+}
+
+x <- c("½ oz allspice liqueur", "¾ oz Campari", "1¾ oz gin")
+standardize_number(x)
+```
+
+::: {.callout-note title="Solution" collapse="true"}
+
+```{r}
+RECIPES_LONG <- RECIPES_LONG |>
+    mutate(std_ingredient = standardize_number(ingredient), 
+           number = str_extract(std_ingredient, "(^[.[:digit:]]+) ", group=1), 
+           number = as.double(number)) |> 
+    select(-ingredient)
+```
+
+:::
+
+   3. Finally, everything that you haven't already extracted can be assumed to
+   be the name of an ingredient. Use `str_remove` twice to get the ingredient
+   names. 
+   
+::: {.callout-note title="Solution" collapse="true"}
+
+```{r}
+RECIPES_LONG <- RECIPES_LONG |>
+    mutate(ingredient = std_ingredient |> 
+               str_remove(as.character(number)) |>  # temporarily return to string
+               str_remove(unit) |> 
+               str_trim()) |>
+    select(-std_ingredient)
+```
+
+:::   
    
    You should wind up with a table that looks something like
    
@@ -532,20 +566,87 @@ get_cocktail_unit <- function(x){
 
 3. Combine the ingredient and unit columns so that `Meletti` and ` oz ` in 
    two separate columns becomes `Meletti (oz)` in a single column. 
-4. Use a `pivot_*` function to create a new _wide_ table with each ingredient
-   as a column. 
    
-   Which `pivot` operation do you want to use here? How should the empty cells
-   be treated?
-   
+
 ::: {.callout-note title="Solution" collapse="true"}
 
 ```{r}
-#| eval: false
+RECIPES_LONG <- RECIPES_LONG |>
+    mutate(ingredient = paste0(ingredient, " (", unit, ")")) |> 
+    select(-unit)
+```
+
+:::   
+   
+4. Use a `pivot_*` function to create a new _wide_ table with each ingredient
+   as a column. 
+   
+   *Hint*: Which `pivot` operation do you want to use here? How should the 
+   empty cells be treated? Look at the `values_fill` argument. 
+   
+   Note that there are some duplicate rows when the same ingredient is used twice
+   in a single cocktail. You might want to simply add up the relevant numbers before
+   proceeding. 
+
+::: {.callout-note title="Solution" collapse="true"}
+
+```{r}
+RECIPES_LONG |>
+    group_by(title, ingredient) |>
+    summarize(number = sum((number))) |>
+    ungroup() |>
+    pivot_wider(names_from = ingredient, values_from=number, values_fill=0)
+```
+
+This isn't quite perfect (see some problems with the `NA` values), but it's close.
+
+:::   
+
+
+Here is a compact solution for the whole exercise: 
+   
+::: {.callout-note title="Combined Solution" collapse="true"}
+
+```{r}
+#| cache: true
+library(tidyverse)
+library(rvest)
+process_recipe <- function(recipe){
+    title <- recipe |> html_element(".title") |> html_text2()
+    ingredients <- recipe |> html_elements("li") |> html_text2()
+    
+    tibble(title=title, ingredient=ingredients)
+}
+
+BASE_URL <- "https://cocktails.hadley.nz/"
+
+RECIPES_LONG <- read_html(BASE_URL) |> 
+    html_elements("nav a") |> 
+    html_attr("href") |>
+    map(\(p) request(BASE_URL) |> req_url_path(p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |> 
+    map(html_elements, "article") |> 
+    reduce(c) |>
+    map(process_recipe) |> 
+    list_rbind()
 
 get_ingredient_name <- function(x){
     str_remove_all(x, "[0-9¼½¾]|( oz )|( dashes )|( dash )|( drops )|( drop )|( t )|( chunks )|( chunk )|( leaves )|( leaf )|( cm )")
 }
+
+standardize_number <- function(x){
+    library(stringr)
+    x |> str_replace("(\\d)½", "\\1.5") |> 
+        str_replace("½", "0.5") |>
+        str_replace("(\\d)¾", "\\1.75") |> 
+        str_replace("¾", "0.75") |>
+        str_replace("(\\d)¼", "\\1.25") |> 
+        str_replace("¼", "0.25")
+}
+
+x <- c("½ oz allspice liqueur", "¾ oz Campari", "1¾ oz gin")
+standardize_number(x)
 
 RECIPES_LONG |>
     # Remove duplicates from import process
@@ -553,9 +654,15 @@ RECIPES_LONG |>
     # as drinks are listed on multiple ingredient pages.
     distinct() |>
     mutate(title  = str_trim(title), 
-           amount = get_number_part(ingredient), 
-           unit  = get_cocktail_unit(ingredient), 
-           ingredient = get_ingredient_name(ingredient)) |>
+           std_ingredient = standardize_number(ingredient), 
+           amount = str_extract(std_ingredient, "(^[.[:digit:]]+) ", group=1), 
+           amount = as.double(amount), 
+           unit = str_extract(ingredient, 
+                              " (oz|dash|drop|t|chunk|leaves|cm) ", 
+                              group=1),
+           ingredient = str_remove_all(ingredient, unit), 
+           ingredient = str_remove_all(ingredient, as.character(amount)),
+           ingredient = str_trim(ingredient)) |>
     # For some ingredients, e.g. a lemon twist, the implied
     # but unstated quantity is 1
     mutate(amount = case_when(
@@ -583,31 +690,273 @@ RECIPES_LONG |>
 ```
 
 :::
-## Scraping Practice II: Quotes
 
-Next, let's analyze the website [https://quotes.toscrape.com](https://quotes.toscrape.com),
+# Scraping Practice II: Quotes {#quotes}
+
+Let's analyze the website [https://quotes.toscrape.com](https://quotes.toscrape.com),
 a website designed to practice web-scraping. 
 
 Scrape the contents of that website--note that quotes continue for multiple 
 pages--and answer the following questions. You can check most of these "by hand"
 but you need to compute your answers in code!
 
+0. How many pages of quotes are on this site? 
+
+   *Hint*: Write code to keep paging until no more "Next" button is present.
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(rvest)
+library(tidyverse)
+
+N_PAGES <- 1
+URL <- "https://quotes.toscrape.com/"
+
+repeat{
+    missing_next_button <- request(URL) |>
+        req_url_path("page", N_PAGES) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_element(".next") |>
+        is.na()
+    
+    if(missing_next_button){
+        break
+    } else {
+        N_PAGES <- N_PAGES + 1
+    }
+}
+```
+
+There are `N_PAGES` pages worth of quotes on this site. 
+
+:::   
+
 1. How many quotes are on this website (all pages)? 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+N_TOTAL_QUOTES <- 0
+
+for(page in 1:N_PAGES){
+    n_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote") |>
+        length()
+    
+    N_TOTAL_QUOTES <- N_TOTAL_QUOTES + n_quotes
+    
+}
+```
+
+or using `purrr`-style programming: 
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote") |>
+    map_int(length) |>
+    sum()
+```
+
+:::
+
 2. How many quotes are tagged "Death"?
-3. What is the longest quote (by number of characters)? The `nchar` function
-   will be helpful. 
-4. How many quotes are by (or at least are attributed to) Albert Einstein?
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+N_DEATH_QUOTES <- 0
+
+for(page in 1:N_PAGES){
+    death_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote .tags") |>
+        html_text2() |>
+        str_detect("death") |>
+        sum()
+    
+    N_DEATH_QUOTES <- N_DEATH_QUOTES + death_quotes
+    
+}
+
+N_DEATH_QUOTES
+```
+
+or using `purrr`-style programming: 
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote .tags") |>
+    map(html_text2) |>
+    map_int(\(x) sum(str_detect(x, "death"))) |>
+    sum()
+```
+
+:::
+
+3. How many quotes are by (or at least are attributed to) Albert Einstein?
+
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+N_EINSTEIN_QUOTES <- 0
+
+for(page in 1:N_PAGES){
+    einstein_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote .author") |>
+        html_text2() |>
+        str_detect("Einstein") |>
+        sum()
+    
+    N_EINSTEIN_QUOTES <- N_EINSTEIN_QUOTES + einstein_quotes
+    
+}
+
+N_EINSTEIN_QUOTES
+```
+
+or using `purrr`-style programming: 
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote .author") |>
+    map(html_text2) |>
+    map_int(\(x) sum(str_detect(x, "Einstein"))) |>
+    sum()
+```
+
+:::
+
+4. What is the longest quote (by number of characters)? The `str_length` 
+   and `which.max` functions will be helpful. 
+   
+   You can use them like this: 
+   
+   ```{r}
+   x <- c("short", "medium", "very quite long")
+   longest <- x[which.max(str_length(x))]
+   ```
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+LONGEST_QUOTE <- ""
+
+for(page in 1:N_PAGES){
+    all_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote .text") |>
+        html_text2()
+        
+    longest_on_page <- all_quotes[which.max(str_length(all_quotes))]
+    
+    if(str_length(longest_on_page) > str_length(LONGEST_QUOTE)){
+        LONGEST_QUOTE <- longest_on_page
+    }
+}
+
+cat("The longest quote is: ")
+cat(LONGEST_QUOTE)
+cat("which is ", str_length(LONGEST_QUOTE), " characters long.")
+```
+:::
+   
+
 5. Of all authors quoted, who has the earliest (estimated) birthday? 
 
-## Basic Statistical Modeling
+   *Hint:* Use the `as.Date` function to parse these dates. *E.g.*,
+   
+   ```{r}
+   x <- "March 14, 1879"
+   as.Date(x, "%b %d, %Y")
+   ```
+   
+   Here, the second string is a _format_ string, which specifies how the date
+   is written.
+   
+::: {.callout-tip title="Solution" collapse="true"}
 
-`R` has a number of powerful built-in statistical methods, many of which you will
-explore in other courses, *e.g.*, `lm` and `glm` in your regression course. 
-Time allowing, we're going to explore an alternative approach to statistics using
-_computational inference_. While these techniques can be implemented by hand, 
-we're going to use the [`infer` package](https://infer.netlify.app/).
 
-**Time Allowing**:
+```{r}
+#| cache: true
+library(httr2)
+library(tidyverse)
+library(rvest)
 
-- Discussion of computational inference
-- Demonstration with `infer` package. 
+ALL_AUTHOR_LINKS <- c()
+
+for(page in 1:N_PAGES){
+    author_links <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote a") |>
+        html_attr("href") |>
+        str_subset("author")
+    
+    ALL_AUTHOR_LINKS <- c(ALL_AUTHOR_LINKS, paste0(URL, author_links))
+    
+}
+
+ALL_AUTHOR_LINKS <- unique(ALL_AUTHOR_LINKS)
+
+AUTHORS <- map(ALL_AUTHOR_LINKS, read_html) |>
+    map(\(h) data.frame(name=h |> html_element(".author-title") |> html_text2(),
+                        date=h |> html_element(".author-born-date") |> html_text2())) |>
+    list_rbind() |>
+    mutate(date = as.Date(date, "%b %d, %Y"))
+
+AUTHORS |> slice_min(date)
+```
+
+:::
