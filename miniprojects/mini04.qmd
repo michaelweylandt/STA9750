@@ -420,7 +420,11 @@ Return your results in a data  frame of the following form:
 | 1979-01-01 | 88808 |
 | 1979-02-01 | 89055 |
 
-continued through 2025-06-01. 
+continued through 2025-06-01. (Note that this will require some clean-up, dplyr, 
+and pivot work).
+
+*Do not download the XLSX file and read that. The point of this exercise is to
+practice working with HTML.*
 
 :::
 
@@ -464,11 +468,13 @@ Preparation portions of your grade.
 
 :::
 
-
-This does not need be a _long_ bit of code when it is all done. My code to do 
-all of these steps and to full clean and parse this data totals only 17 lines,
-generously formatted, after a bit of trial-and-error to see which elements of
-the HTTP request are not actually essential. 
+This does not need to be a _long_ bit of code when it is all done. My code to 
+do all of these steps totals only 17 lines, generously formatted. Getting it 
+right may require some effort, so make sure you are constantly printing output
+and checking it 'manually' to ensure your code is working as expected. It may
+also take a bit of trial-and-error to determine which elements of the HTTP
+request your browser makes are actually essential to replicate in `R` and which
+can be safely dropped. 
 
 #### CES Revisions
 
@@ -485,7 +491,7 @@ frame of the following form:
 
 | date       | original | final | revision |
 |------------|----------|-------|----------|
-| 1979-01-01 | 325      | 184   | -82      |
+| 1979-01-01 | 325      | 243   | -82      |
 | 1979-02-01 | 301      | 294   | -7       |
 
 continued through June 2025. Here the `revision` column is obtained by taking
@@ -507,7 +513,7 @@ the following steps:
 3. Write a function to extract the desired data from the _2024_ table. (It will
    be easier to develop your function on the 2024 table rather than the incomplete
    2025 table.) Your function should take a single year as input and return a
-   twelve-row data frame structured with the five columns as above. 
+   twelve-row data frame structured with the four columns as above. 
    
    Some hints: 
    
@@ -540,8 +546,10 @@ the following steps:
    The `purrr::list_rbind` or `dplyr::bind_rows` functions will be useful in
    combining the different years into a large single table. 
    
-This should not be a _long_ bit of code when it is all done. My code to do all 
-of these steps totals only 18 lines, generously formatted. 
+This does not need to be a _long_ bit of code when it is all done. My code to 
+do all of these steps totals only 18 lines, generously formatted. Getting it 
+right may require some effort, so make sure you are constantly printing output
+and checking it 'manually' to ensure your code is working as expected.
 
 ::: {.callout-caution title="API Usage **Required**"}
 
@@ -816,8 +824,12 @@ In particular, one point of extra credit may be included for each of:
   be something in a "flowchart" or "how to guide" style, not the results of a 
   specific analysis. 
 - Applying computationally intensive techniques in your fact check. (You need to
-  perform a theory-based parametric test, so the `infer` usage here would be a
-  second statistical test of the same underlying claim.)
+  perform a theory-based parametric test for Task 4, so the `infer` usage here 
+  would be a second statistical test of the same underlying claim.)
+- Implementing at least three different tests, with at least one testing the 
+  mean revision, median revision, and probability of positive revisions; *i.e.*,
+  computational analogues of a $t$-test, a Wilcoxon test, and a binomial 
+  proportion test.
   
 To earn any of these extra credit points, you must use _computationally-intensive_
 inference, *i.e.*, techniques like the bootstrap or permutation test. It is not
