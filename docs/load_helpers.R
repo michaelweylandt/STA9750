@@ -266,6 +266,10 @@ mp_submission_verify <- function(N, github_id){
                          repo=course_repo, 
                          page=page)
         
+        if(length(new_issues) == 0){
+            break
+        }
+        
         issues <- c(issues, new_issues)
         page <- page + 1
     }
@@ -417,6 +421,10 @@ mp_feedback_locate <- function(N, github_id){
                          repo=course_repo, 
                          page=page)
         
+        if(length(new_issues) == 0){
+            break
+        }
+        
         issues <- c(issues, new_issues)
         page <- page + 1
     }
@@ -480,6 +488,10 @@ mp_feedback_submit <- function(N, peer_id){
         new_issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all&per_page=100&page={page}", 
                          repo=course_repo, 
                          page=page)
+        
+        if(length(new_issues) == 0){
+            break
+        }
         
         issues <- c(issues, new_issues)
         page <- page + 1
@@ -601,6 +613,10 @@ mp_feedback_verify <- function(N, github_id, peer_id){
         new_issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all&per_page=100&page={page}", 
                          repo=course_repo, 
                          page=page)
+        
+        if(length(new_issues) == 0){
+            break
+        }
         
         issues <- c(issues, new_issues)
         page <- page + 1

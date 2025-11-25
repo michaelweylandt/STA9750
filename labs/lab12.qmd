@@ -53,6 +53,7 @@ code.
 ::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
+#| cache: true
 library(tidyverse)
 library(httr2)
 library(rvest)
@@ -342,8 +343,9 @@ library(stringr)
 gradethis::grade_this_code()
 ```
 
-3. The following text is adapted from the [Taylor Swift wikipedia page](https://en.wikipedia.org/wiki/Taylor_Swift), with some changes made to the
-punctuation to make things easier. 
+3. The following text is adapted from the 
+[Taylor Swift wikipedia page](https://en.wikipedia.org/wiki/Taylor_Swift), 
+with some changes made to the punctuation to make things easier. 
 
 > Taylor Alison Swift (born December 13, 1989) is an American singer-songwriter. A subject of widespread public interest, she has influenced the music industry and popular culture through her artistry, especially in songwriting, and entrepreneurship. She is an advocate of artists rights and womens empowerment. Swift began professional songwriting at age 14. She signed with Big Machine Records in 2005 and achieved prominence as a country pop singer with the albums Taylor Swift (2006) and Fearless (2008). Their singles 'Teardrops on My Guitar', 'Love Story', and 'You Belong with Me' were crossover successes on country and pop radio formats and brought Swift mainstream fame. She experimented with rock and electronic styles on her next albums, Speak Now (2010) and Red (2012), respectively, with the latter featuring her first Billboard Hot 100 number-one single, 'We Are Never Ever Getting Back Together'. Swift recalibrated her image from country to pop with 1989 (2014), a synth-pop album containing the chart-topping songs 'Shake It Off', 'Blank Space', and 'Bad Blood'. Media scrutiny inspired the hip-hop-influenced Reputation (2017) and its number-one single 'Look What You Made Me Do'. After signing with Republic Records in 2018, Swift released the eclectic pop album Lover (2019) and the autobiographical documentary Miss Americana (2020). She explored indie folk styles on the 2020 albums Folklore and Evermore, subdued electropop on Midnights (2022), and re-recorded four albums subtitled Taylors Version after a dispute with Big Machine. These albums spawned the number-one songs 'Cruel Summer', 'Cardigan', 'Willow', 'Anti-Hero', 'All Too Well', and 'Is It Over Now?'. Her Eras Tour (2023-2024) and its accompanying concert film became the highest-grossing tour and concert film of all time, respectively. Swift has directed videos and films such as Folklore: The Long Pond Studio Sessions (2020) and All Too Well: The Short Film (2021). Swift is one of the worlds best-selling artists, with 200 million records sold worldwide as of 2019. She is the most-streamed artist on Spotify, the highest-grossing female touring act, and the first billionaire with music as the main source of income. Six of her albums have opened with over one million sales in a week. The 2023 Time Person of the Year, Swift has appeared on lists such as Rolling Stones 100 Greatest Songwriters of All Time, Billboards Greatest of All Time Artists, and Forbes Worlds 100 Most Powerful Women. Her accolades include 14 Grammy Awards, a Primetime Emmy Award,  40 American Music Awards, 39 Billboard Music Awards, and 23 MTV Video Music Awards; she has won the Grammy Award for Album of the Year, the MTV Video Music Award for Video of the Year, and the IFPI Global Recording Artist of the Year a record four times each.
 
@@ -472,7 +474,7 @@ a well-formatted "wide" set of recipes.
 
 1. Clean up the `title` column using `str_trim` and remove duplicate rows: 
 
-::: {.callout-note title="Solution" collapse="true"}
+::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
 RECIPES_LONG <- RECIPES_LONG |>
@@ -490,46 +492,47 @@ RECIPES_LONG <- RECIPES_LONG |>
    
     We will approach this in three steps: 
    
-    1.  First, write a function to pull out the "unit" (oz, dash, leaves) *etc.*
+      A. First, write a function to pull out the "unit" (oz, dash, leaves) *etc.*
    
-        The units found in this data are `oz`, `dash`, `drop`, `t`, `chunk`, 
-        `leaves`, and `cm`. 
+      The units found in this data are `oz`, `dash`, `drop`, `t`, `chunk`, 
+      `leaves`, and `cm`. 
       
-        *Hint*: Use a `str_extract` and make sure to require a space before and 
-        after the unit so you don't pick up `t`s in the names of ingredients.
+      *Hint*: Use a `str_extract` and make sure to require a space before and 
+      after the unit so you don't pick up `t`s in the names of ingredients.
       
-::: {.callout-note title="Solution" collapse="true"}
+::: {.callout-tip title="Solution" collapse="true"}
 
-```{r}
-RECIPES_LONG <- RECIPES_LONG |>
-    mutate(unit = str_extract(ingredient, 
-                              " (oz|dash|drop|t|chunk|leaves|cm) ", 
-                              group=1))
-```
+    ```{r}
+    RECIPES_LONG <- RECIPES_LONG |>
+        mutate(unit = str_extract(ingredient, 
+                                  " (oz|dash|drop|t|chunk|leaves|cm) ", 
+                                  group=1))
+    ```
 
 :::
 
-    2. Next, pull out the "number" part at the beginning of each ingredient.
-    Note that some fractional amounts are included, so the following function
-    may be useful: 
+    B. Next, pull out the "number" part at the beginning of each ingredient.
+       Note that some fractional amounts are included, so the following function
+       may be useful: 
+         
     
 ```{r}
-standardize_number <- function(x){
-    library(stringr)
-    x |> str_replace("(\\d)½", "\\1.5") |> 
-        str_replace("½", "0.5") |>
-        str_replace("(\\d)¾", "\\1.75") |> 
-        str_replace("¾", "0.75") |>
-        str_replace("(\\d)¼", "\\1.25") |> 
-        str_replace("¼", "0.25")
-}
+    standardize_number <- function(x){
+        library(stringr)
+        x |> str_replace("(\\d)½", "\\1.5") |> 
+             str_replace("½", "0.5") |>
+             str_replace("(\\d)¾", "\\1.75") |> 
+             str_replace("¾", "0.75") |>
+             str_replace("(\\d)¼", "\\1.25") |> 
+            str_replace("¼", "0.25")
+    }
 
-x <- c("½ oz allspice liqueur", "¾ oz Campari", "1¾ oz gin")
-standardize_number(x)
+    x <- c("½ oz allspice liqueur", "¾ oz Campari", "1¾ oz gin")
+    standardize_number(x)
 ```
 
-::: {.callout-note title="Solution" collapse="true"}
-
+::: {.callout-tip title="Solution" collapse="true"}
+    
 ```{r}
 RECIPES_LONG <- RECIPES_LONG |>
     mutate(std_ingredient = standardize_number(ingredient), 
@@ -537,14 +540,15 @@ RECIPES_LONG <- RECIPES_LONG |>
            number = as.double(number)) |> 
     select(-ingredient)
 ```
-
+    
 :::
 
-   3. Finally, everything that you haven't already extracted can be assumed to
-   be the name of an ingredient. Use `str_remove` twice to get the ingredient
-   names. 
-   
-::: {.callout-note title="Solution" collapse="true"}
+
+    C. Finally, everything that you haven't already extracted can be assumed to
+       be the name of an ingredient. Use `str_remove` twice to get the ingredient
+       names. 
+       
+::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
 RECIPES_LONG <- RECIPES_LONG |>
@@ -566,9 +570,8 @@ RECIPES_LONG <- RECIPES_LONG |>
 
 3. Combine the ingredient and unit columns so that `Meletti` and ` oz ` in 
    two separate columns becomes `Meletti (oz)` in a single column. 
-   
 
-::: {.callout-note title="Solution" collapse="true"}
+::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
 RECIPES_LONG <- RECIPES_LONG |>
@@ -588,7 +591,7 @@ RECIPES_LONG <- RECIPES_LONG |>
    in a single cocktail. You might want to simply add up the relevant numbers before
    proceeding. 
 
-::: {.callout-note title="Solution" collapse="true"}
+::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
 RECIPES_LONG |>
@@ -605,7 +608,7 @@ This isn't quite perfect (see some problems with the `NA` values), but it's clos
 
 Here is a compact solution for the whole exercise: 
    
-::: {.callout-note title="Combined Solution" collapse="true"}
+::: {.callout-tip title="Combined Solution" collapse="true"}
 
 ```{r}
 #| cache: true
@@ -631,10 +634,6 @@ RECIPES_LONG <- read_html(BASE_URL) |>
     map(process_recipe) |> 
     list_rbind()
 
-get_ingredient_name <- function(x){
-    str_remove_all(x, "[0-9¼½¾]|( oz )|( dashes )|( dash )|( drops )|( drop )|( t )|( chunks )|( chunk )|( leaves )|( leaf )|( cm )")
-}
-
 standardize_number <- function(x){
     library(stringr)
     x |> str_replace("(\\d)½", "\\1.5") |> 
@@ -644,9 +643,6 @@ standardize_number <- function(x){
         str_replace("(\\d)¼", "\\1.25") |> 
         str_replace("¼", "0.25")
 }
-
-x <- c("½ oz allspice liqueur", "¾ oz Campari", "1¾ oz gin")
-standardize_number(x)
 
 RECIPES_LONG |>
     # Remove duplicates from import process
