@@ -357,6 +357,10 @@
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 88%">
+</colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: right;">Breakout</th>
@@ -390,26 +394,18 @@
 </tr>
 <tr class="odd">
 <td style="text-align: right;">7</td>
-<td style="text-align: left;">Sounds Good (T) + Stats &amp; The City (R)</td>
+<td style="text-align: left;">Sounds Good (T) + Standard Deviants (R)</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">8</td>
-<td style="text-align: left;">Standard Deviants (T) + Restaurant Nightmares (R)</td>
+<td style="text-align: left;">How We Met Your Landlord (T) + Stats &amp; The City (R)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">9</td>
-<td style="text-align: left;">How We Met Your Landlord (T)</td>
+<td style="text-align: left;">The Mean, Green, Data-Analyzing Team (T) + Restaurant Nightmares (R)</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">10</td>
-<td style="text-align: left;">The Mean, Green, Data-Analyzing Team (T)</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">11</td>
-<td style="text-align: left;">Master Splinter (T)</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">12</td>
 <td style="text-align: left;">Nightshift Analysts (T)</td>
 </tr>
 </tbody>
@@ -1014,125 +1010,6 @@
 <h2>Cocktail Scraping</h2>
 <p>With your breakout group, it’s time to finish the cocktail scraping exercise</p>
 <p><a href="../labs/lab12.html#cocktails_finish">Cocktails</a></p>
-</section></section>
-<section>
-<section id="statistical-inference" class="title-slide slide level1 center">
-<h1>Statistical Inference</h1>
-
-</section>
-<section id="statistical-inference-1" class="slide level2">
-<h2>Statistical Inference</h2>
-<p>Recall the basic theory of statistical tests - “goodness of fit”</p>
-<ul>
-<li>Select a baseline model (‘null hypothesis’)</li>
-<li>Select a quantity of interest (‘test statistic’)</li>
-<li>Determine distribution of test statistic under null hypothesis</li>
-<li>If <em>observed</em> test statistic is extreme (vis-a-vis null distribution of test statistic):
-<ul>
-<li>-&gt; “doesn’t fit” and reject null</li>
-</ul></li>
-</ul>
-</section>
-<section id="statistical-theory" class="slide level2">
-<h2>Statistical Theory</h2>
-<p><em>75+ Years of Theory</em></p>
-<ul>
-<li>Pick a null + test statistic
-<ul>
-<li>Compute “null distribution”</li>
-</ul></li>
-</ul>
-<p><span class="math inline">\(Z\)</span>-values, <span class="math inline">\(t\)</span>-values, <span class="math inline">\(p\)</span>-values, <em>etc.</em></p>
-<p>Typically requires ‘big math’</p>
-<div class="fragment">
-<p>Alternative:</p>
-<ul>
-<li>Let a computer do the hard work</li>
-</ul>
-</div>
-</section>
-<section id="monte-carlo-simulation" class="slide level2">
-<h2>Monte Carlo Simulation</h2>
-<p>Using a computer’s <em>pseudo-random number generator</em> (PRNG)</p>
-<p>Repeat:</p>
-<ul>
-<li>Generate <span class="math inline">\(X_1, X_2, X_3, \dots\)</span></li>
-<li>Compute <span class="math inline">\(f(X_1), f(X_2), f(X_3), \dots\)</span></li>
-</ul>
-<p>Sample average (LLN)</p>
-<p><span class="math display">\[\frac{1}{n} \sum_{i=1}^n f(X_i) \to \E[f(X)]\]</span></p>
-<p>Holds for arbitrary related quantities (quantiles, medians, variances)</p>
-</section>
-<section id="monte-carlo-simulation-1" class="slide level2">
-<h2>Monte Carlo Simulation</h2>
-<p>Example: suppose we have <span class="math inline">\(X_i \sim\text{iid} \mathcal{N}(0, \sigma^2)\)</span> and we want to test <span class="math inline">\(H_0: \sigma=1\)</span></p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a></a>n <span class="ot">&lt;-</span> <span class="dv">20</span></span>
-<span id="cb74-2"><a></a>X <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="at">mean=</span><span class="dv">0</span>, <span class="at">sd=</span><span class="fl">1.25</span>)</span>
-<span id="cb74-3"><a></a></span>
-<span id="cb74-4"><a></a><span class="fu">sd</span>(X)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 1.087873</code></pre>
-</div>
-</div>
-<p>How to test?</p>
-</section>
-<section id="the-math-way" class="slide level2">
-<h2>The Math Way</h2>
-<p>Per Cochran’s theorem, <span class="math inline">\(S \sim \sqrt{\frac{\chi^2_{n-1}}{n-1}} = \frac{1}{\sqrt{n-1}} \chi_{n-1}\)</span> has a <span class="math inline">\(\chi\)</span> (not <span class="math inline">\(\chi^2\)</span>) distribution</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a></a><span class="fu">library</span>(chi)</span>
-<span id="cb76-2"><a></a>critical_value <span class="ot">&lt;-</span> <span class="fu">qchi</span>(<span class="fl">0.95</span>, <span class="at">df=</span>n<span class="dv">-1</span>) <span class="sc">/</span> <span class="fu">sqrt</span>(n<span class="dv">-1</span>)</span>
-<span id="cb76-3"><a></a>critical_value</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 1.259564</code></pre>
-</div>
-</div>
-<p>So reject <span class="math inline">\(H_0\)</span> if <span class="math inline">\(S\)</span> above critical value (1.26)</p>
-</section>
-<section id="the-computer-way" class="slide level2">
-<h2>The Computer Way</h2>
-<p>To get a critical value</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a></a>gen_sample_sd <span class="ot">&lt;-</span> <span class="cf">function</span>(..., <span class="at">n=</span><span class="dv">25</span>, <span class="at">sd=</span><span class="dv">1</span>){</span>
-<span id="cb78-2"><a></a>    <span class="fu">sd</span>(<span class="fu">rnorm</span>(n, <span class="at">mean=</span><span class="dv">0</span>, <span class="at">sd=</span>sd))</span>
-<span id="cb78-3"><a></a>}</span>
-<span id="cb78-4"><a></a></span>
-<span id="cb78-5"><a></a><span class="fu">tibble</span>(<span class="at">simulation=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">1000</span>) <span class="sc">|&gt;</span></span>
-<span id="cb78-6"><a></a>    <span class="fu">mutate</span>(<span class="at">test_statistic_null =</span> <span class="fu">map_dbl</span>(simulation, gen_sample_sd)) <span class="sc">|&gt;</span></span>
-<span id="cb78-7"><a></a>    <span class="fu">summarize</span>(<span class="fu">quantile</span>(test_statistic_null, <span class="fl">0.95</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1 × 1
-  `quantile(test_statistic_null, 0.95)`
-                                  &lt;dbl&gt;
-1                                  1.22</code></pre>
-</div>
-</div>
-</section>
-<section id="the-computer-way-1" class="slide level2">
-<h2>The Computer Way</h2>
-<p>To get a <span class="math inline">\(p\)</span>-value:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a></a>gen_sample_sd <span class="ot">&lt;-</span> <span class="cf">function</span>(..., <span class="at">n=</span><span class="dv">25</span>, <span class="at">sd=</span><span class="dv">1</span>){</span>
-<span id="cb80-2"><a></a>    <span class="fu">sd</span>(<span class="fu">rnorm</span>(n, <span class="at">mean=</span><span class="dv">0</span>, <span class="at">sd=</span>sd))</span>
-<span id="cb80-3"><a></a>}</span>
-<span id="cb80-4"><a></a></span>
-<span id="cb80-5"><a></a><span class="fu">tibble</span>(<span class="at">simulation=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">1000</span>) <span class="sc">|&gt;</span></span>
-<span id="cb80-6"><a></a>    <span class="fu">mutate</span>(<span class="at">test_statistic_null =</span> <span class="fu">map_dbl</span>(simulation, gen_sample_sd)) <span class="sc">|&gt;</span></span>
-<span id="cb80-7"><a></a>    <span class="fu">summarize</span>(<span class="at">p_val =</span> <span class="fu">mean</span>(test_statistic_null <span class="sc">&gt;</span> <span class="fu">sd</span>(X)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1 × 1
-  p_val
-  &lt;dbl&gt;
-1 0.233</code></pre>
-</div>
-</div>
-</section>
-<section id="infer" class="slide level2">
-<h2>infer</h2>
-<p>The <code>infer</code> package automates much of this for common tests</p>
-<p><img data-src="https://raw.githubusercontent.com/tidymodels/infer/main/figs/ht-diagram.png"></p>
-<p><a href="https://infer.netlify.app/articles/observed_stat_examples">Many examples</a></p>
 </section></section>
 <section>
 <section id="wrap-up" class="title-slide slide level1 center">
