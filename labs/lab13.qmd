@@ -1,5 +1,493 @@
 ---
 title: "{{< var course.short >}} Week 13 In-Class Activity: Predictive Modeling"
+format: live-html
+engine: knitr 
 ---
 
-[Week 13 Slides](../slides/slides13.html)
+# [Slides](../slides/slides13.qmd)
+
+# Review Exercise {#review}
+
+For this final warm-up exercise, you are going to use a combination of the
+skills learned over the semester to create a map of the countries of the world,
+colored by population density.
+
+1) Using the data at <https://www.scrapethissite.com/pages/simple/>, determine 
+   the _capital_ of the _most densely populated_ country in the world. 
+
+   To answer this: 
+
+   - Scrape the webpage into a four-column data frame with columns:
+     `name`, `capital`, `population`, `area`
+   - Ensure that the population and area columns are properly
+     converted to numeric values
+   - Compute population density as `population/area`
+   - Select the country with the highest density and determine its capital
+   
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| message: false
+library(tidyverse)
+library(httr2)
+library(rvest)
+
+parse_country <- function(country_element){
+    name <- country_element |> 
+        html_element("h3") |> 
+        html_text2()
+    
+    capital <- country_element |> 
+        html_element(".country-capital") |> 
+        html_text2()
+    
+    population <- country_element |> 
+        html_element(".country-population") |> 
+        html_text2() |> 
+        as.numeric()
+    
+    area <- country_element |> 
+        html_element(".country-area") |> 
+        html_text2() |> 
+        as.numeric()
+    
+    data.frame(name, capital, population, area)
+}
+
+COUNTRIES <- read_html("https://www.scrapethissite.com/pages/simple/") |>
+    html_elements(".country") |>
+    map(parse_country) |>
+    list_rbind() |>
+    mutate(density = population / area)
+    
+
+COUNTRIES |> slice_max(density, n=1) |> pull(capital)
+```
+
+:::
+
+2) When dealing with countries, it is dangerous to use raw names as these are not
+   entirely standardized. *E.g.*, do we live in the "United States" or the "United
+   States of America"? To address this, we want to use a standard format like
+   the ISO 3-digit country codes. 
+   
+   The website <https://peric.github.io/GetCountries/> provides this information
+   interactively, but is a bit difficult to access programmatically. This page
+   actually loads a `JSON` object that will provide all of the information we
+   need. Use the Network tools in your web browser's developer tools to identify
+   the request that loads this data. (You may need to hit the `Generate` button
+   again after opening the Network tools to see the request being made.)
+   
+   Read this data into `R` and create a data frame with (at least) columns for
+   the 3 digit ISO country code, the continent, the country name, 
+   the population, and the area in square kilometers. Make sure the population 
+   and area have been properly converted into numeric values. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| message: false
+library(tidyverse)
+library(jsonlite)
+
+COUNTRIES <- read_json("https://secure.geonames.org/countryInfoJSON?username=dperic", 
+          simplify=TRUE) |>
+    pluck("geonames") |>
+    select(iso_code = isoAlpha3, 
+           name = countryName, 
+           continent = continentName,
+           area = areaInSqKm, 
+           population = population) |>
+    mutate(area = as.numeric(area), 
+           population = as.numeric(population))
+```
+
+:::
+   
+3) Next, we are going to use an API to access data on country boundaries provided
+   by the [GeoBoundaries](https://www.geoboundaries.org) project. Specifically,
+   we want to download shape files for all countries of the world. We do not want
+   to use the _high-resolution_ shapefiles as they are highly detailed and will
+   slow down processing. Thankfully, the GeoBoundaries project already provides
+   simplified representations of each country more suitable for plotting. 
+   
+   Review the API documentation at <https://www.geoboundaries.org/api.html#api>
+   and make a call for `gbOpen` data for `ALL` countries at `ADM0` level (country
+   boundaries). The result will be a JSON object with elements for each country.
+   Parse this JSON object in `R` and pull out (at least) the
+   `boundaryName`, `boundaryISO`, and `simplifiedGeometryGeoJSON` columns 
+   into a data frame. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(tidyverse)
+library(jsonlite)
+
+API_REFERENCE <- read_json("https://www.geoboundaries.org/api/current/gbOpen/ALL/ADM0/", 
+                           simplify = TRUE) |>
+    select(country = boundaryName, 
+           iso_code = boundaryISO,
+           continent = Continent, 
+           simple_geojson = simplifiedGeometryGeoJSON)
+```
+
+
+
+:::
+
+4) Join the result of the previous two sections together using an `inner_join`. 
+   How many countries were in each data set? Which countries are lost in the
+   inner join? What is their total population? 
+   
+   *Hint*: An `anti_join` may be useful here. 
+   
+   In real work, you would want to do some additional manual cleaning to better
+   align these two data sets, but we are not going to do so today to save time.
+   There is at least one _major_ missing country in this merge. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(tidyverse)
+
+JOINED <- inner_join(COUNTRIES, API_REFERENCE, join_by(iso_code))
+
+UNJOINED <- anti_join(COUNTRIES, API_REFERENCE, join_by(iso_code))
+
+UNJOINED |> summarize(n_missing = n(), 
+                      pop_missing = sum(population))
+```
+
+:::
+
+5) Make a series of web requests to read the `geojson` files for each of 
+   the countries using the URLs obtained from the API. Since you will want to
+   make this request sequentially, use the `rowwise` function before calling
+   `sf::st_read`. You will also want to use `unnest` to remove the resulting
+   list-column. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+#| message: false
+library(tidyverse)
+library(sf)
+
+JOINED_GEOMETRY <- JOINED |>
+    rowwise() |>
+    mutate(geometry = st_read(simple_geojson, quiet=TRUE)) |>
+    unnest(geometry) |>
+    ungroup()
+```
+
+:::
+
+6) Create a chloropleth visualization with each country colored according to
+   its population density. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+#| warning: false
+JOINED_GEOMETRY |>
+    mutate(density = population / area) |>
+    ggplot(aes(fill=density, geometry=geometry)) + 
+    geom_sf() + 
+    theme_bw() + 
+    theme(legend.position="bottom") + 
+    scale_fill_distiller(name="Population Density", 
+                         palette=4, 
+                         direction = 1, 
+                         trans="log")
+```
+
+:::
+
+# Classical Statistical Models in `R` {#lm}
+
+Using the countries data downloaded above, use statistical models like `lm`
+and `mgcv::gam` to answer the following: 
+
+1. Recall the `flights` data from the `nycflights13` package. Load this package
+   and fit a linear model to predict air time as a function of distance. 
+   
+   The intercept term of this model can be interpreted as the "fixed cost" of
+   a flight - the unavoidable time taken to travel between the gate and the
+   runway. What is the estimate of this cost based on the model you fit?
+   
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| message: false
+library(tidyverse)
+library(nycflights13)
+library(broom)
+air_time_model <- lm(air_time ~ distance, data=flights) 
+
+air_time_model |> tidy()
+```
+
+From this, we see that the 'fixed cost' of air travel is approximately
+`r round(coef(air_time_model)["(Intercept)"], 1)` minutes. 
+
+:::
+
+2. The same linear model can be used to estimate flight speed. In particular, 
+   the distance coefficient (which has units of minutes / mile) can be 
+   extracted and transformed into miles per hour. What is the average speed of
+   a plane leaving NYC?
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| message: false
+library(tidyverse)
+library(nycflights13)
+library(broom)
+air_time_model <- lm(air_time ~ distance, data=flights) 
+
+air_time_model |> 
+    tidy() |> 
+    filter(term == "distance") |> 
+    mutate(hours_per_mile = estimate / 60, 
+           miles_per_hour = 1/hours_per_mile) |> 
+    pull(miles_per_hour)
+```
+
+:::
+
+3. Modify your analysis above to estimate a different fixed cost for each of the
+   three NYC-area airports. (Maintain a single estimate of speed for all 
+   airports.) Which seems to be the most efficient? 
+   
+   Use `broom::tidy` and some regular expressions to create a table that looks
+   like this: 
+   
+   | Airport | Estimated Fixed Cost |
+   |---------|----------------------|
+   | EWR     | NNN.NN               |
+   | LGA     | NNN.NN               |
+   | JFK     | NNN.NN               |
+   
+   *Hint*: Your estimated coefficients will be easier to interpret if you remove
+   the intercept term from your model by including `-1` at the end of the
+   formula. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| message: false
+library(tidyverse)
+library(nycflights13)
+library(broom)
+lm(air_time ~ distance + origin - 1, data=flights) |> 
+    tidy() |> 
+    filter(str_detect(term, "origin")) |> 
+    mutate(term=str_remove(term, "origin")) |> 
+    select(Airport=term, `Estimated Fixed Cost (minutes)` = estimate)
+```
+
+:::
+
+4. Now modify your model to allow different estimated flight speeds for each
+   airport. Which airport seems to have the highest average flight speed?
+   
+   *Hint*: Use the `*` operator to allow for _interactions_ between airport
+   and distance. This will estimate different slopes for each group. 
+   
+   *Hint*: If you find your coefficients hard to interpret, consider adding
+   `-distance` to the end of your formula. What does this do? Why does it help?
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+library(broom)
+lm(air_time ~ distance * origin - 1 - distance, data=flights) |>
+    tidy() |>
+    mutate(airport = str_sub(term, start=-3), 
+           effect = if_else(str_detect(term, "distance"), "speed", "fixed")) |>
+    select(estimate, airport, effect) |>
+    pivot_wider(names_from=effect, values_from=estimate) |>
+    mutate(speed = 60 / speed) |>
+    rename(`Origin Airport` = airport, 
+           `Gate Taxi Time` = fixed, 
+           `Estimated Air Speed` = speed)
+```
+
+:::
+
+5. Use the `augment` function to compute both the RMSE (Root Mean Squared Error)
+   and the MedAE (Median Absolute Error) of the model you fit in the
+   previous section. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+   
+```{r}
+library(tidyverse)
+library(nycflights13)
+library(broom)
+lm(air_time ~ distance * origin - 1 - distance, data=flights) |>
+    augment() |>
+    summarize(rmse = sqrt(mean(.resid^2)), 
+              medae = median(abs(.resid)))
+```
+
+:::
+
+6. In which month did the model have the lowest RMSE? 
+
+   *Hint*: Pass the `newdata` argument to `augment` to get back 
+   additional columns you need. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+lm(air_time ~ distance * origin - 1 - distance, data=flights) |>
+    augment(newdata=flights) |>
+    group_by(month) |>
+    summarize(rmse = sqrt(mean(.resid^2, na.rm=TRUE))) |>
+    slice_min(rmse)
+```
+
+So our model seems to be most predictive in October.
+
+:::
+
+7. The `yardstick` package provides tools for evaluating model performance. 
+   The `rsq` function computes $R^2$ statistics. It takes two column names as
+   arguments (in addition to the data frame being analyzed): `truth`,
+   the observed values ($y$), and `estimate`, the model predictions ($\hat{y}$).
+   It can be used like this: 
+   
+```{r}
+#| echo: false
+#| message: false
+conflicted::conflicts_prefer(datasets::penguins)
+library(yardstick)
+```
+
+```{r}
+library(broom)
+library(yardstick)
+lm(body_mass ~ flipper_len * species, data=penguins) |> 
+    augment() |> 
+    rsq(truth=body_mass, estimate=.fitted)
+```
+   
+   Use it to compute the $R^2$ of your model on a month-by-month and 
+   per-airport basis. At what airport and in what month does this model exhibit
+   the lowest $R^2$? What does that tell you? How does this compare to the 
+   overall (full-sample) $R^2$ of the model that `glance` provides? 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+lm(air_time ~ distance * origin - 1 - distance, data=flights) |>
+    augment(newdata=flights) |>
+    group_by(month, origin) |>
+    rsq(truth = air_time,
+        estimate=.fitted) |>
+    slice_min(.estimate)
+```
+
+Our model performs (relatively) worst at LGA in January, suggesting that other
+effects (*e.g.* weather) play the largest role here, but the effect is quite
+minimal. 
+
+```{r}
+lm(air_time ~ distance * origin - 1 - distance, data=flights) |>
+    glance()
+```
+
+So the drop in $R^2$ is 99.5% to 95.6%: this isn't nothing...
+
+:::
+
+# Computational Inference {#inference}
+
+Using the countries data downloaded above, test the null hypothesis that the 
+_standard deviation of population density is equal in African and non-African
+countries_. 
+
+To do this, you will need to determine the critical value for the difference in
+sample standard deviation for populations of two different sizes. This is not an
+easy calculation, so we will approach it computationally. 
+
+1. Determine how many African and non-African countries are present in our data
+   set. 
+   
+2. Write a function that:
+   a. Generates $n_x$ samples from a standard normal distribution and saves the
+      results as $x$.
+   b. Generates $n_y$ samples from a standard normal distribution and saves the
+      results as $y$.
+   c. Computes the difference between the standard deviation of $x$ and the
+      standard deviation $y$. 
+      
+3. Call this function a large number of times to get a sense of the 
+   null distribution. Compute its 2.5% and 97.5% quantiles. 
+   
+4. Compute the difference in standard deviations on the actual data. 
+
+5. Draw the appropriate inference: is the null hypothesis rejected or not? 
+     
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+COUNTRIES |> 
+    mutate(in_africa = (continent == "Africa")) |> 
+    count(in_africa)
+
+n_africa <- 58
+n_nonafr <- 192
+
+sim_sd_diff <- function(nx, ny){
+    x <- rnorm(nx)
+    y <- rnorm(ny)
+    
+    sd(x) - sd(y)
+}
+
+null_samples <- replicate(1e5, sim_sd_diff(n_africa, n_nonafr))
+
+# If the observed data it outside this range, we will reject the null
+quantile(null_samples, c(0.025, 0.975))
+
+# The observed value is way outside the quantile sampling, so we reject the null
+COUNTRIES |> 
+    mutate(in_africa = (continent == "Africa"), 
+           density = population / area, 
+           overall_sd_dens = sd(density, na.rm=TRUE)) |> 
+    group_by(in_africa) |>
+    summarize(sd_dens = sd(density, na.rm=TRUE) / first(overall_sd_dens)) |>
+    summarize(diff_sd = diff(sd_dens))
+```
+
+In this case, we quite clearly reject the null. This is not surprising as some
+of the highest density (Monaco, Singapore, Hong Kong) and lowest density 
+(Antarctica) countries are not in Africa, so we expect there to be more 
+spread outside Africa than within Africa. 
+
+:::
+
+You might reasonably ask whether normal sampling is correct here as 
+the distribution of densities does not appear to follow a normal distribution. 
+Techniques like _bootstrapping_ can be used to relax the assumption of normality
+but we will not purse it here. 
+
+# Tidymodels {#tidymodels}
+
+Work through the second model (tree ensembles, *i.e.*, _random forests_) at
+<https://www.tidymodels.org/start/case-study#second-model>. 
+
+Note that you may need to begin with the data import section before following
+the random forest example. 
+
+    
