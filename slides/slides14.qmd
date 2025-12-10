@@ -385,7 +385,7 @@ THURSDAY_TEAMS <- TEAMS[str_detect(TEAMS, fixed("(R)"))]
 FINALS_TEAMS   <- TEAMS[str_detect(TEAMS, fixed("(T2)"))]
 
 # Handle exam conflict
-TUESDAY_TEAMS <- TUESDAY_TEAMS[c(1:5, 7, 8, 6)]
+TUESDAY_TEAMS <- TUESDAY_TEAMS[c(1:4, 6:7, 5)]
 
 data.frame(name = TUESDAY_TEAMS) |> 
     mutate(name = paste0(row_number(), ". ", name)) |> 
@@ -398,8 +398,8 @@ data.frame(name = TUESDAY_TEAMS) |>
 
 ```{r}
 #| echo: false
-data.frame(name = THURSDAY_TEAMS[-5]) |> 
-    # Drop team with no members
+data.frame(name = THURSDAY_TEAMS[-c(5, 7)]) |> 
+    # Drop team with no members (5) + conflict exam (7)
     mutate(name = paste0(row_number(), ". ", name)) |> 
     knitr::kable(col.names="Presentation Order", 
                  row.names=FALSE, 
