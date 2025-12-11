@@ -1,0 +1,1162 @@
+---
+session: "`r session <- 13; session`"
+class_date:
+  "`r library(tidyverse); 
+    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+execute:
+  freeze: true # Done with AY-2025-FALL offering
+---
+
+{{< include _setup.qmd >}}
+
+
+{{< include _setup.qmd >}}
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES   <- read_csv("key_dates.csv")
+TODAY   <- DATES |> 
+    filter(`Course Element` == "Class Session", 
+           `Item Number` == session)
+
+TODAY_TUESDAY  <- TODAY |> 
+    filter(Section == "Tuesday")  |> 
+    pull(Date)
+TODAY_THURSDAY <- TODAY |> 
+    filter(Section == "Thursday") |> 
+    pull(Date)
+
+TODAY_TOPIC <- TODAY |>
+    slice_head(n=1) |>
+    pull(Details) 
+```
+    
+## {{< var course.short >}} Week {{< meta session >}} 
+
+::: {.smaller}
+
+Today: 
+
+- Tuesday Section: `r TODAY_TUESDAY`
+- Thursday Section: `r TODAY_THURSDAY`
+
+`r TODAY_TOPIC`
+
+:::
+
+. . . 
+
+::: {.small}
+
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R`  ✅
+- Data Visualization in `R`  ✅
+- Getting Data into `R`✅
+- Statistical Modeling in `R` ⬅️
+
+:::
+
+
+# Today
+
+## Today
+
+- Course Administration
+- Warm-Up Exercise
+- New Material
+  - Linear Models
+  - Computational Inference
+  - Predictive Models
+- Wrap-Up
+  - Life Tip of the Day
+
+# Course Administration
+
+## GTA 
+  
+Charles Ramirez is our GTA
+
+- Wednesday Office Hours moved to 5:15-7:15 for greater access
+  - Give a bit of flexibility on the front end for CR to get off work
+- Grading Meta-Review #03 after Peer Feedback
+
+## Mini-Project #04
+
+[MP#04](../miniprojects/mini04.html) - `r get_mp_title(4)`
+
+**Due `r get_mp_deadline(4)`**
+
+. . . 
+
+Topics covered: 
+
+::: {.incremental .smaller}
+
+- Data Import
+  - HTTP Request Construction (Week 9)
+  - Tabular HTML Scraping (Week 11)
+- $t$-tests
+- Putting Everything Together
+
+:::
+
+## Grading in Progress
+
+I owe you: 
+
+- MP#03 Grades & Meta-Review
+- Selected Regrades 
+
+## Course Support
+
+-   Synchronous
+    -   MW Office Hours 2x / week: **Tuesdays + Thursdays 5pm**
+    - GTA Office Hours: **Wednesdays at 5:15-7:15pm**
+-   Asynchronous: Piazza ($<20$ minute *average* response time)
+
+## Course Project
+
+End of Semester Course Project: 
+
+::: {.incremental .smaller}
+
+- In-Class Final Presentations
+  - Last week of class _or_ during finals week (optional)
+- Individual Report
+  - `r get_project_due_date("individual_report")`
+- Group Report
+  - `r get_project_due_date("group_report")`
+- Peer Evaluations
+  - `r get_project_due_date("peer_evaluation")`
+
+:::
+
+See [detailed instructions](../project.html) for rubrics, expectations, *etc.*
+
+
+## Course Project
+
+- Proposals ✅
+- Check-In ✅
+- [Final Presentation](../project.html#final-presentations)
+- Final Reports
+  - [Group](../project.html#final-summary-report)
+  - [Individual](../project.html#final-individual-report)
+
+## Final Presentation
+
+
+Next week! Review [the Rubric](../project.html#final-presentations)!
+
+::: {.smaller}
+
+
+- Overarching Question
+- Motivation and Context: Why are you doing *this project*? 
+- Prior Art: What have others done *in this space*? What gap are you filling?
+- Data Used: What and why? "SWOT" it
+- Specific Questions: What questions and how do they tie back?
+- Results of Specific
+- Implications for Overarching
+- Next Steps / Future Work
+
+:::
+
+*Non-Technical* Presentation - You're a "consultant" asked by a client to investigate
+
+## Final Reports
+
+Group **and** Individual Reports 
+
+- Submitted via GitHub **and** Brightspace
+- Everyone submit a separate link to group report
+
+Deadline on "final exam" day
+
+. . . 
+
+**No late work accepted** (I have to submit grades in 3 days before family arrives!)
+
+## Project Peer Feedback
+
+New peer feeback mechanism (feedback welcome!)
+
+- You have 100 points *to allocate to teammates*
+
+Can't assign points to yourself
+
+. . . 
+
+**Additionally**,  8 optional qualitative questions (Brightspace) for *peer evaluation* 
+
+Submit a copy for *each* teammate - I will anonymize to give advice
+
+- Due on same day as reports
+
+. . . 
+
+If you don't submit, you won't receive any points
+
+## Final Project Grading
+
+Rubric is set _high_ to give me flexibility to reward teams
+that take on big challenges
+
+Hard rubric => Grades are curved generously 
+
+. . . 
+
+Multiple paths to success 
+
+If your project is "easy" on an element (data import
+in particular), that's great! Don't spend the effort 
+over-complicating things. Effort is better spent elsewhere
+
+
+## Pre-Assignments
+
+No more pre-assignments!
+
+. . . 
+
+Thank you for these!
+
+## Course Feedback
+
+Reflection on course: 
+
+  - How far have you come?
+  - What have you learned? 
+  - What was helpful? What was unhelpful? 
+  
+> [My (anonymous) feedback survey](https://baruch.az1.qualtrics.com/jfe/form/SV_9uyZ4YFsrcRRPIG)
+
+This is *in addition* to the Baruch central course assesments. 
+
+## Course Feedback
+
+Used to improve future course offerings. Previous changes:
+
+::: {.smaller}
+
+- Added a second round of project feedback
+  - Help students "scope" projects suitably
+- More _applied analytics_ than _programming exercises_ in HW
+  - Other programming resources already online; 
+  - Many students have prior experience (Python, SQL)
+  - More interest in *Analytics* than Software Engineering
+- Added GitHub and Portfolio Construction
+  - Give students *evidence of skills* to share with employers
+- Increased interactivity of course materials
+
+:::
+
+## Course Feedback
+
+Plans for future improvement: 
+
+- Move to 3 MPs
+  - More time to focus on final presentations
+- Extra Credit for in-class engagement (?)
+- Move final presentations into finals week (?)
+
+Other thoughts welcome!
+
+# Review Exercise
+
+## Review Exercise
+
+**Analysis of the countries of the world**
+
+. . . 
+
+In this final review exercise, you will use a combination of the skills 
+developed in this course to create a map of the countries of the world. 
+
+See [Lab #13](../labs/lab13.html#review) for details. 
+
+
+## Breakout Rooms {.scrollable}
+
+::: {.smaller}
+
+```{r}
+#| echo: false
+set.seed(9750+session)
+library(yaml)
+library(jsonlite)
+
+TEAMS <- read_yaml("_teaching.yml") |> 
+  pluck("gradedir") |> 
+  file.path("teams.json") |> 
+  read_json(simplify=TRUE) |> 
+  pull(name) |>
+  sample()
+
+TUESDAY_TEAMS  <- TEAMS[str_detect(TEAMS, fixed("(T)"))]
+THURSDAY_TEAMS <- TEAMS[str_detect(TEAMS, fixed("(R)"))]
+
+pad_with_NA <- function(x, length.out){
+
+    if(length(x) < length.out){
+      x <- c(x, rep(NA, length.out - length(x)))
+    }
+
+    x
+
+}
+
+N_ROOMS <- max(length(TUESDAY_TEAMS), length(THURSDAY_TEAMS))
+
+TUESDAY_TEAMS  <- pad_with_NA(TUESDAY_TEAMS, N_ROOMS)
+THURSDAY_TEAMS <- pad_with_NA(THURSDAY_TEAMS, N_ROOMS)
+
+data.frame(t1 = TUESDAY_TEAMS, t2 = THURSDAY_TEAMS) |> 
+  mutate(Teams = case_when(
+  is.na(t1) ~ t2, 
+  is.na(t2) ~ t1, 
+  TRUE ~ paste(t1, t2, sep=" + ")), 
+         Breakout = row_number()) |> 
+  select(Breakout, Teams) |> 
+  knitr::kable(row.names = FALSE)
+```
+
+:::
+
+# Statistical Models in `R`
+
+## Formula Notation
+
+`R` was designed for statistical analysis (originally called `S`)
+
+. . . 
+
+Major contributions
+
+- `data.frame` / tidy structure
+- Formula language ("Wilkinson-Rogers notation")
+
+## Formula Notation
+
+In `R`, a `formula` is a special object defined by a `~`
+
+. . . 
+
+Most common structure
+
+> `y ~ x1 + x2`
+
+Predict variable `y` using `x1` and `x2`
+
+. . . 
+
+- Modern `R` uses formulas in many other contexts
+- Various extensions provided by packages
+
+## Modeling Functions
+
+Basic modeling function: `lm` (_linear model_)
+
+```{r}
+#| echo: true
+lm(body_mass ~ flipper_len, data=penguins)
+```
+
+
+## Modeling Functions
+
+```{r}
+lm(body_mass ~ flipper_len, data=penguins)
+```
+
+- Provide model (`formula`) and data (`data.frame`) instead of $X, y$
+- By default automatically includes an intercept term
+
+## Modeling Functions
+
+```{r}
+lm(body_mass ~ flipper_len + species, data=penguins)
+```
+
+Automatically: 
+
+- Encodes categorical (`factor`) variables
+  - `?C` for details
+- Removes extra / redundant columns
+
+
+## Modeling Functions
+
+```{r}
+lm(body_mass ~ flipper_len*bill_dep, data=penguins)
+```
+
+- `*` creates both 'main' effects and interactions
+
+
+## Modeling Functions
+
+```{r}
+lm(body_mass ~ flipper_len*species, data=penguins)
+```
+
+- `*` of continuous and categorical creates ANCOVA
+
+## Modeling Functions 
+
+Many extensions
+
+```{r}
+#| echo: true
+#| message: false
+library(mgcv)
+gam(body_mass ~ s(flipper_len) + s(bill_dep, by=species), data=penguins)
+```
+Fits a *mixed-effect non-linear regression*
+
+## Accessors
+
+Helper functions to access fitted models: 
+
+```{r}
+#| echo: true
+m <- lm(body_mass ~ flipper_len*bill_dep + species, data=penguins)
+coef(m)
+```
+
+## Accessors
+
+```{r}
+#| echo: true
+summary(m)
+```
+
+## Accessors
+
+In-sample / training prediction: 
+
+```{r}
+#| echo: true
+predict(m)
+```
+
+## Accessors
+
+Out-of-sample / test prediction:
+
+```{r}
+#| echo: true
+toppenguins <- penguins |> slice_max(body_mass, n=10)
+predict(m, newdata=toppenguins)
+```
+
+## Accessors
+
+For just `lm`: 
+
+```{r}
+#| echo: true
+methods(class="lm")
+```
+
+Even more for other models
+
+## Tidy tools - broom
+
+The `broom` package provides `tidyverse` tools for working with models: 
+
+::: {.incremental}
+
+- `tidy`: gives information about model components (coefficients)
+- `glimpse`: gives information about the model _as a whole_
+- `augment`: applies the model to observations
+
+:::
+
+*Note: `broom` is not core `tidyverse` and needs to be loaded explicitly*
+
+## broom
+
+Fit a linear model: 
+
+```{r}
+mod <- lm(mpg ~ wt + hp, mtcars)
+mod
+```
+
+Predict miles per gallon of 1973 cars using  weight and horsepower
+
+## broom::glance
+
+`glance` - model summary info
+
+```{r}
+library(broom)
+glance(mod)
+```
+
+. . . 
+
+Don't confuse with `glimpse` (summarize a data frame)
+
+## broom::tidy
+
+`tidy` - model component info
+
+```{r}
+library(broom)
+tidy(mod)
+```
+
+. . . 
+
+Get more with `conf.int=TRUE`
+
+```{r}
+library(broom)
+tidy(mod, conf.int=TRUE)
+```
+
+## broom::tidy {.scrollable}
+
+`tidy` returns a `data.frame` and works with `tidyverse` tools:
+
+```{r}
+d <- tidy(mod, conf.int = TRUE)
+
+tidy(mod, conf.int=TRUE) |>
+    ggplot(aes(x=estimate, 
+               y=term, 
+               xmin = conf.low, 
+               xmax = conf.high)) +
+    geom_point() + theme_bw() + 
+    geom_vline(xintercept = 0, lty = 4) +
+    geom_errorbar(orientation="y") + 
+    xlab("Estimated Regression Coefficient") + ylab("Covariate") 
+```
+
+## broom::augment {.scrollable}
+
+`augment` - apply the model (to training data by default)
+
+```{r}
+library(broom)
+augment(mod)
+```
+
+## broom::augment {.scrollable}
+
+`augment` - pass `newdata` argument for out of sample evaluation
+
+```{r}
+corolla2025 <- data.frame(mpg=35, wt=2.955, hp=169)
+augment(mod, newdata=corolla2025)
+```
+
+Modern Toyota is 14.6mpg _better_ than expected in 1974
+
+## broom::augment {.scrollable}
+
+`augment` - pass `newdata` argument without $y$ for pure prediction
+
+```{r}
+civic2025 <- data.frame(wt=2.935, hp=200)
+augment(mod, newdata=civic2025)
+```
+
+Actual mpg is closer to 34!
+
+## broom 
+
+`broom` can be used with most models and tests: 
+
+```{r}
+cor.test(~mpg + disp, mtcars)
+```
+
+
+## broom 
+
+`broom` can be used with most models and tests: 
+
+```{r}
+mtcars |> cor.test(data=_, ~mpg + disp) |> glance()
+```
+
+## broom 
+
+Easily extends to groupwise analysis using `nest`/`unnest` and `map`: 
+
+```{r}
+mtcars |> 
+    group_by(am) |> 
+    nest() |> 
+    mutate(n = map_int(data, NROW), 
+           cor_test = map(data, \(d) cor.test(~mpg + disp, d)), 
+           cor_test_results = map(cor_test, glance)) |>
+    unnest(cor_test_results) |>
+    select(am, n, estimate, conf.low, conf.high, p.value)
+```
+
+So the correlation is larger for automatic transmissions (`am=1`), but we have
+more samples and a slightly smaller $p$-value for manual transmissions.
+
+## Exercise
+
+Return to [Lab #13](../labs/lab13.html#lm) and practice manipulating the output
+of `lm` and the `broom` functions. 
+
+# Computational Inference
+
+## Statistical Inference
+
+Recall the basic theory of statistical tests - "goodness of fit"
+
+- Select a baseline model ('null hypothesis')
+- Select a quantity of interest ('test statistic')
+- Determine distribution of test statistic under null hypothesis
+- If _observed_ test statistic is extreme (vis-a-vis null distribution of test statistic):
+  - -> "doesn't fit" and reject null
+  
+## Statistical Theory
+
+_75+ Years of Theory_
+
+- Pick a null + test statistic
+  - Compute "null distribution"
+  
+$Z$-values, $t$-values, $p$-values, *etc.*
+
+Typically requires 'big math'
+
+. . . 
+
+Alternative: 
+
+- Let a computer do the hard work
+
+## Monte Carlo Simulation
+
+Using a computer's *pseudo-random number generator* (PRNG)
+
+Repeat: 
+
+- Generate $X_1, X_2, X_3, \dots$
+- Compute $f(X_1), f(X_2), f(X_3), \dots$
+
+Sample average (LLN) 
+
+$$\frac{1}{n} \sum_{i=1}^n f(X_i) \to \mathbb{E}[f(X)]$$
+
+Holds for arbitrary related quantities (quantiles, medians, variances)
+
+## Monte Carlo Simulation
+
+Example: suppose we have $X_i \buildrel{\text{iid}}\over\sim \mathcal{N}(0, \sigma^2)$ and we want to test $H_0: \sigma=1$
+
+```{r}
+#| echo: true
+n <- 20
+X <- rnorm(n, mean=0, sd=1.25)
+
+sd(X)
+```
+
+How to test? 
+
+## The Math Way
+
+Per Cochran's theorem, $S \sim \sqrt{\frac{\chi^2_{n-1}}{n-1}} = \frac{1}{\sqrt{n-1}} \chi_{n-1}$ has a $\chi$ (not $\chi^2$) distribution
+
+```{r}
+#| echo: true
+library(chi)
+critical_value <- qchi(0.95, df=n-1) / sqrt(n-1)
+critical_value
+```
+
+So reject $H_0$ if $S$ above critical value (`r round(critical_value, 2)`)
+
+## The Computer Way
+
+To get a critical value
+
+```{r}
+gen_sample_sd <- function(..., n=25, sd=1){
+    sd(rnorm(n, mean=0, sd=sd))
+}
+
+tibble(simulation=1:1000) |>
+    mutate(test_statistic_null = map_dbl(simulation, gen_sample_sd)) |>
+    summarize(quantile(test_statistic_null, 0.95))
+```
+
+
+## The Computer Way
+
+To get a $p$-value: 
+
+```{r}
+gen_sample_sd <- function(..., n=25, sd=1){
+    sd(rnorm(n, mean=0, sd=sd))
+}
+
+tibble(simulation=1:1000) |>
+    mutate(test_statistic_null = map_dbl(simulation, gen_sample_sd)) |>
+    summarize(p_val = mean(test_statistic_null > sd(X)))
+```
+
+## Exercise
+
+Return to [Lab #13](../labs/lab13.html#inference) and implement these ideas to
+test a rather strange null hypothesis. 
+
+## infer
+
+The `infer` package automates much of this for common tests
+
+![](https://raw.githubusercontent.com/tidymodels/infer/main/figs/ht-diagram.png)
+
+[Many examples](https://infer.netlify.app/articles/observed_stat_examples)
+
+
+# Predictive Modeling in `tidymodels`
+
+## Agenda
+
+- Predictive Modeling with `tidymodels`
+
+Adapted from [Case Study](https://www.tidymodels.org/start/case-study/)
+
+## tidymodels
+
+Strength of `R`: 
+ 
+- Thousands of authors contributing packages to CRAN
+
+. . . 
+
+Weakness of `R`: 
+
+- Thousands of authors contributing *slightly incompatible* packages to CRAN
+
+. . . 
+
+No two modeling packages have _exactly_ the same API. Makes 
+changing between interfaces cumbersome
+
+## tidymodels
+
+`tidymodels` attemps to provide a _uniform_ interface
+to a wide variety of _predictive_ Machine Learning tools
+
+Advantages: 
+
+- Easy to swap out different algorithms to find the best
+
+Disadvantages: 
+
+- Harder to take advantage of the strengths of each approach
+
+. . . 
+
+::: {.smaller}
+
+I have dedicated my academic life to the differences in these
+methods, but 99% of the time, "black-box" prediction is good
+enough. In STA 9890/9891, we get into the weeds - not here.
+
+:::
+
+## ML vs Statistical Pipelines
+
+Statistics / Data Science: 
+
+- Find the model that _fits_ the data best
+- Model should capture all important data features
+- _Interpretability_ 
+- History: Grounded in lab sciences where experiments are
+  expensive and data is limited 
+  
+## ML vs Statistical Pipelines
+
+Machine Learning: 
+
+- Find the model that _predicts_ the data best
+- No "perfect" model - just the best one we've found so far
+- Black-box techniques are great, _if effective_
+- History: Silicon Valley "at scale"
+
+Validation based on _of-of-sample_ or _test_ predictions
+
+## Validating Predictive Power
+
+How to check whether a model _predicts_ well?
+
+. . . 
+
+Need more data! But where to get more data? 
+
+- Actually get more data (hard, expensive, slow)
+- Split data into parts - test/training split
+- Cross-Validation
+- Resampling
+
+. . . 
+
+Today, we'll primarily use a combination: **Test/Train** split & **Cross-Validation**!
+
+## Cross-Validation
+
+![](https://scikit-learn.org/1.5/_images/grid_search_cross_validation.png)
+
+Cross-Validation is done on the *estimator*, not the fitted algorithm
+
+## tidymodels
+
+`tidymodels` workflow: 
+
+- Initial Split
+- Pre-Process
+- Fit (*many*) models
+- Select best
+- Refit
+- Test Set Assessment
+
+`tidymodels` is _very_ punny, so a bit hard to tell which step is which...
+
+## Acquire Data
+
+```{r}
+#| echo: true
+#| message: false
+library(tidymodels); library(readr)
+
+hotels <- 
+  read_csv("https://tidymodels.org/start/case-study/hotels.csv") |>
+  mutate(across(where(is.character), as.factor))
+
+glimpse(hotels)
+```
+
+## Initial Split
+
+```{r}
+#| echo: true
+#| eval: true
+# Stratified sampling to ensure balance
+splits      <- initial_split(hotels, 
+                             strata = children)
+
+hotel_train <- training(splits)
+hotel_test  <- testing(splits)
+
+hotel_train
+```
+
+## Pre-Process {.scrollable}
+
+A _recipe_ is a set of steps used to 'pre-process' the data: 
+
+```{r}
+library(recipes)
+```
+
+```{r}
+#| eval: true
+#| echo: true
+#| message: true
+holidays <- c("AllSouls", "AshWednesday", "ChristmasEve", "Easter", 
+              "ChristmasDay", "GoodFriday", "NewYearsDay", "PalmSunday")
+
+lr_recipe <- 
+  recipe(children ~ ., data = hotels) |> 
+  step_date(arrival_date) |> 
+  step_holiday(arrival_date, holidays = holidays) |> 
+  step_rm(arrival_date) |> 
+  step_dummy(all_nominal_predictors()) |> 
+  step_zv(all_predictors()) |> 
+  step_normalize(all_predictors())
+
+lr_recipe
+```
+
+## Pre-Process {.scrollable}
+
+Declare response (`children`) and predictors (`.` = everything else)
+
+```{r}
+#| eval: false
+#| echo: true
+#| message: true
+#| code-line-numbers: "2"
+lr_recipe <- 
+  recipe(children ~ ., data = hotels) |> 
+  step_date(arrival_date) |> 
+  step_holiday(arrival_date, holidays = holidays) |> 
+  step_rm(arrival_date) |> 
+  step_dummy(all_nominal_predictors()) |> 
+  step_zv(all_predictors()) |> 
+  step_normalize(all_predictors())
+```
+
+## Pre-Process {.scrollable}
+
+Use `arrival_date` to identify holiday arrivals: 
+
+
+```{r}
+#| eval: false
+#| echo: true
+#| message: true
+#| code-line-numbers: "3-5"
+lr_recipe <- 
+  recipe(children ~ ., data = hotels) |> 
+  step_date(arrival_date) |> 
+  step_holiday(arrival_date, holidays = holidays) |> 
+  step_rm(arrival_date) |> 
+  step_dummy(all_nominal_predictors()) |> 
+  step_zv(all_predictors()) |> 
+  step_normalize(all_predictors())
+```
+
+## Pre-Process {.scrollable}
+
+Convert categorical variables to numeric encoding: 
+
+```{r}
+#| eval: false
+#| echo: true
+#| message: true
+#| code-line-numbers: "6"
+lr_recipe <- 
+  recipe(children ~ ., data = hotels) |> 
+  step_date(arrival_date) |> 
+  step_holiday(arrival_date, holidays = holidays) |> 
+  step_rm(arrival_date) |> 
+  step_dummy(all_nominal_predictors()) |> 
+  step_zv(all_predictors()) |> 
+  step_normalize(all_predictors())
+```
+
+## Pre-Process {.scrollable}
+
+Drop variables that don't vary:
+
+```{r}
+#| eval: false
+#| echo: true
+#| message: true
+#| code-line-numbers: "7"
+lr_recipe <- 
+  recipe(children ~ ., data = hotels) |> 
+  step_date(arrival_date) |> 
+  step_holiday(arrival_date, holidays = holidays) |> 
+  step_rm(arrival_date) |> 
+  step_dummy(all_nominal_predictors()) |> 
+  step_zv(all_predictors()) |> 
+  step_normalize(all_predictors())
+```
+
+## Pre-Process {.scrollable}
+
+Standardize (mean 0, standard deviation 1) everything:
+
+```{r}
+#| eval: false
+#| echo: true
+#| message: true
+#| code-line-numbers: "8"
+lr_recipe <- 
+  recipe(children ~ ., data = hotels) |> 
+  step_date(arrival_date) |> 
+  step_holiday(arrival_date, holidays = holidays) |> 
+  step_rm(arrival_date) |> 
+  step_dummy(all_nominal_predictors()) |> 
+  step_zv(all_predictors()) |> 
+  step_normalize(all_predictors())
+```
+
+## Fit Models
+
+```{r}
+#| eval: true
+#| echo: true
+lr_model <- 
+  logistic_reg(penalty = tune(), mixture = 1) |> 
+  set_engine("glmnet")
+
+lr_model
+```
+
+## Select Best
+
+Find a _grid_ of parameters 
+
+```{r}
+#| eval: true
+#| echo: true
+lr_reg_grid <- data.frame(penalty = 10^seq(-4, -1, length.out = 30))
+```
+
+Perform CV splits: 
+
+```{r}
+#| eval: true
+#| echo: true
+lr_folds <- vfold_cv(hotel_train, v = 5)
+```
+
+## Select Best
+
+Define a *workflow*: 
+
+```{r}
+#| eval: true
+#| echo: true
+lr_workflow <-  
+  workflow() |> 
+  add_model(lr_model) |> 
+  add_recipe(lr_recipe)
+```
+
+Fit workflow to a grid of parameters: 
+
+```{r}
+#| eval: true
+#| echo: true
+#| cache: true
+lr_results <- 
+  lr_workflow |> 
+  tune_grid(grid = lr_reg_grid,
+            control = control_grid(save_pred = TRUE, 
+                                   save_workflow=TRUE),
+            resamples = lr_folds,
+            metrics = metric_set(roc_auc))
+```
+
+## Select Best
+
+Visual examination
+
+```{r}
+#| eval: true
+#| echo: true
+#| cache: true
+lr_results |> 
+  collect_metrics() |> 
+  ggplot(aes(x = penalty, y = mean)) + 
+  geom_point() + 
+  geom_line() + 
+  ylab("Area under the ROC Curve") +
+  scale_x_log10(labels = scales::label_number())
+```
+
+## Select Best
+
+```{r}
+#| eval: true
+#| echo: true
+lr_results |> show_best()
+lr_best <- lr_results |> select_best()
+lr_best
+```
+
+
+## Refit Best Model
+
+```{r}
+#| eval: true
+#| echo: true
+lr_best_fit <- lr_results |> fit_best()
+lr_best_fit
+```
+
+## Test Set Assessment
+
+```{r}
+#| eval: true
+#| echo: true
+predict(lr_best_fit, hotel_test)
+```
+
+## Test Set Assessment
+
+```{r}
+#| echo: true
+#| eval: true
+augment(lr_best_fit, hotel_test)
+```
+
+## Test Set Assessment
+
+```{r}
+#| echo: true
+#| eval: true
+my_metrics <- metric_set(accuracy, precision, recall, ppv, npv, sens, mcc)
+augment(lr_best_fit, hotel_test) |>
+    my_metrics(truth=children, estimate=.pred_class)
+```
+
+## Exercise
+
+Return to [Lab #13](../labs/lab13.html#tidymodels) and work through the 
+remainder of the hotel stay case study
+
+You'll need to work through the data import elements as well
+
+## Other tidymodels tools
+
+- Model Stacking
+- Probabilistic Predictions
+- Uncertainty Bounds (Conformal Inference)
+- Multilevel (Mixed-Effect) Models
+- Fairness Audits
+
+## More Reading
+
+[https://www.tidymodels.org/start/](https://www.tidymodels.org/start/)
+
+# Wrap Up
+
+## Wrap Up 
+
+Statistical Models in `R`: 
+
+- Classical models (`lm`)
+- Computational Inference
+- Predictive Models (`tidymodels`)
+
+## Upcoming Work
+
+Upcoming work from [course calendar](../index.qmd#calendar)
+
+::: {.incremental}
+
+- [Mini-Project #04](../miniprojects/mini04.html) due on `r get_mp_deadline(4)`
+- [Mini-Project #04](../miniprojects/mini04.html) peer feedback due `r get_mp_pf_deadline(4)`
+- End of Semester Project Submissions
+
+:::
+
+. . . 
+
+Almost there!
+
+## Musical Treat
+
+</br>
+
+{{< video https://www.youtube.com/watch?v=k8ucSWeBcr8 width="80%" height="400px">}}

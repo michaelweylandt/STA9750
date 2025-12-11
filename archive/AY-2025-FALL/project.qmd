@@ -1,0 +1,1222 @@
+---
+title: "{{< var course.short >}} - Final Project"
+editor: 
+  markdown: 
+    wrap: 72
+format:
+  html:
+    toc-location: "left"
+filters:
+  - list-table
+---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, "at", Time)))
+```
+
+In lieu of exams, [{{< var course.short >}}](./index.html) has an end-of-semester
+project, worth **40%** of your final grade. This project is intended to
+showcase the data analysis technologies covered in this course,
+including - but not limited to:
+
+-   Acquisition of "messy" real world data
+-   Import and cleaning of "messy" data
+-   SQL-like analysis of tabular data
+-   Computer-driven inference
+-   Effective visualization and communication of results
+
+The project will be graded out of a total 400 points, divided as
+follows:
+
+-   Project proposal presentation (50 points)
+-   Mid-semester check-in presentation (50 points)
+-   Final presentation (100 points)
+-   Final report (75 points)
+-   Individual evaluation (125 points)
+
+Projects can be completed in groups of 4-6 students.[^0] All group members
+are responsible for all portions of the work and will receive the same
+grade, except on the individual evaluation.
+
+[^0]: If desired, students can work in pairs or even individually. That "team"
+is still responsible for a minimum of four specific questions, so you will
+have to do extra work if you have a team of fewer than four people.
+
+Group Membership: By
+`{r} DATES |> filter(str_detect(Details, "Team Roster Submission")) |> pull(dt)`,
+email the instructor with a list of group members, `cc`-ing all group
+members. Once the original email is sent, other group members must reply
+acknowledging their intention to work with this group. After this date,
+group membership may only be changed for *extraordinary* circumstances.
+
+::: {.callout-tip title="Cross-Section Teams" collapse="true"}
+
+Feel free to work with students in the other section in forming your teams. 
+If your team has a mix of sections, please inform the instructor *in the team
+registration email* of the dates on which you will make your proposal, 
+check-in, and final presentations.
+
+:::
+
+::: {.callout-caution title="Constructing a Work Plan Agreement" collapse="true"}
+
+As you form your team, you may *optionally* construct a Work Plan Agreement
+for your team and register it with the instructor. If you choose to do this, 
+please include: 
+
+1. Names and a short biography of all teammates. Be sure to include your 
+   data science background (if any), prior education, your career trajectory
+   up to this point, your career goals for your time here at Baruch, and one
+   additional 'fun fact' about yourself. 
+2. Preferred Means and Timing of Communication. How does your team plan on 
+   meeting (Zoom, asynchronous chat, discussion boards...) and how often? Ideally,
+   you will establish at least one synchronous meeting a week and a means of
+   asynchronous communication (WeChat, Email, Discord, ...). 
+3. Workload Expectations. How much work will each teammate be able to
+   contribute and when? Some of you may have more or less time at different
+   points in the term and it will help your teammates to know when you may be
+   less available. Ideally, you will agree on a schedule of weekly 'internal
+   deadlines' to keep yourselves on target.
+4. Accountability Mechanisms. How do you intend to ensure that all teammates 
+   are staying on task and fulfilling their responsibilities to the larger
+   group? There is room for creativity and flexibility here, but you may agree
+   to 'self-impose' sanctions up to partial loss of credit to
+   penalize students who fail to perform at group expectations. (This is a
+   rather drastic mechanism and you should agree on some forms of
+   accountability that can be invoked before grade penalties.) 
+
+The instructor is willing to implement agreed accountability mechanisms, but
+**will not referee** disputes among teams as to accountability. For example, a
+team may agree that a delinquent member will have their grade lowered by a
+pre-determined amount upon a unanimous vote of the rest of the team. The 
+instructor will apply this penalty, but will not evaluate whether it is properly
+deserved. Teams will not be allowed to add or remove members except in truly
+exceptional circumstances, so having some sort of enforcement mechanism is an
+uncomfortable, but effective, means of ensuring all team members stay engaged
+throughout the semester. 
+
+Note that a Work Plan Agreement is not required, but this type of structure
+has helped teams remain focused and organized in the past. 
+
+:::
+
+### Project Proposal Presentations
+
+On
+`{r} DATES |> filter(str_detect(Details, "Project Proposal Presentation")) |> pull(Date) |> format("%B %d, %Y (%A)") |> paste(collapse=" and ")`,
+project teams will present a 6 minute *project proposal* in the form of
+an in-class presentation. This presentation must cover:
+
+-   The animating or overarching question (OQ) of the project: *e.g.*, "Is
+    MTA subway and bus service less reliable in poorer areas of NYC?"
+
+-   Public data sources you intend to analyze (at least three): *e.g.*,
+    MTA on-time arrival statistics by station and household income data
+    by ZIP code.[^1] The presentation should include a brief discussion
+    of what relevant data elements these sources provide; note that this
+    discussion should be *selective* and *informative*, not simply a
+    list of column names. You do not have to wind up using all of these: I just
+    want to see that you have several potential avenues to be successful. 
+
+-   Specific questions (SQs) you hope to answer in your analysis: *e.g.*
+
+    i)  average arrival delay by station;
+    ii) average household income for families nearest to each station;
+        and
+    iii) which routes are busiest at which time of day.
+
+    There should be (at least) one specific question per group member. 
+    (This forms part of your individual evaluation.) Regardless of the
+    size of your group, there need to be **at least** three specific
+    questions.
+
+-   Rough analytical plan: *e.g.*, we plan to divide NY up into regions
+    based on nearest subway station and to compute average household
+    income within those regions; we will correlate those income
+    statistics with average MTA service delays *in the direction of
+    work-day travel*; finally, we will use arrival data to identify
+    portions of the MTA network where delays tend to occur.
+
+-   Anticipated challenges: *e.g.* how to disentangle the effect of
+    being further away from the central business district (and delays
+    accumulating) from specific socioeconomic effects; or lack of
+    historical data going back further than 1 year.
+
+-   List of team members
+
+[^1]: More properly, you would want to use Zip Code Tabulation Areas
+    (ZCTAs) for this sort of analysis. The distinction is subtle, but
+    while all ZCTAs have geographic extents, not all zip codes do. For
+    example, there are dedicated zip codes for the IRS and the
+    Department of Defense that have no associated geographic boundaries.
+    Most open data sources will omit this distinction, but if you see
+    it, you should be aware of it.
+
+This presentation will be graded out of 50 points, divided as:
+
+-   Quality of presentation (10 points): Are slides clearly designed
+    making effective use of visual elements? Does oral presentation
+    supplement the slides or simply read text on slide?
+
+-   Clarity of motivating question (15 points): Is the key question
+    clearly stated and fully motivated? Is the question designed with
+    sufficient specificity to both:
+
+    i)  be feasible within the project scope; and
+    ii) be of genuine interest?
+
+-   Quality of proposed data sources (5 points): are the data sources
+    proposed sufficient to answer the question?
+
+-   Quality of specific questions (10 points): how well do the specific
+    questions support the motivating question? Do they take full
+    advantage of the proposed data sources?
+
+-   Timing of presentation (10 points): Does the project proposal
+    actually take 6 minutes (not going over!)? Presentations that are
+    too short (less than 5.5 minutes) or too long (more than 6.5
+    minutes) will be penalized in proportion to violation of the 6
+    minute limit.
+    
+Points will be *roughly* awarded according to the following rubric: 
+
+::: {.list-table width="1,1,1,1,1,1" aligns="c,l,l,l,l,l" header-rows=1 .hover #rubric-proposal}
+
+  * - Rubric Element
+    - Needs Improvement
+    - Poor 
+    - Fair
+    - Good 
+    - Great
+  * - **Quality of Presentation**
+    - (0-2/10) Weak presentation, evidencing little preparation. Fails to discuss all required elements.
+    - (3-4/10) Weak presentation, but covers all required elements, at least 
+      nominally.
+    - (5-6/10) Moderate presentation quality; slides have either too much or 
+      too little text.
+    - (7-8/10) Presentation clearly addresses all required elements. Slides have
+      a good balance of text and images.
+    - (9-10/10) Excellent, compelling and dynamic presentation covering all 
+      required elements. May include preliminary results.
+  * - **Clarity of Motivating Question** 
+    - (0-3/15) Project domain and motivating question are not well identified. 
+    - (4-6/15) Project lacks sufficient motivation. Domain identified, but 
+      question needs further refinement. (Example, "We want to do something about X.")
+    - (7-9/15) Motivating question not well-formed or not suitable to quantitative analysis.
+    - (10-12/15) Good motivating question. Well-motivated. Project will answer 
+      some, but not all, important questions in domain. 
+    - (13-15/15) Excellent motivating question. Strong motivation, suitability 
+      for quantitative analysis, and high potential impact.
+  * - **Quality of Proposed Data Sources** 
+    - (1/5) Data sources not clearly identified or inappropriate to questions 
+      asked.
+    - (2/5) Data sources clearly identified, but not well-suited to questions. 
+    - (3/5) Data sources well-suited to question, but of questionable quality 
+      and reliability. 
+    - (4/5) Quality relevant data sources; no concerns about usability for 
+      project.
+    - (5/5) Excellent data source identified. Well-targeted to question and 
+      not extensively previously analyzed.
+  * - **Quality of Specific Questions**
+    - (1-2/10) Presentation does not clearly state sufficient number of distinct 
+      specific questions (at least 1 per group member). 
+    - (3-4/10) Questions are poorly structured, lacking clear connections to 
+      motivating question and/or to project data.
+    - (5-6/10) Specific questions are acceptable, but do not fully address 
+      animating question. Questions are somewhat repetitive. 
+    - (7-8/10) Specific questions are well-designed and fully support motivating
+      question. Questions are not well-separated and/or may be difficult to 
+      address with data sources.
+    - (9-10/10) Specific questions are well-designed and fully support motivating 
+      question. Each question is clearly distinct and can be addressed with data
+      sources.
+  * - **Timing of Presentation** 
+    - (1-2/10) Presentation lasted more than 8 or less than 4:45 minutes (2/10) 
+    - (3-4/10) Presentation took between 7:30 and 8:00 or between 4:45 and 
+      5:00 minutes 
+    - (5-6/10) Presentation took between 7:00 and 7:30 minutes or between 5:00 
+      and 5:15 
+    - (7-8/10) Presentation took between 6:30 and 7:00 minutes or between 5:15 
+      and 5:30. 
+    - (9-10/10) Presentation took between 5:30 and 6:30.
+
+:::
+
+At this point, only the Overarching Question and team roster are locked.
+If you discover alternate data sources, better specific questions, or
+superior analytical strategies that help better address the OQ, 
+you may (and should!) change your project plan.
+
+**In the interest of time, it is not required that all team members
+present.**
+
+::: {.callout-tip title="Project Conceit" collapse="true"}
+
+You may find it helpful to think of your team as a set of consultants hired to
+take on a project for a non-technical customer. The customer will have a 
+vague and likely qualitative question (the OQ) that they seek to answer. Once
+your team of consultants has been engaged, you divide the OQ into distinct 
+actionable work for each team member centered around an SQ. The SQs are set by
+your team based on how you think the OQ can best be answered. As you form your
+OQ, make sure that the SQs are both doable and, if successful, sufficient to 
+answer the SQ. Then, as you progress through the project, you can think of: 
+
+- Project Proposal: The 'sales pitch' of your team hoping to get hired to answer
+  an OQ. At this point, you're more trying to indicate to your client that you
+  understand their OQ, why it is important, and have initial plans on how best
+  to answer it. 
+- Mid-Term Check-In: At this point, your consultants have started the project
+  in earnest. You are sharing your work to date with the client, updating them
+  on your progress and any challenges encountered along the way. 
+- Final Presentation: This is the final presentation to your client and their
+  organization covering how you answered their OQ and giving the highlights of
+  your work. This is a presentation to the entire organization and should be
+  non-technical / accessible to everyone. 
+- Group Final Report: This is the 'Executive Summary' prepared and shared with
+  the client. You expect it to be sent to the highest levels of their organization
+  and should focus on conveying the highlights and limitations of your analysis
+  with minimal jargon.
+- Individual Final Reports: These are the technical appendices of your work,
+  where you describe what you did for each SQ in detail. Your client may not
+  engage with this material at first, but you share it with them so they know
+  that they got their money's worth and to give them a resource to apply and
+  extend your work in the future.
+  
+Note that while a client might not read your technical report closely, I 
+absolutely will so it requires just as much polish as everything else you
+submit.
+
+:::
+
+### Mid-Semester Check-In Presentations
+
+On
+`{r} DATES |> filter(str_detect(Details, "Mid-Semester Check-In Presentation")) |> pull(Date) |> format("%B %d, %Y (%A)") |> paste(collapse=" and ")`,
+project teams will present a 6 minute *check-in* in the form of an
+in-class presentation. This presentation must cover:
+
+-   The Overarching Question of the project.
+-   Public data sources you are in the process of analyzing (at least
+    two). At this point, the description of the used data sources should
+    include critical evaluation of both data quality and data relevance
+    to the overarching question. In particular, teams should be able to
+    describe relevant challenges and how, if possible, the team 
+    overcame those challenges.
+    
+    ::: {.callout-tip title="Evaluating Data Quality and Suitability" collapse="true"}
+    
+    I recommend structuring your evaluation of data sources around two separate 
+    concerns: the quality of a data source and and its suitability. By quality, you
+    essentially seek to answer "how well does this data set do what it claims to do?"
+    In assessing suitability, you ask "how well does this data set do what I need it 
+    to do?"
+    
+    Quality can be further broken into two sub-parts: recording quality and 
+    sampling quality. Recording quality examines the actual values in the data set: 
+    are there lots of missing data? Are their significant numbers of outliers? Are
+    the measurements accurate or do we have to worry about issues with the tools used
+    to capture values? For text / qualitative responses, are the answers easy-to-use
+    and standardized or are they messy? Are sensitive quantities presented in some
+    sort of privacy-respecting manner (*e.g.*, bucketing or rounding?)
+    
+    Concepts like 'sampling error' or 'margin of error' may be helpful here, but
+    they won't capture everything. There's no precise measure of recording quality,
+    and it's certainly impossible to list all the ways in which data might exhibit
+    sub-optimal recording, but issues usually manifest quite quickly when you start
+    creating exploratory data analysis (EDA) plots of the data. 
+    
+    To assess sampling quality, ask whether the data has the right rows 
+    (observations). Are the data comprehensive of the entire population of interest?
+    If they are not comprehensive, are they a representative sample of the population
+    of interest? If the data has missing values, are they truly random or are they
+    perhaps correlated with other quantities of interest? (*E.g.*, you might have
+    less accurate information about the personal finances of the ultra-wealthy
+    because taxable income does not represent their total financial resources.) As
+    with recording quality, the questions here don't have specific metrics or
+    checklists, but you want to simply ask yourself whether the data can represent
+    what it claims to represent accurately, fairly, and completely. 
+    
+    Suitability is a distinct concept from quality. While quality can be assessed 
+    by looking solely at the data collection and recording mechanisms, suitability
+    also requires us to think about what we intend to use the data for. The most
+    complete, most accurate data in the world can only take us so far (or perhaps
+    nowhere at all) if it's off topic. To assess suitability, think about what the
+    data can do and what you need it to do. To the extent that the answers to these
+    questions are not one-and-the-same, you have issues of suitability you need to
+    plan to address. 
+    
+    When working with free data, there are almost always issues of suitability. 
+    After all, it's incredibly unlikely that someone purely randomly collected a
+    perfect data set for your project and then made it freely available. 
+    Don't fret - this is just a fact of life! Your analysis can still have great
+    value for your clients. You simply need to consider about the mismatch between
+    your data and your questions and to think about how that mismatch will limit the
+    applicability of your findings. In essence, even if you do the best you can,
+    what caveats or footnotes do you need to add to your final report?
+    
+    We often talk about "communicating uncertainty" as a key skill in statistics. 
+    While things like p-values and margins of error are important, the implications
+    of quality and suitability are often much more relevant here. The biggest data
+    sets in the world will drive all your standard errors to zero, but if your data
+    has systematic sampling errors, you still need to communicate those to your
+    clients.[1] Your findings will be a bit uncertain because you couldn't quit
+    measure what you needed to.
+    
+    You can (and should!) try to drive this mismatch to be as small as possible, 
+    but ultimately the question is the question and the data are the data: it is
+    more responsible and more ethical to honestly communicate the limitations of
+    your work rather than pretending those limits don't exist. If your client finds
+    value in your work and respects your discussion of limits, you always have the
+    option of discussing next steps with them: how can they give you more data or
+    adjust their question to the data at hand? Maybe they can give you some extra
+    funding to collect data that is more closely aligned with their goals. 
+
+    :::
+    
+-   Specific questions you hope to answer in your analysis. At this
+    point, each SQ should be assigned to a single team member. While the SQs 
+    work together to answer the overarching question, they should also be 
+    sufficiently distinct to allow individual evaluation.
+-   Relevant prior art: what prior work has been done on this topic? How
+    does the project complement and contrast with this work? 
+    
+    For your project to be "worth doing", it needs to be *novel* in some way. 
+    You are not required to have a high degree of novelty, but your work should
+    at least be distinguishable. Novelty may include differentiation like: 
+    i) an analysis done for LA being now done in NYC; ii) a pre-COVID analysis
+    being repeated post-COVID; iii) using a new or updated data source to see
+    if you can reproduce the same phenomenon. 
+    
+-   Anticipated challenges: *e.g.* how to disentangle the effect of
+    being further away from the central business district (and delays
+    accumulating) from specific socioeconomic effects; or lack of
+    historical data going back further than 1 year.
+
+This presentation will be graded out of 50 points, divided as:
+
+-   Quality of presentation (10 points): Are slides clearly designed
+    making effective use of visual elements? Does oral presentation
+    supplement the slides or simply read text on slide?
+-   Initial analysis of proposed data sources (15 points): are the data sources
+    proposed sufficient to answer the question? Has the team begun to
+    analyze the existing data in an exploratory fashion, determining the
+    degree to which it is comprehensive (representing an unbiased, and
+    ideally full, sample of a relevant population) and internally
+    consistent (are the data well recorded or do they have tell-tale
+    signs of inaccuracy)?
+-   Quality of specific questions (10 points): how well do the SQ support the 
+    OQ? Do they take full advantage of the proposed data sources? If all SQs
+    are answered, would they form a coherent answer to the OQ? 
+-   Engagement with Relevant Literature (10 points): how well does the
+    team ground their project in relevant academic publications and/or
+    reputable news media reports?
+-   Timing of presentation (5 points): Does the project proposal
+    actually take 6 minutes (not going over!)? Presentations that are
+    too short (less than 5.5 minutes) or too long (more than 6.5
+    minutes) will be penalized in proportion to violation of the 6
+    minute limit.
+
+
+Points will be *roughly* awarded according to the following rubric: 
+
+
+::: {.list-table width="1,1,1,1,1,1" aligns="c,l,l,l,l,l" header-rows=1 .hover #rubric-check-in}
+
+  * - Rubric Element
+    - Needs Improvement
+    - Poor 
+    - Fair
+    - Good 
+    - Great
+  * - **Quality of Presentation**
+    - (0-2/10) Weak presentation, evidencing little preparation. Fails to 
+      discuss all required elements.
+    - (3-4/10) Weak presentation, but covers all required elements, at least 
+      nominally.
+    - (5-6/10) Moderate presentation quality; slides have either too much or 
+      too little text.
+    - (7-8/10) Presentation clearly addresses all required elements. Slides have
+      a good balance of text and images.
+    - (9-10/10) Excellent, compelling and dynamic presentation covering all 
+      required elements.
+  * - **Initial Analysis of Proposed Data Sources** 
+    - (0-3/15) Minimal analysis of data sources. Team only provides cursory 
+      data description (sources and dimension) with no discussion of quality. 
+    - (4-6/15) Poor analysis of data sources: team describes data providers 
+      and evaluates quality OR demonstrates initial quality checks. 
+    - (7-9/15) Fair analysis of data sources: team describes data providers 
+      and evaluates quality AND demonstrates initial quality checks. 
+    - (10-12/15) Team assesses data quality thoroughly, evaluating both sampling
+      and recording quality. Potential issues (if any) are identified. 
+    - (13-15/15) Excellent analysis of data: full assessment of both sampling 
+      and reporting quality. identification of possible issues, and clear plan 
+      to remediate / supplement data sources in order to complete analysis. 
+  * - **Quality of Specific Questions** 
+    - (1-2/10) Presentation does not clearly state sufficient number of distinct 
+      specific questions (at least 1 per group member). 
+    - (3-4/10) Questions are poorly structured, lacking clear connections to 
+      motivating question and/or to project data.
+    - (5-6/10) Specific questions are acceptable, but do not fully address 
+      animating question. Questions are somewhat repetitive. 
+    - (7-8/10) Specific questions are well-designed and fully support motivating 
+      question. Questions are not well-separated and/or may be difficult to 
+      address with data sources. 
+    - (9-10/10) Specific questions are well-designed and fully support motivating
+      question. Each question is clearly distinct and can be addressed with 
+      data sources. 
+  * - **Engagement witih Relevant Literature**
+    - (1-2/10) Presentation does not engage with relevant literature. 
+    - (3-4/10) Engagement with prior literature is poor: only citations, without 
+      comparison to proposed project.
+    - (5-6/10) Acceptable engagement with prior literature: presentation compares 
+      proposed work with prior art.
+    - (7-8/10) Good engagement with prior work: team is able to contrast and 
+      compare with prior work. 
+    - (9-10/10) Excellent engagement with prior literature: team uses review of 
+      existing work to tailor project to fill a "gap" in the literatu
+  * - **Timing of Presentation** 
+    - (1/5) Presentation lasted more than 8 or less than 4:45 minutes. 
+    - (2/5) Presentation took between 7:30 and 8:00 or between 4:45 and 
+      5:00 minutes.
+    - (3/5) Presentation took between 7:00 and 7:30 minutes or between 5:00 
+      and 5:15.
+    - (4/5) Presentation took between 6:30 and 7:00 minutes or between 5:15 
+      and 5:30. 
+    - (5/5) Presentation took between 5:30 and 6:30.
+
+:::
+
+At this point, both the OQ and SQs should be essentially "locked." While you 
+may adjust the SQs between now and the final report, you will be asked to 
+justify deviation.
+
+**In the interest of time, it is not required that all team members
+present.**
+
+### Final Presentations
+
+On
+`{r} DATES |> filter(str_detect(Details, "Final Project Presentation")) |> pull(Date) |> format("%B %d, %Y (%A)") |> paste(collapse=" and ")`,
+student teams will present a 10 minute **final presentation** describing
+their project. This presentation must cover:
+
+-   The OQ of the project: this is essentially a restatement from the prior 
+    presentations, though it may be refined in light of work performed.
+-   Prior art
+-   Data sources used: if you changed data - or used additional data -
+    explain what motivated the change from your original plan. Describe
+    any difficulties you encountered in working with this data.\
+-   Specific analytical questions (and answers) supporting the animating
+    question. Describe the major analytical stages of your project and
+    summarize the results.
+-   Summary of overall findings: relate your SQs to your OQ; describe 
+    any limitations of the approach used.
+-   Proposals for future work: if this work could be continued beyond
+    the end of the semester, what additional steps would you suggest to
+    a client / boss?
+
+**All team members must present part of this presentation and each team
+member must present on their specific question.**
+
+This presentation will be graded out of 100 points, divided as:
+
+-   Quality of presentation (20 points): are slides clearly designed to
+    make use of attractive and effective visual elements? Does the oral
+    presentation supplement the slides or simply read text on slide?
+-   Relationship of OQ and SQs (10 points): Are
+    the specific questions well-suited for the motivating question? Does
+    the team address limitations of their analysis? Does the motivating
+    question lead naturally to the specific questions?
+-   Discussion of data sources (20 points): How well does the team
+    describe the data used for the analysis - its size, structure, and
+    provenance - and why it is suitable for their motivating question?
+-   Communication of findings (25 points): are the visualizations in the
+    presentation effective at communicating statistical findings? Does
+    the team effectively communicate limitations and uncertainties of
+    their approach?
+-   Contextualization of project (15 points): is the project well
+    situated in the existing literature? Are the findings of the
+    specific questions well integrated to answer the overarching
+    question?
+-   Timing of presentation (10 points): Does the project proposal
+    actually take 10 minutes (not going over!)? Presentations that are
+    too short (less than 9.5 minutes) or too long (more than 10.5
+    minutes) will be penalized.
+    
+
+Points will be *roughly* awarded according to the following rubric: 
+
+
+::: {.list-table width="1,1,1,1,1,1" aligns="c,l,l,l,l,l" header-rows=1 .hover #rubric-final}
+
+  * - Rubric Element
+    - Needs Improvement
+    - Poor 
+    - Fair
+    - Good 
+    - Great
+  * - **Quality of Presentation**
+    - (0-4/20) Weak presentation, evidencing little preparation. Fails to 
+      discuss all required elements.
+    - (5-8/20) Weak presentation, but covers all required elements, at least 
+      nominally.
+    - (9-12/20) Moderate presentation quality; slides have either too much or 
+      too little text.
+    - (13-16/20) Presentation clearly addresses all required elements. Slides have
+      a good balance of text and images.
+    - (17-20) Excellent, compelling and dynamic presentation covering all 
+      required elements.
+  * - **Relationship of Motivating and Specific Questions** 
+    - (0-2/10) Specific questions poorly address motivating question. 
+    - (3-4/10) Specific questions give some insight into motivating question but
+      leave major factors unaddressed. 
+    - (5-6/10) Specific questions give real insight into motivating question but
+      may leave minor factors unaddressed. 
+    - (7-8/10) Specific questions fully address motivating question and deliver
+      meaningful insights. 
+    - (9-10/10) Specific questions impressively address motivating question and
+      deliver novel and meaningful insights. Additionally, evidence is provided
+      supporting the idea that the specific questions considered are indeed the
+      most important and best questions that could be used to support the 
+      motivating question. (*I.e.*, you don't just find some factors that
+      matter; you find the *most important* factors.)
+  * - **Discussion of Data Sources** 
+    - (1-4/20) Data sources are of limited relevance or have meaningful and
+      obvious quality issues. Data structure and provenance are not discussed.
+    - (5-8/20) Data sources used are relevant to problem, but team does not
+      ensure quality. Presentation includes only cursory discussion of 
+      data structure OR provenance.
+    - (9-12/20) Data sources used are relevant to problem, but team performs
+      only cursory analysis to ensure quality. Presentation includes discussion
+      of data structure OR provenance.
+    - (13-16/20) Data sources used are relevant to problem; team performs
+      detailed analysis of sampling and reporting quality but fails to
+      addresses data limitations. Presentation includes discussion of data
+      structure AND provenance. 
+    - (17-20/20) Data sources used are relevant to problem; team performs
+      detailed analysis of sampling and reporting quality and actively addresses
+      any limitations. Presentation includes discussion of data
+      structure AND provenance.
+  * - **Communication of Findings** 
+    - (1-5/25) Poor communication of findings. Visualizations and tables are of
+      rough quality and are not 'publication ready', instead remaining close to
+      software defaults. Verbal discussion of methodology and data is muddled
+      or missing. Significant elements missing. 
+    - (6-10/25) Visualizations and tables evidence attempts at improvement, but
+      still have notable flaws. Script omits discussion of one or more key
+      analytical steps or findings. 
+    - (11-15/25) Communication includes attractive visualization and tables but
+      script does not successfully communicate key analytical steps and findings.
+    - (16-20/25) Strong communication throughout, with professional-grade
+      data visualization and tables. Script highlights key findings and broader
+      implications, but discussion of methodology is limited or confused in parts.
+    - (21-25/25) Excellent communication of findings. Visualizations, tables,
+      and script convey the essence of sophisticated analyses without getting
+      lost in details. Visualizations are compelling and attractive. Script
+      highlights key findings and clearly connects quantitative findings with
+      qualitative interpretation.
+  * - **Contextualization of Project** 
+    - (1-3/15) Project is not well situated in existing literature. 
+    - (4-6/15) Project addresses existing literature, but leaves significant
+      related work unaddressed. 
+    - (7-9/15) Project capably situates itself in existing literature, but does
+      not actively demonstrate novelty or impact. 
+    - (10-12/15) Project capably situates itself in existing literature and
+      has a non-trivial degree of novelty, but
+      is not naturally extended beyond the 'four corners' of the project. 
+    - (13-15/15) Project capably situates itself in existing literature and
+      answers a novel question or an important question in a novel way that can
+      be used to drive meaningful future research. 
+  * - **Timing of Presentation** 
+    - (1-2/10) Presentation lasted more than 12:30 or less than 8:30 minutes. 
+    - (3-4/10) Presentation took between 11:30 and 12:30 or between 8:30 and 
+      9 minutes.
+    - (5-6/10) Presentation took between 11:00 and 11:30 minutes or between 9:00 
+      and 9:15.
+    - (7-8/10) Presentation took between 10:30 and 11:00 minutes or between 9:15 
+      and 9:30. 
+    - (9-10/10) Presentation took between 9:30 and 10:30.
+
+:::
+
+::: {.callout-tip title="Final Presentation Structure" collapse="true"}
+
+In the past, I have recommended this outline for the final presentation.
+You **are not** required to follow this outline, but I provide it in case
+it may be helpful. 
+
+- Motivation and Context
+  - Why should I care about this problem?
+  - Hourglass structure: Big picture down to this question
+- Prior Art: 
+  - How does your work relate to other previous work?
+  - What *gap* are you filling in the literature?
+  - What is novel about your study?
+- Overarching Question
+  - What is your major question? 
+- Discussion of Data Sources
+  - What data sources did you use? 
+  - SWOT each data source: 
+    - What is good about it (Strengths)? 
+    - What is bad (Weaknesses)? 
+    - What novel insights does it let you generate (Opportunities)?
+    - What limitations or biases might it induce in your findings (Threats)?
+- Specific Questions
+  - What are each of your specific questions?
+  - How do they support and tie back overarching question?
+  - How did you answer each of them?  What did you find? 
+- Integration of Findings
+  - How do _quantitative_ specific findings 
+    provide _qualitative_ insights for overarching question?
+  - What can you see be combining specific questions 
+    that you can't see from a single specific question?
+  - What limits are there to your findings? 
+- Overarching Answer
+- Potential Future Work 
+  - What would you do with more time? 
+  - What additional data source would you like to access?
+  
+:::
+
+### Final Summary Report {#group_report}
+
+By the registrar-assigned 'final exam date' for this course, 
+(tentatively `{r} DATES |> filter(str_detect(Details, "Summary Report")) |> pull(dt)`),
+the team will post a *summary project report* of approximately 2000 words
+summarizing their findings.[^wordcount] This is a "non-technical" document, 
+suitable for someone who cares about the motivating question, not for a data
+scientist. This document should focus on i) motivations and importance
+of analysis; ii) briefly how the specific analyses help to address the
+motivating question; iii) the choice of data used, including discussion
+of any limitations; iv) visualization of most important findings; v)
+relation to prior work ("the literature"); and vi) potential next steps.
+
+[^wordcount]: See [this function](tips.html#count_words) which can be used
+to count words on a Quarto-generated page. Code does not count towards word 
+limits.
+
+Furthermore, this document should link to *individual reports* (more
+detail below) which work through the project specific questions in
+detail. Students are responsible for ensuring stable links between
+postings throughout the grading window.
+
+This report should be written using `quarto` and formatted as a web
+page, submitted using the same process as the course mini-projects. This
+document is not required to be a "reproducible research" document since
+it is "non-technical". As a general rule, this is a "words and pictures"
+document-possibly including a few tables-not a "code" document. You are
+encouraged to re-use material from your final presentation. Students are
+encouraged to re-use one or two key figures from individual reports in
+this document; there is no "disadvantage" to not having one of your
+individual figures used here. It is more important to select the right
+figures *for the report*.
+
+For portfolio purposes, students are encouraged to each post a copy of
+the summary report to their own web presence, though this is not
+required.
+
+This summary document will be graded out of 75 points, divided as:
+
+-   Clarity of writing and motivation (50 points): is the report written
+    accessibly for a non-technical audience? Is the motivating question
+    well-posed and supported by the specific questions? Do the authors
+    engage with prior work on this topic well?
+-   Clarity of visuals (25 points): are visuals chosen to support the
+    overall narrative? Are they "basic static" plots or have the authors
+    gone "above and beyond" in formatting and structure? Do they clearly
+    convey relevant uncertainty and key analytic choices?
+    
+The following rubric will guide assessment of the final group report, 
+though the instructor may deviate in either direction as warranted. Note that
+all ranges are to be interpreted *cumulatively*: if your report includes one
+component from the "Excellent" category as a 'box checking exercise', but omits
+fails to deliver expectations from the Adequate, Good and Great categories, your
+final score for that sub-element may fall somewhere in the middle of the scale.
+
+::: {.list-table width="1,1,1,1,1,1" header-rows=1 .hover #rubric-group-report}
+
+* - Element
+  - Sub-Element
+  - Poor
+  - Adequate
+  - Good
+  - Great
+  - Excellent
+*  - []{rowspan=4} Writing (50)
+   - Motivation of OQ and SQs (10)
+   - OQ and SQs are stated without clear motivation. SQs are simply presented
+     as "we looked at X" without reason or context. (1-2)
+   - Motivation of OQ is muddled. SQs are arbitrary, but essentially are
+     disparate questions onto which an OQ has been grafted, rather than
+     clear steps towards analyzing OQ. (3-4)
+   - Motivation of OQ is clear, but limited. SQs are connected to OQ, but are
+     not self-evidently a clear approach to analyzing the problem. (5-6)
+   - Motivation of OQ is clear and compelling. SQs are clearly connected to OQ, 
+     but do not _comprehensively_ answer OQ; SQs are a list of related
+     sub-topics which make each sense on their own, but are not an exhaustive
+     division of a complex question. (7-8)
+   - Motivation of OQ is clear and compelling. SQs are well-motivated, 
+     meaningfully integrated, and follow clearly as a means of comprehensively 
+     answering OQ. (9-10)
+*  - Clarity of Stand-Alone SQ Findings (10)
+   - No SQ findings are described well. Significant questions about analytical
+     approach, data sources, and key findings remain for all SQs. (1-2)
+   - SQ findings are presented acceptably, but significant questions about
+     approach and data remain for several individual analyses. (3-4)
+   - SQ findings are described well, though some questions about
+     approach or data remain for at least 1 individual analysis. (5-6)
+   - All individual SQs are described well, with clear communication of analytical
+     approach, data sources, and key findings. (7-8)
+   - Uncertainty and limitations of individual SQs is clearly conveyed, along
+     with implications of these limitations for the broader project. (9-10)
+*  - Integration of SQ Findings to Answer OQ (20)
+   - SQ findings are not all integrated in answering the OQ. (1-4)
+   - SQ findings are not meaningfully integrated in answering OQ. OQ answer is
+     essentially a 'concatenation' of individual SQ findings. (5-8)
+   - SQ findings are qualitatively combined to give a partial answer to
+     OQ. Limited effort is made to combine quantative results of SQs in
+     answering OQ. (9-12)
+   - SQ findings are integrated straightforwardly, with clear and correct
+     efforts made to combine findings in answering OQ. (13-16)
+   - SQ findings are integrated in a sophisticated fashion, with significant
+     subsequent analysis used to combine findings into a comprehensive 
+     quantative story. OQ answer is clearly supported and takes full advantage
+     of all SQs. (17-20)
+*  - Engagement with Prior Literature (10)
+   - Report makes essentially no attempt to engage with prior literature. (1-2)
+   - Report engages only superficially with prior literature, describing
+     a limited subset of prior work. Key prior work almost certainly missed. (3-4)
+   - Report discusses prior literature, but does not provide clear discussion
+     of prior work and how it releates to present project. Key prior work
+     may have been missed, but most relevant work is cited. (5-6)
+   - Report engages with prior literature, giving context to question and
+     findings, but does not clearly address a clear gap in prior work. 
+     Key prior work unlikely to be missed. (7-8)
+   - Report clearly and comprehensively engages with prior literature, 
+     identifying a clear need, addressing it fully, 
+     and situating findings in broader context. (9-10)
+*  - []{rowspan=3} Visualization and Accessibility (25)
+   - Accessibility to Non-Technical Audience (10)
+   - Report is difficult to interpret, even for technical audience. Findings
+     are not clearly presented or related to OQ and SQs. (1-2)
+   - Report can be interpreted by technical audience with some effort. 
+     Key findings are present, but difficult to discern and not stated 
+     clearly. (3-4)
+   - Report requires moderate technical background to understand, but 
+     is easily interpreted by audience with sufficient background. Findings
+     are clearly stated, but no attempt is made to situate them in domain
+     context. (5-6)
+   - Report is accessible to non-technical audience familiar with underlying
+     subject matter, after additional background is provided. Findings are
+     understandable, but nuance may be lost on audience without technical
+     background. Results are clearly stated, but not immediately translated to 
+     'domain context.' (7-8)
+   - Report is immediately accessible to non-technical audience familiar
+     with underlying subject matter. No concerns that findings are lost. 
+     Care is taken to translate results into meaningful 'domain context'. (9-10)
+*  - Formatting and Presentation (10)
+   - Formatting and presentation actively distract from discussion of results. (1-2)
+   - Formatting and presentation are inoffensive, but have some clear issues that
+     should be addressed. Word count is less than 1500 or above 2500. (3-4)
+   - Formatting and presentation are clear, but inconsistent across different 
+     components of the report. Report lacks a 'single editorial voice.' 
+     Word count is between 1500 and 2500 words. (5-6)
+   - Formatting and presentation are clear and consistent throughout the report,
+     with only minor issues present. Word count is between 1650 and 
+     2350 words. (7-8)
+   - Formatting and presentation are well-designed and effective at conveying
+     findings and analysis. All components are seamlessly integrated into an
+     overall presentation and story. Word count is between 1800 and 
+     2200 words. (9-10)
+*  - Technical Content of Visualizations (5)
+   - Visualizations do not meaningfully convey SQ findings. (1)
+   - Visualizations attempt to convey SQ findings, but details are
+     unclear. Significant Inconsistencies across different visualizations 
+     make it difficult to compare and contrast findings. (2)
+   - Visualizations succeed in conveying SQ findings, but do not
+     naturally connect across SQs. Inconsistencies in formatting require
+     reader effort before SQs can be connected. (3)
+   - Visualizations are well-chosen for each SQ, but not clearly 
+     connected to the OQ. Minor inconsistencies in formatting and 
+     presentation do not make it difficult to connect results. (4)
+   - Visualizations are well-chosen for each SQ and clearly convey
+     key findings and implication for the OQ. No inconsistencies in 
+     formatting or presentation. (5)
+   
+:::
+
+
+::: {.callout-tip title="Integrating SQs Together" collapse="true"}
+
+Do not underestimate the importance of properly integrating your individual 
+SQs in an answer to an OQ. Too often, teams will analyze four or five factors, 
+each of which are relevant to some outcome of interest, but then fail to 
+_integrate_ their findings, resulting in an OQ answer of the form "Everything
+we looked at has some connection with our outcome of interest." 
+
+It is important to have a good strategy for integrating SQ findings. The 
+instructor is happy to discuss details in office hours or on the course
+discussion boards, but the following strategies have proven helpful in the past: 
+
+i) Build a joint model of the outcome, using a single feature (index) derived
+   from each SQ. For instance, if a project is examining suburban housing prices and
+   individual SQs come up with metrics of location, amenities, and public school
+   quality that each can be used to predict average home price, build a model
+   of the form 
+   
+   $$\text{House Price} \approx f(\text{Location}, \text{Amenities}, \text{Schools}) $$
+   
+   Then compare the performance of this model to 'LOCO' (leave-one-covariate-out)
+   models that only use 2 of the three features. The increase in performance from
+   the two feature model to the three feature model gives an estimate of how
+   important that third feature is.
+   
+   Note that you don't want to necessarily combine _all_ information from each
+   sub-analysis. I find it best to build a single 'composite' feature from each
+   sub-analysis and to combine these. 
+   
+   Any $f$ can be used, though I recommend using a standard robust 'black-box'
+   predictor like a random forest for this type of analysis. If you prefer a 
+   more interpretable model like linear regression, you don't have to do a LOCO
+   analysis and can instead get substantially similar findings with a series of
+   nested likelihood ratio tests (sequentially asking "does adding feature X 
+   improve accuracy / reduce error in a statistically significant way?"). 
+ii) Decompose your quantity of interest into separate quantities which can be 
+    straightforwardly aggregated. For example, in a project estimating the 
+    impact that being the Olympic host country has on medal counts, you might
+    divide that impact into several parts: 
+    
+    i) Medals gained from the host country's chosen sport to add to the games; 
+    ii) Medals gained from the host country's automatic qualification in sports
+        where it would not normally qualify; 
+    iii) Medals gained from overperformance of national teams due to home field
+         advantage. 
+         
+    Once these effects are separately estimated, they can simply be summed to
+    compute the total benefit of Olympic host status. 
+    
+:::
+
+### Final Individual Report {#individual_report}
+
+By the Registrar-assigned 'final exam date' for this course, 
+(tentatively `{r} DATES |> filter(str_detect(Details, "Individual Report")) |> pull(dt)`),
+each team member will post an *individual project report* of  2000 to 2500 
+words summarizing their work on the individual specific
+question(s) for which they were responsible.[^3]
+
+[^3]: If students choose to take on multiple specific questions (perhaps
+because they were in a small group or if a classmate had to drop the course),
+they may submit multiple individual reports (one per question). If doing so,
+please modify the GitHub message template to link _all_ reports.
+
+This is a "technical" document and should be structured as a
+"reproducible research" document, including all code needed to acquire,
+process, visualize, and analyze data. (Code does not count towards word
+counts) This report should be written using `quarto` and formatted as a
+web page, submitted using the same process as the course mini-projects.
+
+Once both the summary and individual reports are submitted, students
+should open a new GitHub issue, tagging the instructor and linking to
+both reports using the template below:
+
+```         
+Hello @michaelweylandt!
+
+My team is ready to submit our {{< var course.short >}} course project reports. You can
+find mine at: 
+
+- Summary Report: [http://link.to.my/summary_report.html](http://link.to.my/summary_report.html)
+- Individual Report: [http://link.to.my/individual_report.html](http://link.to.my/individual_report.html)
+
+Thanks,
+@<MY_GITHUB_NAME>
+```
+
+Additionally, *each student* should submit a PDF copy of **both** 
+their group report and their individual report via CUNY Brightspace.
+
+The final individual report will be graded out of 100, divided roughly
+as follows:
+
+-   Code quality (20 points)
+-   Data acquisition and processing (20 points)
+-   Data analysis (30 points)
+-   Communication and presentation of results (30 points)
+
+Note that the individual reports may cross-reference each other and
+share code (suitably attributed) as appropriate. Students are encouraged
+to consider this project as a "series of posts" on a suitably technical
+blog.
+
+The following rubric will guide assessment of the final individual report, 
+though the instructor may deviate in either direction as warranted. Note that
+all ranges are to be interpreted *cumulatively*: if your report includes one
+component from the "Excellent" category as a 'box checking exercise', but omits
+fails to deliver expectations from the Adequate, Good and Great categories, your
+final score for that sub-element may fall somewhere in the middle of the scale.
+
+::: {.list-table width="1,1,1,1,1,1,1" header-rows=1 .hover #rubric-individual-report}
+
+* - Element
+  - Sub-Element
+  - Poor
+  - Adequate
+  - Good
+  - Great
+  - Excellent
+*  - []{rowspan=2} Code Quality (20)
+   - Code Style and Legibility (10)
+   - Code can be interpreted and understood by instructor with moderate
+     effort. Code does not adhere to basic style guidelines. (1-2)  
+   - Code can be interpreted and understood by instructor with minimal
+     effort. Code generally adheres to basic style guidelines. (3-4)
+   - Code is meaningfully commented and clearly expresses intent. Variable
+     names are chosen clearly and code clearly adheres to consistent
+     style and formatting choices. (5-6) 
+   - Code documents and justifies key analytical choices. (7-8)
+   - Report uses 'literate programming' functionality to clearly express
+     intent and explain all key analytical choices. (9-10)
+*  - Code Effectiveness[^run_elsewhere] (10)
+   - (1-2) Code can be run on the instructor's machine after addressing simple
+     path / working-directory issues and installing necessary packages. 
+   - (3-4) Code can be run on the instructor's machine *as is* without 
+     any modification. Code properly installs and loads necessary packages, as
+     well as avoids hard-coding any paths or working directory. 
+   - (5-6) Code is well-organized, with clear variable names and makes effective
+     use of `R`'s vectorized and `tidyverse` semantics. 
+   - (7-8) Code is organized into meaningful subroutines (functions), some of 
+     which could be rather easily adapted to support other analyses. 
+   - (9-10) Code is suitable to be re-used for similar analyses without 
+     significant effort, *e.g.*, by organization into a well-formatted and fully
+     document `R` script files, a stand-alone package, or similar. 
+*  - []{rowspan=2} Data Acquisition & Processing[^realdata] (20) 
+   - Data Acquisition[^static] (10)
+   - Data loaded from a static local file (1-2)
+   - Data loaded from a static web-hosted file (3-4)
+   - Data loaded from a standard web API (5-6)
+   - Data loaded by basic web-scraping of tabular HTML (7-8)
+   - Data loaded from an API requiring advanced techniques not presented 
+     in class, such as headless browsers, password-protection, or scraping 
+     from non-tabular HTML (9-10)
+*  - Data Cleaning, Preparation, and Exploration (10)
+   - Minimal cleaning, preparation, or exploration. Data used 'as is' with
+     no supporting analysis or evidence of data quality. (1-2) 
+   - Acceptable data cleaning and preparation, with basic EDA. Clear errors
+     are handled, but quality is not assessed in a sophisticated manner. (3-4) 
+   - Basic manual handling of outliers or other data errors. Extensive
+     EDA that does not deliver a meaningful 'story' to the reader. (5-6) 
+   - Robust 'rule-of-thumb' handling of outliers or other data errors. 
+     Meaningful 'story-telling' EDA identifying non-obvious patterns that do not
+     directly support the SQ. (7-8) 
+   - Sophisticated, context-dependent, handling of outliers or other
+     data errors. Deep and 'story-telling' EDA identifying non-obvious patterns 
+     that are then used to drive further analysis in support of the SQ. (9-10) 
+*  - []{rowspan=2} Data Analysis & Visualization (30)
+   - Data Analysis (15)
+   - Basic descriptive statistics (1-3)
+   - Advanced descriptive statistics (4-6)
+   - Pre-packaged inferential statistics (*e.g.*, tests built using theoretical
+     sampling distributions) (7-9)
+   - Computer-based inference such as bootstrapping, permutation testing, or
+     cross-validation; OR construction and analysis of a basic predictive model
+     (10-12)
+   - Sophisticated computer-based inference exceeding techniques presented in
+     class; OR construction and analysis of a sophisticated predictive model
+     (13-15)
+*  - Data Visualization (15)
+   - Baseline graphics that do not adapt the default formatting or styling (1-3)
+   - Publication-quality graphics using 'core' `ggplot2` functionality (4-6)
+   - Publication-quality graphics using advanced `ggplot2` functionality or
+     `ggplot2` extension packages (7-9)
+   - Basic interactive dashboard (10-12)
+   - A fully-interactive "dashboard" type product that reacts to sophisticated
+     user customization, accesses or allows upload of real-time data, or provides
+     export of customized visualization or analysis (13-15)
+*  - []{rowspan=3} Communication & Presentation (30)
+   - Presentation (10)
+   - Formatting significantly detracts from legibility of report. Tables and 
+     figures are unattractive, take too much space, or are otherwise 
+     counterproductive to reading experience. (1-2)
+   - Tables and figures are acceptably styled for the report, but have notable
+     issues. Formatting is unattractive, but legible throughout. 
+     Total word count falls within 1000-3500 words. (3-4)
+   - Tables and figures are well-formatted and suitably styled for the report. 
+     Formatting is attractive and uses standard `Quarto` formatting. 
+     Total word count falls within 1250-3250 words. (5-6)
+   - Document uses advanced `Quarto` formatting to enhance legibility and
+     reading experience. Figure and table formatting is well-styled for 
+     the document.
+     Total word count falls within 1500-3000 words. (7-8)
+   - Document, figure, and table formatting is actively beneficial for legibility
+     reading experience. Total word count falls within 1750-2750 words. (9-10)
+*  - OQ Discussion (10)
+   - Connection between individual work and OQ is unclear. OQ is described poorly. 
+     (1-2)
+   - OQ is described clearly, but relationship to SQ is unclear. (3-4)
+   - OQ is described clearly and has a clear nexus to SQ. Report lacks
+     sufficient motivation for SQ or sufficient 'tie back' to original
+     motivation. (5-6)
+   - Individual work makes a clear contribution to analysis of OQ. SQ is 
+     well-posed and motivated from OQ, but not essential to answering OQ. (7-8)
+   - Individual work makes an irreplaceable contribution to analysis of OQ. 
+     SQ is clearly movitated from the OQ and results tie back cleanly and 
+     informatively. (9-10)
+*  - SQ Discussion (10)
+   - SQ answers are implausible and do not pass a 'sniff test'. Correctness
+     of findings is highly questionable. (1-2)
+   - SQ is answered superficially, without sufficient nuance of detail. Findings
+     are plausible but not fully supported. Analytical strategy is not a 
+     good fit for SQ. (3-4)
+   - SQ is answered with acceptable detail, but certain claims are not 
+     sufficiently supported. Findings are likely to be correct. Analytical
+     strategies are reasonable for the SQ, but not described clearly. (5-6)
+   - SQ is answered in detail. Findings are almost certainly correct, but 
+     questions and possible objection remains. Analytical strategies are
+     clearly described and suitable to the problem. (7-8)
+   - SQ is answered deftly and completely. Findings are described with sufficient
+     nuance and possible objections are anticipated and addressed. Analysis
+     uses insightful analytical strategies to isolate true effects of interest
+     (9-10). 
+  
+:::
+
+Note that this rubric is intentionally quite difficult. It is designed to 
+be able to properly recognize teams and individuals that go above and beyond 
+in specific elements of the course project. You should not try to do everything
+listed in this rubric as a pure box-checking exercise: it is better to focus
+on a few of the challenges most central to your project and to address them well.
+
+
+[^run_elsewhere]: In order to check that your code will run easily on the
+instructor's machine during reproducibility checks, I *highly* recommend sharing
+your analysis code with a classmate or friend *who is not on your project team*.
+If your code runs without issue on their machine, it will likely run on mine as
+well.
+
+[^static]: It is *insufficient* to simply read data from a static file hosted
+locally. That is, a command like `read_csv` should be preceded by code 
+necessary to re-create that file, *e.g.* `download.file` or similar. If your
+data is only available through resources that require manual (browser-based)
+access patterns, you must ask the instructor for permission to use a local static
+file. Requests must be made *via email* at least *one week* before the final
+individual report is due. 
+
+[^realdata]: Your report **must** import and analyze a *real data set*. 
+Hard-coded values will be penalized **heavily** without specific and
+highly compelling and pre-approved justification.
+
+::: {.callout-tip title="Moving Beyond Correlation" collapse="true"}
+
+![Correlation doesn't imply causation, but it does waggle its eyebrows 
+suggestively and gesture furtively while mouthing "look over there!"](https://imgs.xkcd.com/comics/correlation.png)
+
+Typically students identify "correlation is not causation" as a limitation of
+their analyses. While this is formally true, it belies a epistemic nihilism
+and an unwillingness to look far beyond the statistics of the early 1900s. 
+_Much_ work has been done over the past century to develop ways of estimating
+causal effects in complex data. We will not go deeply into this topic in our
+course, but I'll highlight two basic strategies that students have found useful
+in the past below. 
+
+If you would like to discuss these in more detail, or if you feel your analysis
+isn't quite a good fit for either of these strategies, please reach out to the
+instructor. 
+
+Causal inference is understood as a missing data problem: the causal effect of
+$X$ on $Y$ is simply the difference in $Y$ if we do $X$ *vs.* $Y$ if we don't
+do $X$. Unfortunately, we essentially never get to see both of these scenarios.
+Instead, we have to use some sort of statistical techniques to "guess" what
+we would have seen in the other scenario and to subtract what we actually saw 
+from our guess as to what we would have seen. The more accurate the guess, the
+better our estimate of the causal effect. 
+
+*Note: Doing this rigorously and formally can be _very, very_ hard. You will not
+be required to satisfy formal conditions for these strategies to work or to
+compute error estimates in this course. I'm intentionally skimming over many
+important technical details to keep this manageable in this course.*
+
+i) "Synthetic Control": If the causal effect is some pertubation away from a 
+  'base state', we can build a statistical model to predict the base state value
+  and to put it into our causal estimate. In the simplest case, if a neighborhood
+  has a one-year program to remove excess trash, we can use the average 
+  number of rat sightings in the 5 years before the program and the 5 years after
+  the program to get a sense of what would have happened in the program year
+  without the intervention. Subtract this from the actual number of rat sightings
+  in the program year and you have a basic estimate of the impact of the trash 
+  removal program. 
+  
+    Typically, a more complex approach may be needed and you might want to fit 
+    long-term time trend rather than assuming all years before and after are not
+    impacted and are otherwise equal. You might also think about omitting one or
+    two years immediately after the rat program ends, as benefits of that program
+    may still be present. 
+  
+ii) "Difference in differences:" Sometimes we know that a quantity changes and
+    that a 'steady state' baseline does not exist. Even though the baseline
+    is a moving target, we still want to ask _how much_ of the observed change
+    is due to a particular impact. 
+    For example, we may want to know how much of the rent increase in an NYC
+    neighborhood is due to a new crime prevention program in that neighborhood.
+    
+    In this case, we might adopt a "difference in differences" type strategy.
+    Here, we can see that the average rent across the city went up 10%, but the
+    rent in our neighborhood went up 20%. If our neighborhood doesn't have any
+    other special characteristics, we might estimate that 10% of the increase
+    is normal city-wide factors and 10% is due to the crime rate drop. 
+    
+    Here, we look at the _difference_ in how this neighorhood changed over time
+    vs the whole city: the use of two different 'axes' of comparison helps us to
+    minimize the impact of confounders ('everything else'). By looking at the 
+    same neighborhood over two years, we eliminate any impacts due to its location
+    or other factors causing it to have a high baseline rent; by looking at how
+    that neighborhood compares to the rest of the city, we can eliminate city-wide
+    factors like new tenants' rights laws. 
+    
+In practice, you will always use a blend of these two approaches: you might not
+compare your neighborhood to the _whole_ city rent increases, but just to 5 
+similar neighborhoods that didn't have the crime program. The subtleties of
+rigorous causal inference are nearly endless, but the strategy of 
+"find a meaningful guess of what would have happened if not for" often is a 
+helpful guide. 
+
+:::
+
+::: {.callout-tip collapse="true" title="Submitting Interactive Elements"}
+
+There are several options for embedding an interactive
+dashboard in your final submission. The easiest is probably to host your 
+dashboard on <https://www.shinyapps.io/> and to either use a link or
+HTML windowing to put it inside your `qmd` document. If you want to 
+make everything truly seamless and integrated, you can also use the
+[`shinylive`](https://github.com/posit-dev/r-shinylive) framework to 
+run `R` and your dashboard fully in-browser. To embed the resulting
+dashboard in your `qmd` document, you may need to use the
+[`shinylive` Quarto extension](https://github.com/quarto-ext/shinylive).
+
+:::
+
+
+### Final Peer Evaluations
+
+The final 25 points will be assigned based on anonymous peer feedback 
+collected through Brightspace. In particular, after completing a qualitative
+quiz designed to assess relative contributions, each teammate will be given
+100 "points" to distribute among teammates (not self). Peer feedback scores
+will be based upon the total amount of "points" received from teammates 
+adjusted by the instructor based on qualitative peer feedback. The Peer
+Feedback quiz will be made available on Brightspace only after submitting
+both the individual and group reports. Like the reports, the Peer Feedback
+quizzes are due on the Registrar-assigned final exam date for this course
+(tentatively, `{r} DATES |> filter(str_detect(Details, "Peer Evaluations")) |> pull(dt)`). 
+**If the peer feedback quiz is not completed, you will receive 0
+points for this component of your final grade, even if you
+received high scores from your teammates.**

@@ -1,0 +1,791 @@
+---
+session: "`r session <- 10; session`"
+class_date:
+  "`r library(tidyverse); 
+    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+execute:
+  freeze: true # Done with AY-2025-FALL offering
+---
+
+
+{{< include _setup.qmd >}}
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES   <- read_csv("key_dates.csv")
+TODAY   <- DATES |> 
+    filter(`Course Element` == "Class Session", 
+           `Item Number` == session)
+
+TODAY_TUESDAY  <- TODAY |> 
+    filter(Section == "Tuesday")  |> 
+    pull(Date)
+TODAY_THURSDAY <- TODAY |> 
+    filter(Section == "Thursday") |> 
+    pull(Date)
+
+TODAY_TOPIC <- TODAY |>
+    slice_head(n=1) |>
+    pull(Details) 
+```
+    
+## {{< var course.short >}} Week {{< meta session >}} 
+
+Today: 
+
+- Tuesday Section: `r TODAY_TUESDAY`
+- Thursday Section: `r TODAY_THURSDAY`
+
+`r TODAY_TOPIC`
+
+. . . 
+
+::: {.small}
+
+- Proposals ✅
+- Mid-Semester Check-In ⬅️
+- Final Presentation
+- Final Group Report
+- Final Individual Report
+
+:::
+
+# Today
+
+## Today
+
+- Course Administration
+- Mid-Semester Check-In Presentations
+- Optional Material: Functional Programming with `purrr`
+- Wrap-Up
+  - Life Tip of the Day
+
+# Administrative Business
+
+## {{< var course.short >}} Mini-Projects
+
+- Mini-Project #01 ✅ (`r get_mp_deadline(1)`)
+- Mini-Project #02 🔄 (`r get_mp_deadline(2)`)
+  - Submission ✅
+  - Peer Feedback ⬅️
+- Mini-Project #03 (`r get_mp_deadline(3)`)
+  - Submission ⬅️
+  - Peer Feedback
+- Mini-Project #04 (`r get_mp_deadline(4)`)
+  
+## Mini-Project #03
+
+[MP#03](../miniprojects/mini03.html) - `r get_mp_title(3)`
+
+**Due `r get_mp_deadline(3)`**
+
+. . . 
+
+Topics covered: 
+
+::: {.incremental .smaller}
+
+- Data Import
+  - One static file
+  - One API call
+- Spatial Data
+  - Very basic spatial joins
+  - Spatial visualizations (maps!)
+  
+:::
+
+## Future Mini-Projects
+
+[MP#04](../miniprojects/mini04.html) - `r get_mp_title(4)`
+
+**Due `r get_mp_deadline(4)`**
+
+. . . 
+
+Analysis of BLS CES Monthly Employment Statistics
+
+. . . 
+
+Topics covered: 
+
+::: {.incremental .smaller}
+
+- Data Import
+  - HTTP Request Construction
+  - HTML Scraping (Tabular)
+- $t$-tests
+- Putting Everything Together
+
+:::
+
+## Grading in Progress
+
+We *will* owe you: 
+
+- Mid-Term Check In Grades
+
+## Re-Grade Requests
+
+Per course policy: 
+
+- If you feel peer grades are wrong, please request an
+  instructor re-grade
+- New Brightspace 'quiz' to request
+  - Not an actual quiz...
+
+. . . 
+
+If you want to discuss your MPs or project in more detail, come to office hours!
+
+## Course Support
+
+-   Synchronous
+    -   MW Office Hours 2x / week: **Tuesdays + Thursdays 5-5:45pm**
+        - Rest of Semester except Thanksgiving (Nov 27th)
+    - GTA Office Hours: **Wednesdays 5:15-7:15pm**
+-   Asynchronous: Piazza ($<20$ minute *average* response time)
+
+## Course Project
+
+[Course Project](../project.html) should be your *main focus* 
+for rest of course
+
+- But you still need to do mini-projects and pre-assignments(!)
+
+## Course Project
+
+Final submissions: 
+
+::: {.incremental}
+
+- Detailed rubrics for group report + individual report
+  - [Final Group Report](../project.html#rubric-group-report)
+  - [Final Individual Report](../project.html#rubric-individual-report)
+  
+:::
+
+. . . 
+
+Nothing new *per se* - just more details about grading
+(4 elements => 10)
+
+. . . 
+
+Additional notes added on _integration_ of SQs and strategies for estimating
+causal effects. Ask questions! I'm happy to fill these out further.
+
+
+# Check-In Presentations
+
+## Check-In Presentations
+
+Today, I'm looking for: 
+
+::: {.incremental}
+
+- Finalized _overarching question_
+- Locking in on _specific questions_
+- Evaluation of _relevant_ data sources
+  - Anticipated data or statistical challenges
+- Engagement with _existing literature_
+- 6 minutes
+
+:::
+
+. . . 
+
+Mainly, I want to see that you will be able to _succeed_ 
+
+## After Proposals
+
+Optional discussion of functional programming in `R`
+
+::: {.incremental}
+
+- List manipulation (useful for `JSON` handling)
+- Simple iteration over large data sets
+- Error handling and robustness
+- Parallelization
+
+:::
+
+# On to the Show!
+
+## Tuesday Presentations {.scrollable}
+
+```{r}
+#| echo: false
+set.seed(9750+session)
+library(yaml)
+library(jsonlite)
+
+TEAMS <- read_yaml("_teaching.yml") |> 
+  pluck("gradedir") |> 
+  file.path("teams.json") |> 
+  read_json(simplify=TRUE) |> 
+  pull(name) |>
+  sample()
+
+TUESDAY_TEAMS  <- TEAMS[str_detect(TEAMS, fixed("(T)"))]
+THURSDAY_TEAMS <- TEAMS[str_detect(TEAMS, fixed("(R)"))]
+
+data.frame(name = TUESDAY_TEAMS) |> 
+    mutate(name = paste0(row_number(), ". ", name)) |> 
+    knitr::kable(col.names="Presentation Order", 
+                 row.names=FALSE, 
+                 align = "l")
+```
+
+## Thursday Presentations {.scrollable}
+
+```{r}
+#| echo: false
+data.frame(name = THURSDAY_TEAMS) |> 
+    mutate(name = paste0(row_number(), ". ", name)) |> 
+    knitr::kable(col.names="Presentation Order", 
+                 row.names=FALSE, 
+                 align = "l")
+```
+
+# Wrap-Up
+
+## Orientation
+
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R`  ✅
+- Data Visualization in `R`  ✅
+- Getting Data into `R` ⬅️
+  - Files and APIs ✅
+  - Web Scraping
+  - Cleaning and Processing Text
+- Statistical Modeling in `R`
+
+## Upcoming Work
+
+Upcoming work from [course calendar](../index.qmd#calendar)
+
+::: {.incremental}
+
+- [Mini-Project #02 Peer Feedback](../miniprojects.html) due on ~~`r get_mp_pf_deadline(2)`~~
+- [Pre-Assignment #0`r next_session`](../preassigns/pa11.html) due `r get_pa_deadline(next_session)`
+- [Mini-Project #03](../miniprojects/mini03.html) due on `r get_mp_deadline(3)`
+
+:::
+
+
+<!-- TODO: LIFE TIP? -->
+
+## Musical Treat
+
+</br>
+
+{{< video https://www.youtube.com/watch?v=__OSyznVDOY width="80%" height="400px">}}
+
+
+# Optional Material: Functional Programming with `purrr`
+
+## Functional Programming
+
+Functional programming - *purity* 
+
+- Minimizing _book-keeping_ and _side-effects_
+
+. . . 
+
+Can go _deep_ into FP world - we're just dipping a toe in
+
+- Iteration: `map` and friends, `reduce`, `list_*`
+- Adverbs: `safely`, `partial`, `insistently`, `in_parallel` 
+- List access: `pluck`
+
+## Functional Programming
+
+![](https://imgs.xkcd.com/comics/purity.png)
+
+## Functional Programming
+
+Compare: 
+
+```{r}
+#| eval: false
+#| echo: true
+for(i in seq_along(letters)){
+    lower_letter <- letters[i]
+    upper_letter <- LETTERS[i]
+    
+    cat(upper_letter, " is the upper case of ", lower_letter, "\n")
+}
+```
+
+and 
+
+```{r}
+#| eval: false
+#| echo: true
+walk2(LETTERS, letters, ~ cat(.x, " is the upper case of ", .y, "\n"))
+```
+
+. . . 
+
+No indexing (`[]`) or explicit loop management
+
+## FP in R
+
+In `R`, FP is principally associated with `list`s
+
+. . . 
+
+*Recall: a `list` is a _generic_ container in `R` (can hold anything, even other lists)*
+
+- Natural tool for parsing JSON (see last week)
+- Many things in `R` are lists under the hood (including `data.frame`s)
+
+## Iteration - map
+
+Often, we want to do the _same thing_ to several different items: 
+
+- E.g., on MP#04, download BLS revisions _for each year_
+
+. . . 
+
+`map` and friends let us avoid loops
+
+- Handles book-keeping for us
+- List in and list out (by default)
+
+## Iteration - map
+
+```{r}
+#| echo: true
+#| eval: false
+map(INPUT, FUNCTION)
+```
+
+applies `FUNCTION` to each element of `INPUT` and
+collects the output in a new list
+
+. . . 
+
+```{r}
+map(month.name, toupper)
+```
+
+## Typed Iteration
+
+Sometimes, we know the type of values to be returned: 
+
+`map_*` lets us put those into a vector: 
+
+. . . 
+
+```{r}
+map_chr(month.name, toupper)
+```
+
+
+. . . 
+
+```{r}
+map_int(month.name, nchar)
+```
+
+## Anonymous Functions
+
+Functions in `R` can be defined as: 
+
+```{r}
+#| eval: false
+#| echo: true
+my_function <- function(arg1, arg2="default"){
+    function_code(goes * here)
+}
+```
+
+But this is clunky
+
+. . . 
+
+_Anonymous_ functions ("lambdas") let us define 'little functions' more complactly
+
+```{r}
+plus_1 <- function(x){
+    x + 1
+}
+
+\(x) x + 1
+```
+
+Supposedly `\(` looks like the Greek $\lambda$
+
+## Anonymous Functions
+
+Anonymous functions play well with `map`: 
+
+```{r}
+# String manipulation (Week 12) to count vowels
+map_int(month.name, \(x) str_count(x, "[aeiou]")) 
+```
+
+## map returning Data Frames {.scrollable}
+
+A common idiom is to return a data frame inside `map`
+
+```{r}
+map(month.name, 
+    \(x) data.frame(month = x, 
+                    upper = toupper(x), 
+                    n_vowels = str_count(x, "[aeiou]")))
+```
+
+## map returning Data Frames {.scrollable}
+
+Combine this list of little DFs _rowwise_ with `list_rbind()`
+
+```{r}
+map(month.name, 
+    \(x) data.frame(month = x, 
+                    upper = toupper(x), 
+                    n_vowels = str_count(x, "[aeiou]"))) |>
+    list_rbind()
+```
+
+## Mapping Together
+
+Often, we will want to `map` multiple things together: 
+
+- `month.name`
+- `month.abb`
+
+```{r}
+map2_chr(month.name, month.abb, \(x, y) paste(y, "is short for", x))
+```
+Use `pmap` to go to three or more
+
+## Mapping and Counting
+
+Use `imap` to get the index of the element as well:
+
+```{r}
+imap_chr(month.name, \(x, y) paste(x, "is month number", y))
+```
+
+## map vs Vectorization
+
+`map` is most useful when the underlying function can't be vectorized: *e.g.*, 
+file processing or downloading
+
+```{r}
+library(jsonlite); library(glue)
+map(1:5, 
+    \(n) as_tibble(fromJSON(glue("https://official-joke-api.appspot.com/jokes/{n}")))) |>
+    list_rbind()
+```
+
+## map pipelines
+
+Often we will want to `map` several times as we perform
+steps of an analysis.
+
+. . . 
+
+Cleaner than one big function:
+
+```{r}
+1:5 |>
+    map(\(n) glue("https://official-joke-api.appspot.com/jokes/{n}")) |>
+    map(fromJSON) |>
+    map(as_tibble) |>
+    list_rbind()
+```
+
+## Accessing nested elements
+
+Sometimes, when we have a complex list, we want to pull out
+certain elements: 
+
+- Pass an index or name to `map`:
+
+```{r}
+library(gh)
+gh("/orgs/tidyverse/repos") |>
+    map("name")
+```
+
+## Accessing List Elements
+
+Use `pluck` to access elements of a list in the same way:
+
+From last week, 
+
+```{r}
+#| eval: false
+#| echo: true
+request("https://cranlogs.r-pkg.org") |>
+    req_url_path_append("top") |>
+    req_url_path_append("last-day") |>
+    req_url_path_append(100) |>
+    req_perform() |>
+    resp_body_json() |>
+    pluck("downloads") |>
+    map(as_tibble) |>
+    list_rbind()
+```
+
+## map for Complex Analysis
+
+_Anything_ can be a column of a `data.frame`, even another `data.frame`
+
+```{r}
+penguins |>
+    group_by(species) |>
+    nest()
+```
+
+. . . 
+
+`data` is a set of 3 different data frames (one per species)
+
+## map for Complex Analysis
+
+Use `map` to fit the same model to each `data` separately: 
+
+```{r}
+penguins |>
+    group_by(species) |>
+    nest() |>
+    mutate(model = map(data, \(d) lm(body_mass ~ flipper_len, data=d)))
+```
+
+## map for Complex Analyses
+
+::: {.small}
+
+Continue using `map` to analyze each species-model separately
+
+```{r}
+penguins |>
+    group_by(species) |>
+    nest() |>
+    mutate(model = map(data, \(d) lm(body_mass ~ flipper_len, data=d)), 
+           mdl_summary = map(model, summary), 
+           coefficients = map(model, coef), 
+           slope = map_dbl(coefficients, "flipper_len"), 
+           r_sq = map_dbl(mdl_summary, "r.squared")) |>
+    select(-data, -model, -mdl_summary)
+```
+
+So `flipper_len` explains the most `body_mass` variation in `Gentoo`
+penguins.
+
+:::
+
+## Modifying Map Behavior
+
+When passing functions to `map`, we might want to handle errors
+
+- Use an `adverb` to modify a function
+
+## Adverbs: safely
+
+If you have a function that sometimes throws errors, wrap
+it in `safely`
+
+```{r}
+#| error: true
+nchar_bad <- function(x){
+    if(runif(1) < 0.2) stop("AN ERROR") else nchar(x)
+}
+
+map_dbl(month.name, nchar_bad)
+```
+
+## Adverbs: safely
+
+```{r}
+#| error: true
+nchar_safe <- safely(nchar_bad, otherwise=NA)
+
+map(month.name, nchar_safe) |> 
+    map("result") |> # Result of safely() is list, so
+    list_c()         # We must map() our pluck()
+```
+
+## Adverb: `possibly`
+
+The `safely |> map("result")` combo is common, so helper `possibly`:
+
+```{r}
+#| error: true
+nchar_safe <- possibly(nchar_bad, otherwise=NA)
+
+map_int(month.name, nchar_safe) 
+```
+
+## Adverbs: insistently
+
+For functions that fail sporadically (*e.g.*, web access), try `insistently`: 
+
+```{r}
+#| eval: false
+#| echo: true
+read_html_insist <- insistently(read_html)
+
+read_html_insist("https://a.sketchy.site")
+```
+
+Will try 3 times by default
+
+(*cf*, sites that don't work reliably like in MP#02)
+
+## Adverbs: slowly
+
+Some websites will get mad if you query too often: `slowly` will make sure it isn't called too often
+
+```{r}
+#| eval: false
+#| echo: true
+read_html_slow <- slowly(read_html)
+
+read_html_slow("https://a.rate-limited.site")
+```
+
+Default is once per second.
+
+## Adverbs: in_parallel
+
+For parallel processing, use the `in_parallel` adverb: 
+
+```{r}
+mirai::daemons(4) # Run 4 processes in parallel
+
+map_dbl(1:4, \(x) x+1)
+
+map_dbl(1:4, in_parallel(\(x) x + 1))
+```
+
+Argument to `in_parallel` needs to be an anonymous function
+
+## Adverbs: in_parallel
+
+Compare:
+
+```{r}
+system.time(map_dbl(1:4, \(x) {Sys.sleep(1); x+1}))
+```
+
+```{r}
+mirai::daemons(4) # Run 4 processes in parallel
+system.time(map_dbl(1:4, in_parallel(\(x) {Sys.sleep(1); x+1})))
+```
+
+## Adverbs: in_parallel
+
+Parallelization is not magic: 
+
+- Most useful for IO bound tasks (reading files, downloads)
+- Too much parallelization slows things down ("thrashing")
+- Need to be careful about error handling
+  - Use `safely` so if one step errors, you don't loose everything
+
+## List Access with pluck
+
+Given a `list`, the `pluck` function will pull out elements: 
+
+- `list_obj |> pluck(n)` will pull out the $n^{\text{th}}$ element
+- `list_obj |> pluck("name")` will pull out the element named `"name"`
+- `list_obj |> pluck(func)` will apply the "accessor" `func`
+
+## List Access with pluck
+
+`lm`: Linear regression (and ANOVA)
+
+```{r}
+#| echo: true
+my_regression <- lm(body_mass ~ flipper_len, data=penguins)
+
+summary(my_regression)
+```
+
+## List Access with pluck
+
+Can use `pluck` + accessors to get the coefficients
+
+```{r}
+#| echo: true
+#| eval: false
+my_regression |> pluck(1)
+my_regression |> pluck("coefficients")
+my_regression |> pluck(coef)
+```
+
+```{r}
+#| echo: false
+#| eval: true
+my_regression |> pluck(coef)
+```
+
+Final form is most robust
+
+## List Access with pluck
+
+`pluck` has some nice useability features: 
+
+::: incremental
+
+- Can supply "compound" selections:
+  `pluck(1) |> pluck("a")` is the same as `pluck(1, "a")`
+- Can change default value from `NULL`: `pluck("a", .default=NA)` 
+  - Use `chuck` if you want to error instead of default
+  
+:::
+
+
+## Combining Results
+
+Given a list, we can 'combine' elements with the
+`reduce` function:
+
+```{r}
+#| echo: true
+map(month.name, 
+    nchar) |>
+    reduce(`+`) # reduce(`+`) => sum
+```
+
+```{r}
+#| echo: true
+map(month.name, 
+    nchar) |>
+    reduce(max)
+```
+
+Useful for combining _many_ data sets in a 'mega-join'
+
+Use `accumulate` to keep intermediate results (a la `cumsum`)
+
+## Functional Tools
+
+Not everything fits within `purrr` tooling 
+
+. . . 
+
+But a lot does!
+
+Use it when helpful: 
+
+- Applying the same analysis many times `map`
+- Recursively combining ($n$-way inner join)
+- Error handling
+- List-structured data (HTML -> more next week!)

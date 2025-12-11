@@ -1,0 +1,517 @@
+---
+session: "`r session <- 11; session`"
+class_date:
+  "`r library(tidyverse); 
+    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+execute:
+  freeze: true # Done with AY-2025-FALL offering
+---
+
+{{< include _setup.qmd >}}
+
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES   <- read_csv("key_dates.csv")
+TODAY   <- DATES |> 
+    filter(`Course Element` == "Class Session", 
+           `Item Number` == session)
+
+TODAY_TUESDAY  <- TODAY |> 
+    filter(Section == "Tuesday")  |> 
+    pull(Date)
+TODAY_THURSDAY <- TODAY |> 
+    filter(Section == "Thursday") |> 
+    pull(Date)
+
+TODAY_TOPIC <- TODAY |>
+    slice_head(n=1) |>
+    pull(Details) 
+```
+    
+
+## {{< var course.short >}} Week {{< meta session >}} 
+
+::: {.smaller}
+
+Today: 
+
+- Tuesday Section: `r TODAY_TUESDAY`
+- Thursday Section: `r TODAY_THURSDAY`
+
+`r TODAY_TOPIC`
+
+:::
+
+. . . 
+
+::: {.smaller}
+
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R`  ✅
+- Data Visualization in `R`  ✅
+- Getting Data into `R` ⬅️
+  - Files and APIs ✅
+  - Web Scraping ⬅️
+  - Cleaning and Processing Text
+- Statistical Modeling in `R`
+
+:::
+
+
+# Today
+
+## Today
+
+- Course Administration
+- Warm-Up Exercise
+- New Material
+  - HTML Structure
+  - Selectors
+  - Parsing HTML with `rvest`
+- Wrap-Up
+  - Life Tip of the Day
+
+# Course Administration
+
+## GTA 
+  
+Charles Ramirez is our GTA
+
+- Wednesday Office Hours moved to 5:15-7:15 for greater access
+  - Give a bit of flexibility on the front end for CR to get off work
+- Will start on Meta-Review #02 after Peer Feedback due Tuesday November 18th
+
+## Mini-Project #03
+
+[MP#03](../miniprojects/mini03.html) - `r get_mp_title(3)`
+
+**Due `r get_mp_deadline(3)`**
+
+. . . 
+
+Topics covered: 
+
+::: {.incremental .smaller}
+
+- Data Import
+  - One static file 
+  - One API call
+- Spatial Data
+  - Very basic spatial joins
+  - Spatial visualizations (maps!)
+  
+:::
+
+Submissions so far look great!
+
+
+## Mini-Project #04
+
+[MP#04](../miniprojects/mini04.html) - `r get_mp_title(4)`
+
+**Due `r get_mp_deadline(4)`**
+
+. . . 
+
+Topics covered: 
+
+::: {.incremental .smaller}
+
+- Data Import
+  - HTTP Request Construction (Week 9)
+  - HTML Scraping (Tabular) ⬅️ (Today)
+- $t$-tests
+- Putting Everything Together
+
+:::
+
+## Grading in Progress
+
+We owe you: 
+
+- Selected Regrades 
+- Mid-Term Check-In Presentation Feedback
+
+## Course Support
+
+-   Synchronous
+    -   MW Office Hours 2x / week: **Tuesdays + Thursdays 5pm**
+        - Rest of Semester except Thanksgiving (Nov 27th)
+    - GTA Office Hours: **Wednesdays at 5:15-7:15pm**
+-   Asynchronous: Piazza ($<20$ minute *average* response time)
+
+## Large Files
+
+Several of you have reported issues with `git` complaining about large files
+
+> `git ls-tree -r -t -l --full-name HEAD | sort -n -k 4 | tail -n 10`
+
+[SO on Removing Large Files](https://stackoverflow.com/questions/43762338/how-to-remove-file-from-git-history#52643437):
+
+> `git filter-branch --index-filter 'git rm -rf --cached --ignore-unmatch data/**' HEAD`
+
+⚠️This is dangerous! I can help with it after class.⚠️
+
+# Review Exercise
+
+## API Exercise
+
+The [Open Trivia Database](https://opentdb.com/)
+
+- Use the API to build the question bank for a trivia night
+
+[Lab #11](../labs/lab11.html#review)
+
+## Breakout Rooms {.scrollable}
+
+::: {.smaller}
+
+```{r}
+#| echo: false
+set.seed(9750+session)
+library(yaml)
+library(jsonlite)
+
+TEAMS <- read_yaml("_teaching.yml") |> 
+  pluck("gradedir") |> 
+  file.path("teams.json") |> 
+  read_json(simplify=TRUE) |> 
+  pull(name) |>
+  sample()
+
+TUESDAY_TEAMS  <- TEAMS[str_detect(TEAMS, fixed("(T)"))]
+THURSDAY_TEAMS <- TEAMS[str_detect(TEAMS, fixed("(R)"))]
+
+pad_with_NA <- function(x, length.out){
+
+    if(length(x) < length.out){
+      x <- c(x, rep(NA, length.out - length(x)))
+    }
+
+    x
+
+}
+
+N_ROOMS <- max(length(TUESDAY_TEAMS), length(THURSDAY_TEAMS))
+
+TUESDAY_TEAMS  <- pad_with_NA(TUESDAY_TEAMS, N_ROOMS)
+THURSDAY_TEAMS <- pad_with_NA(THURSDAY_TEAMS, N_ROOMS)
+
+data.frame(t1 = TUESDAY_TEAMS, t2 = THURSDAY_TEAMS) |> 
+  mutate(Teams = case_when(
+  is.na(t1) ~ t2, 
+  is.na(t2) ~ t1, 
+  TRUE ~ paste(t1, t2, sep=" + ")), 
+         Breakout = row_number()) |> 
+  select(Breakout, Teams) |> 
+  knitr::kable(row.names = FALSE)
+```
+
+:::
+
+# Working with HTML 
+
+## HTML
+
+HTML - HyperText Markup Language - is the language used to write web pages
+
+- We have avoided writing HTML directly, in favor of _Markdown_
+
+. . . 
+
+But you will have to read HTML
+
+- In a web browser, right click and "View Source" on a page
+
+## HTML Elements
+
+HTML is written as a nested series of `elements`: 
+
+![](../images/html_element.png)
+
+## Important Elements
+
+There are _many_ HTML elements; some important ones are: 
+
+::: {.incremental}
+
+- `body`: Body (the 'mean' of a page)
+- `h1`, `h2`, ...: Headers
+- `div`: Division (generic container)
+- `p`: Paragraph (most text goes in these)
+- `table`: Table (often how data is displayed)
+- `ul`, `ol`: Lists (unordered and ordered)
+- `a`: Anchors (used for linking)
+
+:::
+
+## Important Elements
+
+Other useful elements: 
+
+- `script`: Javascript - the code that implements interactivity
+- `style`: CSS - formatting and appearance
+
+You won't use these directly, but they are _everywhere_
+
+## HTML Element Selection
+
+The SelectorGadget can be used to practice selecting elements on web pages
+
+- `#id` will select by ID ("name")
+- `type` will select all elements of that type
+- `.class` will select all elements with that class
+- `sel1 sel2` will select elements matching `sel2` that are _inside_ a `sel1`
+
+## HTML Element Selection
+
+- [Star Wars](https://rvest.tidyverse.org/articles/starwars.html)
+
+. . . 
+
+`main h2`
+
+. . . 
+
+- [CUNY Table](https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions)
+
+. . . 
+
+`table` or `tbody`
+
+. . . 
+
+- [Baruch GPS](https://en.wikipedia.org/wiki/Baruch_College)
+
+. . . 
+
+`.geo`
+
+## HTML Anchors
+
+_Anchors_ (`a` elements) are probably the most important part of HTML
+
+Confusingly, anchors are both links and destinations.
+
+Anchors can reference: 
+
+- Another page (`http://URL`)
+- A particular part of another page (`http://URL#place`)
+- A particular part of the same page (`#place`)
+
+Quarto supports [cross-linking](https://quarto.org/docs/authoring/cross-references.html) with anchors
+
+## HTML Anchors
+
+Incoming link anchor:
+
+> `<a id="#fish"> Content </a>` 
+
+Links to `http://page#fish` will go straight to that spot
+
+. . . 
+
+Outgoing link anchor: 
+
+> `<a href="https://baruch.cuny.edu"> Baruch </a>` 
+
+Clicking text `Baruch` will go to Baruch website
+
+## HTML Tables
+
+HTML Tables are often used for showing data: 
+
+- `<table>` - Top level container
+- `<thead>` and `<tbody>` - Separate header and body
+- `<trow>` - Rows
+- `<td>` - Table data (cells)
+
+Can be much fancier - will see several examples in exercises
+
+## rvest
+
+The `rvest` package can be used to manipulate HTML in `R`: 
+
+::: {.incremental .small}
+
+- Get HTML by either `read_html` or `resp_body_html` if using `httr2`
+- Select elements with `html_elements("selector")`
+  - Same syntax as SelectorGadget
+  - Use `html_element` if you only want the first
+- Eventually need to extract content
+  - `html_text` and `html_text2` (removes whitespace)
+  - `html_attr` gets attribute values (e.g., link targets)
+  - `html_table` will attempt to parse a table automatically
+  
+:::
+  
+## Example
+
+Using `httr2` to get the names of all 5 Mini-Projects
+
+. . . 
+
+```{r}
+#| message: false
+library(rvest)
+read_html("https://michael-weylandt.com/STA9750/miniprojects.html") |>
+    html_element("#mini-projects") |>
+    html_elements("h4") |>
+    html_text2()
+```
+
+## Breakout Exercise #01
+
+Return to your breakout rooms for [Exercise #01](../labs/lab11.html#ex01)
+
+- Use `html_element` to extract the course table
+- Use `html_table` to convert to a data frame
+
+## JavaScript Websites
+
+JavaScript is a great tool, but `R` doesn't know about it
+
+::: {.incremental}
+
+- What you see might not be what `R` sees
+- Make sure to consider "raw" HTML 
+- Often 'hijacks' important elements to add new features
+  - Focus on _standard_ HTML elements
+
+:::
+
+## Breakout Exercise #02
+
+Return to your breakout rooms for [Exercise #02](../labs/lab11.html#ex02)
+
+- Finding a table in a more complex website
+- Pulling out desired data
+- Making a map of results (optional)
+
+## Non-Tabular Data
+
+Often, data will not be in a nice table
+
+::: {.incremental}
+
+- Need to _manually_ build a `data.frame`
+- Build each data frame and 'combine'
+  - `map |> list_rbind()` idiom
+  - `DATA <- rbind(DATA, NEW_DATA)` idiom
+  
+:::
+
+## Loops
+
+Recall the basic structure of a loop in `R`: 
+
+```{r}
+#| eval: false
+for(item in container){
+    do_something_with(item)
+}
+```
+
+. . . 
+
+Accumulate data 
+
+```{r}
+#| eval: false
+all_results <- tibble()
+for(item in container){
+    new_results <- do_something_with(item)
+    new_tibble <- tibble(col1=val1, col2=val2)
+    all_results <- rbind(all_results, new_tibble)
+}
+```
+
+## Example
+
+Getting info about all pre-assignments
+
+. . . 
+
+```{r}
+#| eval: false
+library(rvest)
+
+preassigns <- read_html("https://michael-weylandt.com/STA9750/preassignments.html") |> 
+    html_element("#pre-assignments") |>
+    html_elements("section")
+
+pa_details <- tibble()
+for(pa in preassigns){
+    name        = pa |> html_element("h4") |> html_text2()
+    description = pa |> html_elements("p:last-of-type") |>  html_text2()
+    
+    pa_df <- tibble(name = name, description = description)
+    
+    pa_details <- rbind(pa_details, pa_df)
+}
+
+pa_details
+```
+
+## Breakout Exercise #03
+
+Return to your breakout rooms for [Exercise #03](../labs/lab11.html#ex03)
+
+- Examining a multi-page site
+- Pulling out data from non-tabular elements
+
+
+# Wrap Up
+
+## Wrap Up 
+
+Processing HTML in R
+
+- HTML Structure
+- HTML Selectors
+- `html_table` and `<table>` elements
+- HTML Anchors and Links
+
+## Upcoming Work
+
+Upcoming work from [course calendar](../index.qmd#calendar)
+
+::: {.incremental}
+
+- [Mini-Project #03](../miniprojects/mini03.html) due on `r get_mp_deadline(3)`
+- [Mini-Project #04](../miniprojects/mini04.html) due on `r get_mp_deadline(4)`
+- End of Semester Project Submissions
+
+:::
+
+. . . 
+
+Remaining Topics 
+
+- Parsing messy (text) data
+- Statistical Modeling
+
+
+{{< include ../advice/semester_end.qmd >}}
+
+
+## Musical Treat
+
+</br>
+
+{{< video https://www.youtube.com/watch?v=XgE7PUXTrlo width="80%" height="400px">}}
+
+You might recognize the finale from [Fantasia 2000](https://www.youtube.com/watch?v=7EBy1lBXgtE)

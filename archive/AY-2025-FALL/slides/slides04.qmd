@@ -1,0 +1,926 @@
+---
+session: "`r session <- 4; session`"
+class_date:
+  "`r library(tidyverse); 
+    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+execute:
+  freeze: true # Done with AY-2025-FALL offering
+---
+
+{{< include _setup.qmd >}}
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES   <- read_csv("key_dates.csv")
+TODAY   <- DATES |> 
+    filter(`Course Element` == "Class Session", 
+           `Item Number` == session)
+
+TODAY_TUESDAY  <- TODAY |> 
+    filter(Section == "Tuesday")  |> 
+    pull(Date)
+TODAY_THURSDAY <- TODAY |> 
+    filter(Section == "Thursday") |> 
+    pull(Date)
+
+TODAY_TOPIC <- TODAY |>
+    filter(str_detect(Details, "Lecture")) |>
+    pull(Details)
+
+ROSTERS <- DATES |> 
+    filter(Details == "Team Roster Submission") |>
+    pull(Date)
+
+PROPOSALS <- DATES |> 
+    filter(str_detect(Details, "Project Proposal")) |> 
+    pull(Date) |> 
+    strftime("%A %b %d") |> 
+    paste(collapse=" and ")
+```
+    
+## {{< var course.short >}} Week {{< meta session >}} 
+
+Today: 
+
+- Tuesday Section: `r TODAY_TUESDAY`
+- Thursday Section: `r TODAY_THURSDAY`
+
+`r TODAY_TOPIC`
+
+## Mini-Project #00 
+
+[Mini-Project #00](../miniprojects/mini00.qmd) peer feedback assigned
+
+- Due ~~`r get_mp_pf_deadline(0)`~~ **2025-09-24**
+- 4 peer feedbacks per student
+  - Give 4 comments, get 4 comments
+  - A few exceptions
+  
+. . . 
+
+[Peer Feedback Instructions](../miniprojects.qmd#peer-feedback)
+can be found online
+
+## Mini-Project #00
+
+The [helper functions](../tips.qmd) can be used to make this process easier: 
+
+1) Locate PF assignments: `mp_feedback_locate`
+2) Provide PF: `mp_feedback_create`
+3) Verify PF Submitted: `mp_feedback_verify`
+
+## Locate PF Assignment
+
+Methods:
+
+1) Check your email
+2) Check <https://github.com/notifications>
+3) Use the course helper scripts: 
+
+```{r}
+#| echo: true
+#| eval: false
+source("https://michael-weylandt.com/STA9750/load_helpers.R")
+mp_feedback_locate()
+```
+
+## Provide PF 
+
+Methods: 
+
+1) Manually copy and fill [provided template](../miniprojects.qmd#peer-feedback-template)
+2) Course helper scripts
+```{r}
+#| echo: true
+#| eval: false
+source("https://michael-weylandt.com/STA9750/load_helpers.R")
+mp_feedback_submit()
+```
+
+## Confirm PF
+
+Methods:
+
+1) Visually check template matched
+2) Course helper scripts
+```{r}
+#| echo: true
+#| eval: false
+source("https://michael-weylandt.com/STA9750/load_helpers.R")
+mp_feedback_verify()
+```
+
+## MP PF Cycle
+
+Aims of Mini-Project Peer Feedback:
+
+::: {.small}
+
+- Learn to _read_ and _evaluate_ code
+- In analysis, rarely _right_ and _wrong_; definitely _better_ and _worse_
+- Learn tricks to improve your own site
+
+:::
+
+> "Good artists copy; great artists steal." -- Steve Jobs
+
+. . . 
+
+*Most* coding is reading - *most* reading is reading _your own old code_
+
+## Course Support
+
+Asynchronous Support: Piazza
+
+- All registered now in Piazza!
+- **10 minute** average time to response
+
+. . . 
+
+Synchronous Support: Office Hours
+
+- Tuesdays and Thursdays at 5pm
+- Still waiting on CUNY HR before TA office hours begin
+
+## Pre-Assignments
+
+`r session |> sprintf("Pre-Assignment #%02d", x= _)`
+
+::: {.small}
+
+  - Ignore Brightspace's Grading
+    - Brightspace calls all short answers wrong
+    - Gradebook shows complete/incomplete grading
+    
+:::
+
+. . .
+  
+`r (session + 1) |> sprintf("Pre-Assignment #%02d", x= _)` - Due `r get_pa_deadline(session+1)`
+
+::: {.small}
+
+  - Day before class at midnight each week
+  - Available on course website + Brightspace after 9pm
+  
+:::
+
+. . . 
+
+No class on Tuesday Sep 23rd
+
+
+## Course Project
+
+Roster due at **`r ROSTERS`** by email to me. 
+
+All teammates need to agree, so takes a bit of time. 
+
+Once you set a team, start thinking about a **team name**!
+
+. . . 
+
+Initial presentations on `r PROPOSALS`
+
+. . . 
+
+Next Week: Special presentation on identifying data sources
+
+
+# Today
+
+## Today
+
+- Single-Table Verbs
+- Introduction to MP#01
+- PA#04 FAQs
+- Wrap-Up
+
+# Single-Table Verbs
+
+## data.frame
+
+Last week: Vectors 
+
+- 1D structures of _same type_
+- Vectorized semantics
+- Building blocks of more complex structures
+
+. . . 
+
+Today: `data.frame`s
+
+## data.frame
+
+`penguins` is a data frame included in recent versions of `R`
+
+```{r}
+penguins
+```
+
+## data.frame
+
+A data frame is a
+
+- Rectangular array of data; where
+- Each row corresponds to a single observation
+- Each column is a single 'feature' implemented as a vector
+  - Same type within columns; different types across columns
+
+. . . 
+
+An inherently **tidy** data structure
+
+## Tidy Data
+
+The concept of "tidyness": 
+
+- Principles to make data manipulation *safe* and *easy*
+- Decrease chance of errors
+- Increase productivity
+
+. . . 
+
+Standard format used by all `tidyverse` packages
+
+
+## Tidy Data
+
+Recall our penguins: 
+
+```{r}
+#| echo: false
+head(penguins)[,c(1,3, 5, 6, 7)]
+```
+
+. . . 
+
+Key features: 
+
+::: incremental
+
+- Each row is one observation (🐧)
+- Each column has _one and only one_ fact
+- All values are in the table 
+  - Not hiding in row and column names
+
+:::
+
+## Tidy Data
+
+[![](https://r4ds.had.co.nz/images/tidy-1.png)](https://r4ds.hadley.nz/data-tidy.html)
+
+> Figure from [*`R` for Data Science*](https://r4ds.hadley.nz/) by H. Wickham
+
+
+<!-- Not sure why this is needed, but without it image above doesn't render -->
+
+![](https://allisonhorst.github.io/palmerpenguins/logo.png){width=00%}
+
+## Tidy - Why? 
+
+Why emphasize tidy data? 
+
+. . . 
+
+Minimize distractions: 
+
+- Free to focus on _analysis_ not _code_ 
+
+. . . 
+
+Once data is "tidy", you can focus on the real questions
+
+. . . 
+
+First goal for data pre-processing ("tidying up")
+
+## Tidy - Who (and When)?
+
+The name and principles of "tidy data" were popularized by H. Wickham (2014)
+
+. . . 
+
+Core ideas are much older, dating back to (at least) Codd's 
+*Relational Model* in the 1970s, now ubiquitous in relational 
+databases (SQL)
+
+. . . 
+
+Now found in: 
+
+- Python (`pandas`)
+- Julia (`DataFrames`)
+- Rust (`polars`) 
+- and more
+
+## Tidy - How (and Where)?
+
+`tidyverse` - Packages for Manipulating Tidy Data: 
+
+::: incremental
+
+- `ggplot2`: Visualization
+- `dplyr`: `SQL`-like operations
+- `tidyr`: Reshaping and cleaning data
+- `readr`: Ingest tidy data into `R`
+- Tidy manipulation of different data types: 
+  - `stringr`, `forcats`, `lubridate`
+
+:::
+
+. . . 
+
+More helpers in the background (`tibble`, `vctrs`, ...)
+
+## Aside: tibbles
+
+You will sometimes see `tibble` (`tbl_df`) as a synonym for `data.frame`
+
+- Minor differences in output formatting
+- Fewer edge cases
+
+## Some Untidy Examples
+
+Baruch college business core enrollment:
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(tidyverse)
+D <- tribble(
+    ~Semester, ~Course,      ~Enrollment, ~Cap,
+       "Fall", "Accounting",         200,  250,
+       "Fall", "Law",                100,  125,
+       "Fall", "Statistics",         200,  200,
+     "Spring", "Accounting",         300,  350,
+     "Spring", "Law",                50,   100,
+     "Spring", "Statistics",         400,  400
+)
+```
+
+```{r}
+#| echo: false
+print(D)
+```
+
+. . . 
+
+Tidy! ✅ 
+
+. . . 
+
+- Each row is one unit (a class) 👍
+- Columns are well-typed 👍
+- One piece of information per column 👍
+
+## Some Untidy Examples
+
+A different structure: 
+
+```{r}
+#| echo: false
+tribble(
+    ~Semester, ~Course,      ~Enrollment,
+       "Fall", "Accounting", "200 of 250",
+       "Fall", "Law",        "100 of 125",
+       "Fall", "Statistics", "200 of 200",
+     "Spring", "Accounting", "300 of 350",
+     "Spring", "Law",        " 50 of 100",
+     "Spring", "Statistics", "400 of 400"
+)
+```
+
+. . . 
+
+Untidy! ❌
+
+. . . 
+
+Multiple pieces of information per cell (`Enrollment`)
+
+## Some Untidy Examples
+
+A different structure: 
+
+```{r}
+#| echo: false
+tribble(
+    ~Semester, ~Course,      ~Number, ~Type,
+       "Fall", "Accounting",     200, "Enrollment",
+       "Fall", "Accounting",     250, "Cap",
+       "Fall", "Law",        100, "Enrollment",
+       "Fall", "Law",        125, "Cap",
+       "Fall", "Statistics", 200, "Enrollment",
+       "Fall", "Statistics", 200, "Cap",
+       "Spring", "Accounting",     300, "Enrollment",
+       "Spring", "Accounting",     350, "Cap",
+       "Spring", "Law",        50, "Enrollment",
+       "Spring", "Law",        100, "Cap",
+       "Spring", "Statistics", 400, "Enrollment",
+       "Spring", "Statistics", 400, "Cap"
+)
+```
+
+. . . 
+
+Untidy! ❌
+
+. . . 
+
+::: {.smaller}
+
+Mixing two pieces of information (Enrollments and Caps)
+
+*Tip*: When one unit spans multiple rows, likely untidy
+
+:::
+
+## Some Untidy Examples
+
+```{r}
+#| echo: false
+library(tidyverse)
+D <- tribble(
+    ~Semester, ~Course,      ~Enrollment, ~Cap,
+       "Fall", "Accounting",         200,  250,
+       "Fall", "Law",                100,  125,
+       "Fall", "Statistics",         200,  200,
+     "Spring", "Accounting",         300,  350,
+     "Spring", "Law",                50,   100,
+     "Spring", "Statistics",         400,  400
+)
+```
+
+A different structure: 
+
+::: {.columns}
+
+::: {.column width="40%"}
+
+```{r}
+#| echo: false
+print(D |> select(Semester, Course, Enrollment), n=3)
+```
+
+:::
+
+::: {.column width="15%"}
+
+and
+
+:::
+
+::: {.column width="40%"}
+
+```{r}
+#| echo: false
+print(D |> select(Semester, Course, Cap), n=3)
+```
+
+:::
+
+::::
+
+. . . 
+
+[A little bit] Untidy! ❌
+
+. . . 
+
+Data spread across multiple tables
+
+## dplyr
+
+The `dplyr` package exists for SQL-type manipulations of `data.frame`s
+
+. . . 
+
+Can load directly 
+
+> `library(dplyr)`
+
+or with the `tidyverse` *meta-package*
+
+> `library(tidyverse)`
+
+. . . 
+
+`tidyverse` will give some messages about name conflicts - these are harmless
+
+## select and rename
+
+How can we select certain _columns_? 
+
+. . . 
+
+`select()` will pick columns
+
+```{r}
+#| echo: true
+penguins |> select(species, island, bill_dep)
+```
+
+## select and rename
+
+Can also use to drop columns: 
+
+```{r}
+#| echo: true
+penguins |> select(-species, -island, -bill_dep)
+```
+
+## select and rename
+
+You shouldn't mix select and drop - results non-intuitive
+
+```{r}
+#| echo: true
+penguins |> select(species, -island, -bill_dep)
+```
+
+## select and rename
+
+To _rename_ a column, pass a _named_ argument to `rename`
+
+```{r}
+#| echo: true
+penguins |> 
+    select(species, island, bill_dep) |>
+    rename(Species = species)
+```
+
+## tidyselect
+
+`dplyr` has many more selection functions for getting groups of 
+related columns
+
+See [`tidyselect`](https://tidyselect.r-lib.org/reference/index.html) for
+details
+
+## filter Operations
+
+While `select` is used to isolate columns, `filter` is used to isolate _rows_: 
+
+```{r}
+penguins |> filter(species == "Adelie")
+```
+
+## filter Operations
+
+Pass multiple arguments to get the _intersection_
+
+```{r}
+penguins |> filter(species == "Adelie", island=="Biscoe")
+```
+
+## filter Operations
+
+Can compute quantities inside of `filter`
+
+To select heavier than average penguins: 
+
+```{r}
+penguins |> filter(body_mass > mean(body_mass, na.rm=TRUE))
+```
+
+## Grouped Operations
+
+So far, we have operated on the whole data set - what if there is meaningful
+substructure? 
+
+(In statistics-speak, non "IID")
+
+. . . 
+
+
+Exercise: [Lab #04](../labs/lab04.html)
+
+Data Set: [`nycflights13`](https://nycflights13.tidyverse.org/)
+
+# Introduction to MP#01
+
+## MP#01
+
+MP#01 due `r get_mp_deadline(1)`: 
+
+> `r get_mp_title(1)` 
+
+
+[Instructions online](../miniprojects/mini01.qmd)
+
+. . . 
+
+
+**Not everything has a single _right_ answer - be reasonable, justify, and document**
+
+
+## MP#01 Analysis
+
+Analysis: 
+
+- Netflix Top10 Data
+- Steps:
+  - Data Import and Preparation 
+  - Initial Exploration
+  - Writing Press Releases
+- Practice `dplyr` single-table calculations
+  
+## MP#01 Formatting
+
+Formatting: 
+
+- `qmd` document
+- "Press Release" + supporting analysis
+  - Put _press releases_ at beginning or end, clearly identified
+  
+. . .
+
+Submission: 
+
+- Push to `GitHub` 
+- Tag on GitHub issues (`mp_submission_create`)
+- Print to PDF + Submit on Brightspace
+
+## MP#01 Rubric
+
+[Rubric online](../miniprojects/mini01.qmd#rubric)
+
+- 4 graded sections (out of 10)
+- 1 automatic 10 as long as you copy+paste my code
+
+# PA#04 FAQs
+
+
+
+## select(-)
+
+`data |> select(colname)` **keeps** `colname`, dropping everything else
+
+`data |> select(-colname)` **drops** `colname`, keeping everything else
+
+Dropping is mainly useful for
+
+- Presentation (removing unwanted columns)
+- Advanced:
+  - Operations _across_ columns
+  
+## filter vs group_by
+
+`group_by` is an _adverb_. On its own, it does nothing; it changes the
+behavior of later functionality. 
+
+::: {.small}
+
+```{r}
+#| include: false
+library(tidyverse)
+```
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> head(2)
+```
+
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species) |> head(2)
+```
+
+:::
+
+## filter vs group_by
+
+No `group_by` - full summarization:
+```{r}
+#| echo: true
+penguins |> drop_na() |> summarize(mean(body_mass))
+```
+
+With `group_by` - summary within groups. 
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species) |> summarize(mean(body_mass))
+```
+
+## filter vs group_by {.scrollable}
+
+With multiple grouping - "cross-tabs" of results: 
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass))
+```
+
+Note that result of multi-`group_by` is still grouped: 
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass))
+```
+
+## filter vs group_by {.scrollable}
+
+Changes next call to `summarize`:
+
+::: {.small}
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species) |> 
+    summarize(mbmg = mean(body_mass)) |> summarize(mean(mbmg))
+```
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species, sex) |> 
+    summarize(mbmg = mean(body_mass)) |> summarize(mean(mbmg))
+```
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(sex, species) |> 
+    summarize(mbmg = mean(body_mass)) |> summarize(mean(mbmg))
+```
+
+:::
+
+## Order of group_by
+
+- No change to first "grouped" operations
+- Change in grouping structure of result
+- Last group "removed" by `summarize`
+- No impact on grouped operations performed by `mutate` or `filter` 
+
+## ungroup
+
+- Remove all grouping structure
+- Defensive to keep group structure from "propogating" unwantedly
+
+```{r}
+#| echo: true
+#| eval: false
+sum_penguins <- penguins |> 
+    group_by(sex, species) |> 
+    summarize(mbmg = mean(body_mass))
+
+... # Lots of code 
+
+sum_penguins |> filter(mbmg == max(mbmg)) # Still grouped!!
+```
+
+## Named Arguments
+
+`mutate` and `summarize` create new columns: 
+
+ - `mutate` creates "one-to-one"
+ - `summarize` creates "one-per-group"
+
+If you want to name them (so you can use them later), use named argument
+
+## Named Arguments
+
+Named Arguments:
+
+```{r}
+#| echo: true
+penguins |> group_by(species) |> summarize(n())
+```
+
+vs
+
+```{r}
+#| echo: true
+penguins |> group_by(species) |> summarize(n_species = n())
+```
+
+## Pipe Syntax
+
+Pipe syntax (`|>`) is "syntactic sugar"
+
+Just makes code easier to read: 
+
+```{r}
+#| echo: true
+#| eval: false
+penguins |> group_by(species) |> summarize(n_species = n())
+# vs
+summarize(group_by(penguins, species), n_species=n())
+```
+
+_Exactly_ the same execution: improved UX
+
+. . . 
+
+`%>%` is an older way of doing essentially the same thing
+
+## Assignment of Pipelines
+
+When to start a pipeline with `NAME <-`? 
+
+Creating a new variable: 
+
+. . . 
+
+::: {.smaller}
+
+- Data you intend to reuse
+- Assignment operator 'up front' indicates __important__
+- My rules of thumb for names:
+  - New names for "new complete thoughts" - whole summary in one pipeline
+  - _Overwrite_ existing names for "like-for-like improvements" (`USAGE <- USAGE |> code(...)`)
+    - Recoding variable names, fixing typos, *etc.*
+    - Use name repeatedly so downstream code picks up effects 'for free'
+    
+:::
+
+## Comp to SQL and Pandas
+
+`dplyr` is _heavily_ inspired by `SQL` (standard query language for data bases)
+
+- MW (2014): "Why bother? Can't folks just use SQL"
+
+. . . 
+
+`pandas` (in Python) inspired by `R` `data.frame` and `SQL`: 
+ 
+- A bit older than `dplyr` (cousins?)
+- "New hotness" (`polars`) directly inspired by `dplyr`
+
+## Performance
+
+`dplyr` is _fast_, but advanced options: 
+
+- `dbplyr`: translates `dplyr` syntax to SQL and executes in DB
+- `dtplyr`: uses alternate `data.table` back-end (HFT)
+
+Hard to have bad performance in single-table analysis
+
+- Danger of accidentally creating 'extra' data in multi-table context
+- Will discuss more next week
+
+## Performance
+
+Tools for slow code: 
+
+- Profiler: [`profvis`](https://profvis.r-lib.org/)
+- Benchmarking: [`bench`](https://bench.r-lib.org/)
+
+Don't worry about improving code performance until: 
+
+1) You're sure it's right
+2) You're sure it's slow
+
+Incorrect code is _infinitely slow_.
+
+# Wrap-Up
+
+
+## Review
+
+Introduction to `dplyr`: 
+
+- Data Frames
+- Selecting Columns and Rows
+- Creating New Columns
+- Groupwise Analysis
+
+## Upcoming Work
+
+Upcoming work from [course calendar](../index.qmd#calendar)
+
+::: {.incremental}
+
+- [Pre-Assignment #0`r next_session`](../preassigns/pa05.html) due `r get_pa_deadline(next_session)`
+- [Mini-Project #00](../miniprojects/mini00.html) peer feedback
+- [Mini-Project #01](../miniprojects/mini01.html) due on `r get_mp_deadline(1)`
+
+:::
+
+## Looking Ahead
+
+- MP#01
+- Course Project: Teams & Proposals
+
+{{< include ../advice/amazon.qmd >}}
+
+## Musical Treat
+
+</br>
+
+{{< video https://www.youtube.com/watch?v=3fKAWa0iyUI width="80%" height="400px">}}
+
+[Live Video](https://www.youtube.com/watch?v=rV4YJwRStKI)

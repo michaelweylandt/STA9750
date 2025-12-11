@@ -1,0 +1,1067 @@
+---
+title: "{{< var course.short >}} Week 8 In-Class Activity: More `ggplot2` + Tools for Interactive Data Analysis"
+engine: knitr
+format: live-html
+execute:
+  freeze: true # Done with AY-2025-FALL offering
+---
+
+{{< include _gradethis_init.qmd >}}
+
+```{webr}
+#| echo: false
+webr::install(c("tidyverse", "mgcv"), quiet=TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+# [Slides](../slides/slides08.qmd)
+
+# Review Practice {#review}
+
+Recall the SSA Birth Count Time Series from [earlier in the semester](lab05.html).
+
+You can load this data into `R` using the following code: 
+
+
+```{webr}
+if(!file.exists("births.csv")){
+    download.file("https://raw.githubusercontent.com/michaelweylandt/STA9750/main/births.csv", 
+                  destfile="births.csv")
+}
+library(readr)
+library(dplyr)
+
+births <- read_csv("births.csv")
+glimpse(births)
+```
+
+Recall that the columns here are:
+
+- `id` : The day in the entire time series (going up to $\approx 365 * 20$ plus 
+   a few for leap days)
+- `day_of_year`: the day in the year (1 to 365/366)
+- `day_of_week`: the day of the week, coded as an integer
+- `day`, `month`, `year`: the parts of the date as we normally think of them
+- `births`: the number of births that day. 
+
+We are going to look for structure in this data using our data visualization
+tools. 
+
+
+
+1. Compute the average number of babies born per day for each year. Is there
+   evidence of a long term trend? 
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+births |> 
+    group_by(year) |> 
+    summarize(avg_births = mean(births)) |> 
+    ggplot(aes(x=year, y=avg_births)) + 
+        geom_line() +  
+        geom_point(size=5) + 
+        stat_smooth(se=FALSE) + 
+        xlab("Year") + 
+        ylab("Average Number of Births per Day") + 
+        theme_bw()
+```
+
+:::
+
+2. The previous plot may sacrifice too much resolution in taking yearly averages.
+   Instead of using yearly averages, use a 90-day moving window to estimate 
+   the median number of children born each day.
+   
+   *Hint: `runmed`*
+   
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+births |> 
+    mutate(med_births = runmed(births, 91)) |> 
+    ggplot(aes(x=id, y=med_births)) + 
+    geom_line()
+```
+
+There are clearly several interesting trends at play in this data. 
+
+:::
+
+3. Use `dplyr` and `ggplot2` to compute and visualize the average number of 
+   children born each day of the week. You can use a line graph or a bar graph
+   to visualize your results: 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+births |> 
+    group_by(day_of_week) |> 
+    summarize(avg_births = mean(births)) |> 
+    ggplot(aes(x=day_of_week, y=avg_births)) + 
+        geom_col(fill="lightblue1", color="blue4", alpha=0.4) + 
+        geom_line(col="red4", linewidth=1.5) + 
+        geom_point(size=5) + 
+        xlab("Day of Week (1 = Monday)") + 
+        ylab("Average Number of Births per Day") + 
+        theme_bw()
+```
+
+:::
+
+
+4. Use `dplyr` and `ggplot2` to compute and visualize the average number of 
+   children born per day for each month. 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+births |> 
+    group_by(month) |> 
+    summarize(avg_births = mean(births)) |> 
+    # Optional: use the built-in month.name to map 1,2,3 => January, February, March, ...
+    mutate(month_name = month.name[month], 
+           month_name = factor(month_name, levels = month.name, ordered=TRUE)) |>
+    ggplot(aes(x=month_name, y=avg_births)) + 
+        geom_col(fill="lightblue1", color="blue4", alpha=0.4) + 
+        geom_point(size=5) + 
+        xlab("Month") + 
+        ylab("Average Number of Births per Day") + 
+        theme_bw()
+```
+
+:::
+
+From this analysis, it seems clear that there are actually several different
+periodic and trend components to this data set. Extracting them is a fascinating
+analysis on its own but beyond this course. See, *e.g.*, 
+[this page](https://research.cs.aalto.fi/pml/software/gpstuff/demo_births.shtml)
+for details of how you might approach this. 
+
+Note that this type of 'multi-seasonal' decomposition is _incredibly_ useful
+in business contexts. The [`prophet` package](https://facebook.github.io/prophet/),
+an open-source product of the data science teams at Meta is designed for precisely
+this sort of analysis. 
+
+# Advanced `ggplot2` Usage
+
+*Instructor's Note: This week, I am providing non-interactive code snippets
+and encouraging you to run these examples locally (on your own instance
+of `RStudio`). Some of these tools rely on technologies you should have installed
+as part of [this week's pre-assignment](../preassigns/pa08.html), but that are
+a bit tricky to perfectly emulate in-browser.*
+
+## Spatial Visualization with `ggplot2` {#maps}
+
+Today, we're going to dive deeper into `ggplot2`, with a focus on
+visualizing spatial data. Spatial data can be [quite
+complex](https://postgis.net/documentation/manual/), but we can get pretty far
+with the **simple features** (`sf`) paradigm. Also, if we focus on relatively 
+small regions, we can avoid the complexities that come from Earth not being
+planar. 
+
+{{< video https://www.youtube.com/watch?v=vVX-PrBRtTY >}}
+
+Key to this approach is a _shapefile_. A _shapefile_, conventionally stored
+with a `shp` extension, gives precise coordinates outlining spatial regions. 
+By plotting a polygon with those points at its boundaries, we can visualize
+spatial regions. 
+
+The `sf` package includes a `shp` file for the counties of North Carolina: 
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+library(sf)
+nc <- read_sf(system.file("shape/nc.shp", package="sf"))
+nc
+```
+
+We represent this data in "tidy" format, with each row being a county. The
+"magic" is in the `geometry` column: 
+
+```{r}
+library(dplyr)
+nc |> select(NAME, AREA, PERIMETER, geometry)
+```
+
+The `geometry` column is of type `MULTIPOLYGON`, essentially a list of GPS
+coordinates tracing the corners of each county.
+
+In this activity, we'll mainly just use these for plotting, though it is
+possible to do quite sophisticated analyses here. 
+
+`ggplot2`'s `geom_sf` makes it easy to visualize spatial data. It has 
+one required aesthetic, fittingly named `geometry`: 
+
+```{r}
+#| fig.asp: 0.3
+library(ggplot2)
+ggplot(nc, aes(geometry = geometry)) + geom_sf()
+```
+
+Note that `ggplot2` is doing some work behind the scenes to keep the
+aspect ratio reasonable and not "stretching" North Carolina north-south.[^asp]
+
+[^asp]: The _aspect ratio_ of a plot is the ratio of its height to its width. 
+While we can change the aspect ratio pretty safely for most plot types, messing
+with the aspect ratio of a map leads to some weird visualizations. Unfortunately,
+to keep the aspect ratio correct, `ggplot2` and `quarto` work to add some extra
+white space around a figure (see example below with default settings).  If you 
+want to cut off this white space and have a more professionally-formatted figure,
+you will need to adjust the figure width and height using the `fig.width` and 
+`fig.height` execution options. Rather than trying to tweak these both, you can
+also set `fig.asp` to manually set the aspect ratio. In this case, because NC
+runs about 2.5 degrees north-to-south and 8 degrees east-to-west, I have set 
+the aspect ratio fo most of the figures in this set of notes to 
+$0.3 \approx 2.5/8$, which gives a comfortable appearance. 
+
+    ```{r}
+ggplot(nc, aes(geometry = geometry)) + 
+    geom_sf() + 
+    ggtitle("Map of NC with Default Aspect Ratio and Margins")
+    ```
+    
+    Look at all this wasted space!
+
+This is nice enough, if we like maps for maps' sake, but we can do more. The
+`BIR74` is the number of children born in that county between July 1, 1974
+and June 30, 1978. We can use that to set the _fills_ for each county. 
+
+```{r}
+#| fig.asp: 0.3
+library(ggplot2)
+ggplot(nc, aes(geometry = geometry, 
+               fill = BIR74)) + geom_sf()
+```
+
+This type of plot is called a **chloropleth** plot, coming from the Greek
+for "area-multitude". It is commonly used to visualize _areal_[^areal] geospatial
+data - that is quantities associated with spatial regions - as opposed to
+point data. 
+
+[^areal]: The word "areal" is a homonym to the word "arial", but don't get them
+confused.
+
+Building a chloropleth plot is not too hard, if you have an appropriate
+shape file. Thankfully, governments are in the business of knowing _exactly_
+what the boundaries of their territories are and providing shape files.
+Typically, these shape files are distributed in a "zip" format, with other
+geodata files that we won't use in this course.
+
+::: {.callout-note title="Adding Points on Chloropleths" collapse=true}
+
+We can add the [City of
+Charlotte](https://en.wikipedia.org/wiki/Charlotte,_North_Carolina),
+the largest city of North Carolina on this map: 
+
+```{r}
+#| fig.asp: 0.3
+charlotte <- data.frame(
+    x = -80 - 50/60 - 35/60^2, # West = negative
+    y = +35 + 13/60 + 38/60^2  # North = positive
+)
+
+ggplot() + 
+    geom_sf(data=nc, 
+            aes(geometry = geometry, 
+                fill = BIR74)) + 
+    geom_point(data=charlotte, 
+               aes(x=x, y=y),
+               color="red4")
+```
+
+Note that I pass _different_ data sets and `aes` mappings to each layer
+here, so I do them inside the individual `geom_`s instead of in the global
+`ggplot()` call. 
+
+:::
+
+## Exercises 1 - Geospatial Visualization of MTA Counties {#ex01}
+
+Before completing the following exercises, run the following commands to 
+download shape data and census demographics for 12 counties within New York
+State that are subject to the Metropolitan Commuter Transportation Mobility
+Tax:[^mta_tax]
+
+[^mta_tax]: These are roughly the 12 counties served by the MTA 
+(NYC Bus and Subway, MetroNorth, LIRR) and which capture most of the commuting
+population of NYC. 
+
+```{r}
+#| cache: true
+#| warning: false
+#| message: false
+ACS_TABLES <- tribble(
+    ~concept, ~id, 
+    "total_population", "B01001_001",
+    "total_male_population", "B01001_002",
+    "total_female_population", "B01001_026",
+    "total_white_population", "B01001A_001", 
+    "total_black_population", "B01001B_001",
+    "total_american_indian_population", "B01001C_001",
+    "total_asian_population", "B01001D_001",
+    "total_native_hawaiian_population", "B01001E_001",
+    "total_orther_race_population", "B01001F_001",
+    "total_two_or_more_population", "B01001G_001",
+    "total_hispanic_popoulation", "B01001I_001"
+)
+
+library(tidycensus)
+options(tigris_use_cache = TRUE)
+
+ACS_DATA <- ACS_TABLES |> 
+    pull(id) |> 
+    map(\(table_id) get_acs("county", 
+                            county=c("Queens", 
+                                     "Kings", 
+                                     "Bronx", 
+                                     "New York", 
+                                     "Richmond", 
+                                     "Westchester", 
+                                     "Rockland", 
+                                     "Suffolk", 
+                                     "Nassau", 
+                                     "Dutchess",
+                                     "Putnam",
+                                     "Orange"), 
+                            state="NY", table_id, year=2020, 
+                            geometry=TRUE, cache_table=TRUE, 
+                            keep_geo_vars=TRUE)) |>
+    bind_rows() |> 
+    select(NAME.y, ALAND, AWATER, variable, estimate, geometry) |>
+    rename(county = NAME.y, 
+           land_area = ALAND, 
+           water_area = AWATER, 
+           value = estimate) |>
+    inner_join(ACS_TABLES, join_by(variable == id)) |> 
+    select(-variable) |> 
+    pivot_wider(names_from="concept", 
+                values_from="value") |>
+    mutate(county = str_replace(county, ", New York", ", NY"))
+
+glimpse(ACS_DATA)
+```
+
+Here, I have joined together the data in a fashion that should be easy to use
+for our visualization exercises.
+
+1. Using `ACS_DATA`, create a simple map of the 11 MTA Commuter counties. 
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| fig.asp: 0.5
+ggplot(ACS_DATA, aes(geometry=geometry)) + geom_sf()
+```
+
+:::
+
+2. Using the `fill` aesthetic, create a legend with the name of each county: 
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| fig.asp: 0.5
+ggplot(ACS_DATA, aes(geometry=geometry, fill=county)) + 
+  geom_sf()
+```
+
+With a bit of polish, we may instead present this as: 
+
+```{r}
+#| fig.asp: 0.5
+ggplot(ACS_DATA, aes(geometry=geometry, fill=county)) + 
+  geom_sf() + theme_bw() + 
+  scale_fill_brewer(name="County", type="qual", palette="Paired") + 
+  theme(legend.position="bottom")
+```
+
+:::
+
+3. Using the `total_population` column, color the counties by population instead.
+   
+   *Hint: What type of color palette do you want to use here?*
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| fig.asp: 0.5
+ggplot(ACS_DATA, aes(geometry=geometry, fill=total_population)) + 
+  geom_sf()
+```
+
+This can be refined as: 
+
+```{r}
+#| fig.asp: 0.5
+ggplot(ACS_DATA, aes(geometry=geometry, fill=total_population)) + 
+    geom_sf() + 
+    theme_bw() + 
+    scale_fill_distiller(name="Total Population", 
+                         type="seq", 
+                         palette="Reds", 
+                         direction=1) + # Flip direction of legend
+    theme(legend.position="bottom")
+```
+
+:::
+
+4. Because NYS loves complex governance structures, the MTA has a 
+   21-member board wherein: 
+   
+   - 5 members are appointed by the Governor of NYS
+   - 4 members are appointed by the Mayor of NYC
+   - 3 members are appointed by the Executives of Nassau, Suffolk, 
+     and Westchester Counties (one per county)
+   - 4 members are appointed by the Executives of Dutchess, Orange, Rockland
+     and Putnam counties, but they share a single vote
+   - The remaining members are appointed by a mixture of customer and labor
+     representatives
+     
+   If we focus on the 11 members appointed by county and city leadership, we
+   can add the following column to `ACS_DATA`: 
+   
+```{r}
+ACS_DATA <- ACS_DATA |>
+   mutate(effective_mta_vote = case_when(
+      county %in% c("Bronx County, NY", 
+                    "Kings County, NY", 
+                    "Queens County, NY", 
+                    "Richmond County, NY", 
+                    "New York County, NY") ~ 4/5, 
+      county %in% c("Westchester County, NY", 
+                    "Suffolk County, NY", 
+                    "Nassau County, NY") ~ 1, 
+      TRUE ~ 1/4)
+   )
+```
+
+   Modify your map to color each county by its effective representation on the 
+   MTA board. 
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| fig.asp: 0.5
+ggplot(ACS_DATA, aes(geometry=geometry, fill=effective_mta_vote)) + 
+    geom_sf() + 
+    theme_bw() + 
+    scale_fill_distiller(name="Effective MTA Representation", 
+                         type="seq", 
+                         palette="Blues", 
+                         direction=1) + # Flip direction of legend
+    theme(legend.position="bottom")
+```
+
+:::
+
+5. Under the "one person, one vote"-principle,[^one_vote] we would expect county
+   representation on the MTA board to be proportional to the number of residents
+   of each county. Divide the effective votes of each county by the total 
+   population of that county to get a measure of _representative effectiveness_ 
+   and visualize your results. 
+
+[^one_vote]: NYC's baroque governance famously did not adhere to this principle 
+until the [Board of Estimate was struck down as a violation of the 14th 
+Amendment](https://en.wikipedia.org/wiki/Board_of_Estimate_of_City_of_New_York_v._Morris)
+in 1989. Other NYC and NYS structures continue this legacy of irregular 
+representation to this day.
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| fig.asp: 0.5
+ACS_DATA |>
+    mutate(voter_power = effective_mta_vote / total_population) |>
+    ggplot(aes(geometry=geometry, fill=voter_power)) + 
+        geom_sf() + 
+        theme_bw() + 
+        scale_fill_distiller(name="Effective Population-Normalized MTA Representation", 
+                             type="seq", 
+                             palette="Greens", 
+                             direction=1) + # Flip direction of legend
+        theme(legend.position="bottom")
+```
+
+:::
+   
+   
+6. While this map is interesting, it is more interpretable to instead identify
+   which counties have relatively too-much or too-little voting power on the MTA
+   board. Compute a "baseline" measure of voter power by dividing the 8 total
+   local MTA votes by the total population of the 12-county region. Then divide
+   each county's voter power by this baseline to get a sense of its relative
+   power. Visualize your result using a suitable color palette. 
+   
+   *Hint: You may want to subtract 1 from your 
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| fig.asp: 0.5
+ACS_DATA |>
+    mutate(county_voter_power = effective_mta_vote / total_population, 
+           baseline_voter_power = sum(effective_mta_vote) / sum(total_population), 
+           relative_voter_power = county_voter_power / baseline_voter_power -1) |>
+    ggplot(aes(geometry=geometry, fill=relative_voter_power)) + 
+        geom_sf() + 
+        theme_bw() + 
+        scale_fill_fermenter(name="Relative Representation on the MTA Board [Red Regions and Over-Powered]", 
+                             type="div", 
+                             palette="RdBu", 
+                             breaks=c(-3, -1.5, 0, 1.5, 3)) +
+        theme(legend.position="bottom", 
+              legend.text = element_blank()) # Disable legend ticks
+```
+
+
+:::
+
+Based on this analysis, which county's residents have the most relative power on
+on the MTA board? Which have the least? 
+
+Note that this analysis is somewhat limited as it assumes NYC's four votes are
+equally split by borough. In practice, the interests of the larger boroughs may
+be more strongly represented among mayoral appointees. 
+
+## Limitations and Extensions of Chloropleths
+
+Chloropleth plots are rightly popular but they have a major limitation: 
+humans are not uniformly distributed across space! Smaller regions may
+have higher populations (*cf* Connecticut vs Montana) and administrative
+regions are not the same size. Because human perception is naturally drawn
+to larger regions, we often need to adjust the color schemes used to 
+compensate for area effects. This process can be powerful, but it is a bit
+difficult to get right. 
+
+For instance, let's see what happens if we create a chloropleth of the
+`SID74` data, the number of children who die in North Carolina of 
+[SIDS](https://en.wikipedia.org/wiki/SIDS) during our sample period: 
+
+```{r}
+#| fig.asp: 0.3
+ggplot(nc, aes(geometry = geometry, fill = SID74)) + 
+    geom_sf()
+```
+
+Here, [Mecklenberg County](https://en.wikipedia.org/wiki/Mecklenburg_County,_North_Carolina)
+(Charlotte; bottom-middle of the state) sticks out because it has a large
+population, not because SIDS was particularly more common in that county. 
+We can modify our plot to show the SIDS rate, rather than raw counts: 
+
+```{r}
+#| fig.asp: 0.3
+nc |>
+    mutate(sids_rate_74 = SID74 / BIR74) |>
+    ggplot(aes(geometry = geometry, 
+               fill = sids_rate_74)) + 
+    geom_sf()
+```
+
+We see less variation here, but there is still some. Note that this type
+of data -- rate estimation from rare counts -- can be pretty tricky to analyze,
+(and thankfully SIDS remains quite rare) but that's not the primary focus of 
+this class so we'll leave it here. 
+
+This plot still isn't perfect however: [Sampson county](https://en.wikipedia.org/wiki/Sampson_County%2C_North_Carolina)
+is the largest county in NC, but it has a relatively small population. That
+means that the largest area - and hence the place our eyes will most
+immediately look - is assigned to a relatively unimportant county. Relatedly, 
+[Anson County](https://en.wikipedia.org/wiki/Anson_County%2C_North_Carolina) 
+is a county with a small population , but it appears to be a "hot-spot".
+This could be true, but it is more likely a noise-effect resulting from a
+small population.
+
+To address these issues, we can use a _cartogram_ which will "adjust" 
+the map so that area maps to a relevant quantity. This is quite complex
+mathematically, but the `cartogram` package handles it reasonably transparently
+for us[^1]: 
+
+```{r}
+#| fig.asp: 0.3
+library(cartogram)
+nc |> 
+    mutate(sids_rate_74 = SID74 / BIR74) |>
+    st_transform(26916) |> 
+    cartogram_cont(weight="BIR74") |> 
+    ggplot(aes(geometry=geometry, 
+               fill = sids_rate_74)) + 
+    geom_sf()
+```
+
+Here the `st_transform` function species _what projection_ to equilibrate
+area in. I'm not an expert on this, but the internet seems to suggest 26916
+is not a bad default.
+
+Looking at this plot, we see that counties are now adjusted to population, 
+(or, more precisely, birth count) and that and Anson county-while still high-is
+clearly down-weighted in accordance with its population. 
+
+## Exercises 2 - Cartogram Analysis of MTA Counties {#ex02}
+
+1. Modify your plot of the MTA counties so that each county is resized proportional
+   to its total population. 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| fig-asp: 0.5
+library(cartogram)
+ACS_DATA |>
+    st_transform(26916) |> 
+    cartogram_cont(weight="total_population") |> 
+    ggplot(aes(geometry=geometry, 
+               fill = county)) + 
+    geom_sf() + 
+    scale_fill_brewer(name="County", 
+                       type="qual", 
+                       palette="Paired") + 
+    theme(legend.position="bottom")
+```
+
+:::
+
+2. The result of the previous cartogram is a bit janky. Adapt your code to instead
+   use a Dorling cartogram (`cartogram_dorling`) which gives a more recognizable 
+   cartogram representation in some circumstances. 
+   
+
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{r}
+#| fig-asp: 0.5
+library(cartogram)
+ACS_DATA |>
+    st_transform(26916) |> 
+    cartogram_dorling(weight="total_population") |> 
+    ggplot(aes(geometry=geometry, 
+               fill = county)) + 
+    geom_sf() + 
+    scale_fill_brewer(name="County", 
+                       type="qual", 
+                       palette="Paired") + 
+    theme(legend.position="bottom")
+``` 
+   
+:::
+
+3. Apply a Dorling Cartogram to visualize effective population-adjusted MTA 
+   board representation of each county. 
+   
+   Is this graphic more or less interpretable than your previous attempt 
+   using true geometries? In particular, how does this visualization balance
+   the relative overpowering of Putnam County with its smaller overall
+   population?  (That is, the residents of Putnam county may have more voting
+   power _per capita_, but if there are very few of them, the net effect of this
+   bias might not actually be that large.)
+
+::: {.callout-tip collapse="true" title="Solution"}
+```{r}
+ACS_DATA |>
+    mutate(voter_power = effective_mta_vote / total_population) |>
+    st_transform(26916) |> 
+    cartogram_dorling(weight="total_population") |> 
+    ggplot(aes(geometry=geometry, fill=voter_power)) + 
+        geom_sf() + 
+        theme_bw() + 
+        scale_fill_distiller(name="Effective Population-Normalized MTA Representation", 
+                             type="seq", 
+                             palette="Greens", 
+                             direction=1) + # Flip direction of legend
+        theme(legend.position="bottom")
+```
+:::
+
+
+[^1]: If you get an error reading "`stat_sf()` requires the following
+missing aesthetics: geometry", make sure you include `geometry=geometry`
+in your `aes`
+
+## `shiny`: Creating Interactive Tools for Data Analysis
+
+We now turn our attention to creating interactive tools (web applications and
+dashboards) for data analysis. By learning these tools, you won't necessarily
+enable yourself to do analysis, but you will enable colleagues and clients to
+more fully explore the results of your analyses. The main tool we will use to
+do is `shiny`, a **reactive** framework for `R`. 
+
+"Reactive" programming refers to an architecture that changes only in response
+to user input. You have almost certainly worked with a reactive piece of
+software in the form of Microsoft Excel (or Google Sheets or similar). The
+values in the spreadsheet do not change *sua sponte*, but when you make an input
+all related cells are updated. (Conceptually, all cells are updated, but
+Excel is smart and tracks only those cells that actually need to be updated.)
+
+In this week's pre-assignment, you have already read a bit about `shiny`, but
+now we will put it into practice. In this exercise, we will not focus on making
+things particularly attractive. If you want to improve upon the rather Spartan
+appearance of standard `shiny`, tools like 
+[the `flexdashboard` package](https://pkgs.rstudio.com/flexdashboard/) may help.
+
+## Exercise 3 - Building a `shiny` tool for {{< var course.short >}} {#ex03}
+
+Use the [course helper functions](../tips.html) to build a `shiny` tool that
+can be used to verify that your mini-projects and peer feedback have been 
+appropriately formatted and submitted. 
+
+### Step 0: Run `shiny`
+
+Take the following prototype and confirm that it runs on your computer. Note
+that this is the "single-file" format for `shiny` apps. It is somewhat more
+common to split `shiny` apps across two files - backend and frontend - but
+we are using a single file structure here for convenience. 
+
+```{r}
+#| eval: false
+if(!require("shiny")) install.packages("shiny")
+library(shiny)
+
+if(!require("glue")) install.packages("glue")
+library(glue)
+
+if(!require("yaml")) install.packages("yaml")
+library(yaml)
+
+# Create global variables here
+variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+course_repo  <- variables$course$repo
+course_short <- variables$course$short
+
+# Define the UI
+ui <- bootstrapPage(
+    textInput('github_id', 
+              'What is your GitHub ID?', 
+              placeholder="Type your GitHub ID here"),
+    htmlOutput('gh_link')
+)
+
+# Define the server code
+server <- function(input, output) {
+    output$gh_link <- renderText({
+        markdown(glue("My code for this course found on [GitHub](https://github.com/{input$github_id}/{course_repo})"))
+    })
+}
+
+# Return a Shiny app object
+shinyApp(ui = ui, server = server)
+```
+
+### Step 1: Add a Link to your profile
+
+Add a second output to link to the homepage you created in
+[MP#00](../miniprojects/mini00.html). Copying the treatment of `gh_link` in 
+the example, you will need to 
+
+1) Add a second output
+   [`renderText`](https://shiny.posit.co/r/reference/shiny/0.11/rendertext.html)
+   component in the server
+2) Add a second output [`htmlOutput`](https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html) 
+  component in the UI
+
+### Step 2: Parameterize the Mini-Project Number
+
+Next, extend your app to handle the mini-projects. 
+Modify the above example to do three things: 
+
+- Add a [`numericInput`](https://rstudio.github.io/shiny/reference/numericInput.html) 
+  that takes a number between `1` and `4` inclusive to select a mini-project.
+- Add an output [`htmlOutput`](https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html) 
+  element that adds a link to the relevant 
+  [mini-project instructions](https://michael-weylandt.com/STA9750/miniprojects.html). 
+ 
+  The `glue` function can be used to easily substitute values in URLs (as in
+  the example). 
+- Add an output [`htmlOutput`](https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html) 
+  element that adds a link to *your* mini-project submission. This URL should
+  take both the `numericInput` and the `textInput` user inputs to construct
+  the URL. (That is, if you change the `GitHub` name used the URL should point
+  to a different repo)
+  
+### Step 3: Confirm Mini-Project Submission
+
+Take one of the course helper scripts and use it to determine whether a given 
+MP submission is properly formatted. To do so: 
+
+1) Load the helpers by adding `source("https://michael-weylandt.com/STA9750/load_helpers.R")`
+   to the top of your file (outside both the UI and the server). 
+2) Add a reactive input that runs `mp_submission_verify` and captures the output. 
+   The following code snippet will be useful:
+   
+```{r}
+#| eval: false
+O <- capture.output({
+    E <- tryCatch(mp_submission_verify(N, github_id), 
+                  error=function(e) e)
+})
+
+if(isTRUE(E)){
+    MESSAGE <- "Mini-Project properly submitted."
+} else {
+    MESSAGE <- "Mini-Project not properly submitted. Issue appears to be:\n"
+    MESSAGE <- paste(c(MESSAGE, O[1:2]), collapse="\n")
+}
+```
+
+   where you use `MESSAGE` in creating your output. 
+
+### Step 4: Extensions
+
+Time allowing, do one or more of the following: 
+
+- Adapt `mp_feedback_locate` to provide links to all peer feedback issues. 
+  Note that you will need to handle the case of later MPs, who haven't been
+  assigned yet (*i.e.*, MPs #03 and #04). 
+- Adapt `mp_feedback_verify` to check whether your peer feedback has been
+  properly formatted. This will require a new input for the peer's GitHub ID. 
+
+## Exercise 4: Animated Graphics {#ex04}
+
+In this section, you will use the `gganimate` extension to `ggplot2` to create 
+animated graphics. We will use the famous `gapminder` data set from the 
+`gapminder` package. Install the `gganimate`, `gapminder`, `gifski`, and `av`
+packages before attempting attempting this set of exercises. 
+
+0. For background, watch Hans Rosling's talk on human prosperity.
+
+{{< video https://www.youtube.com/watch?v=jbkSRLYSojo >}}
+
+
+1. Load the `gapminder` package and create a static scatter plot of the 
+   relationship between GDP and Life Expectancy in the year 1952. Color points
+   by continent and use the size aesthetic to represent population.
+   
+   
+   *Hint: You might want to put some quantities on a log-scale.* 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+library(tidyverse)
+library(gapminder)
+library(gganimate)
+
+gapminder |>
+    filter(year == 1952) |> 
+    ggplot(aes(y=gdpPercap, x=lifeExp, size=pop, color=continent)) + 
+    geom_point() + 
+    theme_bw() + 
+    ylab("GDP Per Capita (Inflation Adjusted US-Dollars") + 
+    xlab("Life Expectancy at Birth (Years)") + 
+    theme_bw() + 
+    scale_y_log10(labels = scales::dollar) + 
+    scale_color_brewer(name="Continent", type="qual", palette=2) + 
+    scale_size_continuous(name="Population") + 
+    theme(legend.position="bottom") + 
+    ggtitle("Global GDP Per Capital and Life Expectancy in 1952")
+```
+
+:::
+2. There is an outlier country in this data with very high GDP. What is it? 
+   Identify and remove it from your data set. 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+library(tidyverse)
+library(gapminder)
+
+gapminder |>
+    filter(year == 1952) |> 
+    slice_max(gdpPercap)
+```
+
+The outlier is Kuwait. Removing it from our data yields the following: 
+
+```{r}
+library(tidyverse)
+library(gapminder)
+library(gganimate)
+
+gapminder |>
+    filter(year == 1952, 
+           country != "Kuwait") |> 
+    ggplot(aes(y=gdpPercap, x=lifeExp, size=pop, color=continent)) + 
+    geom_point() + 
+    theme_bw() + 
+    ylab("GDP Per Capita (Inflation Adjusted US-Dollars") + 
+    xlab("Life Expectancy at Birth (Years)") + 
+    theme_bw() + 
+    scale_y_log10(labels = scales::dollar) + 
+    scale_color_brewer(name="Continent", type="qual", palette=2) + 
+    scale_size_continuous(name="Population") + 
+    theme(legend.position="bottom") + 
+    ggtitle("Global GDP Per Capital and Life Expectancy in 1952")
+```
+
+which is a bit easier to read. 
+
+:::
+
+3. Load the `gganimate` package and use it to create an _animated_ version of 
+   this plot. 
+   
+   A common use for animated plots is showing how data evolve over time and we 
+   will do the same here. Specifically, use the `transition_time` function to
+   make your plot animated. The `transition_*` functions of `gganimate` work
+   similarly to the `facet_*` functionality of base `ggplot2`, but don't require
+   a `~` symbol in their specification. 
+   
+   *Hint: Since we are looking for changes over time, you do not need to `filter`
+   down to 1952 any longer.*
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+Making this an animated plot only requires us to change two lines: 
+
+```{r}
+#| label: gapminder1
+library(tidyverse)
+library(gapminder)
+library(gganimate)
+
+gapminder |>
+    filter(country != "Kuwait") |>  # Don't filter to 1952 any more
+    ggplot(aes(y=gdpPercap, x=lifeExp, size=pop, color=continent)) + 
+    geom_point() + 
+    theme_bw() + 
+    ylab("GDP Per Capita (Inflation Adjusted US-Dollars") + 
+    xlab("Life Expectancy at Birth (Years)") + 
+    theme_bw() + 
+    scale_y_log10(labels = scales::dollar) + 
+    scale_color_brewer(name="Continent", type="qual", palette=2) + 
+    scale_size_continuous(name="Population") + 
+    theme(legend.position="bottom") + 
+    ggtitle("Global GDP Per Capital and Life Expectancy") + 
+    transition_time(year)
+```
+
+:::
+   
+5. Using the theme machinery, labels, *etc.* make this a "publication ready" 
+   plot. In particular, note that when using `transition_time()` you can use
+   `{frame_time}` in the title to get a dynamically changing year. 
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+Because we already made our plot look nice earlier, the only thing left to do
+here is to tweak the label
+
+```{r}
+#| label: gapminder2
+library(tidyverse)
+library(gapminder)
+library(gganimate)
+
+gapminder |>
+    filter(country != "Kuwait") |>  # Don't filter to 1952 any more
+    ggplot(aes(y=gdpPercap, x=lifeExp, size=pop, color=continent)) + 
+    geom_point() + 
+    theme_bw() + 
+    ylab("GDP Per Capita (Inflation Adjusted US-Dollars") + 
+    xlab("Life Expectancy at Birth (Years)") + 
+    theme_bw() + 
+    scale_y_log10(labels = scales::dollar) + 
+    scale_color_brewer(name="Continent", type="qual", palette=2) + 
+    scale_size_continuous(name="Population") + 
+    theme(legend.position="bottom") + 
+    ggtitle("Global GDP Per Capital and Life Expectancy in {frame_time}") + 
+    transition_time(year)
+```
+
+:::   
+   
+6. To perfectly reproduce the visualization from the GapMinder video, let's use 
+   Dr. Rosling's preferred color scheme. The `gapminder` package provides this
+   data in a vector called `country_colors`. Here we are providing our own color
+   scale, so we will need to replace the default `scale_color_discrete` with
+   a custom scale. 
+   
+   *Hint: There is an on-point example in the help page for ?country_colors.*
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+Following `?country_colors`:
+
+
+```{r}
+#| label: gapminder3
+library(gganimate)
+library(gapminder)
+library(ggplot2)
+gapminder |>
+    ggplot(
+       aes(x=lifeExp, y=gdpPercap, 
+           color=country, size=pop)) + 
+    geom_point() +
+    scale_y_log10(labels=scales::dollar) + 
+    scale_size_continuous(transform=scales::transform_log10()) + 
+    guides(color="none", 
+           size="none") + 
+    xlab("Life Expectancy at Birth (Years)") + 
+    ylab("GDP Per Capita (US$, Inflation-Adjusted)") + 
+    theme_bw() + 
+    transition_time(year) + 
+    ggtitle("GDP vs Life Expectancy in {frame_time}") +
+    labs(caption="Data from the GapMinder Project") +
+    scale_color_manual(values=country_colors) + 
+    facet_wrap(~continent)
+```
+
+When you have a complex data set like this, I sometimes find it valuable to
+highlight a few key points to see how they evolve over time. The `ggrepel` 
+package provides some nice functionality to add labels in a position that avoids
+covering over the underlying data: 
+
+
+```{r}
+#| label: gapminder4
+#| warning: false
+library(gganimate)
+library(gapminder)
+library(ggrepel)
+library(ggplot2)
+gapminder |>
+    mutate(label = case_when(
+        country %in% c("United States", "China", "United Kingdom", "Kenya") ~ country, 
+        TRUE ~ NA
+    )) |>
+    ggplot(
+       aes(x=lifeExp, y=gdpPercap, 
+           color=country, size=pop, 
+           label=label)) + 
+    geom_point() +
+    geom_label_repel() + 
+    scale_y_log10(labels=scales::dollar) + 
+    scale_size_continuous(transform=scales::transform_log10()) + 
+    guides(color="none", 
+           size="none") + 
+    xlab("Life Expectancy at Birth (Years)") + 
+    ylab("GDP Per Capita (US$, Inflation-Adjusted)") + 
+    theme_bw() + 
+    transition_time(year) + 
+    ggtitle("GDP vs Life Expectancy in {frame_time}") +
+    labs(caption="Data from the GapMinder Project") +
+    scale_color_manual(values=country_colors) + 
+    facet_wrap(~continent)
+```
+
+A few more tweaks could be used here, but it's pretty good.
+
+:::
+
+```{r}
+#| echo: false
+## There's a weird interaction with how quarto and gganimate pick up directories
+## when echoing `qmd` files in a sub-folder. I'm trying to get to the bottom
+## of it, but for now, I'll just move the rendered `gif`s into place manually. 
+move_to_labs_folder <- function(fname){
+    file.rename(fname, file.path("labs", fname))
+}
+
+walk(Sys.glob("lab08_files/**/gapminder*"), move_to_labs_folder)
+```

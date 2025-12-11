@@ -1,0 +1,677 @@
+---
+session: "`r session <- 9; session`"
+class_date:
+  "`r library(tidyverse); 
+    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+execute:
+  freeze: true # Done with AY-2025-FALL offering
+---
+
+{{< include _setup.qmd >}}
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES   <- read_csv("key_dates.csv")
+TODAY   <- DATES |> 
+    filter(`Course Element` == "Class Session", 
+           `Item Number` == session)
+
+TODAY_TUESDAY  <- TODAY |> 
+    filter(Section == "Tuesday")  |> 
+    pull(Date)
+TODAY_THURSDAY <- TODAY |> 
+    filter(Section == "Thursday") |> 
+    pull(Date)
+
+TODAY_TOPIC <- TODAY |>
+    filter(str_detect(Details, "Lecture")) |>
+    slice_head(n=1) |>
+    pull(Details) 
+
+```
+    
+## {{< var course.short >}} Week {{< meta session >}} 
+
+::: {.smaller}
+
+Today: 
+
+- Tuesday Section: `r TODAY_TUESDAY`
+- Thursday Section: `r TODAY_THURSDAY`
+
+`r TODAY_TOPIC`
+
+:::
+
+. . . 
+
+::: {.smaller}
+
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R`  ✅
+- Data Visualization in `R`  ✅
+- Getting Data into `R` ⬅️
+  - Files and APIs  ⬅️
+  - Web Scraping
+  - Cleaning and Processing Text
+- Statistical Modeling in `R`
+
+:::
+
+
+# Today
+
+## Today
+
+- Course Administration
+- Warm-Up Exercise
+- New Material
+  - Files and the File System
+  - HTTP and Web Access
+  - API Usage
+- Wrap-Up
+  - Life Tip of the Day
+
+# Course Administration
+
+## GTA 
+  
+Charles Ramirez is our GTA
+
+- Wednesday Office Hours moved to 5:15-7:15 for greater access
+  - Give a bit of flexibility on the front end for CR to get off work
+- Working on Meta-Review #01
+  - I won't assign peer-feedback #02 until these grades are returned
+
+## Mini-Project #03
+
+[MP#03](../miniprojects/mini02.html) - `r get_mp_title(3)`
+
+**Due `r get_mp_deadline(3)`**
+
+. . . 
+
+Topics covered: 
+
+::: {.incremental .smaller}
+
+- Data Import
+  - One static file (⬅️ Today)
+  - One API call (⬅️ Today)
+- Spatial Data
+  - Very basic spatial joins
+  - Spatial visualizations (maps!)
+  
+:::
+
+## Grading in Progress
+
+We owe you: 
+
+- MP#01 Meta-Review Grades
+- (Selected) MP#01 Regrades 
+
+## Course Support
+
+-   Synchronous
+    -   MW Office Hours 2x / week: **Tuesdays + Thursdays 5pm**
+        - Rest of Semester except Thanksgiving (Nov 27th)
+    - GTA Office Hours: **Wednesdays at 6pm**
+-   Asynchronous: Piazza ($<20$ minute *average* response time)
+
+## Future Mini-Projects
+
+- MP#04: 
+  - Deadline: `r get_mp_deadline(4)`
+  - Topic: BLS Monthly Employment Reports
+  
+Posted 2025-11-01
+
+## Course Project
+
+[Course Project](../project.html) should be your *main focus* 
+for rest of course
+
+- But you still need to do mini-projects and pre-assignments(!)
+
+## Mid-Semester Check-Ins
+
+Week #10 - Mid-Semester Check-In Presentations: 
+
+::: {.incremental}
+
+- Overarching Question
+- Data Sources
+  - Quality
+  - Suitability
+- Specific Questions
+- Prior Art
+- Challenges
+
+:::
+
+## Data Sources
+
+When using 'found' data, two important questions to ask: 
+
+::: {.incremental}
+
+- _Quality_: Does the data do what it claims to?
+  - Exhaustiveness, sampling error, sampling bias, missingness
+- _Suitability_: Does the data do what you need it to?
+  - Right 'unit of analysis', construct alignment
+
+:::
+
+## Prior Art
+
+Context and Novelty: 
+
+::: {.incremental}
+
+- What else have people said on your topic? 
+  - What is missing? 
+- What do you have to add to this conversation? (Novelty)
+  - New data set, new way of measuring, new style of analysis
+  
+:::
+
+. . . 
+
+A _research_ project is not just summarization of other work: 
+how can you contribute something new?
+
+## Project Advice
+
+General Advice:
+
+::: {.incremental}
+
+- Work on _as small a scale as possible_
+- Leave room to _demonstrate your coding skill_: if you can't  
+  demonstrate the skills of this class, your SQ may be too small
+- Plan how to _integrate_ your findings: if you find 5 factors 
+  are all correlated with response, how can you identify which ones
+  are most important? 
+
+:::
+
+## Project Advice
+
+I'll try to write up some informal advice on: 
+
+- Estimating _causal_ effects
+- Identifying key factors
+
+# Review Exercise
+
+## Flat / Plain Text Files
+
+'Plain text' files:
+
+::: {.incremental}
+
+- Simple _human readable_ and _human writeable_ file formats
+- Not specific to one piece of software
+- Examples: CSV, txt, TSV
+- Anti-Examples: docx, pdf, jpg
+
+:::
+
+. . . 
+
+Read into `R` with `readr` functions (*e.g.*, `read_csv`)
+
+## Best Halloween Candy
+
+From [FiveThirtyEight](https://fivethirtyeight.com/videos/the-ultimate-halloween-candy-power-ranking/)
+
+{{< video https://www.youtube.com/watch?v=FjT35R8CC9Q width=1000 height=600 >}}
+
+## Best Halloween Candy
+
+Data can be found at <https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv>
+
+Read into `R` (`readr::read_csv`) and make 3 plots: 
+
+- Do people prefer more sugary candies? (Think OLS)
+- Do people prefer more expensive candies? (Think OLS)
+- Do people prefer chocolate candies? (Think ANOVA)
+
+## Breakout Rooms {.scrollable}
+
+::: {.smaller}
+
+```{r}
+#| echo: false
+set.seed(9750+session)
+library(yaml)
+library(jsonlite)
+
+TEAMS <- read_yaml("_teaching.yml") |> 
+  pluck("gradedir") |> 
+  file.path("teams.json") |> 
+  read_json(simplify=TRUE) |> 
+  pull(name) |>
+  sample()
+
+TUESDAY_TEAMS  <- TEAMS[str_detect(TEAMS, fixed("(T)"))]
+THURSDAY_TEAMS <- TEAMS[str_detect(TEAMS, fixed("(R)"))]
+
+pad_with_NA <- function(x, length.out){
+
+    if(length(x) < length.out){
+      x <- c(x, rep(NA, length.out - length(x)))
+    }
+
+    x
+
+}
+
+N_ROOMS <- max(length(TUESDAY_TEAMS), length(THURSDAY_TEAMS))
+
+TUESDAY_TEAMS  <- pad_with_NA(TUESDAY_TEAMS, N_ROOMS)
+THURSDAY_TEAMS <- pad_with_NA(THURSDAY_TEAMS, N_ROOMS)
+
+data.frame(t1 = TUESDAY_TEAMS, t2 = THURSDAY_TEAMS) |> 
+  mutate(Teams = case_when(
+  is.na(t1) ~ t2, 
+  is.na(t2) ~ t1, 
+  TRUE ~ paste(t1, t2, sep=" + ")), 
+         Breakout = row_number()) |> 
+  select(Breakout, Teams) |> 
+  knitr::kable(row.names = FALSE)
+```
+
+:::
+
+# Files and the File System
+
+## Files and the File System
+
+The _file system_ is the way your computer organizes and provides access to files: 
+
+::: {.incremental}
+
+- Tree like-structure: 
+  - Files in folders in folders in folders ... 
+    - Separated by `/`
+    - *e.g.* `STA9750-2025-FALL/data/mp01/data_file.csv`
+  - End point (or starting point) is the _root_: 
+    - Called `/` on Mac/Linux
+    - Drive name on Windows (`C:/`)
+  
+:::
+
+## Home Directory
+
+Typically, all user files are stored in a "home directory": 
+
+::: {.incremental}
+
+- `/Users/YOURNAME` on Mac/Linux
+- `C:/Users/YOURNAME` on Windows
+- Subfolders include `Downloads`, `Desktop`, `Documents`, *etc*
+- Commonly abbreviated as `~`
+  - My desktop is `~/Desktop`
+  - My course material is in `~/{{< var course.repo >}}`
+  
+:::
+
+## Paths
+
+Two ways to specify a file: 
+
+::: {.incremental .smaller}
+
+- Absolute path:
+  - Starts from root and gives "full name"
+  - `/Users/michaelweylandt/STA9750/docs/index.html`
+  - GPS coordinates
+- Relative path: 
+  - Starts from _working directory_ (`getwd()`) and gives directions
+  - If I am in `STA9750`, path is just `docs/index.html`
+  - `./`  means "this directory": could also write `./docs/index.html`
+  - `../` means "up one level"
+    - If I were in `STA9750/docs`, source at `../index.qmd`
+  - Driving directions
+  
+:::
+
+## Using the File System in R
+
+Use the `fs` package to interact with the file system: 
+
+::: {.incremental}
+
+- `dir_ls()`, `dir_create()`, `dir_exists()`, `dir_delete()`
+- `path()`, `path_home()`, `path_abs()`, `path_rel()`
+- `file_create()`, `file_exists()`, `file_delete()`, `file_info()`
+
+:::
+
+## Activity #01
+
+Return to breakout rooms to practice file system usage: 
+
+- Convert relative paths to absolute paths
+- List files in a directory
+- Examine metadata the largest file(s) in your `{{< var course.repo >}}`
+  directory
+
+# Accessing Data from the Web: URLs, HTTP, JSON
+
+## URLs
+
+URLs are an extension of file paths for the internet: 
+
+::: {.incremental}
+
+- Protocol / Scheme: _How_ data should be transferred
+  - HTTP(S), SMS (Texting), POP3/IMAP (Email)
+- Domain: Name of the other computer
+  - In practice, often a 'placeholder' for something more complex
+- Path: Files on the other computer
+  - In practice, hide functionalty behind file-like paths
+  
+:::
+
+## URLs
+
+From `abstrax.io`
+
+![](https://abstrax.io/wp-content/uploads/2022/07/parts-of-url-1024x335.png)
+
+
+## Static Data Transfer
+
+`R`'s basic `download.file` can be used for downloading simple files:
+
+::: {.small}
+
+```{r}
+args(download.file)
+```
+
+:::
+
+Basic file download capabilities: 
+
+- `url`: source
+- `destfile`: where on your computer to store it
+
+. . .
+
+::: {.smallest}
+
+Customizable behavior, but defaults often work well: 
+
+- `method`: what software to use in the background to download
+- `mode`: is this a text or binary file
+- `cacheOK`: are you ok with a cached version of the file
+- `headers`: do you need to send any additional info in your request
+
+:::
+
+## download.file()
+
+```{r}
+#| eval: false
+download.file("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/births.csv", 
+              destfile="births.csv")
+```
+
+Note use of _relative_ path here, so saves in current working directory
+
+. . . 
+
+Be polite: 
+
+- Try to avoid unnecessarily downloading files
+- Save file and only download if `!file_exists(destfile)`
+
+## Data Transfer - download.file()
+
+```{r}
+#| eval: false
+if(!file_exists("births.csv")){
+    download.file("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/births.csv", 
+                  destfile="births.csv")
+}
+
+read_csv("births.csv")
+```
+
+## JSON
+
+`JSON`:
+
+- Short for `JavaScript Object Notation`
+- Popular plain-text representation for hierarchical data. 
+- Closer to Python objects (`dict`s of `dict`s of `dict`s) than `R` `data.frame`s
+- *Widely* used for web-based data transfer
+
+## JSON
+
+Example: 
+
+```
+{
+    "data": {
+        "id": 27992,
+        "title": "A Sunday on La Grande Jatte — 1884",
+        "image_id": "1adf2696-8489-499b-cad2-821d7fde4b33"
+    },
+    "config": {
+        "iiif_url": "https://www.artic.edu/iiif/2",
+    }
+}
+```
+
+## JSON
+
+Read JSON in `R` with `jsonlite` package (alternatives exist)
+
+```{r}
+library(jsonlite)
+# A JSON array of primitives
+json <- '["Mario", "Peach", null, "Bowser"]'
+
+# Simplifies into an atomic vector
+fromJSON(json)
+```
+
+## JSON
+
+```{r}
+json <-
+'[
+  {"Name" : "Mario", "Age" : 32, "Occupation" : "Plumber"}, 
+  {"Name" : "Peach", "Age" : 21, "Occupation" : "Princess"},
+  {},
+  {"Name" : "Bowser", "Occupation" : "Koopa"}
+]'
+mydf <- fromJSON(json)
+mydf
+```
+
+## JSON - A Web Standard
+
+```{r}
+#| cache: true
+fromJSON("https://official-joke-api.appspot.com/random_joke")
+```
+
+Compare to [browser access](https://official-joke-api.appspot.com/random_joke)
+
+## Data Transfer: HTTP
+
+HTTP
+
+- HyperText Transfer Protocol
+- Most common (but not only) internet protocol
+- Also `ftp`, `smtp`, `ssh`, ... 
+
+"Low-level" mechanism of internet transfer
+
+- Many `R` packages add a friendly UX
+- `httr2` for low-level work (today)
+
+## HTTP
+
+<style>
+.container{
+    display: flex;
+}
+.col{
+    flex: 1;
+}
+</style>
+
+
+HTTP has two stages: 
+
+::: {.container}
+
+:::: {.col}
+
+- Request
+  - URL (Host + Path)
+  - Method (VERB)
+  - Headers
+  - Content
+  - Cookies
+::::
+
+:::: {.col}
+- Response
+  - Status Code
+  - Headers
+  - Content
+  
+::::
+
+:::
+  
+Modern (easy) APIs put _most_ of the behavior in the URL
+
+## HTTP in the Browser
+
+In Firefox: Right-Click + `Inspect`
+
+In Chrome: Right-Click + `Developer Tools`
+
+. . . 
+
+[Mozilla Developer Network (MDN) Docs for HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP)
+
+## HTTP with httr2
+
+`httr2` (pronounced "hitter-2") is *low-level* manipulation of
+HTTP. 
+
+```{r}
+library(httr2)
+request(example_url())
+```
+
+Pretty simple so far: 
+
+- `example_url()` starts a tiny local web host
+- `127.0.0.1` is `localhost`
+
+## httr2 Requests
+
+Build a request: 
+
+- `request`
+- `req_method`
+- `req_body_*`
+- `req_cookies_set`
+- `req_auth_basic` / `req_oauth`
+
+## `httr2` Requests
+
+Behaviors: 
+
+- `req_cache`
+- `req_timeout`
+
+. . . 
+
+Execution: 
+
+- `req_perform`
+
+## `httr2` Responses
+
+Request status
+
+- `resp_status` / `resp_status_desc`
+
+Content: 
+
+- `resp_header*`
+- `resp_body_*`
+
+## Live Demo
+
+Demo: Using `httr2` to get a random joke from 
+
+[https://official-joke-api.appspot.com/](https://official-joke-api.appspot.com/)
+
+# API Usage
+
+## Exercise - CRAN Logs API
+
+See [Lab #09](../labs/lab09.html)
+
+
+# Wrap-Up
+
+## Review
+
+Web Data Access
+
+- Local Files
+- Static Files & `download.file`
+- HTTP and JSON
+- API Usage
+
+## Upcoming Work
+
+Upcoming work from [course calendar](../index.qmd#calendar)
+
+::: {.incremental}
+
+- [Mini-Project #02](../miniprojects/mini02.html) due on `r get_mp_deadline(2)`
+- Check-In Presentations
+- [Mini-Project #03](../miniprojects/mini03.html) due on `r get_mp_deadline(3)`
+
+:::
+
+. . . 
+
+Topics for after presentations:
+
+- Reading and parsing HTML
+- Parsing messy (text) data
+
+## Musical Treat
+
+</br>
+
+{{< video https://www.youtube.com/watch?v=gC0sP_YV4ns width="80%" height="400px">}}
+
