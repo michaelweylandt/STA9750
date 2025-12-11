@@ -1,0 +1,189 @@
+---
+title: "{{< var course.short >}} Week {{< meta pa_num >}} Pre Assignment: {{< meta pa_title >}}"
+pa_num: 11
+pa_title: "Intro to HTML"
+execute:
+  freeze: true # Done with AY-2025-FALL offering
+---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+NUMBER <- as.integer(rmarkdown::metadata$pa_num)
+due_date_str <- read_csv("key_dates.csv") |> 
+    filter(`Course Element` == "Pre-Assignments", 
+           `Item Number` == NUMBER, 
+           str_detect(Details, "Due")) |> 
+    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
+    pull(dt) |>
+    format("%Y-%m-%d (%A) at %I:%M%P")
+```
+
+**Due Date**: `{r} due_date_str`
+
+**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
+
+
+Our next topic is scraping data from web pages, that is data stored in HTML. 
+Recall our "hierarchy" of data storage preferences: 
+
+- Relational Databases
+- Flat Files
+- Hierarchical Plain Text
+- "Reasonably Formatted" Spreadsheets
+- Served via API
+- "Unreasonable" Spreadsheets
+- Served via HTML
+- PDF
+
+As the course has progressed, we have seen or worked with data in many of these
+formats. This week, we move to the most difficult data source of this course: 
+HTML.[^1] 
+
+HTML, short for *HyperText Markup Language*, is the *lingua franca* of the web. 
+The _vast_ majority of websites you visit or interact with are written using HTML.
+As such, HTML is _ubiquitous_ in modern life. HTML is flexible, relatively easy
+to write by hand or programmatically, compressible, and has near universal
+built-in support on modern operating systems. 
+
+Unfortunately, this ubiquity comes with a cost: because HTML is so universal, 
+web browsers have been designed to "try their best" to read and render even
+improper HTML.[^2] In response, web professionals and amateurs have released
+ever worse HTML upon the world, continuing a vicious cycle. Modern programming
+practice has moved away from hand-written HTML in favor of tools like Markdown
+and Quarto, which allow "correct" HTML to be generated automatically. While this
+is a welcome trend, you will almost certainly still encounter malformatted HTML
+in your career, as nothing - however flawed - truly leaves the internet. 
+
+But, for now, we begin with relatively well-formatted HTML. 
+
+Right-click in your browser and view the source code of this page - what you're
+seeing is HTML. HTML consists of a hierarchically nested set of elements that 
+look something like this: 
+
+```
+<p format="emph">This is some text.</p>
+```
+
+There are three key pieces of this structure: 
+
+- The start tag `<p>` and matching end tag `</p>`. Here, `p` is the _type_ of
+  tag, short for "paragraph" and used to specify a block of paragraph text. 
+  
+  Occasionally, the end tag `</p>` can be omitted for tags which have no internal
+  content, such as `<br>` denoting a break between paragraphs, but the end tag
+  should typically be included. 
+- The _contents_ of the element, between the start and end tags. Here "This is
+  some text" is the contents of the `p` element. 
+- A set of attributes, included in the start tag. These are essentially endlessly
+  flexible "meta-data" of the form `key="value"`. The most common use of these
+  attributes is to control formatting, as in our example above, which indicates
+  that the paragraph should be emphasized, perhaps by bold or italics, but
+  the meaning is not fixed by HTML alone. 
+  
+The power and flexibility of HTML comes from the fact that the _contents_ of
+one element can include one or more additional elements. For instance, you might
+encounter an element like 
+
+```
+<p format="emph">This semester, I am teaching <a href="https://michael-weylandt.com/STA9750">Introduction to R</a> at <a
+href="https://baruch.cuny.edu">Baruch College</a>.</p>
+```
+
+which might render as: 
+
+> **This semester, I am teaching [Introduction to R](https://michael-weylandt.com/STA9750)
+> at [Baruch College](https://baruch.cuny.edu).**
+
+Here the `a` tag is used to create hyperlinks, with the target specified by
+the `href` attribute. There are many more "standard" HTML tags in addition to
+those that websites might define for their own use. For comprehensive 
+documentation, see the [Mozilla Developer Network (MDN)
+Documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Element). 
+
+When extracting data from a website, we will typically want to select _all_ the
+elements of a certain tag or with a certain attribute: *e.g.*, all cells of a 
+table or all bolded paragraph headers. We can do so efficiently using "CSS
+Selectors".
+
+CSS Selectors are a special language used to select multiple elements at once:
+the basic elements are as follows: 
+
+- `el`: Select all elements delimited by an `el` tag. 
+- `.cls`: Selects all elements with a `class="cls"` tag. 
+- `[attr]`: Selects all elements with an `attr` attribute
+- `[attr="val"]`: Selects all elements with an `attr` attribute equal to `"val"`
+- `el1 el2`: Select all `el2` elements that are within an `el1` element.
+
+We will use these to tell `R` what elements to import from a web page. A well
+constructed selector statement can usually highlight exactly the data we hope
+to extract. 
+
+For now, however, you will practice using CSS Selectors from within your browser. 
+
+Right click the the following link and add it to your bookmarks. Whenever you're
+on a website, you can click that bookmark to open the CSS SelectorGadget.[^3]
+
+> <a href="javascript:(function(){var%20s=document.createElement('div');s.innerHTML='Loading...';s.style.color='black';s.style.padding='20px';s.style.position='fixed';s.style.zIndex='9999';s.style.fontSize='3.0em';s.style.border='2px%20solid%20black';s.style.right='40px';s.style.top='40px';s.setAttribute('class','selector_gadget_loading');s.style.background='white';document.body.appendChild(s);s=document.createElement('script');s.setAttribute('type','text/javascript');s.setAttribute('src','https://dv0akt2986vzh.cloudfront.net/unstable/lib/selectorgadget.js');document.body.appendChild(s);})();">SelectorGadget</a>.
+
+If you're on Google Chrome, you may instead use the 
+[SelectorGadget extension](https://chromewebstore.google.com/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb?pli=1)
+for the same effect. 
+
+Upon clicking, you will see a toolbar at the bottom of the page. If you type
+a CSS selector statement into that toolbar, it will highlight all elements
+on the page that match that selector. For now try a simple `a` and hit enter:
+you should see all links on the page highlighted. You can also try more
+advanced CSS selectors: `li a` will select all links (`a`) within list items
+(`li`) of the navigation bar at the top of the page. 
+
+You can also use SelectorGadget to _create_ CSS Selectors. If you click several
+items that you want to select, SelectorGadget will attempt to create a suitable
+selector command. (You might need to `Clear` the input area before trying
+this.) For instance, try clicking a link in this text and seeing what 
+SelectorGadget automatically selects for you. In this case, SelectorGadget
+comes up with `a` for all links on the page. If we want to exclude the links
+in the navigation bar, we can click them again, marking them in red and 
+SelectorGadget will attempt to exclude them. Here, it creates a CSS selector
+that selects only links within the main body of the page. For our purposes, 
+two clicks are enough, but you could extend this further. SelectorGadget isn't
+perfect, but it's often a very good starting guess. 
+
+Open the [`rvest` Star Wars example
+page](https://rvest.tidyverse.org/articles/starwars.html) in a new tab and use
+SelectorGadget to select the 7 movie names in the main section. We want only the
+movie names and not the text below them. We also don't want the clickable links
+in the sidebar. We will use this selector as our first example in class. 
+
+Next, open the [Wikipedia page listing all CUNY Colleges](https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions)
+and confirm that the `tbody` selector selects the entirety of the main table.
+Note that if you use SelectorGadget here, you might get something like 
+`.jquery-tablesorter`. For reasons we will discuss in class, this won't work
+in `R`. 
+
+Finally, open the [Baruch College](https://en.wikipedia.org/wiki/Baruch_College) 
+Wikipage and create a selector for just the GPS coordinates in the top right
+corner of the page. You should try to select just the coordinates themselves
+and not the text "Coordinates" preceding them. 
+
+As you explore this, it's worth noting that Wikipedia is actually a rather
+complicated web-page. If you want to practice on simpler websites, I recommend
+starting [here](https://www.scrapethissite.com/pages/simple).
+
+After finishing this document, complete the Weekly Pre-Assignment Quiz
+on Brightspace.
+
+[^1]: We won't cover reading data from PDFs in this course.
+
+[^2]: If you are of a certain age, you will remember an era when websites would
+work in one browser and not others. Proper HTML should work in all browsers, but
+each browser had its own way of handling malformatted HTML. Developers were, in
+essence, requiring users to use a piece of software that would automatically
+correct their mistakes. These were dark times...
+
+[^3]: All credit to Andrew Cantino at
+[https://selectorgadget.com/](https://selectorgadget.com/). Use here inspired
+by the [`rvest` documentation]
+

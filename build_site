@@ -101,19 +101,21 @@ QMD_FILES <- QMD_FILES |>
 
 for(fname in QMD_FILES){
     cat("Rendering", fname, "\n")
-    quarto::quarto_render(fname)
+    tryCatch(quarto::quarto_render(fname), error=function(e){})
 }
 
 # Process navbar in archive folders
 cat("Adapting Archive Navbars\n")
 ARCHIVE_HTML_FILES <- list.files("docs/archive/",
                                  recursive = TRUE,
-                                 pattern="*html",
+                                 pattern=".*html$",
                                  full.names=TRUE)
 
 library(rvest)
 for(fname in ARCHIVE_HTML_FILES){
+    if(!str_ends(fname, "html")) next
     html_old <- readLines(fname)
+
     html_links_old <- rvest::read_html(fname) |>
         html_element(".navbar") |>
         html_elements("a") |>
@@ -121,15 +123,21 @@ for(fname in ARCHIVE_HTML_FILES){
 
     html_new <- html_old
 
-    ## FIXME: Make sure we're not doing nested archive links
-    for(html_link_old in html_links_old){
-        html_link_new <- str_replace_all(html_link_old,
-                                         fixed("../../"),
-                                         "./")
+    html_links_new <- html_links_old |>
+        str_replace_all(fixed("../.././archive/"), "../") |>
+        str_replace_all(fixed("../../"),"./") |>
+        str_replace_all(fixed("././"), "./")
+
+    archive_links_ix <- str_detect(html_links_old, "archive")
+    html_links_new[archive_links_ix] <- html_links_old[archive_links_ix]
+
+    # Vectorization works weirdly here, so do this in a loop
+    for(link_ix in seq_along(html_links_old)){
         html_new <- str_replace_all(html_new,
-                                    html_link_old,
-                                    html_link_new)
+                                    fixed(html_links_old[link_ix]),
+                                    fixed(html_links_new[link_ix]))
     }
+
 
     writeLines(html_new, fname)
 }
@@ -137,21 +145,21 @@ for(fname in ARCHIVE_HTML_FILES){
 cat("Adding archive announcement bars\n")
 
 for(fname in ARCHIVE_HTML_FILES){
-    html_old <- readLines(fname)
     if(str_detect(fname, "slides")){
+        cat("Skipping", fname, "as it is a set of slides\n")
         next
     }
+
+    html_old <- readLines(fname)
 
     if(any(str_detect(html_old, "quarto-announcement"))){
+        cat("Skipping", fname, "as it already has an announcement bar\n")
         next
     }
 
+    cat("Adding archive bar to", fname, "\n")
 
-
-    breakpoint <- which(str_detect(html_old, "</header>"))[1]
-
-    html_before <- html_old[1:breakpoint]
-    html_after <- html_old[(breakpoint+1):length(html_old)]
+    html_split <- str_split_fixed(paste(html_old, collapse="\n"), "</header>", 2)
 
     current_link <- str_replace(fname, "docs/archive/+AY-\\d{4}-(SPRING|FALL)/?", "../../")
     current_link <- str_replace(current_link, "\\.\\./\\.\\./(.*)/(.*)", "../../../\\1/\\2")
@@ -163,11 +171,11 @@ for(fname in ARCHIVE_HTML_FILES){
     <strong>Warning</strong> - This page is for a prior offering of STA 9750. For the latest offering, click <a id="exit-archive-link" href="{current_link}">here</a>.
   </div>
 </div>
+</header>
 ')
 
-    html_new <- c(html_before, add_in, html_after)
-
-    writeLines(html_new, glue('{fname}'))
+    html_new <- c(html_split[[1]], add_in, html_split[[2]])
+    writeLines(html_new, fname)
 }
 
 knitr::purl("tips.qmd",

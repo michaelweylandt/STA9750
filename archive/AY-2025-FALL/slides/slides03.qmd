@@ -1,0 +1,926 @@
+---
+session: "`r session <- 3; session`"
+class_date:
+  "`r library(tidyverse); 
+    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session', 
+           Item.Number == session) |>
+    pull(Date) |> format('%a %Y-%m-%d'); 
+    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+execute:
+  freeze: true # Done with AY-2025-FALL offering
+---
+
+{{< include _setup.qmd >}}
+
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+library(tidyverse)
+DATES   <- read_csv("key_dates.csv")
+TODAY   <- DATES |> 
+    filter(`Course Element` == "Class Session", 
+           `Item Number` == session)
+
+TODAY_TUESDAY  <- TODAY |> 
+    filter(Section == "Tuesday")  |> 
+    pull(Date)
+TODAY_THURSDAY <- TODAY |> 
+    filter(Section == "Thursday") |> 
+    pull(Date)
+
+TODAY_TOPIC <- TODAY |>
+    filter(str_detect(Details, "Lecture")) |>
+    pull(Details)
+
+PROJ_RELEASE <- DATES |> 
+    filter(str_detect(Details, "Project Description")) |>
+    pull(Date)
+
+ROSTERS <- DATES |> 
+    filter(Details == "Team Roster Submission") |>
+    pull(Date)
+```
+    
+## {{< var course.short >}} Week {{< meta session >}} 
+
+Today: 
+
+- Tuesday Section: `r TODAY_TUESDAY`
+- Thursday Section: `r TODAY_THURSDAY`
+
+`r TODAY_TOPIC`
+
+## Mini-Project #00 
+
+[Mini-Project #00](../miniprojects/mini00.qmd) is due `r get_mp_deadline(00)`
+
+```{r}
+#| echo: false
+MP_SUBMISSIONS <- get_mp_submitted(0)
+```
+
+As of `r Sys.Date()`: 
+
+- `r read_yaml("_teaching.yml")$gradedir |> file.path("roster.json") |> read_json() |> length()` Users registered via Piazza
+- `r MP_SUBMISSIONS$n_submitted` Posts on GitHub
+  - `r MP_SUBMISSIONS$n_completed` pass automated tests
+  - `r MP_SUBMISSIONS$n_need_work` need more work (see comments)
+  
+. . . 
+
+Recall that you need to post on *both* GitHub and Piazza for this assignment - 
+sending GitHub ID is **most important**
+
+## MP #00 Goals
+
+Mini-Project #00 is ungraded to: 
+
+::: {.incremental}
+
+i)   Sort out tech trouble
+ii)  Show danger of waiting to the last minute
+iii) Demonstrate importance of closely following instructions 
+
+:::
+
+. . . 
+
+Lessons learned will be helpful in future assignments
+
+. . . 
+
+Some sites look really great - excited to see headshots, resumes, *etc.* and to
+learn more about you
+
+## MP #00 Peer Feedback
+
+On `r get_mp_pf_assigned(0)`, I will assign _peer-feedback_ on GitHub: 
+
+::: {.smallest}
+
+- I will _tag_ you in several GitHub issues
+  - Email
+  - [GitHub notifications](https://github.com/notifications)
+  - [Feedback locator](https://michael-weylandt.com/STA9750/tips.html#find-peer-feedback-assigned-to-me)
+  
+:::
+. . . 
+
+::: {.smallest}
+
+- Provide feedback [formatted according to template](https://michael-weylandt.com/STA9750/miniprojects.html#peer-feedback)
+  - For MP #00, no real scores (give all 10s!): practice with process
+  - [Formatting check](https://michael-weylandt.com/STA9750/tips.html#verify-peer-feedback-properly-formatted) can verify proper formatting
+
+:::
+
+. . . 
+
+::: {.smallest}
+
+Aims: 
+
+- Learn to _read_ and _evaluate_ code
+- In analysis, rarely _right_ and _wrong_; definitely _better_ and _worse_
+- Learn tricks to improve your own site
+
+> "Good artists copy; great artists steal." -- Steve Jobs
+
+:::
+
+More discussion next week
+
+## Course Support
+
+```{r}
+#| echo: false
+TOTAL_STUDENTS <- 97 
+PIAZZA_ENROLLS <- 96
+```
+
+Asynchronous Support: Piazza
+
+- `r PIAZZA_ENROLLS` students registered in Piazza
+- `r TOTAL_STUDENTS - PIAZZA_ENROLLS` still needs to register(!)
+- **10 minute** average time to response
+
+. . . 
+
+Synchronous Support: Office Hours
+
+- Tuesdays and Thursdays at 5pm
+- Still waiting on CUNY HR before TA office hours begin
+
+## Pre-Assignments
+
+`r session |> sprintf("Pre-Assignment #%02d", x= _)`
+
+::: {.small}
+
+  - Ignore Brightspace's Grading
+    - Brightspace calls all short answers wrong
+    - Gradebook shows complete/incomplete grading
+  - I often give feedback through Brightspace, so 
+    check 'feedback' if you are alerted to any
+    
+:::
+
+. . .
+  
+`r (session + 1) |> sprintf("Pre-Assignment #%02d", x= _)`
+
+::: {.small}
+
+  - Day before class at midnight each week
+  - Available on course website + Brightspace after 9pm
+  
+:::
+
+
+# Today
+
+## Today
+
+- Brief Review of Quarto Render + Git Commit Cycle
+- Introduction to Course Project
+- `R`: Data Frames, Functions, Packages and Control Flow
+- Wrap Up
+
+## Render + Commit Cycle
+
+In Mini-Project #00, your goal is to _get rendered HTML to GitHub_
+
+- 'Kick-the-tires' on Set-Up
+- Things will go wrong - better now than later
+
+Once you do this once, cycle becomes easier
+
+## Render + Commit
+
+For ongoing changes / updates: 
+
+::: {.incremental}
+
+1) `Render` button in `RStudio` - generate new / change HTML
+2) Check boxes next to all changed files - _Stage_ updates
+3) Hit `Commit` and use modal to make a `Commit` - _Commit_ a new version in `Git`
+4) `Push` - Send new version to GitHub. Website will update automatically
+
+:::
+
+## Render + Commit
+
+Tips: 
+
+::: {.incremental}
+
+1) Go to your GitHub.com - see if expected files are present
+2) When in doubt, better to include _everything_ in `docs`
+3) Cycle rapidly - find problems ASAP
+
+:::
+
+. . . 
+
+Storage is cheap - your time isn't
+
+. . . 
+
+Live demo
+
+# Course Project Overview
+
+## Course Project
+
+::: {.small}
+
+- Teams: 4-6 classmates
+- Stages: 
+  - Proposal (in class presentation)
+  - Mid-semester check-in (in class presentation)
+  - Final: in class presentation, individual report, summary report
+- Structure:
+  - Shared "Overarching Question" (OQ)
+  - Individual "Specific Question" (SQ, one per teammate)
+  
+:::
+  
+Full description [online](https://michael-weylandt.com/STA9750/project.html)
+
+## Course Project Conceit
+
+::: {.incremental .smaller}
+
+- Consultants hired by client interested in _qualitative_ OQ
+- You break OQ into several _quantitative_ SQs
+- Combine results from SQs to answer OQ
+
+::: 
+
+. . . 
+
+Process: 
+
+::: {.incremental .smaller}
+
+- Proposal: Sales pitch for consultants - here's the OQ we will answer
+- Mid-Semester: Scope of work - here's the SQs and data we will use
+- End-of-Semester: Presentation of Results
+  - Group Report: "Executive Summary"
+  - Individual Reports: "Technical Appendices"
+
+:::
+
+## Finding Data
+
+- Start early!
+- [NYC Open Data](https://opendata.cityofnewyork.us/) is great
+  - See also: [FRED](https://fred.stlouisfed.org/), [Federal Open Data](https://data.gov), [Nasa EarthData](https://search.earthdata.nasa.gov)
+  - [Kaggle](https://www.kaggle.com/datasets) is not really a primary source
+  - Ask on Piazza for pointers
+  - Lots of data hidden in Wikipedia
+- Nothing paid or private without express instructor submission
+- Everyone loves _spatial_ data!
+
+## Presentation Hints
+
+- Longest time $\neq$ most important
+- Story, story, story! _Why_ are you making these choices? 
+- Hourglass Structure
+  - Start big
+  - Motivate _your_ overarching question
+  - Specific questions
+  - Tie specific to overarching
+  - From overarching back to big motivation
+- No less than one figure every other slide
+
+## Next Steps
+
+First step: By `r ROSTERS`, email me your group members.
+
+. . . 
+
+Proposal Presentations: 
+
+- In-class `r DATES |> filter(str_detect(Details, "Proposal")) |> pull(Date) |> strftime("%B %d (%A)") |> paste(collapse=" and ")`
+- See details and rubric [online](https://michael-weylandt.com/STA9750/project.html#project-proposal-presentations)
+- No Pre-Assignment **that week**
+
+# Getting Started with `R`
+
+## Programming in R
+
+It's now time for us to start _writing code in `R`_
+
+No more copy and trust
+
+. . . 
+
+Goals: 
+
+1. Modify existing code to new applications
+2. Write code to use existing libraries
+3. Read and debug code
+
+## Execution Model
+
+Three models of executing code: 
+
+::: {.incremental .small}
+
+1. Line-by-line at `Console`
+   - REPL: *R*ead *E*valuate *P*rint *L*oop
+   - Best for transient, one-off actions; trying new things
+2. Script writing in a separate file
+   - Write in a separate (`.R`) file
+   - Executes in same _session_; persistent state
+   - Best for longer analyses with complex commands, developing code
+3. Code in a Quarto document
+   - Write code in chunks inside a `qmd` file
+   - Executes in a _fresh_ session
+   - Best for documenting and conveying analysis, archiving results
+   
+:::
+
+## Arithmetic in R
+
+Basic arithmetic in `R` runs as expected
+
+```{r}
+#| echo: true
+1 + 2 + 3 + 4 + 5
+```
+
+. . . 
+
+PEMDAS Ordering: Parentheses, Exponentials, Multiplication/Division, Addition/Subtraction
+
+## Arithmetic in R
+
+$$3^{2 * 5 - 1} / 24^5$$
+
+```{r}
+#| echo: true
+3^(2 * 5 - 1) / 24^5
+```
+
+. . . 
+
+$$\frac{1^1 + 2^2 + 3^3}{3^1 + 2^2 + 1^3}$$
+
+```{r}
+#| echo: true
+(1^1 + 2^2 + 3^3) / (3^1 + 2^2 + 1^3)
+```
+
+. . . 
+
+
+When in doubt, extra parentheses don't hurt
+
+## Function Calls
+
+To go beyond arithmetic, need to invoke **functions**
+
+$$ \cos(\pi) + \tan\left(\frac{\pi}{4}\right) + \sqrt{\sin(\pi/2)} - e^1$$
+
+```{r}
+#| echo: true
+cos(pi) + tan(pi / 4) + sqrt(sin(pi/2)) - exp(1)
+```
+
+## Function Calls
+
+All function calls have a fundamental syntax: 
+
+> [name]{color="red"}()
+
+*e.g.*, 
+
+```{r}
+#| echo: true
+#| eval: false
+R.Version()
+```
+
+. . . 
+
+To get help with any function in `R`, type `?name`
+
+## Function Calls
+
+Most interesting functions require _input_: 
+
+> [name]{color="red"}([argument]{color="blue"})
+
+Here, the _argument_ is passed as input to the function: 
+
+```{r}
+#| echo: true
+#| eval: false
+cos(pi)
+```
+
+. . . 
+
+Multiple arguments are separated by commas
+
+```{r}
+#| echo: true
+#| eval: false
+atan2(-1, 1)
+```
+
+## Function Calls
+
+Type a name without `()` to see its implementation
+
+```{r}
+#| echo: true
+#| eval: true
+cos
+```
+
+and 
+
+```{r}
+#| echo: true
+#| eval: false
+lm
+```
+
+```{r}
+#| echo: false
+head(lm, 5) |> cat(sep="\n"); cat("...")
+```
+
+. . . 
+
+Conceptually `sqrt` vs `sqrt(4)` is "concept of square rooting" vs "the actual square root of 4, *i.e.*, 2"
+
+## Function Calls
+
+Most important for users are the first few lines (`args`)
+
+- Define optional and required inputs
+
+```{r}
+#| echo: true
+#| eval: false
+args(log)
+```
+
+```{r}
+#| echo: false
+args(log) |> head(n=1) |> cat()
+```
+
+. . . 
+
+Two arguments: 
+
+- `x`: the input
+- `base`: _optional_ 2nd argument with default $e$ (natural log)
+
+## Function Calls
+
+Every argument has a _name_, but not always required 
+
+`R` is usually smart about knowing what you meant
+
+. . . 
+
+These are equivalent: 
+
+```{r}
+#| echo: true
+#| eval: false
+log(10)
+log(10, exp(1))
+log(x = 10)
+log(x = 10, exp(1))
+log(x = 10, base = exp(1))
+log(base = exp(1), x = 10)
+log(base = exp(1), 10)
+```
+
+## Vector Semantics
+
+Often when dealing with data, we want to transform related data similarly: 
+
+- *E.g.*, change _all_ temperatures in data set from F to C
+
+Dangerous to only do part
+
+. . . 
+
+`R` has _vectorized_ semantics - whenever possible, do same operation to all
+numbers together
+
+```{r}
+#| echo: true
+1:10 # A vector
+```
+
+
+```{r}
+#| echo: true
+sqrt(1:10) # Keeps same vector structure
+```
+
+## Vector Semantics
+
+Most functions in `R` try to vectorize, but not always possible
+
+```{r}
+#| echo: true
+sqrt(1:10)
+cospi((1:8) / 4)
+```
+
+. . . 
+
+But
+
+```{r}
+#| echo: true
+sum(1:10)
+```
+
+and 
+
+```{r}
+#| echo: true
+rev(1:10)
+```
+## Vectorized Semantics
+
+The `[1]` you sometimes see is `R` just letting you know 
+where in a vector you are
+
+```{r}
+#| echo: true
+sqrt(1:25)
+```
+
+. . . 
+
+When we do 2D data (later), we get column and row indices
+
+```{r}
+#| echo: false
+matrix(1:25, 5)
+```
+
+## Variables
+
+Often, we want to save a several values as a single 'thing'
+
+```{r}
+#| echo: true
+x <- 1:5
+```
+
+. . . 
+
+This is an _assignment_ operator. _Vector_ formed by `1:5` is labeled `x`
+
+Naming `x` later gives us this vector
+
+```{r}
+#| echo: true
+x
+```
+
+Can be used in functions
+
+```{r}
+#| echo: true
+sqrt(x)
+```
+
+## Vectors and Variables
+
+If you need to write a vector 'by hand', use the `c` function: 
+
+```{r}
+#| echo: true
+x <- c(1, 4, 9, 16, 25)
+x
+```
+
+then 
+
+```{r}
+#| echo: true
+sqrt(x)
+```
+
+. . . 
+
+We won't usually hand-write vectors like this: 
+
+- Data comes in vectors (*e.g.*, spreadsheet columns)
+
+## Vector Access
+
+Use `[]` operator to get individual elements of a vector: 
+
+```{r}
+#| echo: true
+x <- sqrt(1:10)
+x[4]
+```
+
+. . . 
+
+Can do more complex indexing, but we won't use it much: 
+
+```{r}
+#| echo: true
+x[1:5]
+x[6:10]
+x[-1]
+```
+
+# In-Class Activity
+
+## Weekly Lab
+
+[Lab #03](../labs/lab03.qmd)
+
+New topics to cover: 
+
+1) _classes_ of objects
+2) Using Packages
+3) Comments
+4) Writing functions
+5) Control Flow
+
+## Object classes
+
+Everything in `R` has a _type_ or _class_: 
+
+- Integer, Double (*i.e.* 64 bit number allowing decimals), Character, ...
+
+. . . 
+
+All vectors elements must have the same class - this is the vector's class
+
+```{r}
+#| echo: true
+x <- 1:5
+y <- sqrt(x)
+
+class(x)
+```
+
+```{r}
+#| echo: true
+class(y)
+```
+
+```{r}
+#| echo: true
+class(letters)
+```
+
+## Using Packages
+
+A _package_ is a set of code (and data) packaged up for distribution and use
+
+. . . 
+
+`R` has _many_ helpful packages - these are distributed via `CRAN` 
+(currently over 200,000)
+
+. . . 
+
+Using packages is a two-step process: 
+
+1) Get package from CRAN to your computer (one time)
+2) Loading into `R` (every time)
+
+Think of regular software: you download MS Office once but 
+need to start it whenever you want to use it
+
+## Using Packages
+
+The `install.packages` function will download and install a package: 
+
+```{r}
+#| echo: true
+#| eval: false
+install.packages("ggplot2")
+```
+
+If that package uses other packages, `R` will sort that out automatically
+
+. . . 
+
+When ready to use a package, use the `library()` command to 'start' it: 
+
+```{r}
+#| echo: true
+library(ggplot2)
+```
+
+Now I have access to everything in that package 
+
+## Comments
+
+Comments are text inside the code that `R` ignores
+
+- Everything following a # gets ignored 
+
+. . . 
+
+Compare 
+
+```{r}
+#| echo: true
+#| error: true
+tan(45 * pi / 180) Compute the tangent of 45 degrees
+```
+
+with 
+
+```{r}
+#| echo: true
+#| error: false
+tan(45 * pi / 180) # Compute the tangent of 45 degrees
+```
+
+## Comments
+
+The best comments don't just say _what_ you are doing. They say _why_ you
+are doing something in the way it is being done
+
+. . . 
+
+More discussion of comments later as we write more complex code
+
+# FAQs from PA #03
+
+
+## FAQ: Vector Index Printout
+
+Default vector printing: 
+```{r}
+#| echo: true
+1:10
+```
+
+Each line gets a new index:
+```{r}
+#| echo: true
+sqrt(1:10)
+```
+
+More complex objects have alternate print styles:
+```{r}
+#| echo: true
+matrix(1:9, nrow=3, ncol=3)
+```
+
+Print width is controlled by `getOption("width")`.
+
+## FAQ: Recycling Rules
+
+::: {.small}
+
+Alignment by default: 
+```{r}
+#| echo: true
+x <- 1:3
+y <- 4:6
+x + y
+```
+
+Recycling by default: 
+```{r}
+#| echo: true
+x <- 1
+y <- 4:6
+x + y
+```
+
+Recycle warning when vectors don't fit together cleanly: 
+```{r}
+#| echo: true
+#| warning: true
+x <- 1:2
+y <- 4:6
+x + y
+```
+
+:::
+
+## FAQ: Recycling Warning
+
+```{r}
+#| echo: true
+#| warning: true
+x <- 1:2
+y <- 4:6
+x + y
+```
+
+Not a problem _per se_, but often a sign that something has gone wrong.
+
+- scalar + vector is usually safe
+- 2 vectors of same size is usually safe
+- vectors of different size is usually a programming mistake
+
+## FAQ: Warnings vs Errors
+
+- _Warnings_: heuristics pointing at typical problem
+  - Code still executed without a problem
+  - Try to fix these unless you're **certain** it's not a problem
+- _Errors_: code failed to execute
+  - You have to fix these to run your code
+
+## FAQ: Changing Functions
+
+Most built-in functions can't / shouldn't be changed. 
+
+Some allow alternate behavior via additional arguments:
+
+```{r}
+#| echo: true
+log(10) # Default is natural (base e) logarithm
+log(10, base=10)
+```
+
+If you want different behavior, write your own function: 
+
+```{r}
+#| echo: true
+cosd <- function(x){
+    ## Cosine in degrees
+    cos(x * pi / 180)
+}
+cosd(90)
+```
+
+Always try `?name` to see documentation.
+
+## FAQ: Git Workflow
+
+Three key commands: 
+
+- `git add`: add some changes to a 'box'
+- `git commit`: seal the 'box'
+- `git push`: send the 'box' to GitHub
+
+`Git` pane in `RStudio` shows _uncommited changes_, not files. 
+
+If a file 'vanishes' after a commit, that's good!
+
+# Wrap-Up
+
+## Review
+
+Introduction to `R`: 
+
+- Arithmetic
+- Variables and Vectors
+- Functions: Calls, Arguments, Defining
+- Packages
+- Help System
+
+## Upcoming Work
+
+Upcoming work from [course calendar](../index.qmd#calendar)
+
+::: {.incremental}
+
+- [Pre-Assignment #0`r next_session`](../preassigns/pa04.html) due `r get_pa_deadline(session + 1)`
+- [Mini-Project #00](../miniprojects/mini00.html) due
+- [Mini-Project #00](../miniprojects/mini00.html) peer feedback
+  assigned `r get_mp_pf_assigned(0)`
+- [Mini-Project #01](../miniprojects/mini01.html) released on `r get_mp_assigned(1)`
+
+:::
+
+## Looking Ahead
+
+Course Project: 
+
+- Start looking for teammates and topics
+
+{{< include ../advice/zsb_benefits.qmd >}}
+
+## Musical Treat
+
+</br></br>
+
+{{< video https://www.youtube.com/watch?v=gj940Pr_uMs width="80%" height="400px">}}
+

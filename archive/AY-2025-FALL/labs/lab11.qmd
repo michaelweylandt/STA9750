@@ -1,0 +1,625 @@
+---
+title: "{{< var course.short >}} Week 11 In-Class Activity: HTML Import"
+engine: knitr
+execute:
+  freeze: true # Done with AY-2025-FALL offering
+---
+
+# [Slides](../slides/slides11.qmd)
+
+# Review Practice {#review}
+
+The [Open Trivia Database](https://opentdb.com/) provides a simple API for
+trivia questions. You are going to use this API to create a trivia game for
+you and some friends. 
+
+0. Before beginning, explore [the question bank](https://opentdb.com/browse.php)
+   and the [API call generator](https://opentdb.com/api_config.php) to
+   understand the types of data available and the structure of the API call.
+1. Use the API call generator to create a URL to download 5 multiple-choice 
+   questions on a topic of your choosing. Copy this URL. 
+2. Now, use the `httr2` package in `R` to make a request to that URL. At first,
+   simply paste the whole URL into `request` and confirm it works. Then, break
+   the URL into its constitutent parts using the `req_url_path()` and 
+   `req_url_query()` functions to construct the URL. (We won't be parametrizing
+   the API call in this brief exercise, but this is important to do if you are
+   going to programmatically be making several API calls.)
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(tidyverse)
+library(httr2)
+req1 <- request("https://opentdb.com/api.php?amount=50&category=18&type=multiple") 
+
+# Decompose the URL into its various components: 
+req2 <- request("https://opentdb.com") |>
+          req_url_path("api.php") |>
+          req_url_query(amount   = 50, 
+                        category = 18, 
+                        type     = "multiple")
+
+# Confirm equivalence
+all.equal(req1, req2)
+```
+
+I'm using Computer Science (Category 18) but you can use others. 
+
+Now that we have built our request objects, we can use `req_perform()` to actually
+make the request: 
+
+```{r}
+resp <- req2 |> req_perform()
+resp
+```
+
+:::
+
+3. The default response format is `json`, so use the `resp_body_json` function
+   to convert the response into `R`. Print the repsonse to screen and examine
+   the format. This will help you know what you need to do to manipulate 
+   ("rectangle") the data into a useful structure. 
+   
+   *Hint:* To avoid printing so much to screen that it's hard to make sense of
+   the output, you may wish to modify your API call to temporarily only request
+   3-5 responses, instead of 50, even if your eventual goal is to get more
+   responses than that.
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+
+```{r}
+#| cache: true
+request("https://opentdb.com") |>
+          req_url_path("api.php") |>
+          req_url_query(amount   = 3, 
+                        category = 18, 
+                        type     = "multiple") |>
+    # Some stuff to respect API rate limiting
+    req_throttle(capacity=2) |>
+    req_retry(max_tries = 5) |>
+    req_perform() |>
+    resp_body_json() |>
+    str()
+```
+
+We see here that the response comes in a list of two components: `response_code`
+and `results`, with the content we want being in the `results`. The 3 `results`
+look pretty straightforward, except for the `incorrect_answers` list, which
+we will need to keep an eye on. 
+
+:::
+
+4. Use the `pluck` function to extract the relevant part of the JSON response.
+   The response will have several similarly formatted response objects. Use the
+   `map(as_tibble) |> list_rbind()` paradigm to convert these into a large data
+   frame. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+request("https://opentdb.com") |>
+    req_url_path("api.php") |>
+    req_url_query(amount   = 3, 
+                  category = 18, 
+                  type     = "multiple") |>
+    # Some stuff to respect API rate limiting
+    req_throttle(capacity=2) |>
+    req_retry(max_tries = 5) |>
+    req_perform() |>
+    resp_body_json() |>
+    pluck("results") |>
+    map(as_tibble) |>
+    list_rbind()
+```
+
+Everything looks pretty good here, with two notes: 
+
+- The `incorrect_answers` column appears to be a `list` type column
+- Each of our responses was repeated across three rows. 
+
+:::
+
+5. Use the `unnest` and `pivot_wider` functions to conver this data into a 
+   more usable structure. 
+   
+   When applied to a `list` column, the `unnest` function will try to convert
+   it into a more standard vector-type column. 
+   
+   *Hint*: Before using `pivot_wider`, you will need to create a new column with
+   column names for the pivoted data. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+request("https://opentdb.com") |>
+    req_url_path("api.php") |>
+    req_url_query(amount   = 3, 
+                  category = 18, 
+                  type     = "multiple") |>
+    # Some stuff to respect API rate limiting
+    req_throttle(capacity=2) |>
+    req_retry(max_tries = 5) |>
+    req_perform() |>
+    resp_body_json() |>
+    pluck("results") |>
+    map(as_tibble) |>
+    list_rbind() |>
+    unnest(incorrect_answers) |>
+    group_by(question) |>
+    mutate(pivot_name = paste0("incorrect-", row_number())) |>
+    pivot_wider(names_from = pivot_name, 
+                values_from = incorrect_answers) |>
+    select(-type, 
+           -category, 
+           -difficulty)
+```
+
+You can use this to play a bit of trivia amongst your group. Set `amount` 
+higher for more questions. 
+
+:::
+
+# Web Scraping
+
+In today's class, we're going to work through **three** web scraping exercises: 
+
+1) Reading a simple static table
+2) Extending our 'CUNY Map' from [Lab #01](./lab01.html)
+3) Scraping Cocktail Recipes 🍸 from Hadley Wickham
+
+## Exercise 1: Reading HTML Tables {#ex01}
+
+Using `rvest`, read the following table into `R`. Your results should be a 
+data frame that captures the structure of the table. 
+
+| Department | Course Number | Course Name                                     |
+|------------|---------------|-------------------------------------------------|
+| STA        | 2000          | Business Statistics I                           |
+| STA        | 3000          | Statistical Computing                           |
+| STA        | 3154          | Business Statistics II                          |
+| STA        | 3950          | Data Mining                                     |
+| STA        | 4155          | Regression & Forecasting Models                 |
+| STA        | 4157          | Analysis of Variance: Principles & Applications |
+| STA        | 4950          | Machine Learning and AI                         |
+| STA        | 9700          | Modern Regression Analysis                      |
+| STA        | 9705          | Multivariate Statistical Methods                |
+| STA        | 9708          | Managerial Statistics                           |
+| STA        | 9710          | Statistical Methods for Sampling and Audit      |
+| STA        | 9715          | Applied Probability                             |
+| STA        | 9719          | Foundations of Statistical Inference            |
+| STA        | 9750          | Software Tools for Data Analysis                |
+| STA        | 9890          | Statistical Learning for Data Mining            |
+
+: Selected Statistics Courses Offered at Baruch College {#tbl-baruch-stats}
+
+1) Use the Selector Gadget or similar to identify the HTML elements defining
+   this table. You can do this in one of two ways: 
+   
+   - By a specific named element, accessed as `html_element("#name")`
+   - By a specific element type, accessed as `html_element("type")`
+   
+2) Use the `read_html` function to read this entire page into `R`, then use
+   the `html_element` function with the selector from the previous step to
+   extract the table. 
+   
+3) Use the `html_table` function to conver this table into a data frame. 
+
+This page is pretty simple, so a little bit of element selection and 
+`html_table` will suffice. For more complex tables, you may need to do more to
+select the specific table and more to 'clean up' that table once it is in `R`.
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| eval: false
+library(rvest)
+read_html("https://michael-weylandt.com/STA9750/labs/lab11.html") |>
+    html_element("#tbl-baruch-stats") |> 
+    html_table()
+
+# OR - Since this page has only a single table
+read_html("https://michael-weylandt.com/STA9750/labs/lab11.html") |>
+    html_element("table") |> 
+    html_table()
+```
+
+:::
+
+## Exercise 2: CUNY Map {#ex02}
+
+In this exercise, we're going to take our Baruch map from 
+[Lab #01](./lab01.html) and extend it to pull _all_ CUNY campuses. 
+This exercise is intended to help you practice scraping data from 
+Wikipedia, which is a good example of a relatively plain HTML site that has a
+bit of extra Javascript that can make it a bit tricky to find the element(s)
+you want. 
+
+The following code is a cleaned-up version of the map creation activity from 
+Lab #01. Review it before beginning this activity: 
+
+```{r}
+#| message: false
+library(tidyverse)
+library(rvest)
+library(leaflet)
+
+baruch_info <- read_html("https://en.wikipedia.org/wiki/Baruch_College") |> 
+    html_element(".geo") |> 
+    html_text() |> 
+    str_split_1(";") |> 
+    as.numeric() |> 
+    set_names(c("latitude", "longitude")) |> 
+    bind_rows()
+
+leaflet() |>
+    addTiles() |>
+    setView(lat = baruch_info$latitude, 
+            lng = baruch_info$longitude, 
+            zoom=17) |>
+    addPopups(lat = baruch_info$latitude, 
+              lng = baruch_info$longitude, 
+               "Look! It's <b>Baruch College</b>!") |>
+    print()
+```
+
+1) Building on the code above, write a function that takes the Wikipedia URL for a
+   CUNY as an argument and returns a data frame with two columns: 
+   
+   - Latitude
+   - Longitude
+
+   Confirm that your function works by applying it to Baruch's Wikipedia page. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+get_cuny_coordinates <- function(url){
+    read_html(url) |> 
+        html_element(".geo") |> 
+        html_text() |> 
+        str_split_1(";") |> 
+        as.numeric() |> 
+        set_names(c("latitude", "longitude")) |> 
+        bind_rows()
+}
+
+get_cuny_coordinates("https://en.wikipedia.org/wiki/Baruch_College")
+```
+
+:::
+
+2) Investigate the [Wikipedia List of
+   CUNYs](https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions)
+   and identify which table can be used to get links to each CUNY's page.  
+   
+::: {.callout-caution title="Wikipedia Table Scraping"}
+
+Wikipedia has tons of excellent data tables which have been collected
+by incredible volunteers. It can be an incredibly useful source, but
+there are a few difficulties in getting data out of Wikipedia. In
+particular, Wikipedia uses a rich JavaScript library to make tables
+slightly interactive (column sorting, *etc.*) that modifies the page
+HTML. `R` will get the "raw" HTML of the page, so you will need to
+either disable JavaScript temporarily (tricky) or make sure you are
+looking at the actual page source that `R` will see ("View Source"). 
+
+As a general rule, try to use standard HTML elements (`table`, `tbody`) instead
+of fancier alternatives when possible. 
+
+:::
+
+3) Parse the table to pull links to each CUNY's individual Wikipedia
+   page. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}  
+CUNYs <- read_html("https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions") |> 
+    html_element("tbody") |>
+    html_elements("tr td:nth-child(2)") |>
+    html_elements("a") 
+
+CUNYs <- tibble(name = CUNYs |> html_text(), 
+                link = CUNYs |> html_attr("href"))
+```
+
+If you are comfortable with the `purrr` family of functions, this can be
+written a bit more compactly as:
+
+```{r}   
+CUNYs <- read_html("https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions") |> 
+    html_element("tbody") |>
+    html_elements("tr td:nth-child(2)") |>
+    html_elements("a") |> 
+    map(\(tr) tibble(name = tr |> html_text(), 
+                     link = tr |> html_attr("href"))) |> 
+    bind_rows()
+```
+
+:::
+
+4) Modify the links extracted from the Wikipedia table to form full URLs.
+
+   Proper URL handling is a bit subtle - it's a common avenue for security holes
+   - but a simple `paste0` will suffice here. 
+ 
+::: {.callout-tip title="Solution" collapse="true"}
+   
+```{r}
+CUNYs <- CUNYs |> mutate(link = paste0("https://en.wikipedia.org", link))
+```
+
+:::
+
+4) Apply your HTML parsing function from Step 1 to each CUNY page
+   using the `map` function or the `rowwise()` grouping structure: 
+   
+   *Hint*: You may need to use `unnest` to convert a list column into something
+   more usable. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+   
+```{r}
+#| cache: true
+CUNYs <- CUNYs |> rowwise() |> mutate(info = get_cuny_coordinates(link))
+## Or with `map`
+CUNYs <- CUNYs |> mutate(info = map(link, get_cuny_coordinates))
+
+## Then unnest the info column
+
+CUNYs <- CUNYs |> unnest(info)
+
+CUNYs
+```
+
+:::   
+   
+5) Use your results to build a CUNY-wide map
+
+::: {.callout-tip title="Solution" collapse="true"}
+   
+```{r}
+MAP <- leaflet() |> 
+    addTiles() |> 
+    addMarkers(lng = CUNYs$longitude, 
+               lat=CUNYs$latitude, 
+               popup=CUNYs$name)
+
+MAP
+```
+
+:::   
+
+## Exercise 3: Cocktails Data {#ex03}
+
+[Hadley Wickham](https://hadley.nz/) is the author of many of the 
+"tidy tools" we use in this course. He is also an excellent bartender
+and chef. In this exercise, we are going to web scrape his cocktail
+recipe book which can be found at <https://cocktails.hadley.nz/>. 
+
+Our goal is to create a data frame that records all 150+ recipes on this site 
+(as rows) and the different ingredients (as columns). This
+week, we are going to pull the different recipes into `R`: next week
+we are going to process the text and create our final data frame (so
+stay tuned!). 
+
+Working with your project team, first go through the following steps to build
+a scraping strategy:
+
+1) Poke around the website to see how it is organized. Is there a
+   single page listing all of the cocktails? If not, how else can
+   you make sure that you've explored the entire site?
+2) Once you know how you're going to explore the whole site, use
+   your browser tools to see if you can identify an HTML element that
+   corresponds to a single recipe. (This element will occur several
+   times per page) Remember that you want to select "as small as
+   possible" but no smaller.
+3) Once you have found the right HTML element for a recipe, identify
+   an HTML element that corresponds to i) the title; and ii) individual
+   ingredients. 
+   
+For this task, you will likely see several recipes more than once.
+Don't worry about this for now - we can `distinct` out the duplicates
+later in our analysis. It's better to be over-inclusive than
+under-inclusive.
+   
+After you have built your plan, it's time to start putting this all to
+code. 
+
+1) Write code to get a list of all pages you will need to process. Construct 
+   full URLs for your future requests. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(tidyverse)
+library(httr2)
+library(rvest)
+
+BASE_URL <- "https://cocktails.hadley.nz/"
+
+PAGES <- read_html(BASE_URL) |> 
+            html_elements("nav a") |> 
+            html_attr("href")
+
+PAGE_URLS <- paste0(BASE_URL, PAGES)
+
+
+PAGE_URLS
+```
+
+:::
+
+2) Write a function that takes a single URL and extracts all recipes on that
+   page as HTML elements. 
+   
+   Try this out on a fixed URL and confirm that it gets the right number of
+   recipes
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(tidyverse)
+library(httr2)
+library(rvest)
+get_recipes <- function(url){
+    read_html(url) |> html_elements("article")
+}
+```   
+
+We can test this [against this page](https://cocktails.hadley.nz/tag-bubbles.html)
+and see that it works as expected: 
+
+```{r}
+BUBBLES <- get_recipes("https://cocktails.hadley.nz/tag-bubbles.html")
+
+BUBBLES
+```
+
+:::
+
+3) Write a function that takes in a single recipe and returns a small data 
+   frame with the title and ingredients: 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(tidyverse)
+library(httr2)
+library(rvest)
+process_recipe <- function(art){
+    title <- art |> html_element(".title") |> html_text2()
+    ingredients <- art |> html_elements("li") |> html_text2()
+    
+    tibble(title=title, ingredients=ingredients)
+}
+```  
+
+We can again test this using the recipes we extracted above: 
+
+```{r}
+process_recipe(BUBBLES[[1]])
+```
+
+:::
+
+4) Write a function that combines your results from the previous two steps to
+   build a data frame with _all_ recipes on a single page. 
+   
+   Try this out on a fixed URL and confirm it works as expected. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(tidyverse)
+library(httr2)
+library(rvest)
+
+process_url <- function(url){
+    html_recipes <- get_recipes(url)
+    
+    RECIPES <- data.frame()
+    
+    for(r in html_recipes){
+        RECIPES <- rbind(RECIPES, process_recipe(r))
+    }
+    
+    RECIPES
+}
+```
+
+We can test this on the page of bubbly recipes: 
+
+```{r}
+process_url("https://cocktails.hadley.nz/tag-bubbles.html")
+```
+
+:::
+   
+5) Use your function from the first step with the list of URLs from Step 1 so
+   that you get all of the recipes on the site. Combine your results into one
+   large data frame that looks something like:
+   
+   | Name     | Ingredient           |
+   |----------|----------------------|
+   | Daiquiri | 2 oz Rum             | 
+   | Daiquiri | 1 oz Lime Juice      | 
+   | Daiquiri | 0.75 oz Simple Syrup |
+
+   To be polite, you may want to add `req_cache` to your requests so you are not
+   requesting the same page many times over. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(tidyverse)
+library(httr2)
+library(rvest)
+
+ALL_RECIPES <- data.frame()
+
+for(page in PAGE_URLS){
+    ALL_RECIPES <- rbind(ALL_RECIPES, process_url(page))
+}
+
+ALL_RECIPES
+```
+
+:::
+
+6) Save your code for next week. Next week we will investigate string processing
+   and learn how to turn a table like: 
+   
+   | Name     | Ingredient           |
+   |----------|----------------------|
+   | Daiquiri | 2 oz Rum             | 
+   | Daiquiri | 1 oz Lime Juice      | 
+   | Daiquiri | 0.75 oz Simple Syrup |
+   
+   into 
+
+   | Name     | Ingredient   | Amount  |
+   |----------|--------------|---------|
+   | Daiquiri | Rum          | 2       |
+   | Daiquiri | Lime Juice   | 1       |
+   | Daiquiri | Simple Syrup | 0.75    |
+
+
+::: {.callout-caution title="FP Solution" collapse="true"}
+
+If you are comfortable with (or want to become comfortable with) the functional
+programming tools of `purrr`, you can write this entire analysis in one swoop:
+
+```{r}
+#| cache: true
+library(tidyverse)
+library(rvest)
+process_recipe <- function(recipe){
+    title <- recipe |> html_element(".title") |> html_text2()
+    ingredients <- recipe |> html_elements("li") |> html_text2()
+    
+    tibble(title=title, ingredients=ingredients)
+}
+
+BASE_URL <- "https://cocktails.hadley.nz/"
+
+read_html(BASE_URL) |> 
+    html_elements("nav a") |> 
+    html_attr("href") |>
+    map(\(p) request(BASE_URL) |> req_url_path(p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |> 
+    map(html_elements, "article") |> 
+    reduce(c) |>
+    map(process_recipe) |> 
+    list_rbind()
+```
+
+This is clearly quite terse and would benefit from some additional comments,
+but I'm omitting them so you can try to deconstruct this code yourself if 
+you want to practice functional programming idioms. 
+
+:::

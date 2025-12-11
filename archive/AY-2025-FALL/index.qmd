@@ -1,0 +1,150 @@
+---
+title: "{{< var course.short >}} - Basic Software Tools for Data Analysis"
+execute:
+  freeze: true # Done with AY-2025-FALL offering
+---
+
+Welcome to the course website for {{< var course.short >}} 
+({{< var course.semester >}})!
+
+{{< var course.short >}} is an _Introduction to R_ targeted at students in the 
+[MS in Business Analytics](https://zicklin.baruch.cuny.edu/academic-programs/graduate/ms/masters-in-business-analytics/), 
+[MS in Statistics](https://zicklin.baruch.cuny.edu/academic-programs/graduate/ms/statistics/), 
+and [MS in Quantitative Methods](https://zicklin.baruch.cuny.edu/academic-programs/graduate/ms/quantitative-methods-modeling/) 
+programs. 
+
+This site hosts the [Course Syllabus](./syllabus.html), 
+[Course Policies](./resources.html), and [Course Learning 
+Objectives](./objectives.html). Copies of these documents may also be
+found on your [CUNY Brightspace](https://brightspace.cuny.edu).
+
+Required course [pre-assignments](./preassignments.qmd), [labs](./labs.html), and 
+[mini-projects](./miniprojects.html) can also be found on this site, as can
+my lecture slides and information relevant to the [course project](./project.html).
+Some helpful technical advice and tools can be found [here](./tips.html)
+
+This offering of {{< var course.short >}} will be taught in a mixture of the
+*flipped-classroom* and  *experiential-learning* formats. Roughly, this means
+that most weeks, students will be asked to complete a small [_pre-assignment_](./preassignments.html) 
+each week to introduce the core concept(s) covered in that week's lecture.
+Each class period will be split between a brief lecture covering concepts in more
+detail and an extended [_lab activity_](./labs.html) designed to build
+familiarity and fluency with that week's subject matter. 
+
+This semester, I am teaching both the *Tuesday* and *Thursday* sections of
+{{< var course.short >}}. In order to provide maximal flexibility to students, 
+students may attend either section as their schedule permits.[^double] All
+assignments and deadlines are shared between both sections. See below for the 
+schedule relevant to each section. This makes a few of the deadlines a bit
+awkward[^deadline] (when one section has a holiday and the other doesn't) but the
+advantages for student flexibility seem to be worth it.
+
+[^deadline]: Note that all deadlines are set based on the appropriate due date
+for the *later* section. If your section doesn't have a holiday, you essentially
+get extra time to complete an assignment. While this may occasionally help in
+a pinch, I **strongly** encourage you to start work as soon as you are able. It 
+is often hard to estimate how long work for this course takes and waiting 
+up to the deadline is asking for trouble. 
+
+[^double]: Students who are struggling with the course material may even find
+it useful to attend *both* sections on certain topics. Both sections will
+use the same Zoom link.
+
+::: {.panel-tabset #calendar}
+
+## Tuesday Section
+
+There are quite a few moving parts to this course, so this [key dates file](./key_dates_tuesday.csv)
+or the list of upcoming course activities below may be useful:
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(yaml)
+library(glue)
+variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+course_repo  <- variables$course$repo
+course_short <- variables$course$short
+
+readr::read_csv("key_dates_tuesday.csv") |> 
+    dplyr::select(-Action, 
+                  -Section) |>
+    dplyr::arrange(Date) |> 
+    DT::datatable(options=list(searching=FALSE,
+                               paging=TRUE),
+                  caption=glue("Upcoming Important Dates for {course_short} - Tuesday Section"), 
+                  elementId="tuesday_table",
+                  rownames=FALSE)
+```
+
+
+A CSV file suitable for import into Google Calendar with all assignment 
+deadlines can be found [here](./key_dates_students_gcal_tuesday.csv).
+
+Instructions for how to do so can be found
+[here](https://support.google.com/calendar/answer/37118?hl=en&co=GENIE.Platform=Desktop).
+If you use another calendar system that cannot accept CSV files in this format, 
+let me know and I will try to provide additional file formats. 
+
+## Thursday Section
+
+There are quite a few moving parts to this course, so this [key dates file](./key_dates_thursday.csv)
+or the list of upcoming course activities below may be useful:
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(yaml)
+library(glue)
+variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+course_repo  <- variables$course$repo
+course_short <- variables$course$short
+
+readr::read_csv("key_dates_thursday.csv") |> 
+    dplyr::select(-Action, 
+                  -Section) |>
+    dplyr::arrange(Date) |> 
+    DT::datatable(options=list(searching=FALSE,
+                               paging=TRUE),
+                  caption=glue("Upcoming Important Dates for {course_short} - Thursday Section"), 
+                  elementId="thursday_table",
+                  rownames=FALSE)
+```
+
+
+A CSV file suitable for import into Google Calendar with all assignment 
+deadlines can be found [here](./key_dates_students_gcal_thursday.csv).
+
+Instructions for how to do so can be found
+[here](https://support.google.com/calendar/answer/37118?hl=en&co=GENIE.Platform=Desktop).
+If you use another calendar system that cannot accept CSV files in this format, 
+let me know and I will try to provide additional file formats. 
+
+:::
+
+<script>
+// Update Calendar DataTables (created above in R) to show future events only
+// 
+// We set a one-time hook on each table (selected by ID) at its initial 'draw'
+// event. This function checks the current date and compares it to the value
+// in the fourth (date) column, deleting rows with past dates. After deletion,
+// the table is re-drawn. 
+//
+// We use a one time hook (\$.one) as opposed to an everytime hook (\$.on) to 
+// avoid an infinite loop. Since the table is not destroyed, just hidden, when
+// moving from one tab to the other, this seems to be safe. 
+$('#tuesday_table,#thursday_table').each(function(){
+  $(this).one( 'draw.dt', function(){
+    var filter_date = new Date();
+    filter_date.setDate(filter_date.getDate() - 1);
+    var filter_string = filter_date.toISOString().split('T')[0];
+    $("table").DataTable().rows((idx, data) => data[3] < filter_string).remove().draw();
+  });
+});
+
+</script>
+
+Instructor: [Michael Weylandt](https://michael-weylandt.com)
+

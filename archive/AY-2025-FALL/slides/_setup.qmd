@@ -1,0 +1,143 @@
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(glue)
+library(rlang)
+library(yaml)
+library(purrr)
+library(jsonlite)
+
+REPO_NAME <- read_yaml("_variables.yml")$course$repo
+get_mp_title <- function(N){
+    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_text <- readLines(mp_file, n=50)
+    
+    header_end <- which(grepl("---", mp_text))[2]
+    
+    header_info <- yaml.load(readLines(mp_file, n=header_end))
+    
+    header_info$mp_title %||% "TBD"
+}
+
+
+get_mp_application <- function(N){
+    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_text <- readLines(mp_file, n=50)
+    
+    header_end <- which(grepl("---", mp_text))[2]
+    
+    header_info <- yaml.load(readLines(mp_file, n=header_end))
+    
+    header_info$mp_application %||% "TBD"
+}
+
+
+get_mp_rhetoric <- function(N){
+    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_text <- readLines(mp_file, n=50)
+    
+    header_end <- which(grepl("---", mp_text))[2]
+    
+    header_info <- yaml.load(readLines(mp_file, n=header_end))
+    
+    header_info$mp_rhetoric %||% "TBD"
+}
+
+
+get_mp_skills <- function(N){
+    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_text <- readLines(mp_file, n=50)
+    
+    header_end <- which(grepl("---", mp_text))[2]
+    
+    header_info <- yaml.load(readLines(mp_file, n=header_end))
+    
+    header_info$mp_skills %||% "TBD"
+}
+
+get_mp_assigned <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Mini-Projects", 
+               `Item Number`== N, 
+               str_detect(Details, "Released"), 
+               !str_detect(Details, "Peer")) |>
+        pull(Date)
+}
+
+get_mp_deadline <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Mini-Projects", 
+               `Item Number`== N, 
+               str_detect(Details, "Due"), 
+               !str_detect(Details, "Peer")) |>
+        mutate(due = paste(Date, "at", Time)) |>
+        pull(due)
+}
+
+get_mp_pf_assigned <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Mini-Projects", 
+               `Item Number`== N, 
+               str_detect(Details, "Assigned"), 
+               str_detect(Details, "Peer")) |>
+        pull(Date)
+}
+
+
+
+get_mp_pf_deadline <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Mini-Projects", 
+               `Item Number`== N, 
+               str_detect(Details, "Peer"), 
+               str_detect(Details, "Due")) |>
+        pull(Date)
+}
+
+get_pa_deadline <- function(N){
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Pre-Assignments", 
+               `Item Number`== N, 
+               str_detect(Details, "Due"), 
+               !str_detect(Details, "Peer")) |>
+        mutate(due = paste(Date, "at", Time)) |>
+        pull(due)
+}
+
+get_mp_submitted <- function(N){
+    ISSUES <- read_json(glue("https://api.github.com/repos/michaelweylandt/{REPO_NAME}/issues?labels=MiniProject%20%230{N}&per_page=100&state=open"))
+    
+    LABELS <- ISSUES |> 
+        map(pluck("labels")) |> 
+        purrr::flatten() |> 
+        map(pluck("name")) |> 
+        list_c()
+    
+    N_SUBMITTED <- length(ISSUES)
+    
+    N_COMPLETED <- LABELS |> str_equal("Passed all automated checks") |> sum()
+    N_NEED_WORK <- N_SUBMITTED - N_COMPLETED
+    
+    list(n_submitted = N_SUBMITTED, 
+         n_completed = N_COMPLETED,
+         n_need_work = N_NEED_WORK)
+}
+
+get_project_due_date <- function(element = c("individual_report", "group_report", "peer_evaluation")){
+    
+    element <- match.arg(element)
+    
+    search_string = case_match(element, 
+                               "individual_report" ~ "Individual Report", 
+                               "group_report" ~ "Summary Report",
+                               "peer_evaluation" ~ "Peer Evaluation")
+    
+    read_csv("key_dates.csv") |> 
+        filter(`Course Element` == "Course Project", 
+               str_detect(Details, search_string)) |>
+        pull(Date)
+}
+
+next_session <- session + 1
+```

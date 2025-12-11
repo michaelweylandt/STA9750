@@ -1,0 +1,634 @@
+---
+title: "{{< var course.short >}} - Mini Projects"
+execute:
+  freeze: true # Done with AY-2025-FALL offering
+format: 
+  html: 
+    code-copy: true
+---
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+library(tidyverse)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, Time)))
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(glue)
+library(rlang)
+library(yaml)
+get_mp_title <- function(N){
+    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_text <- readLines(mp_file, n=50)
+    
+    header_end <- which(grepl("---", mp_text))[2]
+    
+    header_info <- yaml.load(readLines(mp_file, n=header_end))
+    
+    header_info$mp_title %||% "TBD"
+}
+```
+
+In lieu of traditional homework, {{< var course.short >}} has a series of
+**mini-projects** designed to achieve several interlocking goals: 
+
+1. Improve your skills at data analysis
+2. Improve your ability to give feedback on data analysis work
+3. Seed a 'portfolio' of data science work you can demonstrate 
+   to potential employers
+
+Each Mini-Project will be submitted via `GitHub`, an industry-standard code 
+management platform, as both raw analysis code and as a HTML document 
+hosted on GitHub pages.
+
+After each Mini-Project is submitted, 2-4 peer reviewers will 
+be assigned to give feedback and to assign an initial grade following
+an instructor provided rubric. This feedback will be given *via* GitHub Issues. 
+
+In order to ensure good peer feedback, the peer feedback will be evaluated by 
+the instructor in a "meta-review" worth a small fraction of the overall grade. 
+
+If you believe your mini-project has received inaccurate peer feedback, please
+request a regrade from the instructor directly within **48 hours** of the peer 
+feedback deadline using the relevant form on Brightspace. No student-initiated 
+requests for re-grading will be accepted after that time, though the instructor 
+may re-grade the work during the meta-review stage.
+
+### Mini-Projects
+
+#### Mini-Project #00: `r get_mp_title(0)`
+
+```{r}
+#| echo: false
+mp <-  DATES |> filter(element == "Mini-Projects", item == 0)
+```
+
+**Due Dates:**
+
+  - Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+  - **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)`**
+  - **Peer Feedback:**
+    - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
+    - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
+
+In the ungraded [Mini-Project #00](./miniprojects/mini00.html), there is no data
+analysis required, but you will set up the basic web tooling used to submit projects
+#01 to #04. 
+
+Note that, even though ungraded, Mini-Project #00 must be completed to remain
+enrolled in this course and before any other Mini-Projects can be submitted. 
+
+#### Mini-Project #01: `r get_mp_title(1)`
+
+```{r}
+#| echo: false
+mp <-  DATES |> filter(element == "Mini-Projects", item == 1)
+```
+
+**Due Dates:**
+
+  - Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+  - **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)`**
+  - **Peer Feedback:**
+    - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
+    - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
+    
+In [Mini-Project #01](./miniprojects/mini01.html), students will explore the
+Netflix Top 10 data to identify the most popular programming on the platform.
+Despite the relative simplicity of this data set, it is too big for traditional
+spreadsheet software (*i.e.*, Microsoft Excel) to handle. Students deliver their
+results in the form of a press release, conveying the results of complex
+analytical pipelines in a pithy interpretable format. 
+
+#### Mini-Project #02: `r get_mp_title(2)`
+
+```{r}
+#| echo: false
+mp <-  DATES |> filter(element == "Mini-Projects", item == 2)
+```
+
+**Due Dates:**
+
+  - Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+  - **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)`**
+  - **Peer Feedback:**
+    - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
+    - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
+    
+
+In [Mini-Project #02](./miniprojects/mini02.html), students will explore data
+from the US Census Bureau's Annual Community Survey and the Bureau of Labor
+Statistics' Quarterly Census of Employment and Wages to identify cities with 
+affordable and rapidly growing housing stock. In this project, students will
+combine data from different - and not entirely compatible - government sources
+and practice turning a qualitative concept like affordability into a measurable
+statistical index. Students also demonstrate basic statistical visualizations
+like scatterplots and line charts. Students will deliver their results in the
+form of a "policy brief" that can be used to lobby congressional representatives
+to advocate pro-housing policies at the federal level.
+
+#### Mini-Project #03: `r get_mp_title(3)`
+
+```{r}
+#| echo: false
+mp <-  DATES |> filter(element == "Mini-Projects", item == 3)
+```
+
+**Due Dates:**
+
+  - Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+  - **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)`**
+  - **Peer Feedback:**
+    - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
+    - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
+    
+In [Mini-Project #03](./miniprojects/mini03.html), students will explore data
+from the NYC Parks Tree Services. Students will create maps of the trees of
+NYC  and use spatial joins to align the GPS coordinates of trees with NYC's
+51 City Council districts. To acquire this data, students will also practice
+responsibly downloading large data sets from an official government resource.
+Students will deliver the findings in the form of a proposed new project for 
+NYC Parks, aiming to maintain and benefit NYC's marvelous trees.
+
+#### Mini-Project #04: `r get_mp_title(4)`
+
+```{r}
+#| echo: false
+mp <-  DATES |> filter(element == "Mini-Projects", item == 4)
+```
+
+**Due Dates:**
+
+  - Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+  - **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)`**
+  - **Peer Feedback:**
+    - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
+    - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
+
+
+In [Mini-Project #04](./miniprojects/mini04.html), students will analyze the 
+Bureau of Labor Statistics' Current Employment Statistics report to see whether
+politicians' claims about CES revisions are actually true. To complete this
+analysis, students will use the `httr2` package to directly access official
+BLS CES records, parse the data into `R` using the `rvest` package, join
+together records from different pages using `dplyr`, explore the data
+with `ggplot2`, and finally apply computational approaches to statistical 
+inference. 
+
+### Mini-Project Submission
+
+All Mini-Projects must be submitted in two formats: 
+
+1) As a suitable HTML page hosted on the student's course repository. 
+   (See [Mini-Project #00](./miniprojects/mini00.html) for details on
+   setting this up.)
+2) As a PDF on the course Brightspace page. 
+
+**Both** submissions must be completed _on time_ for the work to be considered
+properly submitted. 
+
+- If the work is submitted on Brightspace by the deadline, but not on GitHub,
+  the instructor will apply a 5-point penalty (10% deduction). Additionally,
+  work not submitted on GitHub will not be eligible for peer review, but
+  will instead by evaluated by the course staff. (Note that, historically,
+  the instructor and TAs have been more stringent graders than student peers.)
+
+  GitHub submission will be confirmed when the instructor assigns peer
+  feedback reviewers. The [course helper
+  functions](./tips.html#mp-submission-verify) include a script.
+  to confirm that a GitHub submission has been properly formatted. You 
+  are encouraged to use it. 
+  
+  For example, if I wanted to confirm *my* MP03 was properly submitted,
+  I would run: 
+  
+  ```{r}
+#| eval: false
+source("https://michael-weylandt.com/STA9750/load_helpers.R")
+mp_submission_verify(3, "michaelweylandt")
+  ```
+  
+  **Submissions that do not pass these automated checks will have a
+  penalty applied.** 
+  
+- If the work is submitted on GitHub, but not on Brightspace, the instructor
+  will assign a 5 point (10%) penalty. Note that this will be applied by
+  the instructor when loading grades into Brightspace; peer evalutors will
+  not need to confirm correct Brightspace submission. 
+  
+- If the work is not submitted on time on either platform, the course
+  [late work policy](./resources.html#late-work-policy) applies and no
+  credit will be given. 
+  
+::: {.callout-important title="Mini-Project Submission Grace Period"}
+
+This semester, all Mini-Projects are officially due on *Friday evenings*. 
+Recognizing that students have conflicts outside of classes, I am providing
+an *automatic two day grace period* (to Sunday evening) for all mini-project
+submissions. Per the [late work policy](./resources.html#late-work-policy),
+extensions beyond this grace period will only be provided under exceptional
+circumstances.
+
+Note, however, I **will not** be responding to student inquiries after the
+original (Friday) deadline. You are *strongly* encouraged to ask all questions
+and resolve all technology issues before the Friday deadline. 
+
+:::
+  
+Note that students are still expected to participate in the peer feedback
+cycle even if their own submission was not completed on time. Difficulty
+with the technologies used (Brightspace, `quarto`, GitHub, *etc.*) is not
+a recognized excuse for late submission.
+
+### Mini-Project Formatting
+
+Each mini-project requires submission of _at a minimum_ two files on GitHub: 
+
+1) The `mp0N.qmd` file containing the *source code* of your submission. 
+   (Replace `N` with the number of the mini-project; *e.g.*, `mp04.qmd` for 
+   Mini-Project #04) This is required so that the instructor, TAs, and 
+   peer-evaluators can see your actual submission. In particular, if code does 
+   not execute properly or you submit an improperly rendered `html` file, this
+   serves as a backstop for evaluation.
+2) The `mp0N.html` file containing the *rendered output* of your submission. 
+   (Replace `N` with the number of the mini-project; *e.g.*, `mp04.html` for 
+   Mini-Project #04) This is what is primarily used for evaluation. 
+   
+Note that MP#00 is different: in order to create a website, the home page must
+be called `index.html`, so the source file is `index.qmd`, not `mp00.qmd`.
+
+#### Make Sure to Submit All Helper Files
+
+For some projects, where you are asked to create data visualizations, you will
+need to ensure that other documents are also properly uploaded. In particular,
+data visualizations will be saved automatically by `quarto` as `png` files in
+your `docs` folder. These need to be included in your GitHub repository so that
+your website will render properly: if you omit these, you will get a "missing 
+image" icon and empty box instead of the desired visualization. For other projects,
+you may need to ensure various `css` or `js` files are uploaded to ensure all
+components of your site work properly. You will not need to create or edit these
+files directly, but if you don't have them, your page will not appear online
+as it does locally. As a general rule, you should `git add`, 
+`commit` and `push` _all_ files in the `docs` folder just to be safe. If you
+are not seeing something on your page that you observed locally, it is usually
+a sign that one of these files are missing.[^inspector]
+
+[^inspector]: If you want to debug this and identify which files are missing on 
+GitHub, right click anywhere on the page and open "Developer Tools" or "Inspect"
+(depending on the browser you are using). Navigate to the "Network" tab and 
+reload the page. You will then see a long list of all of the components that
+are used to run your site. Look for files marked with `404` -- the internet code
+for missing -- and make sure that the equivalent file is pushed to GitHub in your
+`docs` folder. This is a bit advanced and just running `git add docs/*` at the
+`Terminal` (not `Console`) adds everything and is easier than hunting down
+specific files. 
+
+#### Code Folding
+
+Because you are submitting a single document for both your input (`qmd`) and 
+output (`html`), it can be a bit tricky to seamlessly integrate code and text. 
+In particular, long chunks of code may ruin the flow of your text. Quarto's 
+[code-folding](https://quarto.org/docs/output-formats/html-code.html#folding-code)
+functionality can help address this. 
+
+Code folding keeps the code on a page, but hides it behind a "click-to-display"
+`<details>` HTML element, by default labelled as `Code`. For example, 
+
+```{r}
+#| code-fold: true
+# Example adopted from ?filled.contour
+x <- 10*1:nrow(volcano)
+y <- 10*1:ncol(volcano)
+filled.contour(x, y, volcano,
+    color.palette = function(n) hcl.colors(n, "terrain"),
+    plot.title = title(main = "The Topography of Maunga Whau",
+    xlab = "Meters North", ylab = "Meters West"),
+    plot.axes = { axis(1, seq(100, 800, by = 100))
+                  axis(2, seq(100, 600, by = 100)) },
+    key.title = title(main = "Height\n(meters)"),
+    key.axes = axis(4, seq(90, 190, by = 10)))  # maybe also asp = 1
+mtext(paste("filled.contour(.) from", R.version.string),
+      side = 1, line = 4, adj = 1, cex = .66)
+```
+
+Above, by default, you see only the output (image) but the
+code is hidden unless someone wants to view it. It's pretty easy
+to adopt code folding in your own `qmd` files. If you have a code block that 
+looks like this: 
+
+````{md}
+```{r}
+x <- c(1, 2, 3)
+mean(x)
+```
+````
+
+`quarto` will by default print _both that code and its output_. If you want that
+code to be foldable, you need to add an _execution option_ to the top of the 
+chunk. It will look like this: 
+
+````{md}
+```{r}
+#| code-fold: true
+x <- c(1, 2, 3)
+mean(x)
+```
+````
+
+Now, when you render this document, you will just get the output with a little 
+"click to expand" thing hiding the code. 
+
+Two note about the syntax: 
+
+- The line has to literally start with `#| `. There can't be a space at the 
+  start of the line and there has to be one after the `|` (bar). 
+- It also has to appear before any "actual code", so generally it should be the
+  first thing in a chunk. 
+
+The syntax for these sort of options is `variable: value`. You should recognize
+this from the `_quarto.yml` file in [MP#00](./miniprojects/mini00.qmd) which used
+a similar syntax. Here, `code-fold` defaults to `false` (no folding), so we set
+it to `true` to turn on folding.[^quarto_flags]
+
+If you want to turn on code-folding for all blocks and change the default from
+`true` to `false`, add the following line to the header (lines between the `---`)
+of your document: 
+
+```{md}
+code-fold: true
+```
+
+This will set all code blocks to default turn on code-folding. If you want to
+disable code-folding for a particular block, add the execution option 
+`#| code-fold: false` to override this new default. 
+
+While code folding is probably the most useful execution option, there are 
+other options that you may occasionally find useful. The `echo` option looks
+like this: 
+
+````{md}
+```{r}
+#| echo: false
+x <- c(1, 2, 3)
+mean(x)
+```
+````
+
+By default, `quarto` will usually repeat your code back to you before printing
+the output. If you just want it to print the output, but no code, set `echo` 
+to `false` and it won't echo (repeat back) the code. I do this all the time 
+in my notes where I want to compute something, *e.g.*, a due date, and just 
+print the result (the date), but I don't want to include the code that calculates
+it as it would make my document less clear. When in doubt, you should default to
+include your code in your `qmd` document, so you might not use this too often. 
+
+The complement of the `echo` option is `eval`: 
+
+````{md}
+```{r}
+#| eval: false
+x <- c(1, 2, 3)
+mean(x)
+```
+````
+
+This will turn off `evaluation` (running) of the code: here, `quarto` will only 
+print the code with nice formatting, but it won't attempt to run it. You won't 
+use this much, but I use it all the time when trying to give examples of bad 
+code. 
+
+There are [many more](https://quarto.org/docs/computations/execution-options.html)
+but I'd say `code-fold` and `echo` are the main ones in this class. 
+
+Use of `code-folding` is *not required*, but it is *strongly recommended*.
+
+[^quarto_flags]: One thing that can be a bit confusing: these execution
+options are written using `quarto` syntax, not `R` syntax. In particular, these
+flags are used by `quarto` and not `R` since they control whether `quarto` 
+even runs the code or not: these decisions get made before `R` even starts.
+In `quarto`, we turn things on by setting them to `true` (lower case); in 
+`R`, we set them to `TRUE` (all caps).
+
+#### Using the `contents` Shortcode
+
+Often, when completing a mini-project, you will want to include text near the 
+beginning of the document, such as an Executive Summary, Abstract, or Headline.
+The best versions of this introductory text will include the results of your 
+analysis later in the document. In particular, if you are putting your code into
+a sort of 'technical appendix', almost all of the 'main text' will preceed any
+code. You can address this in two ways: 
+
+i) Hard-code the results of your analysis in the intro text: *i.e.*, run the
+   code and copy the results into the intro text. 
+ii) Using the [`quarto` `contents` shortcode](https://quarto.org/docs/authoring/contents.html).
+
+A major advantage of using a tool like `quarto` is avoiding hardcoding values
+in the text, so I recommend exploring the `contents` shortcode. In brief, the
+`contents` shortcode lets you move the _results_ of code to somewhere else
+in the document. This is a somewhat advanced trick and not required for this
+course, but it can be helpful if you are trying to put a high level of polish
+on your submissions.
+
+Here's an example: 
+
+````{r}
+#| eval: false
+---
+title: "An example of the `contents` shortcode"
+format: html
+---
+
+## Summary
+
+My grandpa always said, {{< contents best_number >}}, but I also really like
+{{< contents y_def >}} and I format it strangely because I am a scientist.
+
+## I am using a Shortcode
+
+`quarto` "shortcodes" can be used to do some magic when writing a document.
+In this document we use the `contents` shortcode to move _output_ of code 
+above the actual code. The [official docs](https://quarto.org/docs/authoring/contents.html)
+are not super clear, so hopefully this example helps. 
+
+## Much later in the document
+
+You can see how we find the best number using a very advanced algorithm: 
+
+```{r}
+compute_best_number <- function(){
+    return(3)
+}
+
+x <- compute_best_number()
+
+y <- x + 3
+```
+
+We will define some 'snippets' here, but they do not get printed here because 
+we instead move the output up earlier in the document. 
+
+[The very best number is `{{r}} x`]{#best_number}
+
+[`{{r}} formatC(y, format="e", digits=2)`]{#y_def}
+````
+
+A few things to note here: 
+
+i) Like always, the code runs top-to-bottom, so we have to define `x` in the 
+   `{{r}}` chunk before using it. 
+ii) Once we have defined `x` and `y`, we then use _inline code syntax_ to
+    put them inside text. 
+iii) The text is given an identifier using the `[text with inline code]{#id}`
+     syntax. This is _almost_ the link syntax, but with curly braces instead of
+     parenthesis and a mandatory `#` symbol. 
+iv)  We then move the named text snippets elsewhere in the document using the
+     `{{{< contents NAME >}}}` syntax. Here `NAME` is the name you assigned
+     to the snippet, *i.e.*, the text after the `#`. `NAME`s should only contain
+     letters, numbers, and underscores.
+v) You can use a snippet in multiple places: the code is only run once, but
+   the results will be printed as many times as you use the `contents` shortcode.
+
+When you render this document, `quarto` will first run the chunk to define
+`x` and `y`; then it will put them in inline text snippets; then it will move
+those snippets elsewhere in the document. That last step is something that does
+not happen with basic `quarto` usage. 
+
+As this example shows, a snippet may include text but it can also just be some
+inline code that will print a variable with the desired formatting. 
+
+Note that a snippet **cannot be the only thing on a line**. If you have a line
+which is only `{{{< contents NAME >}}}`, you will get a warning message that
+states: "This might happen because the shortcode is used in div context, while 
+the id corresponds to a span. Removing from document." It is possible to work
+around this, but it requires a different syntax. If you need to have contents
+alone on a line, typically because you want to move a code chunk, instead of
+inline code, a different syntax is required: contact the instructor for details. 
+
+**Use of the `contents` shortcode is advanced and not required.**
+
+### Mini-Project Peer Feedback {#peer-feedback}
+
+The *peer feedback cycle* is an important element of the {{< var course.short >}}
+learning goals. In particular, the peer feedback activities are used to help
+students learn to _read code written by others_ and to _compare and contrast 
+alternative approach to the same analytic aims_. As emphasized throughout this 
+course, there is rarely a single **right** way to perform a particular piece of
+analysis, but there are **better** and **worse**; seeing a variety of approaches
+helps students experience a variety of approaches and begin developing a sense of
+elegance and efficiency in code. 
+
+Mini-Project peer feedback is submitted as comment on the GitHub issue used to
+submit individual projects. Once the mini-project submission deadline passes, 
+the instructor will tag multiple students in the same issue and request peer
+feedback. Tagged students ("evaluators") should give their feedback in that same
+issue, **not** opening a new issue. (This is important to keep course materials
+organized.) 
+
+Peer feedback comments should use the following format:
+
+::: {#peer-feedback-template}
+
+```{md}
+## Scores 
+
+- Written Communication: NN 
+- Project Skeleton: NN
+- Formatting & Display: NN
+- Code Quality: NN
+- Data Preparation: NN
+- Extra Credit: NN
+
+## Comments
+
+OPTIONAL TEXT
+
+### Written Communication
+
+TEXT TEXT TEXT
+
+### Project Skeleton
+
+TEXT TEXT TEXT
+
+### Formatting & Display
+
+TEXT TEXT TEXT
+
+### Code Quality
+
+TEXT TEXT TEXT
+
+### Data Preparation
+
+TEXT TEXT TEXT
+
+### Extra Credit
+
+TEXT TEXT TEXT
+```
+
+:::
+
+For each element, the `NN` should be replaced by a numerical value
+between 0 and 10. (It is not necessary to provide a sum; the instructor will
+calculate this.) Similarly, the `TEXT TEXT TEXT` should be replaced by comments
+justifying the assigned score. If you have overall comments on the assignment,
+not appropriate for a single category, please place them in the `OPTIONAL TEXT`
+section. (If you have no overall comments for this section, just delete this.)
+Not all mini-projects have opportunities for Extra Credit, but please leave
+those blocks in place (with a 0 for the score and something to the effect of 
+"No extra credit available" for the  comment) so the course backend automation
+works properly. The `mp_feedback_submit` function in the 
+[course helper functions](./tips.qmd#mp_feedback_submit) can be used to
+automatically format peer feedback according to the required template. 
+
+The `mp_feedback_verify` function in the 
+[course helper functions](./tips.qmd#mp_feedback_verify) can be used to 
+verify that you have submitted a comment with the correct formatting.
+
+::: {.callout-caution title="Peer Grade Required for **All** Assigned Work"}
+
+Please note that you are *required* to provide a peer grade
+for *all* mini-projects to which you have been assigned, even
+those where no submission can be found. Please use the template
+above and assign 0s for all elements. Text feedback should also
+be included, but it can be as simple as "No submission found."
+
+:::
+
+After the peer feedback cycle, the instructor will collect peer feedback grades
+and assign "meta-review" feedback to each student. Meta-review feedback refers 
+a grade based on the quality of your commentary. The following rubric will guide
+assessment of meta-review grades, but the instructor may deviate as appropriate.
+
+Note that the rubric is a bit *asymmetric*: students need more detailed 
+feedback on poor work -- giving them an opportunity to improve -- than on 
+strong work. Here the rough "strong" *vs* "weak" distinction is qualitative and 
+will be assessed by the instructor independently as part of meta-review grades.
+
+| Score | Quality of Submitted Work | Quality of Feedback | Comments |
+|--------|----------------------|----------------------|----------------------|
+| 9-10 | Strong | Quality Positive Feedback |  |
+| TBD | Strong | Quality Negative Feedback | Addressed on a case-by-case basis. |
+| 7-8 | Strong | Minimal Positive Feedback |  |
+| 5-6 | Strong | Minimal Negative Feedback |  |
+| 4 | Strong | No Feedback |  |
+| 4-5 | Weak | Quality Positive Feedback |  |
+| 9-10 | Weak | Quality Negative Feedback |  |
+| 4-5 | Weak | Minimal Positive Feedback |  |
+| 6-8 | Weak | Minimal Negative Feedback |  |
+| 3 | Weak | No Feedback |  |
+
+: Meta-Review Rubric
+
+Note that if your comment is not properly formatted, as determined
+by `mp_feedback_verify`, a penalty will be applied to your meta-review score. 

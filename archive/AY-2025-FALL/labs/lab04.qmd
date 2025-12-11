@@ -1,0 +1,808 @@
+---
+title: "{{< var course.short >}} Week 4 In-Class Activity: Single Table Verbs, Group-Aware Filtering"
+format: live-html
+engine: knitr
+packages:
+    - tidyverse
+    - nycflights13
+execute:
+  freeze: true # Done with AY-2025-FALL offering
+---
+
+
+{{< include _gradethis_init.qmd >}}
+
+```{r}
+#| include: false
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("nycflights13")) install.packages("nycflights13")
+library(tidyverse)
+library(nycflights13)
+```
+
+
+# [Slides](../slides/slides04.qmd)
+
+# Welcome!
+
+## Single Table Operations
+
+This week, we are going to practice "single-table" (one data frame) operations
+using `dplyr`. In this scenario, we assume all the relevant data to a problem
+has been collected into a single object ready for use. We also assume that the
+data has been made "tidy" with clearly defined row and column structure. 
+
+For this set of exercises, we will use the `flights` data from the `nycflights13`
+package. Per the relevant help file, this data set contains on-time data
+for all flights that departed the three major NYC airports (EWR, LGA, JFK) in
+2013.[^1] As usual, we begin by installing and loading the necessary packages:
+
+```{webr}
+if(!require("tidyverse")) install.packages("tidyverse")
+if(!require("nycflights13")) install.packages("nycflights13")
+library(tidyverse)
+library(nycflights13)
+```
+
+The `nycflights13` package provides us with the `flights` data set:
+
+```{webr}
+glimpse(flights)
+```
+
+We see here that this is a large data set, with `{r} NROW(flights)` rows and 
+`{r} NCOL(flights)` columns. This actually isn't too big for `R` (only about 40 MB) but you might want to follow along with this analysis on your personal `R`, instead of in your browser if things start to feel sluggish.
+
+In this [week's preassignment](../preassigns/pa04.html), you already were
+introduced to the `select` and `filter` operators for column and row selection.
+Let's now dig into them more and explore some more advanced operations. 
+
+## `R`'s Missing Data Model - `NA`
+
+Let's begin with a simple question: what is the _single most delayed flight_
+in our data set: 
+
+```{webr}
+flights |> filter(arr_delay == max(arr_delay))
+```
+
+Hmmmm...That's odd. Certainly _something_ has to be the maximum arrival delay -
+why did we get no rows back? 
+
+Let's look at this expression more closely: firstly, what happens if we simply
+fix a delay amount? 
+
+```{webr}
+flights |> filter(arr_delay == 60)
+```
+
+That's fine. So perhaps the problem was in computing `max(arr_delay)`. 
+
+```{webr}
+flights |> summarize(max(arr_delay))
+```
+
+That's weird - what is this `NA` object? 
+
+`NA` is `R`'s representation of _missing_ data: this is not a `NaN` object
+you have seen from other languages. `NaN` represents invalid arithmetic output
+(Not-a-Number), *e.g*, 
+
+```{webr}
+0 / 0
+```
+
+`NA` is _statistical_ missingness. The data exists - and is well defined - but
+we simply don't know it. Like we said above, there is _some_ most delayed flight,
+but we don't know what it is. 
+
+The `NA` construct is a bit odd when you start with it - but it's actually 
+one of `R`'s great strengths. Missingness matters in data analysis and `R`
+forces you to deal with it explicitly. The behavioral rules of `NA` are 
+reasonably straightforward - `NA` is 'contagious'. Any calculation that takes
+at least one `NA` input usually has `NA` output. (This is not dissimilar to
+the "random in, random out" rule of functions of random variables) For example: 
+
+```{webr}
+3 + NA
+```
+
+```{webr}
+NA > 0
+```
+
+```{webr}
+NA / 4
+```
+
+```{webr}
+0 * NA
+```
+
+That last result may be a bit surprising - isn't anything times zero just zero?
+
+That's true in 'real' math, but not actually true for computer ("floating-point")
+math: 
+
+```{webr}
+0 * Inf
+```
+
+Here, because `0 * NA` could be `0` or `NaN`, the answer is still unknown and
+hence `NA`. 
+
+There are some rare operations where `NA` can be "over-ruled" but they are 
+not super common: 
+
+```{webr}
+any(c(NA, TRUE))
+```
+
+This follows because both: 
+
+```{webr}
+any(c(TRUE, TRUE))
+any(c(FALSE, TRUE))
+```
+
+so the value of `NA` doesn't actually matter here. 
+
+Also note that not all `NA` values are 'the same': 
+
+```{webr}
+NA == NA
+```
+
+Why is this the case? Well, suppose we rewrite this as: 
+
+```{webr}
+today_temp    <- NA
+tomorrow_temp <- NA
+
+today_temp == tomorrow_temp
+```
+
+Is today the same temperature as tomorrow? If we don't know either temperature,
+we can't say!
+
+Similarly, 
+
+```{webr}
+today_temp - tomorrow_temp
+```
+
+### `is.na` and `na.rm`
+
+While it's certainly helpful that `R` handles `NA` values so intelligently
+for us, it can also be a bit annoying. Eventually we want (non-`NA`) answers!
+
+We generally deal with this in one of two ways: 
+
+- filtering out `NA` values from our data set
+- ignoring `NA` values in our calculations.
+
+We've already done a bit of the latter option - ignoring `NA` values in our
+calculations - so let's review it first. 
+
+Most base `R` functions have an `na.rm` optional argument to remove NA values. 
+Returning to our motivating example: 
+
+```{webr}
+flights |> summarize(max(arr_delay, na.rm=TRUE))
+```
+
+or indeed
+
+```{webr}
+flights |> filter(arr_delay == max(arr_delay, na.rm=TRUE))
+```
+
+That's a horrendous (21+ hour) delay! But is it actually the "maximum" delay? 
+It depends... we'll come back to this example in a bit. 
+
+Not all functions, however, provide a `na.rm` argument: in those cases, it's 
+our responsibility to remove the `NA` values ourselves. 
+
+We can do this using the `is.na` function: this takes in a vector of values
+and finds the `NA`s: 
+
+```{webr}
+x <- c(1, 2, 3, NA, 5)
+is.na(x)
+```
+
+If we combine this with the `filter` operator, we now have an efficient way
+of removing `NA` values: 
+
+```{webr}
+flights |> filter(!is.na(arr_delay))
+```
+
+From here, we can get back to our analysis of the most delayed flight: 
+
+```{webr}
+flights |> 
+    filter(!is.na(arr_delay)) |>
+    filter(arr_delay == max(arr_delay)) |>
+    glimpse()
+```
+
+Poor folks!
+
+*Note that I'm using `glimpse` here to ensure all columns are printed.*
+
+### `drop_na`
+
+`dplyr` provides a `drop_na` function which removes _any_ row that has an `NA`
+value in _any_ column. It's a bit of a blunt approach - do you really need
+remove a row in computing `X` just because it has an `NA` value in column `Y`? -
+but it can be useful for "quick and dirty" work. I recommend against using it
+without a thorough manual examination of your data first however. 
+
+### `NA` values in `filter`
+
+Earlier we saw that `filter` plays funny with `NA` values. It's worth being
+explicit here
+
+```{webr}
+tiny_example <- tribble(~letter, ~value, "a", 1, "b", NA)
+print(tiny_example)
+tiny_example |> filter(value > 0)
+```
+
+`filter` checks for `TRUE` conditions - not for "not `FALSE`". Because of this,
+checks which result in `NA` lead to dropped rows. This means that most `NA` rows
+are automatically discarded when you start filtering. 
+
+This isn't a bad default - but it's one you should be aware of. For instance, 
+in our motivating example:
+
+We might use the following to compute the average arrival delay: 
+
+```{webr}
+flights |> filter(!is.na(arr_delay)) |> summarize(mean(arr_delay))
+```
+
+but this drops 
+
+```{webr}
+flights |> filter(is.na(arr_delay)) |> NROW()
+```
+
+flights for which we have no arrival delay information. Of these, 
+
+```{webr}
+flights |> filter(is.na(arr_delay), !is.na(arr_time)) |> NROW()
+```
+
+we even have an arrival time but the delay itself is missing for some reason. 
+Is it fair to exclude these flights or should we compute the delay ourselves? 
+For flights that are missing arrival and departure times (*i.e.*, cancelled
+flights), should we exclude them? Are they infinitely delayed? 24 hour delayed
+(assuming passengers were rebooked to the same flight on the next day)? 
+
+There's no clear right-or-wrong answer to questions like this. It's all context
+dependent: if you are the DOT trying to ensure good customer experience, a
+cancelled flight is _very_ delayed; if you are instead a Boeing engineer looking
+to improve flight speeds, the cancelled flights simply aren't useful to you.
+
+When faced with these challenges, data scientists often give the answer "defer
+to subject matter experts (SMEs)". Unfortunately, we rarely have the resources
+to have a qualified SME at hand to answer ever little data analytic question we
+may have. 
+
+I instead advocate for a strategy of _reproducible transparency_. Using tools
+like `quarto`, we can show our code and document the choices made. Then, when
+we share our results with an SME, 
+
+
+## Boolean Operators and `filter`
+
+`filter()` lets you use a logical test to extract specific rows from a data frame. To use `filter()`, pass it the data frame followed by one or more logical tests. `filter()` will return every row that passes each logical test.
+
+So for example, we can use `filter()` to select every flight in flights that departed on January 1st:
+
+```{webr}
+library(nycflights13) # Load the flights data
+filter(flights, month == 1, day == 1)
+```
+
+The `filter` function is similar to the `WHERE` clause in SQL.
+As we will later see, it can also be used to implement the `HAVING` clause,
+when applied in conjunction with `group_by`.
+
+Like all dplyr functions, `filter()` returns a new data frame for you
+to save or use. It doesn't overwrite the old data frame. If you want to save the
+output of `filter()`, you'll need to use the assignment operator, `<-`.
+
+Rerun the command in the code chunk below, but first arrange to save the output to an object named `jan1`.
+
+```{webr}
+#| exercise: ex_1
+filter(flights, month == 1, day == 1)
+```
+
+::: {.solution exercise="ex_1"}
+
+```{webr}
+jan1 <- filter(flights, month == 1, day == 1)
+```
+
+:::
+
+Good job! You can now see the results by running the name `jan1` by itself. 
+Or you can pass `jan1` to a function that takes data frames as input.
+
+Did you notice that this code used the double equal operator, `==`? `==` is one of R's logical comparison operators. Comparison operators are key to making full
+use of `filter()`, so let's take a closer look at them.
+
+### Logical Comparisons
+
+R provides a suite of comparison operators that you can use to compare values: `>`, `>=`, `<`, `<=`, `!=` (not equal), and `==` (equal). Each creates a logical test. For example, is `pi` greater than three?
+
+```{r}
+pi > 3
+```
+
+When you place a logical test inside of `filter()`, filter applies the test to each row in the data frame and then returns the rows that pass, as a new data frame.
+
+Our code above returned every row whose month value was equal to one _and_ 
+whose day value was equal to one.
+
+#### Watch out!
+
+When you start out with R, the easiest mistake to make is to test for equality with `=` instead of `==`. When this happens you'll get an informative error:
+
+```{webr, error = TRUE}
+filter(flights, month = 1)
+```
+
+If you give `filter()` more than one logical test, `filter()` will combine the tests with an implied "and." In other words, `filter()` will return only the rows that return `TRUE` for every test. You can combine tests in other ways with Boolean operators...
+
+#### &, |, and !
+
+R uses Boolean operators to combine multiple logical comparisons into a single logical test. These include `&` (*and*), `|` (*or*), `!` (*not* or *negation*), and `xor()` (*exclusive or*).
+
+Both `|` and `xor()` will return `TRUE` if one or the other logical comparison returns `TRUE`. `xor()` differs from `|` in that it will return `FALSE` if both logical comparisons return TRUE. The name _xor_ stands for _exclusive or_.
+
+Study the diagram below to get a feel for how these operators work.
+
+![In the figure above, `x` is the left-hand circle, `y` is the right-hand circle, and the shaded region show which parts each command selects.](../images/transform-logical.png)
+
+#### Common mistakes
+
+In `R`, the order of operations doesn't work like English. You can't write
+`filter(flights, month == 11 | 12)`, even though you might say  "finds all
+flights that departed in November or December". Be sure to write out a
+_complete_ test on each side of a Boolean operator.
+
+Here are four more tips to help you use logical tests and Boolean 
+operators in `R`:
+
+1. A useful short-hand for this problem is `x %in% y`. This will select 
+   every row where `x` is one of the values in `y`. We could use it to 
+   rewrite the code in the question above:
+
+```{webr}
+nov_dec <- filter(flights, month %in% c(11, 12))
+```
+
+2. Sometimes you can simplify complicated subsetting by remembering 
+   De Morgan's laws: `!(x & y)` is the same as `!x | !y`, and 
+   `!(x | y)` is the same as `!x & !y`. For example, if you wanted to find
+   flights that weren't delayed (on arrival or departure) by more than two
+   hours, you could use either of the following two filters:
+
+```{webr}
+dml1 <- filter(flights, !(arr_delay > 120 | dep_delay > 120))
+dml2 <- filter(flights, arr_delay <= 120, dep_delay <= 120)
+identical(dml1, dml2)
+dml1
+```
+
+3. As well as `&` and `|`, R also has `&&` and `||`. 
+   Don't use them with `filter()`! You'll learn when you 
+   should use them later.
+
+4. Whenever you start using complicated, multipart expressions in `filter()`,
+   consider making them explicit variables instead. That makes it much easier
+   to check your work. 
+
+
+### Exercises
+
+#### Filter Statements
+
+Using `filter` and various Boolean operators, find all flights satisfying
+the following conditions. 
+
+1. Had an arrival delay of two or more hours
+
+```{webr}
+#| exercise: filter1
+flights |> filter(______)
+```
+
+::: {.solution exercise="filter1"}
+
+```{webr}
+#| exercise: filter1
+#| solution: true
+flights |> filter(arr_delay > 120)
+```
+
+:::
+
+```{webr}
+#| exercise: filter1
+#| check: true
+gradethis::grade_this_code()
+```
+
+2. Flew to Houston (`IAH` or `HOU`)
+
+```{webr}
+#| exercise: filter2
+flights |> filter(______)
+```
+
+::: {.solution exercise="filter2"}
+
+```{webr}
+#| exercise: filter2
+#| solution: true
+flights |> filter(dest %in% c("IAH", "HOU"))
+```
+
+:::
+
+```{webr}
+#| exercise: filter2
+#| check: true
+gradethis::grade_this_code()
+```
+
+3. Were operated by United (`UA`), American (`AA`), or Delta (`DL`)
+
+```{webr}
+#| exercise: filter3
+flights |> filter(______)
+```
+
+::: {.solution exercise="filter3"}
+
+```{webr}
+#| exercise: filter3
+#| solution: true
+flights |> filter(carrier %in% c("UA", "AA", "DL"))
+```
+
+:::
+
+```{webr}
+#| exercise: filter3
+#| check: true
+gradethis::grade_this_code()
+```
+
+4. Departed in summer (June, July, or August)
+
+```{webr}
+#| exercise: filter4
+flights |> filter(______)
+```
+
+::: {.solution exercise="filter4"}
+
+```{webr}
+#| exercise: filter4
+#| solution: true
+flights |> filter(month >= 6, month <= 8)
+```
+
+:::
+
+```{webr}
+#| exercise: filter4
+#| check: true
+gradethis::grade_this_code()
+```
+
+5. Arrived more than two hours late, but didn't leave late
+
+```{webr}
+#| exercise: filter5
+flights |> filter(______)
+```
+
+::: {.solution exercise="filter5"}
+
+```{webr}
+#| exercise: filter5
+#| solution: true
+flights |> filter(arr_delay > 120, dep_delay <= 0)
+```
+
+:::
+
+```{webr}
+#| exercise: filter5
+#| check: true
+gradethis::grade_this_code()
+```
+
+6. Were delayed more than an hour, but made up more than 30 minutes in flight
+
+```{webr}
+#| exercise: filter6
+flights |> filter(______)
+```
+
+::: {.solution exercise="filter6"}
+
+```{webr}
+#| exercise: filter6
+#| solution: true
+flights |> filter(dep_delay > 60, (dep_delay - arr_delay) > 30)
+```
+
+:::
+
+```{webr}
+#| exercise: filter6
+#| check: true
+gradethis::grade_this_code()
+```
+
+7. Departed between midnight and 6am (inclusive)
+
+```{webr}
+#| exercise: filter7
+flights |> filter(______)
+```
+
+::: {.solution exercise="filter7"}
+
+```{webr}
+#| exercise: filter7
+#| solution: true
+flights |> filter((dep_time <= 600) | (dep_time == 2400))
+```
+
+:::
+
+```{webr}
+#| exercise: filter7
+#| check: true
+gradethis::grade_this_code()
+```
+
+## Grouped Operations
+
+In this [week's preassignment](../preassigns/pa04.html), you also already saw
+the basics of the `group_by` operator for performing analyses on subgroups. The
+most common use of `group_by` is to modify `summarize` to perform group-wise
+summarization. We'll next explore how it can be used to do group level filtering,
+similar to an SQL `HAVING` clause. 
+
+As before, let's start by asking what is the average arrival delay (after
+removing `NA` values)? 
+
+```{webr}
+flights |> filter(!is.na(arr_delay)) |> summarize(mean(arr_delay))
+```
+
+Ok. But now suppose we want to know _which carrier_ had flights that were
+later than average? We_could_ simply copy the value over into a new
+line of code: 
+
+```{webr}
+flights |> filter(!is.na(arr_delay)) |> filter(arr_delay > 6.90)
+```
+
+To get carrier-wise statistics, we might try: 
+
+```{webr}
+flights |> 
+    filter(!is.na(arr_delay)) |> 
+    filter(arr_delay > 6.90) |>
+    group_by(carrier) |>
+    summarize(n = n())
+```
+
+This works, but it requires us to keep the number 6.9 at hand, which is a bit
+inconvenient.  
+
+We next might be tempted to use a variable here to avoid hard-coding a specific
+value: 
+
+```{webr}
+avg_delay <- flights |> 
+    filter(!is.na(arr_delay)) |> 
+    summarize(mean_delay = mean(arr_delay)) |>
+    pull(mean_delay)
+
+flights |> 
+    filter(!is.na(arr_delay)) |> 
+    filter(arr_delay > avg_delay) |>
+    group_by(carrier) |>
+    summarize(n = n())
+```
+
+This is definitely better! If our data changes, we don't have to worry about
+the number 6.9 being 'out of date'. But it's still maybe a bit clunky: we filter
+our data twice for `NA` values and have to repeat ourselves. 
+
+Let's try something else: 
+
+```{webr}
+flights |> 
+    filter(!is.na(arr_delay)) |> 
+    mutate(mean_delay = mean(arr_delay))
+```
+
+This creates a new column called mean delay. On its own, it's
+not very interesting: 
+
+```{webr}
+flights |> 
+    filter(!is.na(arr_delay)) |> 
+    mutate(mean_delay = mean(arr_delay)) |>
+    select(mean_delay, arr_delay, carrier, everything())
+```
+
+*Note the trick of using `everything()` inside a select statement to reorder columns.*
+
+The `mean_delay` column simply repeats the number 6.9 over and over. (Recall
+`R`'s recycling rules- we needed a long vector here, so the output of `mean` 
+was repeated enough to fill the whole table.) But now we can work with this: 
+
+```{webr}
+flights |> 
+    filter(!is.na(arr_delay)) |> 
+    mutate(mean_delay = mean(arr_delay)) |>
+    select(mean_delay, arr_delay, carrier, everything()) |>
+    filter(arr_delay > mean_delay)
+```
+
+and, if we want, we can get the carrier specific statistics: 
+
+```{webr}
+flights |> 
+    filter(!is.na(arr_delay)) |> 
+    mutate(mean_delay = mean(arr_delay)) |>
+    select(mean_delay, arr_delay, carrier, everything()) |>
+    filter(arr_delay > mean_delay) |>
+    group_by(carrier) |>
+    summarize(n = n())
+```
+
+Pretty nice! And when it matters - for very large data stored on a database - a
+little faster to boot!
+
+Before going deeper down this path, what happens if we move the `group_by`
+earlier in our pipeline? 
+
+```{webr}
+flights |> 
+    group_by(carrier) |>
+    filter(!is.na(arr_delay)) |> 
+    mutate(mean_delay = mean(arr_delay)) |>
+    select(mean_delay, arr_delay, carrier, everything()) |>
+    filter(arr_delay > mean_delay) |>
+    summarize(n = n())
+```
+
+Definitely different! But why? 
+
+To see the difference, let's compare the `mean_delay` column: 
+
+```{webr}
+flights |> 
+    group_by(carrier) |>
+    filter(!is.na(arr_delay)) |> 
+    mutate(mean_delay = mean(arr_delay)) |>
+    select(mean_delay, arr_delay, carrier, everything())
+```
+
+We now see here that the `mean_delay` is computed "group-wise", so we're not
+getting flights that are delayed compared _to an average flight_; we are instead
+counting flights that are delayed compared _to an average flight on that airline_. Put another way, we're holding American Airlines (AA) and Delta (DL)
+flights to a higher standard than Jet Blue (B6) or ExpressJet (EV). 
+
+As always - the question you should ask yourself is not "is this the right thing" but "when is this the right thing?". It's simply a different question!
+
+Recall that `group_by` followed by a `summarize` removes one "layer" of grouping.
+If we use this `group_by` + `mutate` + `filter` construction, the result is still
+grouped, which can lead to weird bugs. To address this, it is sometimes easier
+to use the `.by` argument to `mutate` and `filter` which will modify the grouping
+_for that command only_. 
+
+```{webr}
+flights |> 
+    filter(!is.na(arr_delay)) |> 
+    mutate(mean_delay = mean(arr_delay), 
+           .by=carrier) |>
+    select(mean_delay, arr_delay, carrier, everything())
+```
+
+It's a matter of taste. 
+
+### `HAVING` clause
+
+Recall that a SQL `HAVING` clause applies group-level filtering based on
+some summary statistics: this is easy enough in `dplyr`. 
+
+For example, suppose we want the average flight delays _of large airlines_, which
+we can define as those with more than 10,000 departures in our data set. 
+
+We can compute this in two ways: directly, computing the number of flights and
+average delay for each airline. 
+
+```{webr}
+flights |> 
+    filter(!is.na(arr_delay)) |>
+    group_by(carrier) |>
+    summarize(n = n(), 
+              mean_delay = mean(arr_delay)) |>
+    filter(n > 10000)
+```
+
+This totally works, but now we've lost all the other flight-level information. 
+An alternate approach is to compute counts group-wise and filter before averaging:
+
+```{webr}
+flights |> 
+    filter(!is.na(arr_delay)) |>
+    group_by(carrier) |>
+    mutate(n = n()) |>
+    filter(n > 10000) |>
+    summarize(mean_delay = mean(arr_delay)) 
+```
+
+This has the advantage of being readily adaptable to other non-summarizing
+questions: for instance, of the _delayed_ flights of the major carrier, how
+many were going to Houston?
+
+```{webr}
+flights |> 
+    filter(!is.na(arr_delay)) |>
+    group_by(carrier) |>
+    mutate(n = n()) |>
+    filter(n > 10000,
+           arr_delay > 0, # Could also write as separate filter()s
+           dest %in% c("HOU", "IAH")) |>
+    summarize(n = n())
+```
+
+Here, we re-used the `n` column and so the old value of `n` was quietly
+replaced. This is probably ok with a simple variable name like `n` (which wasn't
+all that interesting) but for "raw" data columns, you probably should avoid this.
+
+In class, we'll do more exercises based on group-specific filtering, both
+filtering on groups and filtering within groups. See if you can answer: 
+
+1. What carrier has the lowest rate of delayed flights? 
+2. What carrier has the highest chance of early arrivals?
+3. What carrier is most likely to "make up time in flight" after a delayed departure? 
+4. Which origin airport has the highest rate of delays? 
+5. Which month has the most flights? 
+6. What is the furthest flight in this data? 
+7. What is the shortest flight in this data? 
+8. Are longer flights more likely to be delayed than short ones? 
+
+---
+
+The readings in this tutorial follow [_R for Data Science_](http://r4ds.had.co.nz/), section 5.2. The exercises for `filter`
+were adapted from [the official documentation](https://learnr-examples.shinyapps.io/ex-data-filter/) of the
+`learnr` package.
+
+[^1]: The 2013 NYC version of this data has become a semi-standard teaching
+example, but the  US [Bureau of Transportation 
+Statistics](http://www.transtats.bts.gov/DatabaseInfo.asp?DB_ID=120&Link=0) releases new versions of this data constantly. If you are
+interested in performing this type of analysis for a different set of airports
+or a different time period, check out the [`anyflights` package](https://cran.r-project.org/web//packages//anyflights/index.html). It's
+very easy - but a bit slow - to get flight data from almost any US airport
+this way. If you want to develop your data cleaning skills, it's a great
+exercise to parse the BTS website directly and compare your output with the
+`anyflights` package.
