@@ -8,16 +8,8 @@ system("soffice --convert-to csv key_dates.ods")
 ## Generate Google Calendar Formatted CSV for Student Events
 DATES <- read_csv("key_dates.csv")
 
-TUESDAY_DATES  <- DATES |> filter(Section %in% c("Tuesday", "Both"))
-THURSDAY_DATES <- DATES |> filter(Section %in% c("Thursday", "Both"))
-
-write_csv(TUESDAY_DATES,  "key_dates_tuesday.csv")
-write_csv(THURSDAY_DATES, "key_dates_thursday.csv")
-
-for(section in c("tuesday", "thursday")){
-    SEC_DATES <- if(section == "tuesday") TUESDAY_DATES else THURSDAY_DATES
-    ### i) First get lectures
-    LECTURES <- SEC_DATES |>
+### i) First get lectures
+LECTURES <- DATES |>
         filter(`Course Element` == "Class Session") |>
         mutate(Subject=paste("STA 9750 Lecture", `Item Number`),
                `Start Date`=Date,
@@ -28,18 +20,16 @@ for(section in c("tuesday", "thursday")){
                `Location`="Zoom [Link distributed via CUNY Brightspace]") |>
         select(-`Course Element`,
                -`Item Number`,
-               -`Action`,
                -`Responsible Party`,
                -`Date`,
                -`Time`,
-               -`Details`,
-               -`Section`)
+               -`Details`)
 
     `%rep_na%` <- function(x, y) ifelse(is.na(x), y, x)
 
-    ASSIGNMENTS <- SEC_DATES |>
+ASSIGNMENTS <- DATES |>
         filter(`Responsible Party` == "Student") |>
-        mutate(Subject = paste0("STA/OPR 9750 ",
+        mutate(Subject = paste0("STA 9750 ",
                                 str_replace(`Course Element`, "s$", ""),
                                 " ",
                                 `Item Number` %rep_na% "",
@@ -64,22 +54,18 @@ for(section in c("tuesday", "thursday")){
                )) |>
         select(-`Course Element`,
                -`Item Number`,
-               -`Action`,
                -`Responsible Party`,
                -`Date`,
                -`Time`,
                -`Details`,
                -dt,
                -start,
-               -end,
-               -Section
+               -end
         )
 
-    bind_rows(LECTURES, ASSIGNMENTS) |>
+bind_rows(LECTURES, ASSIGNMENTS) |>
         arrange(`Start Date`) |>
-        write_csv(glue("key_dates_students_gcal_{section}.csv"))
-
-}
+        write_csv(glue("key_dates_students_gcal.csv"))
 
 ## Build site
 
@@ -97,7 +83,8 @@ QMD_FILES <- list.files(recursive=TRUE,
 
 QMD_FILES <- QMD_FILES |>
     str_subset("(archive|_)", negate=TRUE) |>
-    str_subset("(advice|_)", negate=TRUE)
+    str_subset("(advice|_)", negate=TRUE) |>
+    str_subset("^_", negate=TRUE)
 
 for(fname in QMD_FILES){
     cat("Rendering", fname, "\n")

@@ -1,0 +1,285 @@
+---
+mp_num: "04"
+mp_title: "TBD"
+mp_skills: "TBD"
+mp_application: "TBD"
+mp_rhetoric: "TBD"
+mp_max_ec: 4
+filters: 
+ - list-table
+---
+
+$$\newcommand{\P}{\mathbb{P}} \newcommand{\E}{\mathbb{E}}$$
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+library(dplyr)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, Time)))
+```
+
+```{r}
+#| echo: false
+#| warning: false
+library(glue)
+mp_id <- as.integer(rmarkdown::metadata$mp_num)
+mp_id_s <- glue("MP #0{mp_id}")
+mp <-  DATES |> filter(element == "Mini-Projects", 
+                       item == mp_id)
+mp_file <- list(qmd=glue("`mp0{mp_id}.qmd`"), 
+                html=glue("`mp0{mp_id}.html`"),
+                html_long=glue("`docs/mp0{mp_id}.html`"))
+```
+
+### Due Dates
+
+-   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+-   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
+-   **Peer Feedback:**
+    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
+    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
+
+
+*Estimated Time to Complete: 13-15 Hours*
+
+*Estimated Time for Peer Feedback: 1 Hour*
+
+------------------------------------------------------------------------
+
+## Introduction
+
+Welcome to Mini-Project #{{< meta mp_num >}}! TBD
+
+This project will bring together all of the skills you have
+developed in this course: 
+
+- Accessing data from the web using HTTP requests (`httr2`)
+- Extracting data from HTML and cleaning it (`rvest`, `stringr`)
+- Joining together data from different tables (multi-table `dplyr`)
+- "Pivoting" and preparing data for analysis (single-table `dplyr`)
+- Exploring and visualizing data (`ggplot2`)
+- Statistical analysis and inference (`infer` or `stats`)
+- Communicating your findings using web-based reproducible research tools (Quarto)
+
+TBD
+
+Note that, compared to previous mini-projects, the scope of this project
+is a bit smaller: in light of this, and the more advanced skills you have
+spent the past 3 months developing, this mini-project should be the least
+demanding of the course. (It is still likely to be the most *difficult* simply
+because you are responsible for more steps of the data analysis than any prior 
+project.) At this point in the course, you should be spending the majority of 
+your out-of-class hours on your [Course Project](../project.html). 
+
+## The Final Mini-Project
+
+This mini-project completes our whirlwind tour of several different
+forms of data-driven writing: 
+
+TBD
+
+
+You have applied your skills to a wide range of topics, including TBD.
+
+There are, of course, many other ways that data can be used to generate and
+communicate insights and many other topics where your skills can be applied, but
+hopefully this "hit parade" has given you a sense of just how widely your 
+new skills can take you. In each of these domains, you have seen how sophisticated
+and thoughtful analysis - not simply computing a single mean or regression 
+coefficient - has allowed deeper understanding of the complexities of real world
+problems. You have learned to think beyond the simple binary "correct/incorrect"
+of an analysis and to see that even superficially simple questions - 
+"is this true?", "what is the average?", "is there a correlation?" - can lead
+down deep and rewarding rabbit holes of complexity. But those rabbit holes 
+are where your real power as a data analyst can be found.  
+
+The tools of quantitative analysis and communication you have
+developed in this course can be used in essentially infinite contexts--
+we have only scratched the surface--and I'm excited to see what you do
+in the remainder of this course, in your remaining time at Baruch, and
+in your future careers. 
+
+### Student Responsibilities
+
+Recall our basic analytic workflow and table of student responsibilities:
+
+{{< include _responsibilities.qmd >}}
+
+In this mini-project, you are in charge of the whole pipeline, from data 
+acquisition to statistical inference. The rubric below evaluates your work 
+on all aspects of this project. 
+
+### Rubric
+
+{{< var course.short >}} Mini-Projects are evaluated using *peer grading* with 
+*meta-review* by the course GTAs. The following basic rubric will be used for 
+all mini-projects:
+
+{{< include _rubric.qmd >}}
+
+For this mini-project, students are responsible for **all elements** of the 
+analysis and will be evaluated on all rubric elements. 
+
+{{< include _submission.qmd >}}
+
+## Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}
+
+### Data Acquisition
+
+TBD 
+
+### Data Integration and Exploration {#eda}
+
+
+### Statistical Analysis
+
+While Exploratory Data Analysis (EDA) can inspire questions, it remains useful
+to perform _formal statistical inference_ to assess whether observed differences
+are larger than can be explained by pure randomness. The `infer` package can
+be used to neatly integrate $t$-tests and binomial proportion tests into a 
+`tidyverse` workflow. 
+
+We will use the `t_test` and `prop_test` functions from this package to complete
+our analyses. These can be used as demonstrated below. 
+
+-   Example 01: Suppose we want to test whether Gentoo penguins are heavier than
+    Adelie penguins on average. Since we have a numerical response and two different
+    groups, this is a _two-sample $t$ test_: 
+  
+    ```{r}
+    library(infer)
+    library(tidyverse)
+    penguins_ok <- penguins |>
+        drop_na() |>
+        # Things will work better if we ensure species is a character vector 
+        # and not a factor vector
+        # 
+        # You probably don't need to copy this step since your import is unlikely
+        # to 'accidentally' make a factor
+        mutate(species = as.character(species)) 
+    
+    penguins_ok |>
+        filter(species != "Chinstrap") |>
+        t_test(body_mass ~ species, 
+               order = c("Adelie", "Gentoo"))
+    ```
+  
+    From this, we see that Adelie penguins are 1375 grams _lighter_ on average
+    than Gentoos and the $p$-value is far less than 0.01, so the difference is
+    unlikely to be solely due to sampling variability. 
+    
+    Here, we perform the test by specifying the `response` (quantity of interest)
+    on the left hand side of the `~` and the `explanatory` variable 
+    (that which might meaningfully predict a differerence in groups) on the
+    right hand side of the `~`. If we swap the order (or don't provide it), the
+    sign of the estimated difference may differ, but the actual $p$-value won't
+    change for a two-sided test (as done here). 
+    
+    We can extend this analysis to perform it separately for each of three years
+    using a bit of nested data trickery. The mechanics of this are more advanced,
+    but you should be able to extend this to your own analysis by just changing
+    variable names: 
+    
+    ```{r}
+    penguins_ok |>
+    filter(species != "Chinstrap") |>
+    group_by(year) |>
+    nest() |>
+    mutate(p_value_adelie_gentoo = map(data, \(d) t_test(d, 
+                                                         body_mass ~ species,
+                                                         order=c("Adelie", "Gentoo")))) |>
+    unnest(everything())
+    ```
+    
+    Here, we see that our result has columns for the $t$ statistic, 
+    the $p$-value, the estimated difference, and many other useful inferential
+    quantities. 
+    
+2.  Example 02: In other contexts, we may have a _categorial_ response. In this 
+    case, we should not perform a $t$-test on means, but we instead want to use 
+    a binomial proportion test *via* the `prop_test` function. For instance, if 
+    we want to see whether Adelie penguins are more likely to be female than 
+    Gentoos: 
+    
+    ```{r}
+    library(infer)
+    library(tidyverse)
+    penguins_ok |>
+       filter(species != "Chinstrap") |>
+       prop_test(sex ~ species, 
+                 order = c("Adelie", "Gentoo"))
+    ```
+    
+    As before, we see that there is basically no evidence that the fraction of
+    female penguins differs by species. Note the key difference between the 
+    `t_test` and the `prop_test`: in `t_test` the response is a numeric variable
+    and we are testing the _mean_ of that distribution; in a `prop_test` the
+    response is a Boolean (TRUE/FALSE) value and we are testing the probability
+    of observing a TRUE.[^prop]
+    
+    We can also use this with a derived quantity. For instance, if we want to 
+    see if Gentoos are more likely to be over 4000 grams than non-Gentoos: 
+    
+    ```{r}
+    penguins |>
+        mutate(is_gentoo = (species == "Gentoo"),
+               over_4k = body_mass > 4000) |>
+        prop_test(over_4k ~ is_gentoo, 
+                  order = c("TRUE", "FALSE"))
+    ```
+    
+    Here, we see that there is _strong_ statistical evidence (in the form of a
+    tiny $p$-value) that being a Gentoo penguin increases probability of weighing
+    over 4000 grams. 
+    
+    We can also modify this to be a one-sided test: 
+    
+    ```{r}
+    penguins |>
+        mutate(is_gentoo = (species == "Gentoo"),
+               over_4k = body_mass > 4000) |>
+        prop_test(over_4k ~ is_gentoo, 
+                  alternative = "greater",
+                  order = c("TRUE", "FALSE"))
+
+    ```
+    
+    Finally, recall that these values can be pulled out of the test result and
+    used in the body of your text using the `pull` function from the `dplyr`
+    package.
+    
+::: {.callout-tip title="Task 4: Statistical Inference"}
+
+TBD
+
+:::
+
+
+[^prop]: Of course, if you haven taken 
+[STA 9715](https://michael-weylandt.com/STA9715/), you know that there is only
+one univariate Boolean distribution (the Bernoulli) and that the probability of
+observing a success is equal to the mean of the distribution. 
+($X \sim \text{Bernoulli} \implies \E[X] = \P(X = 1)$ and all that). This might 
+lead you to ask whether there really is a meaningful difference between a 
+$t$-test and a proportion test. These are good questions to ask your STA 
+9719 professor.
+
+### Final Deliverable: TBD
+
+TBD
+
+{{< include _aidisclosure.qmd >}}
+
+
+{{< include _echeader.qmd >}}
+
+TBD
+
+{{< include _footer.qmd >}}
+

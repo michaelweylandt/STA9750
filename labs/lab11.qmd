@@ -1,623 +1,496 @@
 ---
-title: "{{< var course.short >}} Week 11 In-Class Activity: HTML Import"
-engine: knitr
+lab_num: "`r lab <- 11; lab`"
+lab_title: "Predictive Modeling - Inference and Prediction in `R`"
+format: live-html
+engine: knitr 
 ---
 
-# [Slides](../slides/slides11.qmd)
+{{< include _setup.qmd >}}
 
-# Review Practice {#review}
+`r make_slide_link(lab)`
 
-The [Open Trivia Database](https://opentdb.com/) provides a simple API for
-trivia questions. You are going to use this API to create a trivia game for
-you and some friends. 
+# Review Exercise {#review}
 
-0. Before beginning, explore [the question bank](https://opentdb.com/browse.php)
-   and the [API call generator](https://opentdb.com/api_config.php) to
-   understand the types of data available and the structure of the API call.
-1. Use the API call generator to create a URL to download 5 multiple-choice 
-   questions on a topic of your choosing. Copy this URL. 
-2. Now, use the `httr2` package in `R` to make a request to that URL. At first,
-   simply paste the whole URL into `request` and confirm it works. Then, break
-   the URL into its constitutent parts using the `req_url_path()` and 
-   `req_url_query()` functions to construct the URL. (We won't be parametrizing
-   the API call in this brief exercise, but this is important to do if you are
-   going to programmatically be making several API calls.)
+For this final warm-up exercise, you are going to use a combination of the
+skills learned over the semester to create a map of the countries of the world,
+colored by population density.
+
+1) Using the data at <https://www.scrapethissite.com/pages/simple/>, determine 
+   the _capital_ of the _most densely populated_ country in the world. 
+
+   To answer this: 
+
+   - Scrape the webpage into a four-column data frame with columns:
+     `name`, `capital`, `population`, `area`
+   - Ensure that the population and area columns are properly
+     converted to numeric values
+   - Compute population density as `population/area`
+   - Select the country with the highest density and determine its capital
    
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-library(tidyverse)
-library(httr2)
-req1 <- request("https://opentdb.com/api.php?amount=50&category=18&type=multiple") 
-
-# Decompose the URL into its various components: 
-req2 <- request("https://opentdb.com") |>
-          req_url_path("api.php") |>
-          req_url_query(amount   = 50, 
-                        category = 18, 
-                        type     = "multiple")
-
-# Confirm equivalence
-all.equal(req1, req2)
-```
-
-I'm using Computer Science (Category 18) but you can use others. 
-
-Now that we have built our request objects, we can use `req_perform()` to actually
-make the request: 
-
-```{r}
-resp <- req2 |> req_perform()
-resp
-```
-
-:::
-
-3. The default response format is `json`, so use the `resp_body_json` function
-   to convert the response into `R`. Print the repsonse to screen and examine
-   the format. This will help you know what you need to do to manipulate 
-   ("rectangle") the data into a useful structure. 
-   
-   *Hint:* To avoid printing so much to screen that it's hard to make sense of
-   the output, you may wish to modify your API call to temporarily only request
-   3-5 responses, instead of 50, even if your eventual goal is to get more
-   responses than that.
-   
-::: {.callout-tip title="Solution" collapse="true"}
-
-
-```{r}
-#| cache: true
-request("https://opentdb.com") |>
-          req_url_path("api.php") |>
-          req_url_query(amount   = 3, 
-                        category = 18, 
-                        type     = "multiple") |>
-    # Some stuff to respect API rate limiting
-    req_throttle(capacity=2) |>
-    req_retry(max_tries = 5) |>
-    req_perform() |>
-    resp_body_json() |>
-    str()
-```
-
-We see here that the response comes in a list of two components: `response_code`
-and `results`, with the content we want being in the `results`. The 3 `results`
-look pretty straightforward, except for the `incorrect_answers` list, which
-we will need to keep an eye on. 
-
-:::
-
-4. Use the `pluck` function to extract the relevant part of the JSON response.
-   The response will have several similarly formatted response objects. Use the
-   `map(as_tibble) |> list_rbind()` paradigm to convert these into a large data
-   frame. 
-   
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-#| cache: true
-request("https://opentdb.com") |>
-    req_url_path("api.php") |>
-    req_url_query(amount   = 3, 
-                  category = 18, 
-                  type     = "multiple") |>
-    # Some stuff to respect API rate limiting
-    req_throttle(capacity=2) |>
-    req_retry(max_tries = 5) |>
-    req_perform() |>
-    resp_body_json() |>
-    pluck("results") |>
-    map(as_tibble) |>
-    list_rbind()
-```
-
-Everything looks pretty good here, with two notes: 
-
-- The `incorrect_answers` column appears to be a `list` type column
-- Each of our responses was repeated across three rows. 
-
-:::
-
-5. Use the `unnest` and `pivot_wider` functions to conver this data into a 
-   more usable structure. 
-   
-   When applied to a `list` column, the `unnest` function will try to convert
-   it into a more standard vector-type column. 
-   
-   *Hint*: Before using `pivot_wider`, you will need to create a new column with
-   column names for the pivoted data. 
 
 ::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-#| cache: true
-request("https://opentdb.com") |>
-    req_url_path("api.php") |>
-    req_url_query(amount   = 3, 
-                  category = 18, 
-                  type     = "multiple") |>
-    # Some stuff to respect API rate limiting
-    req_throttle(capacity=2) |>
-    req_retry(max_tries = 5) |>
-    req_perform() |>
-    resp_body_json() |>
-    pluck("results") |>
-    map(as_tibble) |>
-    list_rbind() |>
-    unnest(incorrect_answers) |>
-    group_by(question) |>
-    mutate(pivot_name = paste0("incorrect-", row_number())) |>
-    pivot_wider(names_from = pivot_name, 
-                values_from = incorrect_answers) |>
-    select(-type, 
-           -category, 
-           -difficulty)
-```
-
-You can use this to play a bit of trivia amongst your group. Set `amount` 
-higher for more questions. 
-
-:::
-
-# Web Scraping
-
-In today's class, we're going to work through **three** web scraping exercises: 
-
-1) Reading a simple static table
-2) Extending our 'CUNY Map' from [Lab #01](./lab01.html)
-3) Scraping Cocktail Recipes 🍸 from Hadley Wickham
-
-## Exercise 1: Reading HTML Tables {#ex01}
-
-Using `rvest`, read the following table into `R`. Your results should be a 
-data frame that captures the structure of the table. 
-
-| Department | Course Number | Course Name                                     |
-|------------|---------------|-------------------------------------------------|
-| STA        | 2000          | Business Statistics I                           |
-| STA        | 3000          | Statistical Computing                           |
-| STA        | 3154          | Business Statistics II                          |
-| STA        | 3950          | Data Mining                                     |
-| STA        | 4155          | Regression & Forecasting Models                 |
-| STA        | 4157          | Analysis of Variance: Principles & Applications |
-| STA        | 4950          | Machine Learning and AI                         |
-| STA        | 9700          | Modern Regression Analysis                      |
-| STA        | 9705          | Multivariate Statistical Methods                |
-| STA        | 9708          | Managerial Statistics                           |
-| STA        | 9710          | Statistical Methods for Sampling and Audit      |
-| STA        | 9715          | Applied Probability                             |
-| STA        | 9719          | Foundations of Statistical Inference            |
-| STA        | 9750          | Software Tools for Data Analysis                |
-| STA        | 9890          | Statistical Learning for Data Mining            |
-
-: Selected Statistics Courses Offered at Baruch College {#tbl-baruch-stats}
-
-1) Use the Selector Gadget or similar to identify the HTML elements defining
-   this table. You can do this in one of two ways: 
-   
-   - By a specific named element, accessed as `html_element("#name")`
-   - By a specific element type, accessed as `html_element("type")`
-   
-2) Use the `read_html` function to read this entire page into `R`, then use
-   the `html_element` function with the selector from the previous step to
-   extract the table. 
-   
-3) Use the `html_table` function to conver this table into a data frame. 
-
-This page is pretty simple, so a little bit of element selection and 
-`html_table` will suffice. For more complex tables, you may need to do more to
-select the specific table and more to 'clean up' that table once it is in `R`.
-
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-#| eval: false
-library(rvest)
-read_html("https://michael-weylandt.com/STA9750/labs/lab11.html") |>
-    html_element("#tbl-baruch-stats") |> 
-    html_table()
-
-# OR - Since this page has only a single table
-read_html("https://michael-weylandt.com/STA9750/labs/lab11.html") |>
-    html_element("table") |> 
-    html_table()
-```
-
-:::
-
-## Exercise 2: CUNY Map {#ex02}
-
-In this exercise, we're going to take our Baruch map from 
-[Lab #01](./lab01.html) and extend it to pull _all_ CUNY campuses. 
-This exercise is intended to help you practice scraping data from 
-Wikipedia, which is a good example of a relatively plain HTML site that has a
-bit of extra Javascript that can make it a bit tricky to find the element(s)
-you want. 
-
-The following code is a cleaned-up version of the map creation activity from 
-Lab #01. Review it before beginning this activity: 
 
 ```{r}
 #| message: false
 library(tidyverse)
-library(rvest)
-library(leaflet)
-
-baruch_info <- read_html("https://en.wikipedia.org/wiki/Baruch_College") |> 
-    html_element(".geo") |> 
-    html_text() |> 
-    str_split_1(";") |> 
-    as.numeric() |> 
-    set_names(c("latitude", "longitude")) |> 
-    bind_rows()
-
-leaflet() |>
-    addTiles() |>
-    setView(lat = baruch_info$latitude, 
-            lng = baruch_info$longitude, 
-            zoom=17) |>
-    addPopups(lat = baruch_info$latitude, 
-              lng = baruch_info$longitude, 
-               "Look! It's <b>Baruch College</b>!") |>
-    print()
-```
-
-1) Building on the code above, write a function that takes the Wikipedia URL for a
-   CUNY as an argument and returns a data frame with two columns: 
-   
-   - Latitude
-   - Longitude
-
-   Confirm that your function works by applying it to Baruch's Wikipedia page. 
-   
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-get_cuny_coordinates <- function(url){
-    read_html(url) |> 
-        html_element(".geo") |> 
-        html_text() |> 
-        str_split_1(";") |> 
-        as.numeric() |> 
-        set_names(c("latitude", "longitude")) |> 
-        bind_rows()
-}
-
-get_cuny_coordinates("https://en.wikipedia.org/wiki/Baruch_College")
-```
-
-:::
-
-2) Investigate the [Wikipedia List of
-   CUNYs](https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions)
-   and identify which table can be used to get links to each CUNY's page.  
-   
-::: {.callout-caution title="Wikipedia Table Scraping"}
-
-Wikipedia has tons of excellent data tables which have been collected
-by incredible volunteers. It can be an incredibly useful source, but
-there are a few difficulties in getting data out of Wikipedia. In
-particular, Wikipedia uses a rich JavaScript library to make tables
-slightly interactive (column sorting, *etc.*) that modifies the page
-HTML. `R` will get the "raw" HTML of the page, so you will need to
-either disable JavaScript temporarily (tricky) or make sure you are
-looking at the actual page source that `R` will see ("View Source"). 
-
-As a general rule, try to use standard HTML elements (`table`, `tbody`) instead
-of fancier alternatives when possible. 
-
-:::
-
-3) Parse the table to pull links to each CUNY's individual Wikipedia
-   page. 
-   
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}  
-CUNYs <- read_html("https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions") |> 
-    html_element("tbody") |>
-    html_elements("tr td:nth-child(2)") |>
-    html_elements("a") 
-
-CUNYs <- tibble(name = CUNYs |> html_text(), 
-                link = CUNYs |> html_attr("href"))
-```
-
-If you are comfortable with the `purrr` family of functions, this can be
-written a bit more compactly as:
-
-```{r}   
-CUNYs <- read_html("https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions") |> 
-    html_element("tbody") |>
-    html_elements("tr td:nth-child(2)") |>
-    html_elements("a") |> 
-    map(\(tr) tibble(name = tr |> html_text(), 
-                     link = tr |> html_attr("href"))) |> 
-    bind_rows()
-```
-
-:::
-
-4) Modify the links extracted from the Wikipedia table to form full URLs.
-
-   Proper URL handling is a bit subtle - it's a common avenue for security holes
-   - but a simple `paste0` will suffice here. 
- 
-::: {.callout-tip title="Solution" collapse="true"}
-   
-```{r}
-CUNYs <- CUNYs |> mutate(link = paste0("https://en.wikipedia.org", link))
-```
-
-:::
-
-4) Apply your HTML parsing function from Step 1 to each CUNY page
-   using the `map` function or the `rowwise()` grouping structure: 
-   
-   *Hint*: You may need to use `unnest` to convert a list column into something
-   more usable. 
-   
-::: {.callout-tip title="Solution" collapse="true"}
-   
-```{r}
-#| cache: true
-CUNYs <- CUNYs |> rowwise() |> mutate(info = get_cuny_coordinates(link))
-## Or with `map`
-CUNYs <- CUNYs |> mutate(info = map(link, get_cuny_coordinates))
-
-## Then unnest the info column
-
-CUNYs <- CUNYs |> unnest(info)
-
-CUNYs
-```
-
-:::   
-   
-5) Use your results to build a CUNY-wide map
-
-::: {.callout-tip title="Solution" collapse="true"}
-   
-```{r}
-MAP <- leaflet() |> 
-    addTiles() |> 
-    addMarkers(lng = CUNYs$longitude, 
-               lat=CUNYs$latitude, 
-               popup=CUNYs$name)
-
-MAP
-```
-
-:::   
-
-## Exercise 3: Cocktails Data {#ex03}
-
-[Hadley Wickham](https://hadley.nz/) is the author of many of the 
-"tidy tools" we use in this course. He is also an excellent bartender
-and chef. In this exercise, we are going to web scrape his cocktail
-recipe book which can be found at <https://cocktails.hadley.nz/>. 
-
-Our goal is to create a data frame that records all 150+ recipes on this site 
-(as rows) and the different ingredients (as columns). This
-week, we are going to pull the different recipes into `R`: next week
-we are going to process the text and create our final data frame (so
-stay tuned!). 
-
-Working with your project team, first go through the following steps to build
-a scraping strategy:
-
-1) Poke around the website to see how it is organized. Is there a
-   single page listing all of the cocktails? If not, how else can
-   you make sure that you've explored the entire site?
-2) Once you know how you're going to explore the whole site, use
-   your browser tools to see if you can identify an HTML element that
-   corresponds to a single recipe. (This element will occur several
-   times per page) Remember that you want to select "as small as
-   possible" but no smaller.
-3) Once you have found the right HTML element for a recipe, identify
-   an HTML element that corresponds to i) the title; and ii) individual
-   ingredients. 
-   
-For this task, you will likely see several recipes more than once.
-Don't worry about this for now - we can `distinct` out the duplicates
-later in our analysis. It's better to be over-inclusive than
-under-inclusive.
-   
-After you have built your plan, it's time to start putting this all to
-code. 
-
-1) Write code to get a list of all pages you will need to process. Construct 
-   full URLs for your future requests. 
-   
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-library(tidyverse)
 library(httr2)
 library(rvest)
 
-BASE_URL <- "https://cocktails.hadley.nz/"
-
-PAGES <- read_html(BASE_URL) |> 
-            html_elements("nav a") |> 
-            html_attr("href")
-
-PAGE_URLS <- paste0(BASE_URL, PAGES)
-
-
-PAGE_URLS
-```
-
-:::
-
-2) Write a function that takes a single URL and extracts all recipes on that
-   page as HTML elements. 
-   
-   Try this out on a fixed URL and confirm that it gets the right number of
-   recipes
-
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-library(tidyverse)
-library(httr2)
-library(rvest)
-get_recipes <- function(url){
-    read_html(url) |> html_elements("article")
-}
-```   
-
-We can test this [against this page](https://cocktails.hadley.nz/tag-bubbles.html)
-and see that it works as expected: 
-
-```{r}
-BUBBLES <- get_recipes("https://cocktails.hadley.nz/tag-bubbles.html")
-
-BUBBLES
-```
-
-:::
-
-3) Write a function that takes in a single recipe and returns a small data 
-   frame with the title and ingredients: 
-   
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-library(tidyverse)
-library(httr2)
-library(rvest)
-process_recipe <- function(art){
-    title <- art |> html_element(".title") |> html_text2()
-    ingredients <- art |> html_elements("li") |> html_text2()
+parse_country <- function(country_element){
+    name <- country_element |> 
+        html_element("h3") |> 
+        html_text2()
     
-    tibble(title=title, ingredients=ingredients)
+    capital <- country_element |> 
+        html_element(".country-capital") |> 
+        html_text2()
+    
+    population <- country_element |> 
+        html_element(".country-population") |> 
+        html_text2() |> 
+        as.numeric()
+    
+    area <- country_element |> 
+        html_element(".country-area") |> 
+        html_text2() |> 
+        as.numeric()
+    
+    data.frame(name, capital, population, area)
 }
-```  
 
-We can again test this using the recipes we extracted above: 
+COUNTRIES <- read_html("https://www.scrapethissite.com/pages/simple/") |>
+    html_elements(".country") |>
+    map(parse_country) |>
+    list_rbind() |>
+    mutate(density = population / area)
+    
 
-```{r}
-process_recipe(BUBBLES[[1]])
+COUNTRIES |> slice_max(density, n=1) |> pull(capital)
 ```
 
 :::
 
-4) Write a function that combines your results from the previous two steps to
-   build a data frame with _all_ recipes on a single page. 
+2) When dealing with countries, it is dangerous to use raw names as these are not
+   entirely standardized. *E.g.*, do we live in the "United States" or the "United
+   States of America"? To address this, we want to use a standard format like
+   the ISO 3-digit country codes. 
    
-   Try this out on a fixed URL and confirm it works as expected. 
+   The website <https://peric.github.io/GetCountries/> provides this information
+   interactively, but is a bit difficult to access programmatically. This page
+   actually loads a `JSON` object that will provide all of the information we
+   need. Use the Network tools in your web browser's developer tools to identify
+   the request that loads this data. (You may need to hit the `Generate` button
+   again after opening the Network tools to see the request being made.)
    
+   Read this data into `R` and create a data frame with (at least) columns for
+   the 3 digit ISO country code, the continent, the country name, 
+   the population, and the area in square kilometers. Make sure the population 
+   and area have been properly converted into numeric values. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| message: false
+library(tidyverse)
+library(jsonlite)
+
+COUNTRIES <- read_json("https://secure.geonames.org/countryInfoJSON?username=dperic", 
+          simplify=TRUE) |>
+    pluck("geonames") |>
+    select(iso_code = isoAlpha3, 
+           name = countryName, 
+           continent = continentName,
+           area = areaInSqKm, 
+           population = population) |>
+    mutate(area = as.numeric(area), 
+           population = as.numeric(population))
+```
+
+:::
+   
+3) Next, we are going to use an API to access data on country boundaries provided
+   by the [GeoBoundaries](https://www.geoboundaries.org) project. Specifically,
+   we want to download shape files for all countries of the world. We do not want
+   to use the _high-resolution_ shapefiles as they are highly detailed and will
+   slow down processing. Thankfully, the GeoBoundaries project already provides
+   simplified representations of each country more suitable for plotting. 
+   
+   Review the API documentation at <https://www.geoboundaries.org/api.html#api>
+   and make a call for `gbOpen` data for `ALL` countries at `ADM0` level (country
+   boundaries). The result will be a JSON object with elements for each country.
+   Parse this JSON object in `R` and pull out (at least) the
+   `boundaryName`, `boundaryISO`, and `simplifiedGeometryGeoJSON` columns 
+   into a data frame. 
+
 ::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
 library(tidyverse)
-library(httr2)
-library(rvest)
+library(jsonlite)
 
-process_url <- function(url){
-    html_recipes <- get_recipes(url)
-    
-    RECIPES <- data.frame()
-    
-    for(r in html_recipes){
-        RECIPES <- rbind(RECIPES, process_recipe(r))
-    }
-    
-    RECIPES
-}
+API_REFERENCE <- read_json("https://www.geoboundaries.org/api/current/gbOpen/ALL/ADM0/", 
+                           simplify = TRUE) |>
+    select(country = boundaryName, 
+           iso_code = boundaryISO,
+           continent = Continent, 
+           simple_geojson = simplifiedGeometryGeoJSON)
 ```
 
-We can test this on the page of bubbly recipes: 
 
-```{r}
-process_url("https://cocktails.hadley.nz/tag-bubbles.html")
-```
 
 :::
-   
-5) Use your function from the first step with the list of URLs from Step 1 so
-   that you get all of the recipes on the site. Combine your results into one
-   large data frame that looks something like:
-   
-   | Name     | Ingredient           |
-   |----------|----------------------|
-   | Daiquiri | 2 oz Rum             | 
-   | Daiquiri | 1 oz Lime Juice      | 
-   | Daiquiri | 0.75 oz Simple Syrup |
 
-   To be polite, you may want to add `req_cache` to your requests so you are not
-   requesting the same page many times over. 
+4) Join the result of the previous two sections together using an `inner_join`. 
+   How many countries were in each data set? Which countries are lost in the
+   inner join? What is their total population? 
    
+   *Hint*: An `anti_join` may be useful here. 
+   
+   In real work, you would want to do some additional manual cleaning to better
+   align these two data sets, but we are not going to do so today to save time.
+   There is at least one _major_ missing country in this merge. 
+
 ::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
 library(tidyverse)
-library(httr2)
-library(rvest)
 
-ALL_RECIPES <- data.frame()
+JOINED <- inner_join(COUNTRIES, API_REFERENCE, join_by(iso_code))
 
-for(page in PAGE_URLS){
-    ALL_RECIPES <- rbind(ALL_RECIPES, process_url(page))
-}
+UNJOINED <- anti_join(COUNTRIES, API_REFERENCE, join_by(iso_code))
 
-ALL_RECIPES
+UNJOINED |> summarize(n_missing = n(), 
+                      pop_missing = sum(population))
 ```
 
 :::
 
-6) Save your code for next week. Next week we will investigate string processing
-   and learn how to turn a table like: 
+5) Make a series of web requests to read the `geojson` files for each of 
+   the countries using the URLs obtained from the API. Since you will want to
+   make this request sequentially, use the `rowwise` function before calling
+   `sf::st_read`. You will also want to use `unnest` to remove the resulting
+   list-column. 
    
-   | Name     | Ingredient           |
-   |----------|----------------------|
-   | Daiquiri | 2 oz Rum             | 
-   | Daiquiri | 1 oz Lime Juice      | 
-   | Daiquiri | 0.75 oz Simple Syrup |
-   
-   into 
-
-   | Name     | Ingredient   | Amount  |
-   |----------|--------------|---------|
-   | Daiquiri | Rum          | 2       |
-   | Daiquiri | Lime Juice   | 1       |
-   | Daiquiri | Simple Syrup | 0.75    |
-
-
-::: {.callout-caution title="FP Solution" collapse="true"}
-
-If you are comfortable with (or want to become comfortable with) the functional
-programming tools of `purrr`, you can write this entire analysis in one swoop:
+::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
 #| cache: true
+#| message: false
 library(tidyverse)
-library(rvest)
-process_recipe <- function(recipe){
-    title <- recipe |> html_element(".title") |> html_text2()
-    ingredients <- recipe |> html_elements("li") |> html_text2()
-    
-    tibble(title=title, ingredients=ingredients)
-}
+library(sf)
 
-BASE_URL <- "https://cocktails.hadley.nz/"
-
-read_html(BASE_URL) |> 
-    html_elements("nav a") |> 
-    html_attr("href") |>
-    map(\(p) request(BASE_URL) |> req_url_path(p)) |>
-    map(req_perform) |>
-    map(resp_body_html) |> 
-    map(html_elements, "article") |> 
-    reduce(c) |>
-    map(process_recipe) |> 
-    list_rbind()
+JOINED_GEOMETRY <- JOINED |>
+    rowwise() |>
+    mutate(geometry = st_read(simple_geojson, quiet=TRUE)) |>
+    unnest(geometry) |>
+    ungroup()
 ```
 
-This is clearly quite terse and would benefit from some additional comments,
-but I'm omitting them so you can try to deconstruct this code yourself if 
-you want to practice functional programming idioms. 
+:::
+
+6) Create a chloropleth visualization with each country colored according to
+   its population density. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+#| warning: false
+JOINED_GEOMETRY |>
+    mutate(density = population / area) |>
+    ggplot(aes(fill=density, geometry=geometry)) + 
+    geom_sf() + 
+    theme_bw() + 
+    theme(legend.position="bottom") + 
+    scale_fill_distiller(name="Population Density", 
+                         palette=4, 
+                         direction = 1, 
+                         trans="log")
+```
 
 :::
+
+# Classical Statistical Models in `R` {#lm}
+
+Using the countries data downloaded above, use statistical models like `lm`
+and `mgcv::gam` to answer the following: 
+
+1. Recall the `flights` data from the `nycflights13` package. Load this package
+   and fit a linear model to predict air time as a function of distance. 
+   
+   The intercept term of this model can be interpreted as the "fixed cost" of
+   a flight - the unavoidable time taken to travel between the gate and the
+   runway. What is the estimate of this cost based on the model you fit?
+   
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| message: false
+library(tidyverse)
+library(nycflights13)
+library(broom)
+air_time_model <- lm(air_time ~ distance, data=flights) 
+
+air_time_model |> tidy()
+```
+
+From this, we see that the 'fixed cost' of air travel is approximately
+`r round(coef(air_time_model)["(Intercept)"], 1)` minutes. 
+
+:::
+
+2. The same linear model can be used to estimate flight speed. In particular, 
+   the distance coefficient (which has units of minutes / mile) can be 
+   extracted and transformed into miles per hour. What is the average speed of
+   a plane leaving NYC?
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| message: false
+library(tidyverse)
+library(nycflights13)
+library(broom)
+air_time_model <- lm(air_time ~ distance, data=flights) 
+
+air_time_model |> 
+    tidy() |> 
+    filter(term == "distance") |> 
+    mutate(hours_per_mile = estimate / 60, 
+           miles_per_hour = 1/hours_per_mile) |> 
+    pull(miles_per_hour)
+```
+
+:::
+
+3. Modify your analysis above to estimate a different fixed cost for each of the
+   three NYC-area airports. (Maintain a single estimate of speed for all 
+   airports.) Which seems to be the most efficient? 
+   
+   Use `broom::tidy` and some regular expressions to create a table that looks
+   like this: 
+   
+   | Airport | Estimated Fixed Cost |
+   |---------|----------------------|
+   | EWR     | NNN.NN               |
+   | LGA     | NNN.NN               |
+   | JFK     | NNN.NN               |
+   
+   *Hint*: Your estimated coefficients will be easier to interpret if you remove
+   the intercept term from your model by including `-1` at the end of the
+   formula. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| message: false
+library(tidyverse)
+library(nycflights13)
+library(broom)
+lm(air_time ~ distance + origin - 1, data=flights) |> 
+    tidy() |> 
+    filter(str_detect(term, "origin")) |> 
+    mutate(term=str_remove(term, "origin")) |> 
+    select(Airport=term, `Estimated Fixed Cost (minutes)` = estimate)
+```
+
+:::
+
+4. Now modify your model to allow different estimated flight speeds for each
+   airport. Which airport seems to have the highest average flight speed?
+   
+   *Hint*: Use the `*` operator to allow for _interactions_ between airport
+   and distance. This will estimate different slopes for each group. 
+   
+   *Hint*: If you find your coefficients hard to interpret, consider adding
+   `-distance` to the end of your formula. What does this do? Why does it help?
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+library(broom)
+lm(air_time ~ distance * origin - 1 - distance, data=flights) |>
+    tidy() |>
+    mutate(airport = str_sub(term, start=-3), 
+           effect = if_else(str_detect(term, "distance"), "speed", "fixed")) |>
+    select(estimate, airport, effect) |>
+    pivot_wider(names_from=effect, values_from=estimate) |>
+    mutate(speed = 60 / speed) |>
+    rename(`Origin Airport` = airport, 
+           `Gate Taxi Time` = fixed, 
+           `Estimated Air Speed` = speed)
+```
+
+:::
+
+5. Use the `augment` function to compute both the RMSE (Root Mean Squared Error)
+   and the MedAE (Median Absolute Error) of the model you fit in the
+   previous section. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+   
+```{r}
+library(tidyverse)
+library(nycflights13)
+library(broom)
+lm(air_time ~ distance * origin - 1 - distance, data=flights) |>
+    augment() |>
+    summarize(rmse = sqrt(mean(.resid^2)), 
+              medae = median(abs(.resid)))
+```
+
+:::
+
+6. In which month did the model have the lowest RMSE? 
+
+   *Hint*: Pass the `newdata` argument to `augment` to get back 
+   additional columns you need. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+lm(air_time ~ distance * origin - 1 - distance, data=flights) |>
+    augment(newdata=flights) |>
+    group_by(month) |>
+    summarize(rmse = sqrt(mean(.resid^2, na.rm=TRUE))) |>
+    slice_min(rmse)
+```
+
+So our model seems to be most predictive in October.
+
+:::
+
+7. The `yardstick` package provides tools for evaluating model performance. 
+   The `rsq` function computes $R^2$ statistics. It takes two column names as
+   arguments (in addition to the data frame being analyzed): `truth`,
+   the observed values ($y$), and `estimate`, the model predictions ($\hat{y}$).
+   It can be used like this: 
+   
+```{r}
+#| echo: false
+#| message: false
+conflicted::conflicts_prefer(datasets::penguins)
+library(yardstick)
+```
+
+```{r}
+library(broom)
+library(yardstick)
+lm(body_mass ~ flipper_len * species, data=penguins) |> 
+    augment() |> 
+    rsq(truth=body_mass, estimate=.fitted)
+```
+   
+   Use it to compute the $R^2$ of your model on a month-by-month and 
+   per-airport basis. At what airport and in what month does this model exhibit
+   the lowest $R^2$? What does that tell you? How does this compare to the 
+   overall (full-sample) $R^2$ of the model that `glance` provides? 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+lm(air_time ~ distance * origin - 1 - distance, data=flights) |>
+    augment(newdata=flights) |>
+    group_by(month, origin) |>
+    rsq(truth = air_time,
+        estimate=.fitted) |>
+    slice_min(.estimate)
+```
+
+Our model performs (relatively) worst at LGA in January, suggesting that other
+effects (*e.g.* weather) play the largest role here, but the effect is quite
+minimal. 
+
+```{r}
+lm(air_time ~ distance * origin - 1 - distance, data=flights) |>
+    glance()
+```
+
+So the drop in $R^2$ is 99.5% to 95.6%: this isn't nothing...
+
+:::
+
+# Computational Inference {#inference}
+
+Using the countries data downloaded above, test the null hypothesis that the 
+_standard deviation of population density is equal in African and non-African
+countries_. 
+
+To do this, you will need to determine the critical value for the difference in
+sample standard deviation for populations of two different sizes. This is not an
+easy calculation, so we will approach it computationally. 
+
+1. Determine how many African and non-African countries are present in our data
+   set. 
+   
+2. Write a function that:
+   a. Generates $n_x$ samples from a standard normal distribution and saves the
+      results as $x$.
+   b. Generates $n_y$ samples from a standard normal distribution and saves the
+      results as $y$.
+   c. Computes the difference between the standard deviation of $x$ and the
+      standard deviation $y$. 
+      
+3. Call this function a large number of times to get a sense of the 
+   null distribution. Compute its 2.5% and 97.5% quantiles. 
+   
+4. Compute the difference in standard deviations on the actual data. 
+
+5. Draw the appropriate inference: is the null hypothesis rejected or not? 
+     
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+COUNTRIES |> 
+    mutate(in_africa = (continent == "Africa")) |> 
+    count(in_africa)
+
+n_africa <- 58
+n_nonafr <- 192
+
+sim_sd_diff <- function(nx, ny){
+    x <- rnorm(nx)
+    y <- rnorm(ny)
+    
+    sd(x) - sd(y)
+}
+
+null_samples <- replicate(1e5, sim_sd_diff(n_africa, n_nonafr))
+
+# If the observed data it outside this range, we will reject the null
+quantile(null_samples, c(0.025, 0.975))
+
+# The observed value is way outside the quantile sampling, so we reject the null
+COUNTRIES |> 
+    mutate(in_africa = (continent == "Africa"), 
+           density = population / area, 
+           overall_sd_dens = sd(density, na.rm=TRUE)) |> 
+    group_by(in_africa) |>
+    summarize(sd_dens = sd(density, na.rm=TRUE) / first(overall_sd_dens)) |>
+    summarize(diff_sd = diff(sd_dens))
+```
+
+In this case, we quite clearly reject the null. This is not surprising as some
+of the highest density (Monaco, Singapore, Hong Kong) and lowest density 
+(Antarctica) countries are not in Africa, so we expect there to be more 
+spread outside Africa than within Africa. 
+
+:::
+
+You might reasonably ask whether normal sampling is correct here as 
+the distribution of densities does not appear to follow a normal distribution. 
+Techniques like _bootstrapping_ can be used to relax the assumption of normality
+but we will not purse it here. 
+
+# Tidymodels {#tidymodels}
+
+Work through the second model (tree ensembles, *i.e.*, _random forests_) at
+<https://www.tidymodels.org/start/case-study#second-model>. 
+
+Note that you may need to begin with the data import section before following
+the random forest example. 
+
+    

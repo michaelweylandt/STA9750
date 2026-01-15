@@ -1,47 +1,18 @@
 ---
 session: "`r session <- 1; session`"
+last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
 class_date:
-  "`r library(tidyverse); 
-    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
+  "`r library(tidyverse);
+    class_date <- read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
-           Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
+format: revealjs
 ---
 
-```{r}
-#| include: false
-#| warning: false
-#| message: false
-library(tidyverse)
-DATES   <- read_csv("key_dates.csv")
-TODAY   <- DATES |> filter(`Course Element` == "Class Session", 
-                           `Item Number` == session)
-TODAY_TUESDAY  <- TODAY |> filter(Section == "Tuesday")  |> pull(Date)
-TODAY_THURSDAY <- TODAY |> filter(Section == "Thursday") |> pull(Date)
-
-PROJ_RELEASE <- DATES |> 
-    filter(Details == "Course Project Description Released") |>
-    pull(Date)
-
-ROSTERS <- DATES |> 
-    filter(Details == "Team Roster Submission") |>
-    pull(Date)
-```
-    
+{{< include _setup.qmd >}}
 
 ## {{< var course.short >}} Week {{< meta session >}} 
-
-Today: 
-
-- Tuesday Section: `r TODAY_TUESDAY`
-- Thursday Section: `r TODAY_THURSDAY`
-
-. . . 
 
 Weekly Course Updates: 
 
@@ -53,8 +24,6 @@ Weekly Course Updates:
 
 Today: Introduction to {{< var course.short >}}
 
-
-
 # {{< var course.short >}}: {{< var course.title >}} 
 
 ## Course Overview
@@ -63,10 +32,11 @@ Today: Introduction to {{< var course.short >}}
 
 ::: incremental
 
-- [Getting s#!t done]{color="#FF0000"}
+
 - Establishing a professional data analyst portfolio
 - Increasing your effectiveness in other courses
 - Building your networks with faculty and classmates
+- [Getting s#!t done]{color="#FF0000"}
 
 :::
 
@@ -168,8 +138,8 @@ Major Topics:
 ## Grading
 
 - 24% Pre-Assignments
-- 36% Mini-Projects
-- 40% Course Project
+- 30% Mini-Projects
+- 46% Course Project
 
 . . . 
 
@@ -202,7 +172,6 @@ Pre-Assignments:
 
 - Weekly reading *before class* followed by a short quiz
 - Introduce new material + helps me know where folks are confused
-- Completion grading
 - Starts next week 
 - Every week except three presentation weeks
 ::: 
@@ -218,7 +187,7 @@ Traditional homework assignments - "mini-projects"
 - Practice *real* data analysis
 - Communication and coding
 - Professional portfolio
-- One ungraded 'set-up' + four graded
+- One ungraded 'set-up' + best 3 of 4 graded
 
 :::
 
@@ -248,9 +217,9 @@ Per federal and state requirements, 9 hours weekly = 6 hours outside of class
 ::: incremental
 
 - 10 hours of Pre-Assignments
-- 10 hours of Post-Class Review
-- 35 hours of Mini-Projects (homework)
-- 35 hours of Course Project
+- 5 hours of Post-Class Review
+- 45 hours of Mini-Projects (homework)
+- 30 hours of Course Project
 
 :::
 
@@ -291,7 +260,7 @@ Call everyone back at 8:30pm
 
 ## Mini-Project #00
 
-You can now start thinking about [Mini-Project #00](https://michael-weylandt.com/STA9750/miniprojects/mini00.html)
+You can now start thinking about [Mini-Project #00](../mini/mini00.qmd)
 
 ::: incremental
 

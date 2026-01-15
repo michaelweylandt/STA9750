@@ -17,11 +17,13 @@
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-1c47065645911eb62ace0da5c8a22cd9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="../site_libs/bootstrap/bootstrap-1c47065645911eb62ace0da5c8a22cd9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta name="generator" content="quarto-1.7.33">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>STA 9750 Week 11 In-Class Activity: HTML Import – STA 9750</title>
+<title>STA 9750 Lecture #11 In-Class Activity: Predictive Modeling - Inference and Prediction in R – STA 9750</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -76,7 +78,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script><link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-1c47065645911eb62ace0da5c8a22cd9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
-<script src="../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script><link href="../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -103,14 +104,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script><link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
-<link href="../site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
-<script src="../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><script src="../site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><link href="../site_libs/leaflet-1.3.1/leaflet.css" rel="stylesheet">
-<script src="../site_libs/leaflet-1.3.1/leaflet.js"></script><link href="../site_libs/leafletfix-1.0.0/leafletfix.css" rel="stylesheet">
-<script src="../site_libs/proj4-2.6.2/proj4.min.js"></script><script src="../site_libs/Proj4Leaflet-1.0.1/proj4leaflet.js"></script><link href="../site_libs/rstudio_leaflet-1.3.1/rstudio_leaflet.css" rel="stylesheet">
-<script src="../site_libs/leaflet-binding-2.2.3/leaflet.js"></script>
+}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 </head>
-<body class="nav-fixed quarto-light">
+<body class="floating nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top"><nav class="navbar navbar-expand-lg " data-bs-theme="dark"><div class="navbar-container container-fluid">
@@ -158,6 +179,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-prior-offerings">
 <li>
+    <a class="dropdown-item" href=".././archive/AY-2025-FALL/">
+ <span class="dropdown-text">Fall 2025</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href=".././archive/AY-2024-SPRING/">
  <span class="dropdown-text">Spring 2025</span></a>
   </li>  
@@ -174,31 +199,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       </div> <!-- /container-fluid -->
     </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-<!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">On this page</h2>
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">On this page</h2>
    
   <ul>
-<li><a href="#slides" id="toc-slides" class="nav-link active" data-scroll-target="#slides">Slides</a></li>
-  <li><a href="#review" id="toc-review" class="nav-link" data-scroll-target="#review">Review Practice</a></li>
-  <li>
-<a href="#web-scraping" id="toc-web-scraping" class="nav-link" data-scroll-target="#web-scraping">Web Scraping</a>
-  <ul class="collapse">
-<li><a href="#ex01" id="toc-ex01" class="nav-link" data-scroll-target="#ex01">Exercise 1: Reading HTML Tables</a></li>
-  <li><a href="#ex02" id="toc-ex02" class="nav-link" data-scroll-target="#ex02">Exercise 2: CUNY Map</a></li>
-  <li><a href="#ex03" id="toc-ex03" class="nav-link" data-scroll-target="#ex03">Exercise 3: Cocktails Data</a></li>
-  </ul>
-</li>
+<li><a href="#slides" id="toc-slides" class="nav-link active" data-scroll-target="#slides" aria-current="page">Slides</a></li>
+  <li><a href="#review" id="toc-review" class="nav-link" data-scroll-target="#review">Review Exercise</a></li>
+  <li><a href="#lm" id="toc-lm" class="nav-link" data-scroll-target="#lm">Classical Statistical Models in <code>R</code></a></li>
+  <li><a href="#inference" id="toc-inference" class="nav-link" data-scroll-target="#inference">Computational Inference</a></li>
+  <li><a href="#tidymodels" id="toc-tidymodels" class="nav-link" data-scroll-target="#tidymodels">Tidymodels</a></li>
   </ul>
 <div class="toc-actions"><ul>
 <li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab11.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li>
 <li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab11.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li>
 <li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li>
-</ul></div><div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab11.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab11.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
-</div>
+</ul></div><div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab11.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab11.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav></nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
-<h1 class="title">STA 9750 Week 11 In-Class Activity: HTML Import</h1>
+<h1 class="title">STA 9750 Lecture #11 In-Class Activity: Predictive Modeling - Inference and Prediction in <code>R</code>
+</h1>
 </div>
 
 
@@ -212,13 +233,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   
 
 
-</header><section id="slides" class="level1"><h1><a href="../slides/slides11.html">Slides</a></h1>
-</section><section id="review" class="level1"><h1>Review Practice</h1>
-<p>The <a href="https://opentdb.com/">Open Trivia Database</a> provides a simple API for trivia questions. You are going to use this API to create a trivia game for you and some friends.</p>
-<ol start="0" type="1">
-<li>Before beginning, explore <a href="https://opentdb.com/browse.php">the question bank</a> and the <a href="https://opentdb.com/api_config.php">API call generator</a> to understand the types of data available and the structure of the API call.</li>
-<li>Use the API call generator to create a URL to download 5 multiple-choice questions on a topic of your choosing. Copy this URL.</li>
-<li>Now, use the <code>httr2</code> package in <code>R</code> to make a request to that URL. At first, simply paste the whole URL into <code>request</code> and confirm it works. Then, break the URL into its constitutent parts using the <code><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path()</a></code> and <code><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query()</a></code> functions to construct the URL. (We won’t be parametrizing the API call in this brief exercise, but this is important to do if you are going to programmatically be making several API calls.)</li>
+</header><section id="slides" class="level1"><h1><a href="../slides/slides14.html">Slides</a></h1>
+</section><section id="review" class="level1"><h1>Review Exercise</h1>
+<p>For this final warm-up exercise, you are going to use a combination of the skills learned over the semester to create a map of the countries of the world, colored by population density.</p>
+<ol type="1">
+<li>
+<p>Using the data at <a href="https://www.scrapethissite.com/pages/simple/" class="uri">https://www.scrapethissite.com/pages/simple/</a>, determine the <em>capital</em> of the <em>most densely populated</em> country in the world.</p>
+<p>To answer this:</p>
+<ul>
+<li>Scrape the webpage into a four-column data frame with columns: <code>name</code>, <code>capital</code>, <code>population</code>, <code>area</code>
+</li>
+<li>Ensure that the population and area columns are properly converted to numeric values</li>
+<li>Compute population density as <code>population/area</code>
+</li>
+<li>Select the country with the highest density and determine its capital</li>
+</ul>
+</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
@@ -233,55 +263,52 @@ Solution
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-✔ dplyr     1.1.4     ✔ readr     2.1.5
-✔ forcats   1.0.0     ✔ stringr   1.5.2
-✔ ggplot2   4.0.0     ✔ tibble    3.3.0
-✔ lubridate 1.9.4     ✔ tidyr     1.3.1
-✔ purrr     1.1.0     
-── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-✖ dplyr::filter() masks stats::filter()
-✖ dplyr::lag()    masks stats::lag()
-ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
-</div>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
-<span><span class="va">req1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com/api.php?amount=50&amp;category=18&amp;type=multiple"</span><span class="op">)</span> </span>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Decompose the URL into its various components: </span></span>
-<span><span class="va">req2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>          <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"api.php"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>          <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query</a></span><span class="op">(</span>amount   <span class="op">=</span> <span class="fl">50</span>, </span>
-<span>                        category <span class="op">=</span> <span class="fl">18</span>, </span>
-<span>                        type     <span class="op">=</span> <span class="st">"multiple"</span><span class="op">)</span></span>
+<span><span class="va">parse_country</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">country_element</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">name</span> <span class="op">&lt;-</span> <span class="va">country_element</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">"h3"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text2</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">capital</span> <span class="op">&lt;-</span> <span class="va">country_element</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">".country-capital"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text2</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">population</span> <span class="op">&lt;-</span> <span class="va">country_element</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">".country-population"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text2</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">area</span> <span class="op">&lt;-</span> <span class="va">country_element</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">".country-area"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text2</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="va">name</span>, <span class="va">capital</span>, <span class="va">population</span>, <span class="va">area</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
 <span></span>
-<span><span class="co"># Confirm equivalence</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html">all.equal</a></span><span class="op">(</span><span class="va">req1</span>, <span class="va">req2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">COUNTRIES</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://www.scrapethissite.com/pages/simple/"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">".country"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">parse_country</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/list_c.html">list_rbind</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>density <span class="op">=</span> <span class="va">population</span> <span class="op">/</span> <span class="va">area</span><span class="op">)</span></span>
+<span>    </span>
+<span></span>
+<span><span class="va">COUNTRIES</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_max</a></span><span class="op">(</span><span class="va">density</span>, n<span class="op">=</span><span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">capital</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] TRUE</code></pre>
-</div>
-</div>
-<p>I’m using Computer Science (Category 18) but you can use others.</p>
-<p>Now that we have built our request objects, we can use <code><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform()</a></code> to actually make the request:</p>
-<div class="cell">
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resp</span> <span class="op">&lt;-</span> <span class="va">req2</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">resp</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>&lt;httr2_response&gt;
-GET https://opentdb.com/api.php?amount=50&amp;category=18&amp;type=multiple
-Status: 200 OK
-Content-Type: application/json
-Body: In memory (12669 bytes)</code></pre>
+<pre><code>[1] "Monaco"</code></pre>
 </div>
 </div>
 </div>
 </div>
 </div>
-<ol start="3" type="1">
+<ol start="2" type="1">
 <li>
-<p>The default response format is <code>json</code>, so use the <code>resp_body_json</code> function to convert the response into <code>R</code>. Print the repsonse to screen and examine the format. This will help you know what you need to do to manipulate (“rectangle”) the data into a useful structure.</p>
-<p><em>Hint:</em> To avoid printing so much to screen that it’s hard to make sense of the output, you may wish to modify your API call to temporarily only request 3-5 responses, instead of 50, even if your eventual goal is to get more responses than that.</p>
+<p>When dealing with countries, it is dangerous to use raw names as these are not entirely standardized. <em>E.g.</em>, do we live in the “United States” or the “United States of America”? To address this, we want to use a standard format like the ISO 3-digit country codes.</p>
+<p>The website <a href="https://peric.github.io/GetCountries/" class="uri">https://peric.github.io/GetCountries/</a> provides this information interactively, but is a bit difficult to access programmatically. This page actually loads a <code>JSON</code> object that will provide all of the information we need. Use the Network tools in your web browser’s developer tools to identify the request that loads this data. (You may need to hit the <code>Generate</code> button again after opening the Network tools to see the request being made.)</p>
+<p>Read this data into <code>R</code> and create a data frame with (at least) columns for the 3 digit ISO country code, the continent, the country name, the population, and the area in square kilometers. Make sure the population and area have been properly converted into numeric values.</p>
 </li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
@@ -297,68 +324,28 @@ Solution
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>          <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"api.php"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>          <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query</a></span><span class="op">(</span>amount   <span class="op">=</span> <span class="fl">3</span>, </span>
-<span>                        category <span class="op">=</span> <span class="fl">18</span>, </span>
-<span>                        type     <span class="op">=</span> <span class="st">"multiple"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="co"># Some stuff to respect API rate limiting</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_throttle.html">req_throttle</a></span><span class="op">(</span>capacity<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_retry.html">req_retry</a></span><span class="op">(</span>max_tries <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_json</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Waiting 4s for retry backoff ■■■■■■■■                        </code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Waiting 4s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■     </code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Waiting 4s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>List of 2
- $ response_code: int 0
- $ results      :List of 3
-  ..$ :List of 6
-  .. ..$ type             : chr "multiple"
-  .. ..$ difficulty       : chr "medium"
-  .. ..$ category         : chr "Science: Computers"
-  .. ..$ question         : chr "What was the first commerically available computer processor?"
-  .. ..$ correct_answer   : chr "Intel 4004"
-  .. ..$ incorrect_answers:List of 3
-  .. .. ..$ : chr "Intel 486SX"
-  .. .. ..$ : chr "TMS 1000"
-  .. .. ..$ : chr "AMD AM386"
-  ..$ :List of 6
-  .. ..$ type             : chr "multiple"
-  .. ..$ difficulty       : chr "easy"
-  .. ..$ category         : chr "Science: Computers"
-  .. ..$ question         : chr "What does the &amp;quot;MP&amp;quot; stand for in MP3?"
-  .. ..$ correct_answer   : chr "Moving Picture"
-  .. ..$ incorrect_answers:List of 3
-  .. .. ..$ : chr "Music Player"
-  .. .. ..$ : chr "Multi Pass"
-  .. .. ..$ : chr "Micro Point"
-  ..$ :List of 6
-  .. ..$ type             : chr "multiple"
-  .. ..$ difficulty       : chr "medium"
-  .. ..$ category         : chr "Science: Computers"
-  .. ..$ question         : chr "All of the following programs are classified as raster graphics editors EXCEPT:"
-  .. ..$ correct_answer   : chr "Inkscape"
-  .. ..$ incorrect_answers:List of 3
-  .. .. ..$ : chr "Paint.NET"
-  .. .. ..$ : chr "GIMP"
-  .. .. ..$ : chr "Adobe Photoshop"</code></pre>
-</div>
-</div>
-<p>We see here that the response comes in a list of two components: <code>response_code</code> and <code>results</code>, with the content we want being in the <code>results</code>. The 3 <code>results</code> look pretty straightforward, except for the <code>incorrect_answers</code> list, which we will need to keep an eye on.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jeroen.r-universe.dev/jsonlite">jsonlite</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">COUNTRIES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/read_json.html">read_json</a></span><span class="op">(</span><span class="st">"https://secure.geonames.org/countryInfoJSON?username=dperic"</span>, </span>
+<span>          simplify<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"geonames"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span>iso_code <span class="op">=</span> <span class="va">isoAlpha3</span>, </span>
+<span>           name <span class="op">=</span> <span class="va">countryName</span>, </span>
+<span>           continent <span class="op">=</span> <span class="va">continentName</span>,</span>
+<span>           area <span class="op">=</span> <span class="va">areaInSqKm</span>, </span>
+<span>           population <span class="op">=</span> <span class="va">population</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">area</span><span class="op">)</span>, </span>
+<span>           population <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">population</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
-<ol start="4" type="1">
-<li>Use the <code>pluck</code> function to extract the relevant part of the JSON response. The response will have several similarly formatted response objects. Use the <code>map(as_tibble) |&gt; list_rbind()</code> paradigm to convert these into a large data frame.</li>
+</div>
+<ol start="3" type="1">
+<li>
+<p>Next, we are going to use an API to access data on country boundaries provided by the <a href="https://www.geoboundaries.org">GeoBoundaries</a> project. Specifically, we want to download shape files for all countries of the world. We do not want to use the <em>high-resolution</em> shapefiles as they are highly detailed and will slow down processing. Thankfully, the GeoBoundaries project already provides simplified representations of each country more suitable for plotting.</p>
+<p>Review the API documentation at <a href="https://www.geoboundaries.org/api.html#api" class="uri">https://www.geoboundaries.org/api.html#api</a> and make a call for <code>gbOpen</code> data for <code>ALL</code> countries at <code>ADM0</code> level (country boundaries). The result will be a JSON object with elements for each country. Parse this JSON object in <code>R</code> and pull out (at least) the <code>boundaryName</code>, <code>boundaryISO</code>, and <code>simplifiedGeometryGeoJSON</code> columns into a data frame.</p>
+</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
@@ -373,56 +360,24 @@ Solution
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"api.php"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query</a></span><span class="op">(</span>amount   <span class="op">=</span> <span class="fl">3</span>, </span>
-<span>                  category <span class="op">=</span> <span class="fl">18</span>, </span>
-<span>                  type     <span class="op">=</span> <span class="st">"multiple"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="co"># Some stuff to respect API rate limiting</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_throttle.html">req_throttle</a></span><span class="op">(</span>capacity<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_retry.html">req_retry</a></span><span class="op">(</span>max_tries <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_json</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"results"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">as_tibble</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/list_c.html">list_rbind</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Waiting 5s for retry backoff ■■■■■■■                         </code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Waiting 5s for retry backoff ■■■■■■■■■■■■■■■■■■■             </code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Waiting 5s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  </code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 9 × 6
-  type     difficulty category         question correct_answer incorrect_answers
-  &lt;chr&gt;    &lt;chr&gt;      &lt;chr&gt;            &lt;chr&gt;    &lt;chr&gt;          &lt;list&gt;           
-1 multiple hard       Science: Comput… Which k… Secret sharin… &lt;chr [1]&gt;        
-2 multiple hard       Science: Comput… Which k… Secret sharin… &lt;chr [1]&gt;        
-3 multiple hard       Science: Comput… Which k… Secret sharin… &lt;chr [1]&gt;        
-4 multiple medium     Science: Comput… .rs is … Serbia         &lt;chr [1]&gt;        
-5 multiple medium     Science: Comput… .rs is … Serbia         &lt;chr [1]&gt;        
-6 multiple medium     Science: Comput… .rs is … Serbia         &lt;chr [1]&gt;        
-7 multiple medium     Science: Comput… How man… 23             &lt;chr [1]&gt;        
-8 multiple medium     Science: Comput… How man… 23             &lt;chr [1]&gt;        
-9 multiple medium     Science: Comput… How man… 23             &lt;chr [1]&gt;        </code></pre>
-</div>
-</div>
-<p>Everything looks pretty good here, with two notes:</p>
-<ul>
-<li>The <code>incorrect_answers</code> column appears to be a <code>list</code> type column</li>
-<li>Each of our responses was repeated across three rows.</li>
-</ul>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jeroen.r-universe.dev/jsonlite">jsonlite</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">API_REFERENCE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/read_json.html">read_json</a></span><span class="op">(</span><span class="st">"https://www.geoboundaries.org/api/current/gbOpen/ALL/ADM0/"</span>, </span>
+<span>                           simplify <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span>country <span class="op">=</span> <span class="va">boundaryName</span>, </span>
+<span>           iso_code <span class="op">=</span> <span class="va">boundaryISO</span>,</span>
+<span>           continent <span class="op">=</span> <span class="va">Continent</span>, </span>
+<span>           simple_geojson <span class="op">=</span> <span class="va">simplifiedGeometryGeoJSON</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
-<ol start="5" type="1">
+</div>
+<ol start="4" type="1">
 <li>
-<p>Use the <code>unnest</code> and <code>pivot_wider</code> functions to conver this data into a more usable structure.</p>
-<p>When applied to a <code>list</code> column, the <code>unnest</code> function will try to convert it into a more standard vector-type column.</p>
-<p><em>Hint</em>: Before using <code>pivot_wider</code>, you will need to create a new column with column names for the pivoted data.</p>
+<p>Join the result of the previous two sections together using an <code>inner_join</code>. How many countries were in each data set? Which countries are lost in the inner join? What is their total population?</p>
+<p><em>Hint</em>: An <code>anti_join</code> may be useful here.</p>
+<p>In real work, you would want to do some additional manual cleaning to better align these two data sets, but we are not going to do so today to save time. There is at least one <em>major</em> missing country in this merge.</p>
 </li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
@@ -438,170 +393,25 @@ Solution
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"api.php"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query</a></span><span class="op">(</span>amount   <span class="op">=</span> <span class="fl">3</span>, </span>
-<span>                  category <span class="op">=</span> <span class="fl">18</span>, </span>
-<span>                  type     <span class="op">=</span> <span class="st">"multiple"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="co"># Some stuff to respect API rate limiting</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_throttle.html">req_throttle</a></span><span class="op">(</span>capacity<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_retry.html">req_retry</a></span><span class="op">(</span>max_tries <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_json</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"results"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">as_tibble</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/list_c.html">list_rbind</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html">unnest</a></span><span class="op">(</span><span class="va">incorrect_answers</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">question</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>pivot_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"incorrect-"</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/row_number.html">row_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">pivot_name</span>, </span>
-<span>                values_from <span class="op">=</span> <span class="va">incorrect_answers</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">type</span>, </span>
-<span>           <span class="op">-</span><span class="va">category</span>, </span>
-<span>           <span class="op">-</span><span class="va">difficulty</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Waiting 5s for retry backoff ■■■■■■■                         </code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Waiting 5s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■       </code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Waiting 5s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  </code></pre>
-</div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">JOINED</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">inner_join</a></span><span class="op">(</span><span class="va">COUNTRIES</span>, <span class="va">API_REFERENCE</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/join_by.html">join_by</a></span><span class="op">(</span><span class="va">iso_code</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">UNJOINED</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter-joins.html">anti_join</a></span><span class="op">(</span><span class="va">COUNTRIES</span>, <span class="va">API_REFERENCE</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/join_by.html">join_by</a></span><span class="op">(</span><span class="va">iso_code</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">UNJOINED</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span><span class="op">(</span>n_missing <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span>, </span>
+<span>                      pop_missing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">population</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 3 × 5
-# Groups:   question [3]
-  question              correct_answer `incorrect-1` `incorrect-2` `incorrect-3`
-  &lt;chr&gt;                 &lt;chr&gt;          &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;        
-1 HTML is what type of… Markup Langua… Macro Langua… Programming … Scripting La…
-2 Laserjet and inkjet … Non-impact pr… Impact print… Daisywheel p… Dot matrix p…
-3 America Online (AOL)… Quantum Link   CompuServe    Prodigy       GEnie        </code></pre>
-</div>
-</div>
-<p>You can use this to play a bit of trivia amongst your group. Set <code>amount</code> higher for more questions.</p>
+<pre><code>  n_missing pop_missing
+1        20  1364326330</code></pre>
 </div>
 </div>
 </div>
-</section><section id="web-scraping" class="level1"><h1>Web Scraping</h1>
-<p>In today’s class, we’re going to work through <strong>three</strong> web scraping exercises:</p>
-<ol type="1">
-<li>Reading a simple static table</li>
-<li>Extending our ‘CUNY Map’ from <a href="./lab01.html">Lab #01</a>
-</li>
-<li>Scraping Cocktail Recipes 🍸 from Hadley Wickham</li>
+</div>
+</div>
+<ol start="5" type="1">
+<li>Make a series of web requests to read the <code>geojson</code> files for each of the countries using the URLs obtained from the API. Since you will want to make this request sequentially, use the <code>rowwise</code> function before calling <code><a href="https://r-spatial.github.io/sf/reference/st_read.html">sf::st_read</a></code>. You will also want to use <code>unnest</code> to remove the resulting list-column.</li>
 </ol>
-<section id="ex01" class="level2"><h2 class="anchored" data-anchor-id="ex01">Exercise 1: Reading HTML Tables</h2>
-<p>Using <code>rvest</code>, read the following table into <code>R</code>. Your results should be a data frame that captures the structure of the table.</p>
-<div id="tbl-baruch-stats" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-baruch-stats-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
-</figcaption><div aria-describedby="tbl-baruch-stats-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<table class="caption-top table">
-<colgroup>
-<col style="width: 15%">
-<col style="width: 19%">
-<col style="width: 64%">
-</colgroup>
-<thead><tr class="header">
-<th>Department</th>
-<th>Course Number</th>
-<th>Course Name</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>STA</td>
-<td>2000</td>
-<td>Business Statistics I</td>
-</tr>
-<tr class="even">
-<td>STA</td>
-<td>3000</td>
-<td>Statistical Computing</td>
-</tr>
-<tr class="odd">
-<td>STA</td>
-<td>3154</td>
-<td>Business Statistics II</td>
-</tr>
-<tr class="even">
-<td>STA</td>
-<td>3950</td>
-<td>Data Mining</td>
-</tr>
-<tr class="odd">
-<td>STA</td>
-<td>4155</td>
-<td>Regression &amp; Forecasting Models</td>
-</tr>
-<tr class="even">
-<td>STA</td>
-<td>4157</td>
-<td>Analysis of Variance: Principles &amp; Applications</td>
-</tr>
-<tr class="odd">
-<td>STA</td>
-<td>4950</td>
-<td>Machine Learning and AI</td>
-</tr>
-<tr class="even">
-<td>STA</td>
-<td>9700</td>
-<td>Modern Regression Analysis</td>
-</tr>
-<tr class="odd">
-<td>STA</td>
-<td>9705</td>
-<td>Multivariate Statistical Methods</td>
-</tr>
-<tr class="even">
-<td>STA</td>
-<td>9708</td>
-<td>Managerial Statistics</td>
-</tr>
-<tr class="odd">
-<td>STA</td>
-<td>9710</td>
-<td>Statistical Methods for Sampling and Audit</td>
-</tr>
-<tr class="even">
-<td>STA</td>
-<td>9715</td>
-<td>Applied Probability</td>
-</tr>
-<tr class="odd">
-<td>STA</td>
-<td>9719</td>
-<td>Foundations of Statistical Inference</td>
-</tr>
-<tr class="even">
-<td>STA</td>
-<td>9750</td>
-<td>Software Tools for Data Analysis</td>
-</tr>
-<tr class="odd">
-<td>STA</td>
-<td>9890</td>
-<td>Statistical Learning for Data Mining</td>
-</tr>
-</tbody>
-</table>
-</div>
-</figure>
-</div>
-<ol type="1">
-<li>
-<p>Use the Selector Gadget or similar to identify the HTML elements defining this table. You can do this in one of two ways:</p>
-<ul>
-<li>By a specific named element, accessed as <code>html_element("#name")</code>
-</li>
-<li>By a specific element type, accessed as <code>html_element("type")</code>
-</li>
-</ul>
-</li>
-<li><p>Use the <code>read_html</code> function to read this entire page into <code>R</code>, then use the <code>html_element</code> function with the selector from the previous step to extract the table.</p></li>
-<li><p>Use the <code>html_table</code> function to conver this table into a data frame.</p></li>
-</ol>
-<p>This page is pretty simple, so a little bit of element selection and <code>html_table</code> will suffice. For more complex tables, you may need to do more to select the specific table and more to ‘clean up’ that table once it is in <code>R</code>.</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -615,54 +425,20 @@ Solution
 <div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://michael-weylandt.com/STA9750/labs/lab11.html"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">"#tbl-baruch-stats"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_table.html">html_table</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/">sf</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># OR - Since this page has only a single table</span></span>
-<span><span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://michael-weylandt.com/STA9750/labs/lab11.html"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">"table"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_table.html">html_table</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">JOINED_GEOMETRY</span> <span class="op">&lt;-</span> <span class="va">JOINED</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>geometry <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html">st_read</a></span><span class="op">(</span><span class="va">simple_geojson</span>, quiet<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html">unnest</a></span><span class="op">(</span><span class="va">geometry</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </div>
-</section><section id="ex02" class="level2"><h2 class="anchored" data-anchor-id="ex02">Exercise 2: CUNY Map</h2>
-<p>In this exercise, we’re going to take our Baruch map from <a href="./lab01.html">Lab #01</a> and extend it to pull <em>all</em> CUNY campuses. This exercise is intended to help you practice scraping data from Wikipedia, which is a good example of a relatively plain HTML site that has a bit of extra Javascript that can make it a bit tricky to find the element(s) you want.</p>
-<p>The following code is a cleaned-up version of the map creation activity from Lab #01. Review it before beginning this activity:</p>
-<div class="cell">
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/leaflet/">leaflet</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">baruch_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org/wiki/Baruch_College"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">".geo"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_split.html">str_split_1</a></span><span class="op">(</span><span class="st">";"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rlang.r-lib.org/reference/set_names.html">set_names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"latitude"</span>, <span class="st">"longitude"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rstudio.github.io/leaflet/reference/leaflet.html">leaflet</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-layers.html">addTiles</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-methods.html">setView</a></span><span class="op">(</span>lat <span class="op">=</span> <span class="va">baruch_info</span><span class="op">$</span><span class="va">latitude</span>, </span>
-<span>            lng <span class="op">=</span> <span class="va">baruch_info</span><span class="op">$</span><span class="va">longitude</span>, </span>
-<span>            zoom<span class="op">=</span><span class="fl">17</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-layers.html">addPopups</a></span><span class="op">(</span>lat <span class="op">=</span> <span class="va">baruch_info</span><span class="op">$</span><span class="va">latitude</span>, </span>
-<span>              lng <span class="op">=</span> <span class="va">baruch_info</span><span class="op">$</span><span class="va">longitude</span>, </span>
-<span>               <span class="st">"Look! It's &lt;b&gt;Baruch College&lt;/b&gt;!"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<ol type="1">
-<li>
-<p>Building on the code above, write a function that takes the Wikipedia URL for a CUNY as an argument and returns a data frame with two columns:</p>
-<ul>
-<li>Latitude</li>
-<li>Longitude</li>
-</ul>
-<p>Confirm that your function works by applying it to Baruch’s Wikipedia page.</p>
-</li>
+<ol start="6" type="1">
+<li>Create a chloropleth visualization with each country colored according to its population density.</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
@@ -677,46 +453,68 @@ Solution
 <div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">get_cuny_coordinates</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">url</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="va">url</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">".geo"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_split.html">str_split_1</a></span><span class="op">(</span><span class="st">";"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="fu"><a href="https://rlang.r-lib.org/reference/set_names.html">set_names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"latitude"</span>, <span class="st">"longitude"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="fu">get_cuny_coordinates</span><span class="op">(</span><span class="st">"https://en.wikipedia.org/wiki/Baruch_College"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1 × 2
-  latitude longitude
-     &lt;dbl&gt;     &lt;dbl&gt;
-1     40.7     -74.0</code></pre>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">JOINED_GEOMETRY</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>density <span class="op">=</span> <span class="va">population</span> <span class="op">/</span> <span class="va">area</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>fill<span class="op">=</span><span class="va">density</span>, geometry<span class="op">=</span><span class="va">geometry</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position<span class="op">=</span><span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html">scale_fill_distiller</a></span><span class="op">(</span>name<span class="op">=</span><span class="st">"Population Density"</span>, </span>
+<span>                         palette<span class="op">=</span><span class="fl">4</span>, </span>
+<span>                         direction <span class="op">=</span> <span class="fl">1</span>, </span>
+<span>                         trans<span class="op">=</span><span class="st">"log"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="lab11_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
 </div>
 </div>
 </div>
 </div>
-<ol start="2" type="1">
-<li>Investigate the <a href="https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions">Wikipedia List of CUNYs</a> and identify which table can be used to get links to each CUNY’s page.</li>
+</div>
+</section><section id="lm" class="level1"><h1>Classical Statistical Models in <code>R</code>
+</h1>
+<p>Using the countries data downloaded above, use statistical models like <code>lm</code> and <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html">mgcv::gam</a></code> to answer the following:</p>
+<ol type="1">
+<li>
+<p>Recall the <code>flights</code> data from the <code>nycflights13</code> package. Load this package and fit a linear model to predict air time as a function of distance.</p>
+<p>The intercept term of this model can be interpreted as the “fixed cost” of a flight - the unavoidable time taken to travel between the gate and the runway. What is the estimate of this cost based on the model you fit?</p>
+</li>
 </ol>
-<div class="callout callout-style-default callout-caution callout-titled" title="Wikipedia Table Scraping">
-<div class="callout-header d-flex align-content-center">
+<div class="callout callout-style-default callout-tip callout-titled" title="Solution">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Wikipedia Table Scraping
+Solution
 </div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Wikipedia has tons of excellent data tables which have been collected by incredible volunteers. It can be an incredibly useful source, but there are a few difficulties in getting data out of Wikipedia. In particular, Wikipedia uses a rich JavaScript library to make tables slightly interactive (column sorting, <em>etc.</em>) that modifies the page HTML. <code>R</code> will get the “raw” HTML of the page, so you will need to either disable JavaScript temporarily (tricky) or make sure you are looking at the actual page source that <code>R</code> will see (“View Source”).</p>
-<p>As a general rule, try to use standard HTML elements (<code>table</code>, <code>tbody</code>) instead of fancier alternatives when possible.</p>
+<div class="cell">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/hadley/nycflights13">nycflights13</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://broom.tidymodels.org/">broom</a></span><span class="op">)</span></span>
+<span><span class="va">air_time_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">air_time</span> <span class="op">~</span> <span class="va">distance</span>, data<span class="op">=</span><span class="va">flights</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="va">air_time_model</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 5
+  term        estimate std.error statistic p.value
+  &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+1 (Intercept)   18.5   0.0389         475.       0
+2 distance       0.126 0.0000304     4154.       0</code></pre>
 </div>
 </div>
-<ol start="3" type="1">
-<li>Parse the table to pull links to each CUNY’s individual Wikipedia page.</li>
+<p>From this, we see that the ‘fixed cost’ of air travel is approximately 18.5 minutes.</p>
+</div>
+</div>
+</div>
+<ol start="2" type="1">
+<li>The same linear model can be used to estimate flight speed. In particular, the distance coefficient (which has units of minutes / mile) can be extracted and transformed into miles per hour. What is the average speed of a plane leaving NYC?</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
@@ -731,34 +529,49 @@ Solution
 <div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">"tbody"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"tr td:nth-child(2)"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"a"</span><span class="op">)</span> </span>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/hadley/nycflights13">nycflights13</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://broom.tidymodels.org/">broom</a></span><span class="op">)</span></span>
+<span><span class="va">air_time_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">air_time</span> <span class="op">~</span> <span class="va">distance</span>, data<span class="op">=</span><span class="va">flights</span><span class="op">)</span> </span>
 <span></span>
-<span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>name <span class="op">=</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text</a></span><span class="op">(</span><span class="op">)</span>, </span>
-<span>                link <span class="op">=</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_attr.html">html_attr</a></span><span class="op">(</span><span class="st">"href"</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>If you are comfortable with the <code>purrr</code> family of functions, this can be written a bit more compactly as:</p>
-<div class="cell">
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">"tbody"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"tr td:nth-child(2)"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"a"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">tr</span><span class="op">)</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>name <span class="op">=</span> <span class="va">tr</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text</a></span><span class="op">(</span><span class="op">)</span>, </span>
-<span>                     link <span class="op">=</span> <span class="va">tr</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_attr.html">html_attr</a></span><span class="op">(</span><span class="st">"href"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">air_time_model</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">term</span> <span class="op">==</span> <span class="st">"distance"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>hours_per_mile <span class="op">=</span> <span class="va">estimate</span> <span class="op">/</span> <span class="fl">60</span>, </span>
+<span>           miles_per_hour <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="va">hours_per_mile</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">miles_per_hour</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 475.7399</code></pre>
 </div>
 </div>
 </div>
 </div>
-<ol start="4" type="1">
+</div>
+<ol start="3" type="1">
 <li>
-<p>Modify the links extracted from the Wikipedia table to form full URLs.</p>
-<p>Proper URL handling is a bit subtle - it’s a common avenue for security holes</p>
-<ul>
-<li>but a simple <code>paste0</code> will suffice here.</li>
-</ul>
+<p>Modify your analysis above to estimate a different fixed cost for each of the three NYC-area airports. (Maintain a single estimate of speed for all airports.) Which seems to be the most efficient?</p>
+<p>Use <code><a href="https://generics.r-lib.org/reference/tidy.html">broom::tidy</a></code> and some regular expressions to create a table that looks like this:</p>
+<table class="caption-top table">
+<thead><tr class="header">
+<th>Airport</th>
+<th>Estimated Fixed Cost</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>EWR</td>
+<td>NNN.NN</td>
+</tr>
+<tr class="even">
+<td>LGA</td>
+<td>NNN.NN</td>
+</tr>
+<tr class="odd">
+<td>JFK</td>
+<td>NNN.NN</td>
+</tr>
+</tbody>
+</table>
+<p><em>Hint</em>: Your estimated coefficients will be easier to interpret if you remove the intercept term from your model by including <code>-1</code> at the end of the formula.</p>
 </li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
@@ -774,15 +587,31 @@ Solution
 <div id="callout-9" class="callout-9-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>link <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org"</span>, <span class="va">link</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/hadley/nycflights13">nycflights13</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://broom.tidymodels.org/">broom</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">air_time</span> <span class="op">~</span> <span class="va">distance</span> <span class="op">+</span> <span class="va">origin</span> <span class="op">-</span> <span class="fl">1</span>, data<span class="op">=</span><span class="va">flights</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html">str_detect</a></span><span class="op">(</span><span class="va">term</span>, <span class="st">"origin"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>term<span class="op">=</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_remove.html">str_remove</a></span><span class="op">(</span><span class="va">term</span>, <span class="st">"origin"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span>Airport<span class="op">=</span><span class="va">term</span>, `Estimated Fixed Cost (minutes)` <span class="op">=</span> <span class="va">estimate</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  Airport `Estimated Fixed Cost (minutes)`
+  &lt;chr&gt;                              &lt;dbl&gt;
+1 EWR                                 18.8
+2 JFK                                 17.3
+3 LGA                                 18.7</code></pre>
+</div>
 </div>
 </div>
 </div>
 </div>
 <ol start="4" type="1">
 <li>
-<p>Apply your HTML parsing function from Step 1 to each CUNY page using the <code>map</code> function or the <code><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise()</a></code> grouping structure:</p>
-<p><em>Hint</em>: You may need to use <code>unnest</code> to convert a list column into something more usable.</p>
+<p>Now modify your model to allow different estimated flight speeds for each airport. Which airport seems to have the highest average flight speed?</p>
+<p><em>Hint</em>: Use the <code>*</code> operator to allow for <em>interactions</em> between airport and distance. This will estimate different slopes for each group.</p>
+<p><em>Hint</em>: If you find your coefficients hard to interpret, consider adding <code>-distance</code> to the end of your formula. What does this do? Why does it help?</p>
 </li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
@@ -798,37 +627,33 @@ Solution
 <div id="callout-10" class="callout-10-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>info <span class="op">=</span> <span class="fu">get_cuny_coordinates</span><span class="op">(</span><span class="va">link</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">## Or with `map`</span></span>
-<span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>info <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">link</span>, <span class="va">get_cuny_coordinates</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## Then unnest the info column</span></span>
-<span></span>
-<span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html">unnest</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">CUNYs</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/hadley/nycflights13">nycflights13</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://broom.tidymodels.org/">broom</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">air_time</span> <span class="op">~</span> <span class="va">distance</span> <span class="op">*</span> <span class="va">origin</span> <span class="op">-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">distance</span>, data<span class="op">=</span><span class="va">flights</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>airport <span class="op">=</span> <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_sub.html">str_sub</a></span><span class="op">(</span><span class="va">term</span>, start<span class="op">=</span><span class="op">-</span><span class="fl">3</span><span class="op">)</span>, </span>
+<span>           effect <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html">if_else</a></span><span class="op">(</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html">str_detect</a></span><span class="op">(</span><span class="va">term</span>, <span class="st">"distance"</span><span class="op">)</span>, <span class="st">"speed"</span>, <span class="st">"fixed"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">estimate</span>, <span class="va">airport</span>, <span class="va">effect</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span>names_from<span class="op">=</span><span class="va">effect</span>, values_from<span class="op">=</span><span class="va">estimate</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>speed <span class="op">=</span> <span class="fl">60</span> <span class="op">/</span> <span class="va">speed</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html">rename</a></span><span class="op">(</span>`Origin Airport` <span class="op">=</span> <span class="va">airport</span>, </span>
+<span>           `Gate Taxi Time` <span class="op">=</span> <span class="va">fixed</span>, </span>
+<span>           `Estimated Air Speed` <span class="op">=</span> <span class="va">speed</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 26 × 4
-   name                                             link      latitude longitude
-   &lt;chr&gt;                                            &lt;chr&gt;        &lt;dbl&gt;     &lt;dbl&gt;
- 1 Baruch College                                   https://…     40.7     -74.0
- 2 The City College                                 https://…     40.8     -74.0
- 3 Graduate Center                                  https://…     40.7     -74.0
- 4 Graduate School of Public Health &amp; Health Policy https://…     40.8     -73.9
- 5 Guttman Community College                        https://…     40.8     -74.0
- 6 Hunter College                                   https://…     40.8     -74.0
- 7 John Jay College of Criminal Justice             https://…     40.8     -74.0
- 8 Macaulay Honors College                          https://…     40.8     -74.0
- 9 Manhattan Community College                      https://…     40.7     -74.0
-10 Newmark Graduate School of Journalism            https://…     40.8     -74.0
-# ℹ 16 more rows</code></pre>
+<pre><code># A tibble: 3 × 3
+  `Origin Airport` `Gate Taxi Time` `Estimated Air Speed`
+  &lt;chr&gt;                       &lt;dbl&gt;                 &lt;dbl&gt;
+1 EWR                          19.1                  476.
+2 JFK                          17.7                  476.
+3 LGA                          15.9                  462.</code></pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 <ol start="5" type="1">
-<li>Use your results to build a CUNY-wide map</li>
+<li>Use the <code>augment</code> function to compute both the RMSE (Root Mean Squared Error) and the MedAE (Median Absolute Error) of the model you fit in the previous section.</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
@@ -843,34 +668,28 @@ Solution
 <div id="callout-11" class="callout-11-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">MAP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/leaflet.html">leaflet</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-layers.html">addTiles</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-layers.html">addMarkers</a></span><span class="op">(</span>lng <span class="op">=</span> <span class="va">CUNYs</span><span class="op">$</span><span class="va">longitude</span>, </span>
-<span>               lat<span class="op">=</span><span class="va">CUNYs</span><span class="op">$</span><span class="va">latitude</span>, </span>
-<span>               popup<span class="op">=</span><span class="va">CUNYs</span><span class="op">$</span><span class="va">name</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">MAP</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div class="leaflet html-widget html-fill-item" id="htmlwidget-54aa7fcf8309d5f06172" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-54aa7fcf8309d5f06172">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org/copyright/\">OpenStreetMap<\/a>,  <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL<\/a>"}]},{"method":"addMarkers","args":[[40.740159,40.8194,40.7485,40.79972,40.7529,40.768538,40.7703,40.774,40.71768,40.75523,40.754894,40.8194,40.748386,40.85806,40.8175,40.8725,40.63111,40.6958,40.57806,40.6663083,40.6,40.74361,40.737,40.75556,40.7477,40.702],[-73.98338,-73.95,-73.9836,-73.93889,-73.9841,-73.964741,-73.9883,-73.9802,-74.01188,-73.988827,-73.98185599999999,-73.95,-73.99008499999999,-73.91249999999999,-73.92722000000001,-73.89389,-73.9525,-73.988,-73.93306,-73.95664720000001,-74.15000000000001,-73.93444,-73.81699999999999,-73.75667,-73.94369,-73.795],null,null,null,{"interactive":true,"draggable":false,"keyboard":true,"title":"","alt":"","zIndexOffset":0,"opacity":1,"riseOnHover":false,"riseOffset":250},["Baruch College","The City College","Graduate Center","Graduate School of Public Health & Health Policy","Guttman Community College","Hunter College","John Jay College of Criminal Justice","Macaulay Honors College","Manhattan Community College","Newmark Graduate School of Journalism","School of Labor and Urban Studies","School of Medicine","School of Professional Studies","Bronx Community College","Hostos Community College","Lehman College","Brooklyn College","College of Technology","Kingsborough Community College","Medgar Evers College","College of Staten Island","LaGuardia Community College","Queens College","Queensborough Community College","School of Law","York College"],null,null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[40.57806,40.8725],"lng":[-74.15000000000001,-73.75667]}},"evals":[],"jsHooks":[]}</script>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/hadley/nycflights13">nycflights13</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://broom.tidymodels.org/">broom</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">air_time</span> <span class="op">~</span> <span class="va">distance</span> <span class="op">*</span> <span class="va">origin</span> <span class="op">-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">distance</span>, data<span class="op">=</span><span class="va">flights</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span><span class="op">(</span>rmse <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">.resid</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span>, </span>
+<span>              medae <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/median.html">median</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">.resid</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+   rmse medae
+  &lt;dbl&gt; &lt;dbl&gt;
+1  12.7  7.07</code></pre>
 </div>
 </div>
 </div>
 </div>
 </div>
-</section><section id="ex03" class="level2"><h2 class="anchored" data-anchor-id="ex03">Exercise 3: Cocktails Data</h2>
-<p><a href="https://hadley.nz/">Hadley Wickham</a> is the author of many of the “tidy tools” we use in this course. He is also an excellent bartender and chef. In this exercise, we are going to web scrape his cocktail recipe book which can be found at <a href="https://cocktails.hadley.nz/" class="uri">https://cocktails.hadley.nz/</a>.</p>
-<p>Our goal is to create a data frame that records all 150+ recipes on this site (as rows) and the different ingredients (as columns). This week, we are going to pull the different recipes into <code>R</code>: next week we are going to process the text and create our final data frame (so stay tuned!).</p>
-<p>Working with your project team, first go through the following steps to build a scraping strategy:</p>
-<ol type="1">
-<li>Poke around the website to see how it is organized. Is there a single page listing all of the cocktails? If not, how else can you make sure that you’ve explored the entire site?</li>
-<li>Once you know how you’re going to explore the whole site, use your browser tools to see if you can identify an HTML element that corresponds to a single recipe. (This element will occur several times per page) Remember that you want to select “as small as possible” but no smaller.</li>
-<li>Once you have found the right HTML element for a recipe, identify an HTML element that corresponds to i) the title; and ii) individual ingredients.</li>
-</ol>
-<p>For this task, you will likely see several recipes more than once. Don’t worry about this for now - we can <code>distinct</code> out the duplicates later in our analysis. It’s better to be over-inclusive than under-inclusive.</p>
-<p>After you have built your plan, it’s time to start putting this all to code.</p>
-<ol type="1">
-<li>Write code to get a list of all pages you will need to process. Construct full URLs for your future requests.</li>
+<ol start="6" type="1">
+<li>
+<p>In which month did the model have the lowest RMSE?</p>
+<p><em>Hint</em>: Pass the <code>newdata</code> argument to <code>augment</code> to get back additional columns you need.</p>
+</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
@@ -885,109 +704,39 @@ Solution
 <div id="callout-12" class="callout-12-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">BASE_URL</span> <span class="op">&lt;-</span> <span class="st">"https://cocktails.hadley.nz/"</span></span>
-<span></span>
-<span><span class="va">PAGES</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="va">BASE_URL</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>            <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"nav a"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>            <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_attr.html">html_attr</a></span><span class="op">(</span><span class="st">"href"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">PAGE_URLS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">BASE_URL</span>, <span class="va">PAGES</span><span class="op">)</span></span>
-<span></span>
-<span></span>
-<span><span class="va">PAGE_URLS</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">air_time</span> <span class="op">~</span> <span class="va">distance</span> <span class="op">*</span> <span class="va">origin</span> <span class="op">-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">distance</span>, data<span class="op">=</span><span class="va">flights</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span>newdata<span class="op">=</span><span class="va">flights</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">month</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span><span class="op">(</span>rmse <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">.resid</span><span class="op">^</span><span class="fl">2</span>, na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_min</a></span><span class="op">(</span><span class="va">rmse</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] "https://cocktails.hadley.nz/ingredient-absinthe.html"             
- [2] "https://cocktails.hadley.nz/ingredient-allspice-liqueur.html"     
- [3] "https://cocktails.hadley.nz/ingredient-ancho-reyes.html"          
- [4] "https://cocktails.hadley.nz/ingredient-angostura.html"            
- [5] "https://cocktails.hadley.nz/ingredient-aperol.html"               
- [6] "https://cocktails.hadley.nz/ingredient-apricot-liqueur.html"      
- [7] "https://cocktails.hadley.nz/ingredient-averna.html"               
- [8] "https://cocktails.hadley.nz/ingredient-banana-liqueur.html"       
- [9] "https://cocktails.hadley.nz/ingredient-benedictine.html"          
-[10] "https://cocktails.hadley.nz/ingredient-blackberry-liqueur.html"   
-[11] "https://cocktails.hadley.nz/ingredient-blanc-vermouth.html"       
-[12] "https://cocktails.hadley.nz/ingredient-bourbon.html"              
-[13] "https://cocktails.hadley.nz/ingredient-brandy.html"               
-[14] "https://cocktails.hadley.nz/ingredient-campari.html"              
-[15] "https://cocktails.hadley.nz/ingredient-champagne.html"            
-[16] "https://cocktails.hadley.nz/ingredient-cherry-liqueur.html"       
-[17] "https://cocktails.hadley.nz/ingredient-coconut-cream.html"        
-[18] "https://cocktails.hadley.nz/ingredient-coffee-liqueur.html"       
-[19] "https://cocktails.hadley.nz/ingredient-cream.html"                
-[20] "https://cocktails.hadley.nz/ingredient-cr-me-de-cacao.html"       
-[21] "https://cocktails.hadley.nz/ingredient-cr-me-de-cassis.html"      
-[22] "https://cocktails.hadley.nz/ingredient-cynar.html"                
-[23] "https://cocktails.hadley.nz/ingredient-dry-vermouth.html"         
-[24] "https://cocktails.hadley.nz/ingredient-elderflower-liqueur.html"  
-[25] "https://cocktails.hadley.nz/ingredient-espresso.html"             
-[26] "https://cocktails.hadley.nz/ingredient-fernet.html"               
-[27] "https://cocktails.hadley.nz/ingredient-gin.html"                  
-[28] "https://cocktails.hadley.nz/ingredient-ginger-liqueur.html"       
-[29] "https://cocktails.hadley.nz/ingredient-grapefruit-bitters.html"   
-[30] "https://cocktails.hadley.nz/ingredient-grapefruit-juice.html"     
-[31] "https://cocktails.hadley.nz/ingredient-green-chartreuse.html"     
-[32] "https://cocktails.hadley.nz/ingredient-grenadine.html"            
-[33] "https://cocktails.hadley.nz/ingredient-herbstura.html"            
-[34] "https://cocktails.hadley.nz/ingredient-honey-syrup.html"          
-[35] "https://cocktails.hadley.nz/ingredient-lemon-juice.html"          
-[36] "https://cocktails.hadley.nz/ingredient-lillet-blanc.html"         
-[37] "https://cocktails.hadley.nz/ingredient-lime-juice.html"           
-[38] "https://cocktails.hadley.nz/ingredient-luxardo-bitter-bianco.html"
-[39] "https://cocktails.hadley.nz/ingredient-maple-syrup.html"          
-[40] "https://cocktails.hadley.nz/ingredient-maraschino-liqueur.html"   
-[41] "https://cocktails.hadley.nz/ingredient-meletti.html"              
-[42] "https://cocktails.hadley.nz/ingredient-mezcal.html"               
-[43] "https://cocktails.hadley.nz/ingredient-orange-bitters.html"       
-[44] "https://cocktails.hadley.nz/ingredient-orange-liqueur.html"       
-[45] "https://cocktails.hadley.nz/ingredient-orgeat.html"               
-[46] "https://cocktails.hadley.nz/ingredient-peychauds.html"            
-[47] "https://cocktails.hadley.nz/ingredient-pimms.html"                
-[48] "https://cocktails.hadley.nz/ingredient-pineapple.html"            
-[49] "https://cocktails.hadley.nz/ingredient-pineapple-juice.html"      
-[50] "https://cocktails.hadley.nz/ingredient-ramazotti.html"            
-[51] "https://cocktails.hadley.nz/ingredient-rhubarb-bitters.html"      
-[52] "https://cocktails.hadley.nz/ingredient-rhum-agricole.html"        
-[53] "https://cocktails.hadley.nz/ingredient-rum.html"                  
-[54] "https://cocktails.hadley.nz/ingredient-rye.html"                  
-[55] "https://cocktails.hadley.nz/ingredient-scotch.html"               
-[56] "https://cocktails.hadley.nz/ingredient-sherry.html"               
-[57] "https://cocktails.hadley.nz/ingredient-simple-syrup.html"         
-[58] "https://cocktails.hadley.nz/ingredient-sloe-gin.html"             
-[59] "https://cocktails.hadley.nz/ingredient-soda-water.html"           
-[60] "https://cocktails.hadley.nz/ingredient-swedish-punsch.html"       
-[61] "https://cocktails.hadley.nz/ingredient-sweet-vermouth.html"       
-[62] "https://cocktails.hadley.nz/ingredient-tequila.html"              
-[63] "https://cocktails.hadley.nz/ingredient-velvet-falernum.html"      
-[64] "https://cocktails.hadley.nz/ingredient-vodka.html"                
-[65] "https://cocktails.hadley.nz/ingredient-yellow-chartreuse.html"    
-[66] "https://cocktails.hadley.nz/tag-3-star.html"                      
-[67] "https://cocktails.hadley.nz/tag-adventurous.html"                 
-[68] "https://cocktails.hadley.nz/tag-bubbles.html"                     
-[69] "https://cocktails.hadley.nz/tag-daiquiri.html"                    
-[70] "https://cocktails.hadley.nz/tag-fizz.html"                        
-[71] "https://cocktails.hadley.nz/tag-flip.html"                        
-[72] "https://cocktails.hadley.nz/tag-manhattan.html"                   
-[73] "https://cocktails.hadley.nz/tag-negroni.html"                     
-[74] "https://cocktails.hadley.nz/tag-sazerac.html"                     
-[75] "https://cocktails.hadley.nz/tag-sour.html"                        
-[76] "https://cocktails.hadley.nz/tag-tiki.html"                        
-[77] "https://cocktails.hadley.nz/tag-vieux-carr.html"                  </code></pre>
+<pre><code># A tibble: 1 × 2
+  month  rmse
+  &lt;int&gt; &lt;dbl&gt;
+1    10  10.6</code></pre>
+</div>
+</div>
+<p>So our model seems to be most predictive in October.</p>
 </div>
 </div>
 </div>
-</div>
-</div>
-<ol start="2" type="1">
-<li>
-<p>Write a function that takes a single URL and extracts all recipes on that page as HTML elements.</p>
-<p>Try this out on a fixed URL and confirm that it gets the right number of recipes</p>
-</li>
+<ol start="7" type="1">
+<li>The <code>yardstick</code> package provides tools for evaluating model performance. The <code>rsq</code> function computes <span class="math inline">\(R^2\)</span> statistics. It takes two column names as arguments (in addition to the data frame being analyzed): <code>truth</code>, the observed values (<span class="math inline">\(y\)</span>), and <code>estimate</code>, the model predictions (<span class="math inline">\(\hat{y}\)</span>). It can be used like this:</li>
 </ol>
+<div class="cell">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://broom.tidymodels.org/">broom</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/yardstick">yardstick</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">body_mass</span> <span class="op">~</span> <span class="va">flipper_len</span> <span class="op">*</span> <span class="va">species</span>, data<span class="op">=</span><span class="va">penguins</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://yardstick.tidymodels.org/reference/rsq.html">rsq</a></span><span class="op">(</span>truth<span class="op">=</span><span class="va">body_mass</span>, estimate<span class="op">=</span><span class="va">.fitted</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  .metric .estimator .estimate
+  &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;
+1 rsq     standard       0.790</code></pre>
+</div>
+</div>
+<p>Use it to compute the <span class="math inline">\(R^2\)</span> of your model on a month-by-month and per-airport basis. At what airport and in what month does this model exhibit the lowest <span class="math inline">\(R^2\)</span>? What does that tell you? How does this compare to the overall (full-sample) <span class="math inline">\(R^2\)</span> of the model that <code>glance</code> provides?</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -1001,34 +750,51 @@ Solution
 <div id="callout-13" class="callout-13-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
-<span><span class="va">get_recipes</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">url</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="va">url</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"article"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>We can test this <a href="https://cocktails.hadley.nz/tag-bubbles.html">against this page</a> and see that it works as expected:</p>
-<div class="cell">
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">BUBBLES</span> <span class="op">&lt;-</span> <span class="fu">get_recipes</span><span class="op">(</span><span class="st">"https://cocktails.hadley.nz/tag-bubbles.html"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">BUBBLES</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">air_time</span> <span class="op">~</span> <span class="va">distance</span> <span class="op">*</span> <span class="va">origin</span> <span class="op">-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">distance</span>, data<span class="op">=</span><span class="va">flights</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span>newdata<span class="op">=</span><span class="va">flights</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">month</span>, <span class="va">origin</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://yardstick.tidymodels.org/reference/rsq.html">rsq</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">air_time</span>,</span>
+<span>        estimate<span class="op">=</span><span class="va">.fitted</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_min</a></span><span class="op">(</span><span class="va">.estimate</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>{xml_nodeset (7)}
-[1] &lt;article class="cocktail" id="air-mail"&gt;&lt;div class="title"&gt;\n      &lt;h2&gt;\n ...
-[2] &lt;article class="cocktail" id="campari-spritz"&gt;&lt;div class="title"&gt;\n       ...
-[3] &lt;article class="cocktail" id="dandelo"&gt;&lt;div class="title"&gt;\n      &lt;h2&gt;\n  ...
-[4] &lt;article class="cocktail" id="french-75"&gt;&lt;div class="title"&gt;\n      &lt;h2&gt;\ ...
-[5] &lt;article class="cocktail" id="hinky-dinks-fizzy"&gt;&lt;div class="title"&gt;\n    ...
-[6] &lt;article class="cocktail" id="kir-royale"&gt;&lt;div class="title"&gt;\n      &lt;h2&gt; ...
-[7] &lt;article class="cocktail" id="negroni-sbagliato"&gt;&lt;div class="title"&gt;\n    ...</code></pre>
+<pre><code># A tibble: 1 × 5
+  month origin .metric .estimator .estimate
+  &lt;int&gt; &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;
+1     1 LGA    rsq     standard       0.956</code></pre>
+</div>
+</div>
+<p>Our model performs (relatively) worst at LGA in January, suggesting that other effects (<em>e.g.</em> weather) play the largest role here, but the effect is quite minimal.</p>
+<div class="cell">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">air_time</span> <span class="op">~</span> <span class="va">distance</span> <span class="op">*</span> <span class="va">origin</span> <span class="op">-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">distance</span>, data<span class="op">=</span><span class="va">flights</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 12
+  r.squared adj.r.squared sigma statistic p.value    df    logLik     AIC    BIC
+      &lt;dbl&gt;         &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+1     0.995         0.995  12.7 10527222.       0     6 -1297511.  2.60e6 2.60e6
+# ℹ 3 more variables: deviance &lt;dbl&gt;, df.residual &lt;int&gt;, nobs &lt;int&gt;</code></pre>
+</div>
+</div>
+<p>So the drop in <span class="math inline">\(R^2\)</span> is 99.5% to 95.6%: this isn’t nothing…</p>
 </div>
 </div>
 </div>
-</div>
-</div>
-<ol start="3" type="1">
-<li>Write a function that takes in a single recipe and returns a small data frame with the title and ingredients:</li>
+</section><section id="inference" class="level1"><h1>Computational Inference</h1>
+<p>Using the countries data downloaded above, test the null hypothesis that the <em>standard deviation of population density is equal in African and non-African countries</em>.</p>
+<p>To do this, you will need to determine the critical value for the difference in sample standard deviation for populations of two different sizes. This is not an easy calculation, so we will approach it computationally.</p>
+<ol type="1">
+<li><p>Determine how many African and non-African countries are present in our data set.</p></li>
+<li>
+<p>Write a function that:</p>
+<ol type="a">
+<li>Generates <span class="math inline">\(n_x\)</span> samples from a standard normal distribution and saves the results as <span class="math inline">\(x\)</span>.</li>
+<li>Generates <span class="math inline">\(n_y\)</span> samples from a standard normal distribution and saves the results as <span class="math inline">\(y\)</span>.</li>
+<li>Computes the difference between the standard deviation of <span class="math inline">\(x\)</span> and the standard deviation <span class="math inline">\(y\)</span>.</li>
+</ol>
+</li>
+<li><p>Call this function a large number of times to get a sense of the null distribution. Compute its 2.5% and 97.5% quantiles.</p></li>
+<li><p>Compute the difference in standard deviations on the actual data.</p></li>
+<li><p>Draw the appropriate inference: is the null hypothesis rejected or not?</p></li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
@@ -1043,290 +809,58 @@ Solution
 <div id="callout-14" class="callout-14-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
-<span><span class="va">process_recipe</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">art</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">title</span> <span class="op">&lt;-</span> <span class="va">art</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">".title"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text2</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>    <span class="va">ingredients</span> <span class="op">&lt;-</span> <span class="va">art</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"li"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text2</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>    </span>
-<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>title<span class="op">=</span><span class="va">title</span>, ingredients<span class="op">=</span><span class="va">ingredients</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>We can again test this using the recipes we extracted above:</p>
-<div class="cell">
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">process_recipe</span><span class="op">(</span><span class="va">BUBBLES</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">COUNTRIES</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>in_africa <span class="op">=</span> <span class="op">(</span><span class="va">continent</span> <span class="op">==</span> <span class="st">"Africa"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="va">in_africa</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 4 × 2
-  title    ingredients      
-  &lt;chr&gt;    &lt;chr&gt;            
-1 Air mail 3 oz champagne   
-2 Air mail 1 oz rum, white  
-3 Air mail ½ oz lime juice  
-4 Air mail ¼ oz simple syrup</code></pre>
+<pre><code>  in_africa   n
+1     FALSE 192
+2      TRUE  58</code></pre>
 </div>
-</div>
-</div>
-</div>
-</div>
-<ol start="4" type="1">
-<li>
-<p>Write a function that combines your results from the previous two steps to build a data frame with <em>all</em> recipes on a single page.</p>
-<p>Try this out on a fixed URL and confirm it works as expected.</p>
-</li>
-</ol>
-<div class="callout callout-style-default callout-tip callout-titled" title="Solution">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Solution
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-15" class="callout-15-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div class="cell">
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">n_africa</span> <span class="op">&lt;-</span> <span class="fl">58</span></span>
+<span><span class="va">n_nonafr</span> <span class="op">&lt;-</span> <span class="fl">192</span></span>
 <span></span>
-<span><span class="va">process_url</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">url</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">html_recipes</span> <span class="op">&lt;-</span> <span class="fu">get_recipes</span><span class="op">(</span><span class="va">url</span><span class="op">)</span></span>
+<span><span class="va">sim_sd_diff</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">nx</span>, <span class="va">ny</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">nx</span><span class="op">)</span></span>
+<span>    <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">ny</span><span class="op">)</span></span>
 <span>    </span>
-<span>    <span class="va">RECIPES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>    </span>
-<span>    <span class="kw">for</span><span class="op">(</span><span class="va">r</span> <span class="kw">in</span> <span class="va">html_recipes</span><span class="op">)</span><span class="op">{</span></span>
-<span>        <span class="va">RECIPES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span><span class="va">RECIPES</span>, <span class="fu">process_recipe</span><span class="op">(</span><span class="va">r</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="op">}</span></span>
-<span>    </span>
-<span>    <span class="va">RECIPES</span></span>
-<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>We can test this on the page of bubbly recipes:</p>
-<div class="cell">
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">process_url</span><span class="op">(</span><span class="st">"https://cocktails.hadley.nz/tag-bubbles.html"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 29 × 2
-   title                    ingredients               
-   &lt;chr&gt;                    &lt;chr&gt;                     
- 1 "Air mail"               3 oz champagne            
- 2 "Air mail"               1 oz rum, white           
- 3 "Air mail"               ½ oz lime juice           
- 4 "Air mail"               ¼ oz simple syrup         
- 5 "Campari spritz\n\nfizz" 3 oz champagne            
- 6 "Campari spritz\n\nfizz" 1½ oz Campari             
- 7 "Campari spritz\n\nfizz" 1 oz soda water           
- 8 "Campari spritz\n\nfizz" 2 drops lime acid         
- 9 "Dandelo"                2 oz luxardo bitter bianco
-10 "Dandelo"                ½ oz lemon juice          
-# ℹ 19 more rows</code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<ol start="5" type="1">
-<li>
-<p>Use your function from the first step with the list of URLs from Step 1 so that you get all of the recipes on the site. Combine your results into one large data frame that looks something like:</p>
-<table class="caption-top table">
-<thead><tr class="header">
-<th>Name</th>
-<th>Ingredient</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>Daiquiri</td>
-<td>2 oz Rum</td>
-</tr>
-<tr class="even">
-<td>Daiquiri</td>
-<td>1 oz Lime Juice</td>
-</tr>
-<tr class="odd">
-<td>Daiquiri</td>
-<td>0.75 oz Simple Syrup</td>
-</tr>
-</tbody>
-</table>
-<p>To be polite, you may want to add <code>req_cache</code> to your requests so you are not requesting the same page many times over.</p>
-</li>
-</ol>
-<div class="callout callout-style-default callout-tip callout-titled" title="Solution">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Solution
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-16" class="callout-16-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div class="cell">
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">ALL_RECIPES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="kw">for</span><span class="op">(</span><span class="va">page</span> <span class="kw">in</span> <span class="va">PAGE_URLS</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">ALL_RECIPES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span><span class="va">ALL_RECIPES</span>, <span class="fu">process_url</span><span class="op">(</span><span class="va">page</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">ALL_RECIPES</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 3,548 × 2
-   title                                ingredients          
-   &lt;chr&gt;                                &lt;chr&gt;                
- 1 "Bachelor"                           1 oz rum, dark       
- 2 "Bachelor"                           1 oz Meletti         
- 3 "Bachelor"                           ¼ oz absinthe        
- 4 "Bachelor"                           1 dash orange bitters
- 5 "Bachelor"                           1 dash Angostura     
- 6 "Banana Manhattan"                   1½ oz rum, aged      
- 7 "Banana Manhattan"                   ½ oz sweet vermouth  
- 8 "Banana Manhattan"                   ½ oz banana liqueur  
- 9 "Banana Manhattan"                   1 dash absinthe      
-10 "Industry sour\n\nadventurous, sour" 1 oz absinthe, pernod
-# ℹ 3,538 more rows</code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<ol start="6" type="1">
-<li>
-<p>Save your code for next week. Next week we will investigate string processing and learn how to turn a table like:</p>
-<table class="caption-top table">
-<thead><tr class="header">
-<th>Name</th>
-<th>Ingredient</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>Daiquiri</td>
-<td>2 oz Rum</td>
-</tr>
-<tr class="even">
-<td>Daiquiri</td>
-<td>1 oz Lime Juice</td>
-</tr>
-<tr class="odd">
-<td>Daiquiri</td>
-<td>0.75 oz Simple Syrup</td>
-</tr>
-</tbody>
-</table>
-<p>into</p>
-<table class="caption-top table">
-<thead><tr class="header">
-<th>Name</th>
-<th>Ingredient</th>
-<th>Amount</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>Daiquiri</td>
-<td>Rum</td>
-<td>2</td>
-</tr>
-<tr class="even">
-<td>Daiquiri</td>
-<td>Lime Juice</td>
-<td>1</td>
-</tr>
-<tr class="odd">
-<td>Daiquiri</td>
-<td>Simple Syrup</td>
-<td>0.75</td>
-</tr>
-</tbody>
-</table>
-</li>
-</ol>
-<div class="callout callout-style-default callout-caution callout-titled" title="FP Solution">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-FP Solution
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-17" class="callout-17-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p>If you are comfortable with (or want to become comfortable with) the functional programming tools of <code>purrr</code>, you can write this entire analysis in one swoop:</p>
-<div class="cell">
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
-<span><span class="va">process_recipe</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">recipe</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="va">title</span> <span class="op">&lt;-</span> <span class="va">recipe</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">".title"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text2</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>    <span class="va">ingredients</span> <span class="op">&lt;-</span> <span class="va">recipe</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"li"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text2</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>    </span>
-<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>title<span class="op">=</span><span class="va">title</span>, ingredients<span class="op">=</span><span class="va">ingredients</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
+<span><span class="va">null_samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="fl">1e5</span>, <span class="fu">sim_sd_diff</span><span class="op">(</span><span class="va">n_africa</span>, <span class="va">n_nonafr</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">BASE_URL</span> <span class="op">&lt;-</span> <span class="st">"https://cocktails.hadley.nz/"</span></span>
-<span></span>
-<span><span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="va">BASE_URL</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"nav a"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_attr.html">html_attr</a></span><span class="op">(</span><span class="st">"href"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="va">BASE_URL</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">req_perform</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">resp_body_html</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">html_elements</span>, <span class="st">"article"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/reduce.html">reduce</a></span><span class="op">(</span><span class="va">c</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">process_recipe</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/list_c.html">list_rbind</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># If the observed data it outside this range, we will reject the null</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html">quantile</a></span><span class="op">(</span><span class="va">null_samples</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.025</span>, <span class="fl">0.975</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 3,548 × 2
-   title                                ingredients          
-   &lt;chr&gt;                                &lt;chr&gt;                
- 1 "Bachelor"                           1 oz rum, dark       
- 2 "Bachelor"                           1 oz Meletti         
- 3 "Bachelor"                           ¼ oz absinthe        
- 4 "Bachelor"                           1 dash orange bitters
- 5 "Bachelor"                           1 dash Angostura     
- 6 "Banana Manhattan"                   1½ oz rum, aged      
- 7 "Banana Manhattan"                   ½ oz sweet vermouth  
- 8 "Banana Manhattan"                   ½ oz banana liqueur  
- 9 "Banana Manhattan"                   1 dash absinthe      
-10 "Industry sour\n\nadventurous, sour" 1 oz absinthe, pernod
-# ℹ 3,538 more rows</code></pre>
+<pre><code>      2.5%      97.5% 
+-0.2077264  0.2091694 </code></pre>
+</div>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># The observed value is way outside the quantile sampling, so we reject the null</span></span>
+<span><span class="va">COUNTRIES</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>in_africa <span class="op">=</span> <span class="op">(</span><span class="va">continent</span> <span class="op">==</span> <span class="st">"Africa"</span><span class="op">)</span>, </span>
+<span>           density <span class="op">=</span> <span class="va">population</span> <span class="op">/</span> <span class="va">area</span>, </span>
+<span>           overall_sd_dens <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">density</span>, na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">in_africa</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span><span class="op">(</span>sd_dens <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">density</span>, na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/nth.html">first</a></span><span class="op">(</span><span class="va">overall_sd_dens</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span><span class="op">(</span>diff_sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html">diff</a></span><span class="op">(</span><span class="va">sd_dens</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 1
+  diff_sd
+    &lt;dbl&gt;
+1   -1.04</code></pre>
 </div>
 </div>
-<p>This is clearly quite terse and would benefit from some additional comments, but I’m omitting them so you can try to deconstruct this code yourself if you want to practice functional programming idioms.</p>
+<p>In this case, we quite clearly reject the null. This is not surprising as some of the highest density (Monaco, Singapore, Hong Kong) and lowest density (Antarctica) countries are not in Africa, so we expect there to be more spread outside Africa than within Africa.</p>
 </div>
 </div>
 </div>
+<p>You might reasonably ask whether normal sampling is correct here as the distribution of densities does not appear to follow a normal distribution. Techniques like <em>bootstrapping</em> can be used to relax the assumption of normality but we will not purse it here.</p>
+</section><section id="tidymodels" class="level1"><h1>Tidymodels</h1>
+<p>Work through the second model (tree ensembles, <em>i.e.</em>, <em>random forests</em>) at <a href="https://www.tidymodels.org/start/case-study#second-model" class="uri">https://www.tidymodels.org/start/case-study#second-model</a>.</p>
+<p>Note that you may need to begin with the data import section before following the random forest example.</p>
 
 
-<script type="ojs-module-contents">
-eyJjb250ZW50cyI6W119
-</script><div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
-<div id="exercise-loading-status" class="d-flex gap-2">
-
-</div>
-<div class="spinner-grow spinner-grow-sm">
-
-</div>
-</div>
-<script type="vfs-file">
-W10=
-</script></section></section></main><!-- /main --><script type="ojs-module-contents">
-eyJjb250ZW50cyI6W119
-</script><script type="module">
-if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
-window._ojs.paths.runtimeToDoc = "../../labs";
-window._ojs.paths.runtimeToRoot = "../..";
-window._ojs.paths.docToRoot = "..";
-window._ojs.selfContained = false;
-window._ojs.runtime.interpretFromScriptTags();
-</script><script id="quarto-html-after-body" type="application/javascript">
+</section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
     const anchorJS = new window.AnchorJS();

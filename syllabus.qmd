@@ -2,6 +2,9 @@
 title: "{{< var course.short >}} - Course Syllabus"
 filters: 
  - list-table
+format:
+    html: 
+        page-layout: "full"
 ---
 
 **`All syllabus and course schedule provisions subject to change with suitable advance notice.`**
@@ -18,7 +21,7 @@ filters:
 #### Lecture / Lab Sessions
 
 -   Virtual (Synchronous Online)
--   Tuesdays / Thursdays 6:05pm-9:00pm
+-   Thursdays 6:05pm-9:00pm
     -   Zoom link provided via Brightspace
 
 #### Office Hours
@@ -26,9 +29,9 @@ filters:
 -   In-Person
     -   [Baruch Main Campus (1 Bernard Baruch Way)](https://www.baruch.cuny.edu/campus-map-and-directions/)
     -   Newman Vertical Campus (NVC) 11-246
-    -   By appointment only
+    -   Wednesdays 5:00-5:45pm
 -   Virtual:
-    -   Tuesdays and Thursdays 5:00pm-5:45pm
+    -   Thursdays 5:00pm-5:45pm
     -   Zoom link provided via Brightspace
 
 ### Grading
@@ -36,15 +39,25 @@ filters:
 -   24% [Weekly Pre-Assignments](./preassignments.html)
     -   3% Each (best eight of ten: lowest two dropped)
     -   Submission *via* Brightspace
--   36% [Mini Projects](./miniprojects.html)
-    -   7% Each (four total)
-    -   2% per Peer Feedback (Meta-Review)
--   40% [Course Project](./project.html)
+-   30% [Mini Projects #01-#04](./miniprojects.html) (Best 3 of 4)
+    -   8% per submission
+    -   2% per peer feedback (scored *via* meta-review)
+-   46% [Course Project](./project.html)
+    -   1% Team Contract
     -   5% Proposal
     -   5% Mid-term Check-In
-    -   10% Final Presentation
-    -   7.5% Final Report
-    -   12.5% Individual Evaluation
+    -   2.5% Midterm Peer Evaluation
+    -   7.5% Final Presentation
+    -   7.5% Group Summary Report
+    -   12.5% Individual Technical Report
+    -   5% Final Peer Evaluation
+
+Points will be aggregated for a maximum class score of 1000, so *e.g.*,
+each pre-assignment will have a max score of 30, while the final peer
+evaluation will have a max score of 50. 
+
+Final course grades will be curved in accordance with relevant program,
+departmental, school, and college policies.[^1]
 
 *Opportunities for Extra Credit:* Several opportunities for extra credit
 will be made available. These include:
@@ -64,9 +77,9 @@ will be made available. These include:
    anything, being a recent learner helps you approach this topic with new eyes
    and to identify un-clear or "dangerous" edges. 
    
-   Obviously, you should try to make your contributions as accurate as possible, 
-   but let yourself be paralyzed by concern: the instructor will review any 
-   contributions before making anything "official."
+   Obviously, you should try to make your contributions as accurate as 
+   possible, but avoid letting yourself be paralyzed by concern: the 
+   instructor will review any contributions before making anything "official."
 
 <!-- 
 4. Submission of homework from other Baruch {{< var course.semester >}} courses
@@ -85,8 +98,7 @@ will be made available. These include:
 
 -->
 
-Final course grades will be curved in accordance with relevant program,
-departmental, school, and college policies.[^1]
+Extra credit will be awarded at the instructor's sole discretion. 
 
 [^1]: Theoretically, this may result in scores equivalent to an `A` in an
 un-curved course receiving a lower grade in this course. In practice, the
@@ -96,11 +108,11 @@ does not anticipate "down-curving" happening.
 #### Regrading Policy
 
 If you feel an assignment has been improperly graded, please contact the
-instructor using the appropriate Brightspace quiz ("Regrade Request Form") within
-48 hours of the graded assignment being returned. Note that the instructor will
-regrade the assignment *de novo*, so your grade may be adjusted upwards or
-downwards. Requests for re-grades after 48 hours will not be honored outside of
-exceptional circumstances.
+instructor using the appropriate Brightspace quiz ("Regrade Request Form")
+within 48 hours of the graded assignment being returned. Note that the 
+instructor will regrade the assignment *de novo*, so your grade may be
+adjusted upwards or downwards. Requests for re-grades after 48 hours will
+not be honored outside of exceptional circumstances.
 
 #### Late Work Policy
 
@@ -109,22 +121,21 @@ be accepted. Specifically, late submission slows down the
 peer review cycle used in this course. All assignments can
 be submitted multiple times on Brightspace, so you are
 **strongly** encouraged to submit early and to submit often.
-Students are also encouraged to load the course deadlines
-file ([Tuesday section](./key_dates_students_gcal_tuesday.csv), [Thursday
-section](./key_dates_students_gcal_thursday.csv)) into their personal
+Students are also encouraged to load the [course deadlines
+file](./key_dates_students_gcal.csv) into their personal
 calendar to better track key course dates.
 
-Please note that work **must be submitted on Brightspace** unless *specifically*
-otherwise stated in the written course description or approved *in writing*
-by the instructor at least 48 hours before the deadline. Email submissions are
-not allowed.[^email]
+Please note that work **must be submitted on Brightspace** unless 
+*specifically* otherwise stated in the written course description or 
+approved *in writing* by the instructor at least 48 hours before 
+the deadline. Email submissions are not allowed.[^email]
 
-[^email]: Though ubiquitous, email is a remarkably 'flaky' service, providing
-the sender no way to guarantee their message arrives untampered and providing
-the recipient no way to guarantee the providence of a message received.
-(This is not quite true: there are [tools for more secure 
-email](https://gnupg.org) but they are somewhat more difficult to use and
-are not supported at CUNY.)
+[^email]: Though ubiquitous, email is a remarkably 'flaky' service, 
+providing the sender no way to guarantee their message arrives
+untampered and providing the recipient no way to guarantee the provenance 
+of a message received. (This is not quite true: there are 
+[tools for more secure email](https://gnupg.org) but they are somewhat 
+more difficult to use and are not supported at CUNY.)
 Brightspace is integrated with CUNY's Identity Verification Services and
 allows students to guarantee correct submission. Note that Brightspace does
 not, by default, send students an email confirming submission, but I believe
@@ -174,6 +185,7 @@ class_date <- function(n){
 #| echo: false
 #| message: false
 library(tidyverse)
+date_file <- "key_dates.csv"
 holiday_date <- function(n, details=FALSE){
     h <- read_csv(date_file) |>
             filter(`Course Element` == "No Class") |>
@@ -185,13 +197,7 @@ holiday_date <- function(n, details=FALSE){
         h |> pull(Date) |> format("%Y-%m-%d")
     }
 }
-```
 
-
-```{r}
-#| echo: false
-#| message: false
-library(tidyverse)
 due_date_mini <- function(n, submission=TRUE, feedback=!submission){
     details <- if(feedback) "Mini-Project Peer Feedback Due" else "Mini-Project Due"
     
@@ -202,21 +208,33 @@ due_date_mini <- function(n, submission=TRUE, feedback=!submission){
         mutate(deadline = paste(format(Date, "%A %B %d, %Y"), "at", Time)) |>
         pull(deadline)
 }
+
+syllabus_quiz <- function(){
+    read_csv(date_file) |>
+        filter(`Course Element` == "Syllabus Quiz") |>
+        pull(Date) |> 
+        format("%Y-%m-%d")
+}
+
+final_report_date <- function(){
+    read_csv(date_file) |>
+        filter(`Course Element` == "Course Project") |>
+        pull(Date) |> 
+        max() |>
+        format("%Y-%m-%d")
+}
+
+final_grades_date <- function(){
+    read_csv(date_file) |>
+        filter(`Course Element` == "Grades Posted") |>
+        pull(Date) |> 
+        max() |>
+        format("%Y-%m-%d")
+}
 ```
 
 
-
-
-::: {.panel-tabset}
-
-## Tuesday Section
-
-```{r}
-#| echo: false
-date_file <- "key_dates_tuesday.csv"
-```
-
-::: {.list-table width="1,1,1,1,1,1,1" aligns="c,c,l,l,l,l,l" header-rows=1 .hover}
+::: {.list-table width="1,1,1,1,1,1,1,1" aligns="c,c,l,l,l,l,l,l" header-rows=1 .hover}
 
    * - Week 
      - Lecture Date
@@ -224,6 +242,7 @@ date_file <- "key_dates_tuesday.csv"
      - Pre-Assignment
      - In-Class Lab
      - Mini-Projects
+     - Peer Feedback
      - Additional Notes
      
    * - 1
@@ -233,20 +252,28 @@ date_file <- "key_dates_tuesday.csv"
        2. `git` and GitHub
      - None
      - [Lab #01](./labs/lab01.html)
-     - [Mini-Project #00](./miniprojects/mini00.html) assigned. 
+     - [Mini-Project #00](./mini/mini00.html) assigned. 
        Due `r due_date_mini(0)`
        
    * - 2
      - `r class_date (02)`
-     - 1. Introduction to Reproducible Research:
+     - Introduction to Course Project
+     
+       1. Introduction to Reproducible Research:
           - Markdown and Quarto
           - GitHub Pages
        2. Getting Help
        3. Interactive Use of `R`
           a. Use of the REPL
           b. Installing and Loading Packages
-     - [PA #02](./preassigns/pa02.html)
+     - [PA #02](./pre/pa02.html) due at start of class (6:00pm)
      - [Lab #02](./labs/lab02.html)
+     
+   * - 
+     - `r holiday_date(1)`
+     <td colspan="4" style="text-align:center"> ***`r holiday_date(1, details=TRUE)`*** </td>
+     - 
+     - Syllabus Quiz / Verification of Enrollment due on `r syllabus_quiz()`
 
    * - 3
      - `r class_date (03)`
@@ -257,51 +284,51 @@ date_file <- "key_dates_tuesday.csv"
        4. Function Calls
        5. Data Frames
        
-       Introduction to Course Project
-     - [PA #03](./preassigns/pa03.html)
+     - [PA #03](./pre/pa03.html) due at start of class (6:00pm)
      - [Lab #03](./labs/lab03.html)
-     - [Mini-Project #01](./miniprojects/mini01.html) assigned. 
-       Due `r due_date_mini(1)`
-     - Peer Feedback on Mini Project #00 due 
-       `r due_date_mini(0, feedback=TRUE)`
-
+     - [Mini-Project #00](./mini/mini00.html) due `r due_date_mini(0)`.
+     
+       [Mini-Project #01](./mini/mini01.html) assigned; due `r due_date_mini(1)`
+     - Peer Feedback on Mini Project #00 assigned; 
+       due `r due_date_mini(0, feedback=TRUE)`
+     - Project Team Rosters due at 6:00pm
+     
+       Professor will assign teams for 'unmatched'
+       students at the end of class
+       
    * - 4
      - `r class_date (04)`
+     - <td colspan="4" style="text-align:center"> **In-Class Project Proposal Presentations** <br> *Optional Enrichment Topic: Additional R Basics* </td>
+     - Team Contract and Slides due at 6:00pm
+
+   * - 5
+     - `r class_date (05)`
      - Tidy Data Manipulation I:
        1. Single Table Operations
        2. Factors
        3. Dates & Times
        
        Review of `git` fundamentals.
-     - [PA #04](./preassigns/pa04.html)
-     - [Lab #04](./labs/lab04.html)
+     - [PA #05](./pre/pa05.html) due at start of class (6:00pm)
+     - [Lab #05](./labs/lab05.html)
 
-   * - 
-     - `r holiday_date(1)`
-     <td colspan="5" style="text-align:center"> ***`r holiday_date(1, details=TRUE)`*** </td>
 
-   * - 5
-     - `r class_date (05)`
+   * - 6
+     - `r class_date (06)`
      - Tidy Data Manipulation II:
        1. Multi-Table Operations (Joins)
        2. Pivots
        3. Working with Missing Data
        
        Debugging Techniques
-     - [PA #05](./preassigns/pa05.html)
-     - [Lab #05](./labs/lab05.html)
-     - [Mini-Project #02](./miniprojects/mini02.html) assigned. 
+     - [PA #06](./pre/pa06.html) due at start of class (6:00pm)
+     - [Lab #06](./labs/lab06.html)
+     - [Mini-Project #01](./mini/mini01.html) due `r due_date_mini(1)`.
+     
+       [Mini-Project #02](./mini/mini02.html) assigned. 
        Due `r due_date_mini(2)`
-     - Peer Feedback on Mini Project #01 due 
+     - Peer Feedback on Mini Project #01 assigned; due 
        `r due_date_mini(1, feedback=TRUE)`
-
-   * - 6
-     - `r class_date (06)`
-     <td colspan="5" style="text-align:center"> **In-Class Project Proposal Presentations** <br> *Optional Enrichment Topic: SQL* </td>
-
-   * - 
-     - `r holiday_date(2)`
-     <td colspan="5" style="text-align:center"> ***`r holiday_date(2, details=TRUE)`*** </td>
 
    * - 7
      - `r class_date (07)`
@@ -309,31 +336,44 @@ date_file <- "key_dates_tuesday.csv"
        - Introduction to `ggplot2`
        - Customizing Formatting
        - Maps
-     - [PA #07](./preassigns/pa07.html)
+     - [PA #07](./pre/pa07.html) due at start of class (6:00pm)
      - [Lab #07](./labs/lab07.html)
-
+     
    * - 8
      - `r class_date (08)`
-     - Tools for Interactive Data Analysis
-       - `shiny`
-       - `ggplot2` Extensions for Animated and Interactive Plots
-     - [PA #08](./preassigns/pa08.html)
-     - [Lab #08](./labs/lab08.html)
-     - [Mini-Project #03](./miniprojects/mini03.html) assigned. 
-       Due `r due_date_mini(3)`
-     - Peer Feedback on Mini Project #02 due 
-       `r due_date_mini(2, feedback=TRUE)`
+     <td colspan="5" style="text-align:center"> **Mid-Semester Check-In Presentations** <br> *Optional Enrichment Topic: SQL* </td>
+     - Mid-Semester Peer Evaluation and Slides due at 6:00pm
      
+   * - 
+     - `r holiday_date(2)`
+     <td colspan="3" style="text-align:center"> ***`r holiday_date(2, details=TRUE)`*** </td>
+     - [Mini-Project #02](./mini/mini02.html) due `r due_date_mini(2)`.
+     
+       [Mini-Project #03](./mini/mini03.html) assigned. 
+       Due `r due_date_mini(3)`
+     - Peer Feedback on Mini Project #02 assigned; due 
+       `r due_date_mini(2, feedback=TRUE)`
+
+   * - 
+     - `r holiday_date(3)`
+     <td colspan="3" style="text-align:center"> ***`r holiday_date(3, details=TRUE)`*** </td>
+
    * - 9
      - `r class_date (09)`
      - Data Import
-     - [PA #09](./preassigns/pa09.html)
+     - [PA #09](./pre/pa09.html) due at start of class (6:00pm)
      - [Lab #09](./labs/lab09.html)
      
+     
    * - 10
-     - `r class_date (10)`
-     <td colspan="5" style="text-align:center"> **Mid-Semester Check-In Presentations** <br> *Optional Enrichment Topic: Functional Programming Tools* </td>
-
+     - `r class_date (10)` **NB: Tuesday**
+     - Tools for Interactive Data Analysis
+       - `shiny`
+       - `ggplot2` Extensions for Animated and Interactive Plots
+     - [PA #10](./pre/pa10.html) due at start of class (6:00pm)
+     - [Lab #10](./labs/lab10.html)
+     - 
+     - 
    * - 11
      - `r class_date (11)`
      - Elements of Web Scraping
@@ -341,11 +381,11 @@ date_file <- "key_dates_tuesday.csv"
        - `httr2`
        - `rvest`
        - JSON
-     - [PA #11](./preassigns/pa11.html)
+     - [PA #11](./pre/pa11.html) due at start of class (6:00pm)
      - [Lab #11](./labs/lab11.html)
-     - [Mini-Project #04](./miniprojects/mini04.html) assigned. 
+     - [Mini-Project #04](./mini/mini04.html) assigned. 
        Due `r due_date_mini(4)`
-     - Peer Feedback on Mini Project #03 due 
+     - Peer Feedback on Mini Project #03 assigned; due 
        `r due_date_mini(3, feedback=TRUE)`
 
    * - 12
@@ -353,187 +393,39 @@ date_file <- "key_dates_tuesday.csv"
      - 
        - Strings & Regular Expressions
        - Classical Statistical Modeling in `R`
-     - [PA #12](./preassigns/pa12.html)
+     - [PA #12](./pre/pa12.html) due at start of class (6:00pm)
      - [Lab #12](./labs/lab12.html)
     
    * - 13
      - `r class_date (13)`
-     - Predictive Modeling in `R`
-     - [PA #13](./preassigns/pa13.html)
-     - [Lab #13](./labs/lab13.html)
-     - 
-     - Peer Feedback on Mini Project #04 due 
-       `r due_date_mini(4, feedback=TRUE)`
-
+     <td colspan="5" style="text-align:center"> **Final Presentations** <br> **Optional Enrichment Topic: Functional Programming in R** </td>
+     - Slides due at 6:00pm
+     
    * - 14
      - `r class_date(14)`
-     <td colspan="5" style="text-align:center"> **Final Presentations** <br> **Course Wrap-Up** </td>
-::: 
-
-
-## Thursday Section
-
-```{r}
-#| echo: false
-date_file <- "key_dates_thursday.csv"
-```
-
-::: {.list-table width="1,1,1,1,1,1,1" aligns="c,c,l,l,l,l,l" header-rows=1 .hover}
-
-   * - Week 
-     - Lecture Date
-     - Topics
-     - Pre-Assignment
-     - In-Class Lab
-     - Mini-Projects
-     - Additional Notes
+     - **Course Wrap-Up** </br>
      
-   * - 1
-     - `r class_date (01)`
-     - Course Overview and Key Infrastructure:
-       1. `R` and `RStudio`
-       2. `git` and GitHub
-     - None
-     - [Lab #01](./labs/lab01.html)
-     - [Mini-Project #00](./miniprojects/mini00.html) assigned. 
-       Due `r due_date_mini(0)`
-       
-   * - 2
-     - `r class_date (02)`
-     - 1. Introduction to Reproducible Research:
-          - Markdown and Quarto
-          - GitHub Pages
-       2. Getting Help
-       3. Interactive Use of `R`
-          a. Use of the REPL
-          b. Installing and Loading Packages
-     - [PA #02](./preassigns/pa02.html)
-     - [Lab #02](./labs/lab02.html)
-
-   * - 3
-     - `r class_date (03)`
-     - Basic Data and Control Structures in `R`:
-       1. Vectors
-       2. Subsetting
-       3. Control Flow
-       4. Function Calls
-       5. Data Frames
-       
-       Introduction to Course Project
-     - [PA #03](./preassigns/pa03.html)
-     - [Lab #03](./labs/lab03.html)
-     - [Mini-Project #01](./miniprojects/mini01.html) assigned. 
-       Due `r due_date_mini(1)`
-     - Peer Feedback on Mini Project #00 due 
-       `r due_date_mini(0, feedback=TRUE)`
-
-   * - 4
-     - `r class_date (04)`
-     - Tidy Data Manipulation I:
-       1. Single Table Operations
-       2. Factors
-       3. Dates & Times
-       
-       Review of `git` fundamentals.
-     - [PA #04](./preassigns/pa04.html)
-     - [Lab #04](./labs/lab04.html)
-
-   * - 5
-     - `r class_date (05)`
-     - Tidy Data Manipulation II:
-       1. Multi-Table Operations (Joins)
-       2. Pivots
-       3. Working with Missing Data
-       
-       Debugging Techniques
-     - [PA #05](./preassigns/pa05.html)
-     - [Lab #05](./labs/lab05.html)
-     - [Mini-Project #02](./miniprojects/mini02.html) assigned. 
-       Due `r due_date_mini(2)`
-     - Peer Feedback on Mini Project #01 due 
-       `r due_date_mini(1, feedback=TRUE)`
-
-   * - 
-     - `r holiday_date(1)`
-     <td colspan="5" style="text-align:center"> ***`r holiday_date(1, details=TRUE)`*** </td>
-
-   * - 6
-     - `r class_date (06)`
-     <td colspan="5" style="text-align:center"> **In-Class Project Proposal Presentations** <br> *Optional Enrichment Topic: SQL* </td>
-
-   * - 7
-     - `r class_date (07)`
-     - Plotting I:
-       - Introduction to `ggplot2`
-       - Customizing Formatting
-       - Maps
-     - [PA #07](./preassigns/pa07.html)
-     - [Lab #07](./labs/lab07.html)
-
-   * - 8
-     - `r class_date (08)`
-     - Tools for Interactive Data Analysis
-       - `shiny`
-       - `ggplot2` Extensions for Animated and Interactive Plots
-     - [PA #08](./preassigns/pa08.html)
-     - [Lab #08](./labs/lab08.html)
-     - [Mini-Project #03](./miniprojects/mini03.html) assigned. 
-       Due `r due_date_mini(3)`
-     - Peer Feedback on Mini Project #02 due 
-       `r due_date_mini(2, feedback=TRUE)`
+       Predictive Modeling in `R`
      
-   * - 9
-     - `r class_date (09)`
-     - Data Import
-     - [PA #09](./preassigns/pa09.html)
-     - [Lab #09](./labs/lab09.html)
-     
-   * - 10
-     - `r class_date (10)`
-     <td colspan="5" style="text-align:center"> **Mid-Semester Check-In Presentations** <br> *Optional Enrichment Topic: Functional Programming Tools* </td>
-
-   * - 11
-     - `r class_date (11)`
-     - Elements of Web Scraping
-       - Introduction to HTTP and HTML
-       - `httr2`
-       - `rvest`
-       - JSON
-     - [PA #11](./preassigns/pa11.html)
-     - [Lab #11](./labs/lab11.html)
-     - [Mini-Project #04](./miniprojects/mini04.html) assigned. 
-       Due `r due_date_mini(4)`
-     - Peer Feedback on Mini Project #03 due 
-       `r due_date_mini(3, feedback=TRUE)`
-
-   * - 12
-     - `r class_date (12)`
-     - 
-       - Strings & Regular Expressions
-       - Classical Statistical Modeling in `R`
-     - [PA #12](./preassigns/pa12.html)
-     - [Lab #12](./labs/lab12.html)
-
-   * - 
-     - `r holiday_date(2)`
-     <td colspan="5" style="text-align:center"> ***`r holiday_date(2, details=TRUE)`*** </td>
-
-   * - 13
-     - `r class_date (13)`
-     - Predictive Modeling in `R`
-     - [PA #13](./preassigns/pa13.html)
-     - [Lab #13](./labs/lab13.html)
-     - 
-     - Peer Feedback on Mini Project #04 due 
+     - [PA #14](./pre/pa14.html) due at start of class (6:00pm)
+     - [Lab #14](./labs/lab14.html)
+     - [Mini-Project #04](./mini/mini04.html) due `r due_date_mini(4)`.
+     - Peer Feedback on Mini Project #04 assigned; due 
        `r due_date_mini(4, feedback=TRUE)`
-
-   * - 14
-     - `r class_date(14)`
-     <td colspan="5" style="text-align:center"> **Final Presentations** <br> **Course Wrap-Up** </td>
+     
+   * - 
+     - Finals Period
+      <td colspan="6" style="text-align:center"> <p>Group Report, Individual Report, Final Peer Evaluations due `r final_report_date()` (Tentatively)</p> </br> <p>Final Grades posted to CUNYFirst by `r final_grades_date()`</p>
 ::: 
 
-:::
+### Syllabus Quiz
 
+After the first day of class, a *syllabus quiz* will be available on
+Brightspace. This quiz covers the key points of this syllabus and course
+policies. You must pass this quiz with 100% to be allowed to remain in this
+course. If you have not passed the syllabus quiz by the 
+[Verification of Enrollment](https://enrollmentmanagement.baruch.cuny.edu/registrar/verification-of-enrollment/)
+deadline, you may receive a `WN` grade and be removed from this course.
 
 ### Workload Expectations
 
@@ -547,25 +439,22 @@ require approximately 6 hours of out-of-class work from an _average_
 student, or 90 hours total over the course of the semester.[^avg][^gc] This
 time should be roughly allocated as: 
 
-- Weekly Pre-Assignments (10 hours)
-- Review of Previous Week's Materials (10 hours)
-- Mini-Projects: (35 hours total)
+- Review of Lecture Materials (5 hours = 0.5 hours $\times$ 10 lectures)
+- Weekly Pre-Assignments (10 hours = 1 hour $\times$ 10 Pre-Assignments)
+- Mini-Projects: (45 hours total)
   - Mini-Project #00 (3 hours):
     - Initial Submission (2 hours)
     - Peer Feedback (1 hour)
-  - Mini-Projects #01-#04 (32 hours total; average 8 hours per mini-project)
-    - Initial Submission (28 hours total)
-      - 9 hours each for Mini-Projects [#01](./miniprojects/mini01.html) and [#02](./miniprojects/mini02.html); and
-      - 5 hours each for Mini-Projects [#03](./miniprojects/mini03.html) and
-      [#04](./miniprojects/mini04.html)
-    - Peer Feedback (4 hours total; 1 hour per mini-project)
-- Course Project (35 hours)
-  - Proposal Presentation (3 hours)
-  - Check-In Presentation (3 hours)
-  - Final Presentation (5 hours)
+  - Mini-Projects #01-#04 (42 hours total, assuming skipping one 3 MP)
+    - Initial Submission (39 hours = 13 hours $\times$ 3 MPs)
+    - Peer Feedback (3 hours = 1 hour $\times$ 3 MPs)
+- Course Project (30 hours)
+  - Team Formation & Proposal Presentation (2 hours)
+  - Check-In Presentation & Peer Evaluation (2 hours)
+  - Final Presentation (3 hours)
+  - Group Report & Peer Evaluation (3 hours)
   - Individual Report (20 hours)
-  - Group Report (4 hours)
-  
+
 Note that, for the course project, the individual and group reports will
 require work throughout the semester, not simply at the end, though the majority
 of the effort is likely required in the latter half of the semester. As such,
@@ -580,7 +469,7 @@ course with:
     iii) Fluency with statistics and data analysis at the level of (at least) 
          STA 9708, ideally STA 9700; 
 
-    <br>and is earning a B-range grade. If you have less background or are 
+    <br>and is earning a **B**-range grade. If you have less background or are 
     aiming for a higher grade, you should expect to commit proportionally
     more time to this course. 
     

@@ -1,0 +1,241 @@
+---
+mp_num: "01"
+mp_title: "TBD"
+mp_skills: "TBD"
+mp_application: "TBD"
+mp_rhetoric: "TBD"
+mp_max_ec: 4
+filters:
+    - list-table
+---
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(tidyverse)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, Time)))
+```
+
+```{r}
+#| echo: false
+#| warning: false
+library(glue)
+library(rmarkdown)
+mp_id <- as.integer(rmarkdown::metadata$mp_num)
+mp <-  DATES |> filter(element == "Mini-Projects", 
+                       item == mp_id)
+mp_file <- list(qmd=glue("`mp{sprintf('%02g', mp_id)}.qmd`"), 
+                html=glue("`mp{sprintf('%02g', mp_id)}.html`"),
+                html_long=glue("`docs/mp{sprintf('%02g', mp_id)}.html`"))
+```
+
+### Due Dates
+
+-   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+-   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
+-   **Peer Feedback:**
+    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
+    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
+    
+*Estimated Time to Complete: 13-15 Hours*
+
+*Estimated Time for Peer Feedback: 1 Hour*
+
+
+------------------------------------------------------------------------
+
+
+## Welcome to {{< var course.short >}} Mini Projects!
+
+In the {{< var course.short >}} Mini-Projects, you will perform basic data
+analyses intended to model best practices for your course final project.
+(Note, however, that these are *mini*-projects; your final course project is
+expected to be far more extensive than any single MP.)
+
+## Introduction
+
+TBD
+
+In this mini-project, you will: 
+
+1) Practice use of `dplyr` for analysis of tabular data
+2) Practice use of `quarto` and Reproducible Research Tools for Effective
+   Communication of Data Analysis Results
+3) Begin your professional data science portfolio. 
+
+
+### Student Responsibilities
+
+For purposes of MPs, we are dividing the basic data analytic workflow into
+several major stages:
+
+
+{{< include _responsibilities.qmd >}}
+
+In early stages of the course, such as this MP, I will 'scaffold' much of the
+analysis for you, leaving only those stages we have discussed in class for you
+to fill in. As the course progresses, the mini-projects will be more
+self-directed and results less standardized.
+
+### Rubric
+
+{{< var course.short >}} Mini-Projects are evaluated using *peer grading* with 
+*meta-review* by the course staff. The following basic rubric will be used for 
+all mini-projects:
+
+{{< include _rubric.qmd >}}
+
+At this early point, you are not responsible for all elements of this rubric. 
+In particular, all submissions will receive an automatic 10/10 for Data 
+Visualization as this is outside the scope of this mini-project. Furthermore, 
+because I am providing code to download the data, load it into
+`R`, and prepare it for analysis, all reports submitted using my code will 
+receive an automatic 10/10 for the 'Data Preparation' element of the rubric. 
+Finally, reports completing all tasks described under [Data Integration and
+Exploration](#eda) below should receive a 10/10 for the 'Exploratory Data Analysis'
+rubric element. 
+
+Taken together, you are only really responsible for these portions of the
+rubric: 
+
+- Written Communication
+- Project Skeleton
+- Tables & Document Presentation
+- Code Quality
+- Analysis and Findings
+
+Reports completing all key steps outlined below essentially start with
+30 free points. 
+
+
+::: {.callout-warning title="Writing Requirements"}
+
+Note that you are evaluated*on writing and communication in these 
+Mini-Projects. You are required to write a report in the prescribed style, 
+culminating in TBD. A submission that performs the instructor-specified 
+tasks, but does not write and give appropriate context and commentary will 
+score very poorly  on the relevant rubric elements. 
+
+In particular, if a submission does not include TBD and only
+answers the instructor prompts in narrative text, peer evaluators should judge 
+it to have "Good" quality Written Communication (at best) as key findings are 
+not conveyed appropriately. 
+
+Quarto's [code 
+folding](https://quarto.org/docs/output-formats/html-code.html#folding-code) 
+functionality is useful for "hiding" code so that it doesn't break the flow of
+your writing. 
+
+You can also make use of [Quarto's `contents`
+shortcode](https://quarto.org/docs/authoring/contents.html) to present
+code and findings in an order other than how the code should be executed.
+This is particularly useful if you want to include a figure or table in an 
+"Executive Summary" at the top of your submission.
+
+:::
+
+{{< include _submission.qmd >}}
+
+## Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}
+
+
+
+### Data Acquisition
+
+TBD
+
+::: {.callout-tip title="Task 1: Data Acquisition"}
+
+Using the code above, acquire the TBD. Copy the code into
+your Quarto document and make sure it runs successfully. 
+
+:::
+
+::: {.callout-caution title="Do Not `git add` Data Files"}
+
+Make sure that `git` is set to ignore data files, such as the one created above.
+Check the `git` pane in `RStudio` and make sure that TBD
+does not appear. (If you set up your `.gitignore` file correctly in
+[MP#00](./mini00.html), it should already be ignored.) If it is appearing, you
+may need to edit your `.gitignore` file.
+
+Removing a large data file from `git` is possible, but difficult. Don't get
+into a bad state!
+
+:::
+
+### Data Cleaning and Preparation
+TBD 
+
+### Initial Data Exploration {#eda}
+
+
+
+Before moving to our final analysis, we will do a bit of 
+_Exploratory Data Analysis_ (EDA). EDA serves many purposes in data science-- 
+quality control, hypothesis generation, outlier identification, *etc.*--but 
+perhaps the most important is simply knowing what information can be found in a 
+novel data set. Now that our data is imported and cleaned, it's time to start 
+our EDA. 
+
+When faced with a new data set, it is tempting to look only at the first few
+rows to get a sense of the data: `R` does this by default. In practice, I 
+recommend viewing a _random_ selection of rows instead. This won't guarantee you
+find any issues, but it increases the probability of finding issues in 
+older parts of a data set. 
+
+While we could continue investigating our data using `R`'s basic print-outs, 
+this is a good time to introduce the [`gt` package](https://gt.rstudio.com/) 
+which can be used to create complex tables natively in `R`.
+
+You can use the `gt` package as follows: 
+
+TBD
+
+We are now ready to begin some EDA.
+
+::: {.callout-tip title="Task 4: Exploratory Questions"}
+
+Using `dplyr` tools, answer the following questions. If your answer requires
+several rows, display your result as an table following the example
+above (make sure to make it 'publication quality'). If your answer is a single
+name or value, use Quarto's 
+[inline code](https://quarto.org/docs/computations/inline-code.html)
+functionality to place the values in a sentence; that is, you should answer in
+complete sentences, written as normal text with inline code for computed values.
+
+Note that, depending on the question, you may need to use different data frames.
+You will not need to 'combine' data sets to answer any of these questions. 
+
+1. TBD
+2. TBD
+3. TBD
+4. TBD
+5. TBD
+6. TBD
+7. TBD
+8. TBD
+9. TBD
+10. TBD
+
+:::
+
+
+### Final Deliverable: TBD
+
+TBD
+
+{{< include _aidisclosure.qmd >}}
+
+
+{{< include _echeader.qmd >}}
+
+TBD
+
+{{< include _footer.qmd >}}
+

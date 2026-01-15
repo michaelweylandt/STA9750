@@ -1,83 +1,20 @@
 ---
 session: "`r session <- 6; session`"
+last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
 class_date:
-  "`r library(tidyverse); 
-    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
+  "`r library(tidyverse);
+    class_date <- read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
-           Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
+format: revealjs
 ---
 
 {{< include _setup.qmd >}}
 
-```{r}
-#| include: false
-#| warning: false
-#| message: false
-library(tidyverse)
-DATES   <- read_csv("key_dates.csv")
-TODAY   <- DATES |> 
-    filter(`Course Element` == "Class Session", 
-           `Item Number` == session)
-
-TODAY_TUESDAY  <- TODAY |> 
-    filter(Section == "Tuesday")  |> 
-    pull(Date)
-TODAY_THURSDAY <- TODAY |> 
-    filter(Section == "Thursday") |> 
-    pull(Date)
-
-TODAY_TOPIC <- TODAY |>
-    pull(Details) |>
-    unique()
-
-ROSTERS <- DATES |> 
-    filter(Details == "Team Roster Submission") |>
-    pull(Date)
-
-PROPOSALS <- DATES |> 
-    filter(str_detect(Details, "Project Proposal")) |> 
-    pull(Date) |> 
-    strftime("%A %b %d") |> 
-    paste(collapse=" and ")
-
-library(jsonlite)
-library(yaml)
-
-N_TEAMS <- read_yaml("_teaching.yml")$gradedir |>
-    file.path("roster.json") |> 
-    read_json(simplify=TRUE) |> 
-    pull(project_team) |> 
-    max(na.rm=TRUE)
-
-N_ON_TEAM <- read_yaml("_teaching.yml")$gradedir |>
-    file.path("roster.json") |> 
-    read_json(simplify=TRUE) |> 
-    filter(!is.na(project_team)) |> 
-    NROW()
-
-N_NO_TEAM <- read_yaml("_teaching.yml")$gradedir |>
-    file.path("roster.json") |> 
-    read_json(simplify=TRUE) |> 
-    filter(is.na(project_team)) |> 
-    NROW()
-```
-    
 ## {{< var course.short >}} Week {{< meta session >}} 
 
-Today: 
-
-- Tuesday Section: `r TODAY_TUESDAY`
-- Thursday Section: `r TODAY_THURSDAY`
-
-. . . 
-
-`r TODAY_TOPIC`
+Today: `r TODAY_TOPIC`
 
 # Today
 
@@ -347,18 +284,18 @@ context.
 
 ## Mini-Project #02
 
-[MP#02 released](../miniprojects/mini02.html) - Housing Affordability
+[MP#02 released](../mini/mini02.html) - TBD
 
 . . .
 
-**Due`r get_mp_deadline(2)`** 🎃 [Note change!]
+**Due`r get_mp_deadline(2)`**
 
 - GitHub post (used for peer feedback) AND Brightspace
 - $\approx$ One Month: don't wait until the very end
 
 . . .
 
-Pay attention to [the rubric](../miniprojects/mini02.html#rubric)
+Pay attention to [the rubric](../mini/mini02.html#rubric)
 
 -   Writing and presentation are about 50% of your grade
 -   Evaluated on *rigor* and *thoughtfulness*, not necessarily correctness
@@ -436,10 +373,13 @@ Previous: Rat Pack, Subway Surfers, Going for Gold, *etc.*
 
 # On to the Show!
 
-## Tuesday Presentations {.scrollable}
+## Presentation Order {.scrollable}
+
+TBD
 
 ```{r}
 #| echo: false
+#| eval: false
 library(jsonlite)
 library(yaml)
 
@@ -468,6 +408,7 @@ PRESENTATIONS <- ROSTER |>
 
 ```{r}
 #| echo: false
+#| eval: false
 set.seed(9750)
 PRESENTATIONS |>
     filter(team_day == "T") |>
@@ -486,33 +427,6 @@ PRESENTATIONS |>
 
 :::
 
-## Thursday Presentations {.scrollable}
-
-First: `lencon279, BH2xj, aratikalor26, rashika-auti, rohansamavedam`
-
-Then: 
-
-::: {.smaller}
-
-```{r}
-#| echo: false
-set.seed(9750)
-PRESENTATIONS |>
-    filter(team_day == "R") |>
-    slice_sample(n=100) |>
-    select(-team_day) |> 
-    rename(`Team Name` = team_shortname, 
-           Members=members) |> 
-    mutate(`Presentation Order` = row_number()) |>
-    select(`Presentation Order`, `Team Name`, Members) |>
-    datatable(options=list(info=FALSE,
-                           paging=FALSE,
-                           searching=FALSE,
-                           ordering=FALSE), 
-              rownames=FALSE)
-```
-
-:::
 
 # Wrap-Up
 
@@ -532,8 +446,8 @@ Upcoming work from [course calendar](../index.qmd#calendar)
 ::: {.incremental}
 
 - [Mini-Project #01 Peer Feedback](../miniprojects.html) due on `r get_mp_pf_deadline(1)`
-- [Pre-Assignment #0`r next_session`](../preassigns/pa07.html) due `r get_pa_deadline(next_session)`
-- [Mini-Project #02](../miniprojects/mini02.html) due on `r get_mp_deadline(2)` [Note change!]
+- [Pre-Assignment #0`r next_session`](../pre/pa07.html) due `r get_pa_deadline(next_session)`
+- [Mini-Project #02](../mini/mini02.html) due on `r get_mp_deadline(2)`
 
 :::
 

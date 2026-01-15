@@ -1,802 +1,626 @@
 ---
-title: "{{< var course.short >}} Week 9 In-Class Activity: Data Import"
+lab_num: "`r lab <- 9; lab`"
+lab_title: "Reading and Manipulating HTML in `R`"
 engine: knitr
-format: live-html
 ---
 
+{{< include _setup.qmd >}}
 
-{{< include _gradethis_init.qmd >}}
-
-```{webr}
-#| echo: false
-webr::install(c("tidyverse", "mgcv", "ggpmisc"), quiet=TRUE)
-suppressPackageStartupMessages(library(tidyverse))
-```
-
-# [Slides](../slides/slides09.qmd)
+`r make_slide_link(lab)`
 
 # Review Practice {#review}
 
-{{< video https://www.youtube.com/watch?v=FjT35R8CC9Q width=1000 height=600 >}}
+The [Open Trivia Database](https://opentdb.com/) provides a simple API for
+trivia questions. You are going to use this API to create a trivia game for
+you and some friends. 
 
-The data can be found online at
-<https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv>. 
-
-The data looks like this:
+0. Before beginning, explore [the question bank](https://opentdb.com/browse.php)
+   and the [API call generator](https://opentdb.com/api_config.php) to
+   understand the types of data available and the structure of the API call.
+1. Use the API call generator to create a URL to download 5 multiple-choice 
+   questions on a topic of your choosing. Copy this URL. 
+2. Now, use the `httr2` package in `R` to make a request to that URL. At first,
+   simply paste the whole URL into `request` and confirm it works. Then, break
+   the URL into its constitutent parts using the `req_url_path()` and 
+   `req_url_query()` functions to construct the URL. (We won't be parametrizing
+   the API call in this brief exercise, but this is important to do if you are
+   going to programmatically be making several API calls.)
+   
+::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
-#| echo: false
+library(tidyverse)
+library(httr2)
+req1 <- request("https://opentdb.com/api.php?amount=50&category=18&type=multiple") 
+
+# Decompose the URL into its various components: 
+req2 <- request("https://opentdb.com") |>
+          req_url_path("api.php") |>
+          req_url_query(amount   = 50, 
+                        category = 18, 
+                        type     = "multiple")
+
+# Confirm equivalence
+all.equal(req1, req2)
+```
+
+I'm using Computer Science (Category 18) but you can use others. 
+
+Now that we have built our request objects, we can use `req_perform()` to actually
+make the request: 
+
+```{r}
+resp <- req2 |> req_perform()
+resp
+```
+
+:::
+
+3. The default response format is `json`, so use the `resp_body_json` function
+   to convert the response into `R`. Print the repsonse to screen and examine
+   the format. This will help you know what you need to do to manipulate 
+   ("rectangle") the data into a useful structure. 
+   
+   *Hint:* To avoid printing so much to screen that it's hard to make sense of
+   the output, you may wish to modify your API call to temporarily only request
+   3-5 responses, instead of 50, even if your eventual goal is to get more
+   responses than that.
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+
+```{r}
+#| cache: true
+request("https://opentdb.com") |>
+          req_url_path("api.php") |>
+          req_url_query(amount   = 3, 
+                        category = 18, 
+                        type     = "multiple") |>
+    # Some stuff to respect API rate limiting
+    req_throttle(capacity=2) |>
+    req_retry(max_tries = 5) |>
+    req_perform() |>
+    resp_body_json() |>
+    str()
+```
+
+We see here that the response comes in a list of two components: `response_code`
+and `results`, with the content we want being in the `results`. The 3 `results`
+look pretty straightforward, except for the `incorrect_answers` list, which
+we will need to keep an eye on. 
+
+:::
+
+4. Use the `pluck` function to extract the relevant part of the JSON response.
+   The response will have several similarly formatted response objects. Use the
+   `map(as_tibble) |> list_rbind()` paradigm to convert these into a large data
+   frame. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+request("https://opentdb.com") |>
+    req_url_path("api.php") |>
+    req_url_query(amount   = 3, 
+                  category = 18, 
+                  type     = "multiple") |>
+    # Some stuff to respect API rate limiting
+    req_throttle(capacity=2) |>
+    req_retry(max_tries = 5) |>
+    req_perform() |>
+    resp_body_json() |>
+    pluck("results") |>
+    map(as_tibble) |>
+    list_rbind()
+```
+
+Everything looks pretty good here, with two notes: 
+
+- The `incorrect_answers` column appears to be a `list` type column
+- Each of our responses was repeated across three rows. 
+
+:::
+
+5. Use the `unnest` and `pivot_wider` functions to conver this data into a 
+   more usable structure. 
+   
+   When applied to a `list` column, the `unnest` function will try to convert
+   it into a more standard vector-type column. 
+   
+   *Hint*: Before using `pivot_wider`, you will need to create a new column with
+   column names for the pivoted data. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+request("https://opentdb.com") |>
+    req_url_path("api.php") |>
+    req_url_query(amount   = 3, 
+                  category = 18, 
+                  type     = "multiple") |>
+    # Some stuff to respect API rate limiting
+    req_throttle(capacity=2) |>
+    req_retry(max_tries = 5) |>
+    req_perform() |>
+    resp_body_json() |>
+    pluck("results") |>
+    map(as_tibble) |>
+    list_rbind() |>
+    unnest(incorrect_answers) |>
+    group_by(question) |>
+    mutate(pivot_name = paste0("incorrect-", row_number())) |>
+    pivot_wider(names_from = pivot_name, 
+                values_from = incorrect_answers) |>
+    select(-type, 
+           -category, 
+           -difficulty)
+```
+
+You can use this to play a bit of trivia amongst your group. Set `amount` 
+higher for more questions. 
+
+:::
+
+# Web Scraping
+
+In today's class, we're going to work through **three** web scraping exercises: 
+
+1) Reading a simple static table
+2) Extending our 'CUNY Map' from [Lab #01](./lab01.html)
+3) Scraping Cocktail Recipes 🍸 from Hadley Wickham
+
+## Exercise 1: Reading HTML Tables {#ex01}
+
+Using `rvest`, read the following table into `R`. Your results should be a 
+data frame that captures the structure of the table. 
+
+| Department | Course Number | Course Name                                     |
+|------------|---------------|-------------------------------------------------|
+| STA        | 2000          | Business Statistics I                           |
+| STA        | 3000          | Statistical Computing                           |
+| STA        | 3154          | Business Statistics II                          |
+| STA        | 3950          | Data Mining                                     |
+| STA        | 4155          | Regression & Forecasting Models                 |
+| STA        | 4157          | Analysis of Variance: Principles & Applications |
+| STA        | 4950          | Machine Learning and AI                         |
+| STA        | 9700          | Modern Regression Analysis                      |
+| STA        | 9705          | Multivariate Statistical Methods                |
+| STA        | 9708          | Managerial Statistics                           |
+| STA        | 9710          | Statistical Methods for Sampling and Audit      |
+| STA        | 9715          | Applied Probability                             |
+| STA        | 9719          | Foundations of Statistical Inference            |
+| STA        | 9750          | Software Tools for Data Analysis                |
+| STA        | 9890          | Statistical Learning for Data Mining            |
+
+: Selected Statistics Courses Offered at Baruch College {#tbl-baruch-stats}
+
+1) Use the Selector Gadget or similar to identify the HTML elements defining
+   this table. You can do this in one of two ways: 
+   
+   - By a specific named element, accessed as `html_element("#name")`
+   - By a specific element type, accessed as `html_element("type")`
+   
+2) Use the `read_html` function to read this entire page into `R`, then use
+   the `html_element` function with the selector from the previous step to
+   extract the table. 
+   
+3) Use the `html_table` function to conver this table into a data frame. 
+
+This page is pretty simple, so a little bit of element selection and 
+`html_table` will suffice. For more complex tables, you may need to do more to
+select the specific table and more to 'clean up' that table once it is in `R`.
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| eval: false
+library(rvest)
+read_html("https://michael-weylandt.com/STA9750/labs/lab11.html") |>
+    html_element("#tbl-baruch-stats") |> 
+    html_table()
+
+# OR - Since this page has only a single table
+read_html("https://michael-weylandt.com/STA9750/labs/lab11.html") |>
+    html_element("table") |> 
+    html_table()
+```
+
+:::
+
+## Exercise 2: CUNY Map {#ex02}
+
+In this exercise, we're going to take our Baruch map from 
+[Lab #01](./lab01.html) and extend it to pull _all_ CUNY campuses. 
+This exercise is intended to help you practice scraping data from 
+Wikipedia, which is a good example of a relatively plain HTML site that has a
+bit of extra Javascript that can make it a bit tricky to find the element(s)
+you want. 
+
+The following code is a cleaned-up version of the map creation activity from 
+Lab #01. Review it before beginning this activity: 
+
+```{r}
 #| message: false
-#| warning: false
 library(tidyverse)
+library(rvest)
+library(leaflet)
 
-read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv") |> glimpse()
+baruch_info <- read_html("https://en.wikipedia.org/wiki/Baruch_College") |> 
+    html_element(".geo") |> 
+    html_text() |> 
+    str_split_1(";") |> 
+    as.numeric() |> 
+    set_names(c("latitude", "longitude")) |> 
+    bind_rows()
+
+leaflet() |>
+    addTiles() |>
+    setView(lat = baruch_info$latitude, 
+            lng = baruch_info$longitude, 
+            zoom=17) |>
+    addPopups(lat = baruch_info$latitude, 
+              lng = baruch_info$longitude, 
+               "Look! It's <b>Baruch College</b>!") |>
+    print()
 ```
 
-Read this data into `R` using the `read_csv` function from the
-`readr` package; note that the `read_csv` function can take a URL 
-as an input so you don't need to directly download this data set.
+1) Building on the code above, write a function that takes the Wikipedia URL for a
+   CUNY as an argument and returns a data frame with two columns: 
+   
+   - Latitude
+   - Longitude
 
-Once you have downloaded the candy data, create visualizations that
-address the following questions: 
+   Confirm that your function works by applying it to Baruch's Wikipedia page. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
 
-1. Do people prefer more sugary candies? (Think OLS)
+```{r}
+get_cuny_coordinates <- function(url){
+    read_html(url) |> 
+        html_element(".geo") |> 
+        html_text() |> 
+        str_split_1(";") |> 
+        as.numeric() |> 
+        set_names(c("latitude", "longitude")) |> 
+        bind_rows()
+}
 
-::: {.callout-tip collapse="true" title="Solution"}
-
-```{webr}
-library(tidyverse)
-library(ggpmisc)
-read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv") |>
-    mutate(winpercent = winpercent / 100) |>
-    ggplot(aes(x=sugarpercent, y=winpercent)) + 
-      xlab("Sugariness (Percentile)") + 
-      ylab("Popularity (Percentile)") + 
-      geom_point() + 
-      scale_x_continuous(labels = scales::percent) + 
-      scale_y_continuous(labels = scales::percent) + 
-      stat_smooth(method="lm") + 
-      stat_poly_eq(use_label("R2", "R2.CI", "P"), 
-                   color="red4", 
-                   size=5) + 
-      theme_bw()
-```
-
-:::
-
-2. Do people prefer more expensive candies? (Think OLS)
-
-::: {.callout-tip collapse="true" title="Solution"}
-
-```{webr}
-library(tidyverse)
-library(ggpmisc)
-read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv") |>
-    mutate(winpercent = winpercent / 100) |>
-    ggplot(aes(x=pricepercent, y=winpercent)) + 
-      xlab("Price (Percentile)") + 
-      ylab("Popularity (Percentile)") + 
-      geom_point() + 
-      scale_x_continuous(labels = scales::percent) + 
-      scale_y_continuous(labels = scales::percent) + 
-      stat_smooth(method="lm") + 
-      stat_poly_eq(use_label("R2", "R2.CI", "P"), 
-                   color="red4", 
-                   size=5) + 
-      theme_bw()
+get_cuny_coordinates("https://en.wikipedia.org/wiki/Baruch_College")
 ```
 
 :::
 
-3. Do people prefer chocolate candies? (Think ANOVA)
+2) Investigate the [Wikipedia List of
+   CUNYs](https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions)
+   and identify which table can be used to get links to each CUNY's page.  
+   
+::: {.callout-caution title="Wikipedia Table Scraping"}
 
-::: {.callout-tip collapse="true" title="Solution"}
+Wikipedia has tons of excellent data tables which have been collected
+by incredible volunteers. It can be an incredibly useful source, but
+there are a few difficulties in getting data out of Wikipedia. In
+particular, Wikipedia uses a rich JavaScript library to make tables
+slightly interactive (column sorting, *etc.*) that modifies the page
+HTML. `R` will get the "raw" HTML of the page, so you will need to
+either disable JavaScript temporarily (tricky) or make sure you are
+looking at the actual page source that `R` will see ("View Source"). 
 
-For this question, we only know whether a candy is chocolate-based
-or not, so a linear model is not the most straightforward approach.
-We can instead use an ANOVA-inspired bar plot.[^anova]
+As a general rule, try to use standard HTML elements (`table`, `tbody`) instead
+of fancier alternatives when possible. 
 
-[^anova]: Note, however, that standard ANOVA is basically just a 
-very restricted linear model; *cf.* <https://lindeloev.github.io/tests-as-linear/>. 
+:::
 
-```{webr}
-library(tidyverse)
-read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv") |>
-    mutate(winpercent = winpercent / 100, 
-           chocolate = as.logical(chocolate)) |>
-    group_by(chocolate) |>
-    mutate(win_mean = mean(winpercent), 
-           win_sd   = sd(winpercent), 
-           n        = n(), 
-           win_se   = win_sd / sqrt(n)) |>
-    ungroup() |>
-    ggplot(aes(x=chocolate, y=winpercent)) + 
-    geom_jitter(height=0, width=0.2, alpha=0.3) + 
-    geom_errorbar(aes(ymin = win_mean - win_se, 
-                      ymax = win_mean + win_se),
-                  width=0.2, 
-                  color="red4") + 
-    stat_summary(fun="mean", 
-                 geom="col", 
-                 fill="lightblue", 
-                 color="blue4", 
-                 alpha=0.4) + 
-    geom_point(aes(y=win_mean), size=2, color="red4") + 
-    theme_bw() + 
-    xlab("Chocolate") + 
-    ylab("Popularity (Percentile)") + 
-    scale_y_continuous(labels = scales::percent, 
-                       limits = c(0, 1))
+3) Parse the table to pull links to each CUNY's individual Wikipedia
+   page. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}  
+CUNYs <- read_html("https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions") |> 
+    html_element("tbody") |>
+    html_elements("tr td:nth-child(2)") |>
+    html_elements("a") 
+
+CUNYs <- tibble(name = CUNYs |> html_text(), 
+                link = CUNYs |> html_attr("href"))
+```
+
+If you are comfortable with the `purrr` family of functions, this can be
+written a bit more compactly as:
+
+```{r}   
+CUNYs <- read_html("https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions") |> 
+    html_element("tbody") |>
+    html_elements("tr td:nth-child(2)") |>
+    html_elements("a") |> 
+    map(\(tr) tibble(name = tr |> html_text(), 
+                     link = tr |> html_attr("href"))) |> 
+    bind_rows()
 ```
 
 :::
 
-# Using the File System {#fs}
+4) Modify the links extracted from the Wikipedia table to form full URLs.
 
-## Exercises #01 {#exercise01}
-
-0. Use the `getwd()` to find your current working directory. For the following
-   exercises to be most useful, you will want to ensure that this is your 
-   `{{< var course.repo >}}` course directory. If you have somehow changed it
-   please use the `setwd()` function to return to the proper directory.
-
-1. In your `{{< var course.repo >}}` directory, you have a 
-   file called `index.qmd`. Use the `path` function from the 
-   `fs` package to create a `path` object pointing to that
-   file and then use the `path_abs` function to convert that
-   relative path to an absolute path. 
+   Proper URL handling is a bit subtle - it's a common avenue for security holes
+   - but a simple `paste0` will suffice here. 
+ 
+::: {.callout-tip title="Solution" collapse="true"}
    
-::: {.callout-tip collapse="true" title="Solution"}
-   
-Note that these solutions will give different answers on your
-personal computer as opposed to this web interface. That is to be expected 
-since we are going outside of `R` and interacting with the 
-whole system and should not surprise you. 
-   
-```{webr}
-library(fs)
-path("index.qmd") |> path_abs()
+```{r}
+CUNYs <- CUNYs |> mutate(link = paste0("https://en.wikipedia.org", link))
 ```
 
 :::
 
-2. A common pattern in working with files is wanting to find
-   all files whose names match a certain pattern. This is known
-   colloquially as _globbing_. The `dir_ls` function can be used
-   to list all files in a directory. First use it to list all
-   files in your `{{< var course.repo >}}` course directory; then
-   use the `glob` argument to list only the `qmd` files in that
-   directory. 
+4) Apply your HTML parsing function from Step 1 to each CUNY page
+   using the `map` function or the `rowwise()` grouping structure: 
    
-   *Hint: The `glob` argument should be a string with asterisks in it where
-   you will allow any match. For example, `*.csv` will match all CSV files, 
-   `abc*` will match all files whose names start with `abc`, and 
-   `abc*.csv` will match files whose names start with `abc` and end with
-   `.csv`.*
+   *Hint*: You may need to use `unnest` to convert a list column into something
+   more usable. 
    
-::: {.callout-tip collapse="true" title="Solution"}
+::: {.callout-tip title="Solution" collapse="true"}
    
-```{webr}
-library(fs)
-dir_ls() # Default is dir_ls("."): i.e., current working directory
-dir_ls(glob="*qmd")
-```   
+```{r}
+#| cache: true
+CUNYs <- CUNYs |> rowwise() |> mutate(info = get_cuny_coordinates(link))
+## Or with `map`
+CUNYs <- CUNYs |> mutate(info = map(link, get_cuny_coordinates))
 
-:::
+## Then unnest the info column
 
-3. The `dir_info` function can be used to create a data frame with information
-   about all files in a directory. Use it and `dplyr` functionality to find the
-   largest file in your project folder. Then return its _absolute_ path. 
+CUNYs <- CUNYs |> unnest(info)
+
+CUNYs
+```
+
+:::   
    
-::: {.callout-tip collapse="true" title="Solution"}
+5) Use your results to build a CUNY-wide map
+
+::: {.callout-tip title="Solution" collapse="true"}
    
-```{webr}
-library(fs)
-library(dplyr)
-dir_info() |> slice_max(size) |> pull(path) |> path_abs()
-```   
+```{r}
+MAP <- leaflet() |> 
+    addTiles() |> 
+    addMarkers(lng = CUNYs$longitude, 
+               lat=CUNYs$latitude, 
+               popup=CUNYs$name)
+
+MAP
+```
 
 :::   
 
-4. Often, we want to perform a search over all files and folders in a directory
-   *recursively* - that is, looking inside subfolders, not just at files in
-   the top level. The `recurse=TRUE` argument to `dir_info` will return
-   information about all files contained in any level of the directory. Use
-   `dir_info` to search the `data` directory you have created to store
-   Mini-Project data and find the _smallest_ data file. 
+## Exercise 3: Cocktails Data {#ex03}
+
+[Hadley Wickham](https://hadley.nz/) is the author of many of the 
+"tidy tools" we use in this course. He is also an excellent bartender
+and chef. In this exercise, we are going to web scrape his cocktail
+recipe book which can be found at <https://cocktails.hadley.nz/>. 
+
+Our goal is to create a data frame that records all 150+ recipes on this site 
+(as rows) and the different ingredients (as columns). This
+week, we are going to pull the different recipes into `R`: next week
+we are going to process the text and create our final data frame (so
+stay tuned!). 
+
+Working with your project team, first go through the following steps to build
+a scraping strategy:
+
+1) Poke around the website to see how it is organized. Is there a
+   single page listing all of the cocktails? If not, how else can
+   you make sure that you've explored the entire site?
+2) Once you know how you're going to explore the whole site, use
+   your browser tools to see if you can identify an HTML element that
+   corresponds to a single recipe. (This element will occur several
+   times per page) Remember that you want to select "as small as
+   possible" but no smaller.
+3) Once you have found the right HTML element for a recipe, identify
+   an HTML element that corresponds to i) the title; and ii) individual
+   ingredients. 
    
-   *Hint: You will need to pass a `path` argument to `dir_info` so that you
-   search only your `data` folder and not your entire course directory.*
+For this task, you will likely see several recipes more than once.
+Don't worry about this for now - we can `distinct` out the duplicates
+later in our analysis. It's better to be over-inclusive than
+under-inclusive.
    
-::: {.callout-tip collapse="true" title="Solution"}
+After you have built your plan, it's time to start putting this all to
+code. 
+
+1) Write code to get a list of all pages you will need to process. Construct 
+   full URLs for your future requests. 
    
-```{webr}
-library(fs)
-library(dplyr)
-dir_info("data", recurse=TRUE) |> slice_max(size) |> pull(path) |> path_abs()
-```   
+::: {.callout-tip title="Solution" collapse="true"}
 
-:::
-
-5. Determine how much storage is used by the 5 largest files in any part of 
-   your project directory. 
-
-::: {.callout-tip collapse="true" title="Solution"}
-   
-```{webr}
-library(fs)
-library(dplyr)
-dir_info(recurse=TRUE) |> slice_max(size, n=5) |> summarize(total_size = sum(size))
-```   
-
-:::
-
-6. Use the `file_exists` function to determine whether you have started 
-   [Mini-Project #03](../miniprojects/mini03.html).
-
-::: {.callout-tip collapse="true" title="Solution"}
-   
-```{webr}
-library(fs)
-file_exists("mp03.qmd")
-```   
-
-:::
-
-# HTTP and Web Access {#http}
-
-
-
-## Exercises #02 {#exercise02}
-
-Earlier, we used the fact that `read_csv` could download a file automatically
-for us to read in the 538 Candy Data. We are now going to download the same
-data using `httr2`. 
-
-1. Use the `httr2` package to build a suitable `request` object. You should
-   build your request in two steps: 
-   
-   i) Specify the domain using `request`
-   
-   ii) Add the path using `req_url_path`
-   
-::: {.callout-tip collapse="true" title="Solution"}
-   
-```{webr}
+```{r}
+library(tidyverse)
 library(httr2)
-request("https://raw.githubusercontent.com") |>
-    req_url_path("fivethirtyeight", 
-                 "data",
-                 "refs",
-                 "heads",
-                 "master",
-                 "candy-power-ranking",
-                 "candy-data.csv") |>
-    req_perform() |>
-    resp_body_string() |> 
-    read_csv()
-```   
+library(rvest)
 
-:::
-   
-2. Now that you have built a request, _perform_ it and check to make sure
-   your request was successful. 
-   
-::: {.callout-tip collapse="true" title="Solution"}
-   
-```{webr}
-library(httr2)
-request("https://raw.githubusercontent.com") |>
-    req_url_path("fivethirtyeight", 
-                 "data",
-                 "refs",
-                 "heads",
-                 "master",
-                 "candy-power-ranking",
-                 "candy-data.csv") |>
-    req_perform() |>
-    resp_check_status() |>
-```   
+BASE_URL <- "https://cocktails.hadley.nz/"
 
-:::
-   
-3. Because your request was successful, it will have a body. Extract this body
-   as a string and pass it to `read_csv` to read the data into `R`. 
+PAGES <- read_html(BASE_URL) |> 
+            html_elements("nav a") |> 
+            html_attr("href")
+
+PAGE_URLS <- paste0(BASE_URL, PAGES)
 
 
-::: {.callout-tip collapse="true" title="Solution"}
-   
-```{webr}
-library(httr2)
-library(readr)
-request("https://raw.githubusercontent.com") |>
-    req_url_path("fivethirtyeight", 
-                 "data",
-                 "refs",
-                 "heads",
-                 "master",
-                 "candy-power-ranking",
-                 "candy-data.csv") |>
-    req_perform() |>
-    resp_check_status() |>
-    resp_body_string() |> 
-    read_csv()
+PAGE_URLS
 ```
 
 :::
 
-4. Modify your analysis to download your `mp01.qmd` file. To find the appropriate
-   URL, you will need to first find the file in the web interface for your GitHub
-   repository and then click the `Raw` button to a direct link to the file. 
-   Make a request to get this data and to check whether the request was successful. 
+2) Write a function that takes a single URL and extracts all recipes on that
+   page as HTML elements. 
    
-::: {.callout-tip collapse="true" title="Solution"}
-   
-```{webr}
-library(httr2)
-request("https://raw.githubusercontent.com") |>
-    req_url_path(YOUR GITHUB ID
-                 COURSE REPO, 
-                 "refs",
-                 "heads",
-                 "main",
-                 "mp01.qmd") |>
-    req_perform() |>
-    resp_check_status() 
-```
+   Try this out on a fixed URL and confirm that it gets the right number of
+   recipes
 
-:::
-   
-5. Next, modify our analysis to check whether `mp04.qmd` has already
-   been uploaded. Note that this will throw an error because a `404` is returned,
-   indicating that you have not yet uploaded `mp04.qmd`. We will address this
-   in the next step. 
+::: {.callout-tip title="Solution" collapse="true"}
 
-::: {.callout-tip collapse="true" title="Solution"}
-   
-```{webr}
+```{r}
+library(tidyverse)
 library(httr2)
-request("https://raw.githubusercontent.com") |>
-    req_url_path(YOUR GITHUB ID
-                 COURSE REPO, 
-                 "refs",
-                 "heads",
-                 "main",
-                 "mp04.qmd") |>
-    req_perform()
+library(rvest)
+get_recipes <- function(url){
+    read_html(url) |> html_elements("article")
+}
+```   
+
+We can test this [against this page](https://cocktails.hadley.nz/tag-bubbles.html)
+and see that it works as expected: 
+
+```{r}
+BUBBLES <- get_recipes("https://cocktails.hadley.nz/tag-bubbles.html")
+
+BUBBLES
 ```
 
 :::
 
-6. Obviously, that error is a bit of a problem. Let's change how our request
-   handles errors. The `req_error` function can be used to modify a request to
-   change whether an error is thrown. As its argument, it takes a _function_
-   that checks for an error. Since we want to never throw an error, define a
-   function with one argument `x` that always returns false and pass this to
-   `req_error`. (Note that `req_error` must come before `req_perform` since it
-   changes how a request is performed.) Use this in conjunction with the
-   `resp_is_error` function to check that your request fails. 
-
-::: {.callout-tip collapse="true" title="Solution"}
+3) Write a function that takes in a single recipe and returns a small data 
+   frame with the title and ingredients: 
    
-```{webr}
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(tidyverse)
 library(httr2)
+library(rvest)
+process_recipe <- function(art){
+    title <- art |> html_element(".title") |> html_text2()
+    ingredients <- art |> html_elements("li") |> html_text2()
+    
+    tibble(title=title, ingredients=ingredients)
+}
+```  
 
-always_false <- function(x) FALSE
+We can again test this using the recipes we extracted above: 
 
-request("https://raw.githubusercontent.com") |>
-    req_url_path(YOUR GITHUB ID
-                 COURSE REPO, 
-                 "refs",
-                 "heads",
-                 "main",
-                 "mp04.qmd") |>
-    req_error(is_error = always_false) |>
-    req_perform() |>
-    resp_is_error()
+```{r}
+process_recipe(BUBBLES[[1]])
 ```
 
-Using an _anonymous_ function, we can write this a bit more compactly as 
-
-```{webr}
-library(httr2)
-request("https://raw.githubusercontent.com") |>
-    req_url_path(YOUR GITHUB ID
-                 COURSE REPO, 
-                 "refs",
-                 "heads",
-                 "main",
-                 "mp04.qmd") |>
-    req_error(is_error = \(x) FALSE) |>
-    req_perform() |>
-    resp_is_error()
-```
 :::
 
-7. Package your code into a function that takes an integer argument and tests
-   whether that mini-project is missing from your GitHub.
+4) Write a function that combines your results from the previous two steps to
+   build a data frame with _all_ recipes on a single page. 
    
-   *Hint: The `glue` package may be useful to make strings here: 
-   `glue("mp0{N}.qmd")` will automatically substitute the value of the variable
-   `N` for you.*
+   Try this out on a fixed URL and confirm it works as expected. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
 
-::: {.callout-tip collapse="true" title="Solution"}
-   
-```{webr}
+```{r}
+library(tidyverse)
 library(httr2)
-library(glue)
-mp_is_missing <- function(N) {
-    request("https://raw.githubusercontent.com") |>
-        req_url_path(YOUR GITHUB ID
-                     COURSE REPO, 
-                     "refs",
-                     "heads",
-                     "main",
-                     glue("mp0{N}.qmd")) |>
-        req_error(is_error = \(x) FALSE) |>
-        req_perform() |>
-        resp_is_error()
+library(rvest)
+
+process_url <- function(url){
+    html_recipes <- get_recipes(url)
+    
+    RECIPES <- data.frame()
+    
+    for(r in html_recipes){
+        RECIPES <- rbind(RECIPES, process_recipe(r))
+    }
+    
+    RECIPES
 }
 ```
+
+We can test this on the page of bubbly recipes: 
+
+```{r}
+process_url("https://cocktails.hadley.nz/tag-bubbles.html")
+```
+
 :::
-
-8. Finally, check which of your MPs have not yet been submitted. 
-
-   Unfortunately, your function is not _vectorized_ so this is not as 
-   simple as `func(1:4)`. Instead, we want to apply the same function separately
-   to each element of the vector `c(1,2,3,4)`. This is a use case for the `map`
-   family of functions. Since your function returns a logical value, we'll use
-   `map_lgl` here. 
    
+5) Use your function from the first step with the list of URLs from Step 1 so
+   that you get all of the recipes on the site. Combine your results into one
+   large data frame that looks something like:
    
-```{webr}
+   | Name     | Ingredient           |
+   |----------|----------------------|
+   | Daiquiri | 2 oz Rum             | 
+   | Daiquiri | 1 oz Lime Juice      | 
+   | Daiquiri | 0.75 oz Simple Syrup |
+
+   To be polite, you may want to add `req_cache` to your requests so you are not
+   requesting the same page many times over. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(tidyverse)
 library(httr2)
-library(glue)
-mp_is_missing <- function(N) {
-    request("https://raw.githubusercontent.com") |>
-        req_url_path(YOUR GITHUB ID
-                     COURSE REPO, 
-                     "refs",
-                     "heads",
-                     "main",
-                     glue("mp0{N}.qmd")) |>
-        req_error(is_error = \(x) FALSE) |>
-        req_perform() |>
-        resp_is_error()
+library(rvest)
+
+ALL_RECIPES <- data.frame()
+
+for(page in PAGE_URLS){
+    ALL_RECIPES <- rbind(ALL_RECIPES, process_url(page))
 }
 
-map_lgl(1:4, mp_is_missing)
+ALL_RECIPES
 ```
+
 :::
 
-This example is maybe a bit silly, but it is essentially how I check whether
-your mini-projects have been submitted on time. (I map over students rather than
-the project numbers.) 
+6) Save your code for next week. Next week we will investigate string processing
+   and learn how to turn a table like: 
+   
+   | Name     | Ingredient           |
+   |----------|----------------------|
+   | Daiquiri | 2 oz Rum             | 
+   | Daiquiri | 1 oz Lime Juice      | 
+   | Daiquiri | 0.75 oz Simple Syrup |
+   
+   into 
 
-# API Usage {#api}
+   | Name     | Ingredient   | Amount  |
+   |----------|--------------|---------|
+   | Daiquiri | Rum          | 2       |
+   | Daiquiri | Lime Juice   | 1       |
+   | Daiquiri | Simple Syrup | 0.75    |
 
-Next, we are going to practice accessing data from a nice 
-API using `httr2`. Specifically, we are going to interact with the
-`cranlogs` server, which keeps records of the most popular `R` packages
-based on download frequency. 
 
-Documentation for `cranlogs` can be found [in its GitHub
-`README`](https://github.com/r-hub/cranlogs.app) with a very small
-example at [here](https://cranlogs.r-pkg.org/#jsonapi).[^rpkg]
+::: {.callout-caution title="FP Solution" collapse="true"}
 
-[^rpkg]: In this case, there is a `cranlogs` package for interacting with
-this API. This type of package is commonly called a "wrapper" because it
-shields the user from the details of the API and exposes a more idiomatic
-(and more useful) interface. In general, when you can find an `R` package
-that wraps an API, it is a good idea to use it. For certain very complex
-APIs, *e.g.*, the [API that powers Bloomberg](https://www.bloomberg.com/professional/support/api-library/) 
-Financial Information Services, use of the associated 
-[`R` package](https://cran.r-project.org/web/packages/Rblpapi/vignettes/rblpapi-intro.html) 
-is almost mandatory because the underlying API is so complicated. For this
-in-class exercise, we will use the "raw" API as practice since you can't
-always assume a nice `R` package will exist. 
+If you are comfortable with (or want to become comfortable with) the functional
+programming tools of `purrr`, you can write this entire analysis in one swoop:
 
-The `cranlogs` documentation give the following example of how the `curl` program
-can call the API from the command line: 
-
-```{bash}
+```{r}
 #| cache: true
-#| message: false
-curl https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2
-```
-
-Even though this is not `R` code, we can emulate this action in `R`. 
-
-```{webr}
-library(jsonlite)
-fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2")
-```
-
-And if we want to get download information for other packages, we can simply
-modify the URL: 
-
-```{webr}
-library(jsonlite)
-fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/dplyr")
-```
-
-```{webr}
-library(jsonlite)
-fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/readr")
-```
-
-and so on. But this quickly becomes repetitive and we would prefer a 
-*programmatic* interface. This is where the `httr2` package comes in. 
-
-## `httr2`
-
-`httr2` takes a "three-stage" approach to handling HTTP requests: 
-
-1. First, we _build_ a _request_, specifying the URL to be queried, the mode of 
-   that query, and any relevant information (data, passwords, *etc.*)
-2. Then, we _execute_ that request to get a _response_
-3. Finally, we _handle_ that response, transforming its contents into `R` as
-   appropriate
-   
-Let's look at these one at a time. 
-
-### Build a Request
-
-We can build a request using the `request` function: 
-
-```{r}
-library(httr2)
-request
-```
-
-As seen here, we start a request by putting in a "base URL" - this is 
-the unchanging part of the URL that won't really depend on what query we are making. 
-
-For the `cranlogs` API, we can take the base URL to be 
-
-> `https://cranlogs.r-pkg.org`
-
-so our base request is: 
-
-```{r}
-my_req <- request("https://cranlogs.r-pkg.org")
-print(my_req)
-```
-
-We see here that this is a `GET` request by default, indicating we would like
-a response from the server, but we are not 
-
-We then modify the _path_ of the request to point to the specific _resource_ or
-_endpoint_ we want to query. For example, if we want to get the "top" `R` 
-packages for the last day, we can run the following: 
-
-```{r}
-my_req <- my_req |> 
-    req_url_path_append("top") |>
-    req_url_path_append("last-day")
-print(my_req)
-```
-
-### Execute a Request to get a Response
-
-Now that we have built our request, we pass it to `req_perform`[^adv1] to execute 
-(perform) the request: 
-
-[^adv1]: We will only use the basic `req_perform` for now, but `httr2` 
-provides options for parallel execution, delayed execution, *etc.*.
-
-```{r}
-my_resp <- req_perform(my_req)
-print(my_resp)
-```
-
-The result of performing this request is a _response_ object. We see several
-things in this response: 
-
-1. We received back a "200 OK" response, indicating that our query worked perfectly
-2. We received back data in a `json` format
-3. Our results are currently in memory (as opposed to be saved to a file)
-
-### Process the Response for Use in `R`
-
-Since we know our response is in `JSON` format, we can use the `resp_body_json`
-to get the "body" (content) of the response and parse it as `json`: 
-
-```{r}
-downloads_raw <- resp_body_json(my_resp)
-print(downloads_raw)
-```
-
-This gives us the type of data we were looking for!
-
-Note that `httr2` is designed for "piped" work, so we can write the entire
-process as
-
-```{r}
-request("https://cranlogs.r-pkg.org") |>
-    req_url_path_append("top") |>
-    req_url_path_append("last-day") |>
-    req_perform() |>
-    resp_body_json()
-```
-
-This data is not super helpful for us, since it's in a "list of lists" format. 
-This is not uncommon with `json` responses and it is usually at this point that 
-we have a bit of work to do in order to make the data useable. Thankfully, API
-data is typically well-structured, so this doesn't wind up being too hard. 
-I personally find this type of complex `R` output a bit hard to parse, so I
-instead print it as a "string" (the 'raw text' of the unparsed JSON) and use
-the `prettify()` function from the `jsonlite` package to make it extra readable: 
-
-```{r}
-library(jsonlite)
-my_resp |>
-    resp_body_string() |>
-    prettify()
-```
-
-This is the same data as before, but much easier to read. At this point, we
-should pause and make an 'attack plan' for our analysis. I see several things here:
-
-1) I really only want the `"downloads"` part of the response. 
-2) Each element inside `downloads` has the same flat structure, so they can
-   be easily built into a one-row data frame. 
-3) The column names are the same for each `downloads` element, so we will be
-   able to put them into one big easy-to-use data frame. 
-   
-To do these steps, we will need to use functionality from the `purrr` package, 
-which we will discuss in more detail next week. For now, it suffices to run: 
-
-```{r}
-library(purrr)
-library(tibble)
-downloads_df <- downloads_raw |>
-    pluck("downloads") |>
-    map(as_tibble) |>
-    list_rbind()
-```
-
-Here, we see we
-
-1) Pulled out the `"downloads"` portion of the JSON (`pluck`)
-2) Converted each row to a data frame (`map(as_tibble)`)
-3) Combined the results rowwise (`list_rbind`)
-
-The result is a very nice little data frame: 
-
-```{r}
-downloads_df
-```
-
-## Exercises #03 {#exercise03}
-
-Now it's your turn! In your breakout rooms, try the following: 
-
-1. Make sure you can run all of the code above. 
-2. Modify the above code to get the top 100 `R` packages. 
-
-   This is a minor change to the request only, but you will need to read the 
-   [documentation](https://github.com/r-hub/cranlogs.app) to see where and how
-   the request needs to be changed. 
-   
-::: {.callout-note collapse="true" title="Solution"}
-   
-```{webr}
-library(httr2)
 library(tidyverse)
-request("https://cranlogs.r-pkg.org") |>
-    req_url_path_append("top") |>
-    req_url_path_append("last-day") |>
-    req_url_path_append(100) |>
-    req_perform() |>
-    resp_body_json() |>
-    pluck("downloads") |>
-    map(as_tibble) |>
-    list_rbind()
-```
-
-:::
-
-3. Modify your query to get the daily downloads for the `ggplot2` package over
-   the last month. This will require changes to how you process the response, so
-   be sure to look at the raw JSON first. 
-   
-   *Hint: The `pluck` function can also take a number as input. This will say
-   which list item (by position) to return.*
-   
-
-::: {.callout-note collapse="true" title="Solution"}
-   
-```{webr}
-library(httr2)
-library(tidyverse)
-request("https://cranlogs.r-pkg.org") |>
-    req_url_path_append("downloads") |>
-    req_url_path_append("daily") |>
-    req_url_path_append("last-month") |>
-    req_url_path_append("ggplot2") |>
-    req_perform() |>
-    resp_body_json() |>
-    pluck(1)
-    pluck("downloads") |>
-    map(as_tibble) |>
-    list_rbind()
-```
-
-:::
-
-4. 'Functionize' your daily downloads query as a function which takes an arbitrary
-    package name and gets its daily downloads.
+library(rvest)
+process_recipe <- function(recipe){
+    title <- recipe |> html_element(".title") |> html_text2()
+    ingredients <- recipe |> html_elements("li") |> html_text2()
     
-    *Hint: Use a `mutate` command to add the package name
-    as a new column to the resulting data frame and to
-    convert the `day` column to a `Date` object (`day=as.Date(day)`)*. 
-    
-::: {.callout-note collapse="true" title="Solution"}
-   
-```{webr}
-library(httr2)
-library(tidyverse)
-get_downloads <- function(pkg){
-    request("https://cranlogs.r-pkg.org") |>
-        req_url_path_append("downloads") |>
-        req_url_path_append("daily") |>
-        req_url_path_append("last-month") |>
-        req_url_path_append(pkg) |>
-        req_perform() |>
-        resp_body_json() |>
-        pluck(1) |> 
-        pluck("downloads") |>
-        map(as_tibble) |>
-        list_rbind() |>
-        mutate(package=pkg, 
-               day=as.Date(day))
+    tibble(title=title, ingredients=ingredients)
 }
 
-gg_downloads <- get_downloads("ggplot2")
-print(gg_downloads)
+BASE_URL <- "https://cocktails.hadley.nz/"
+
+read_html(BASE_URL) |> 
+    html_elements("nav a") |> 
+    html_attr("href") |>
+    map(\(p) request(BASE_URL) |> req_url_path(p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |> 
+    map(html_elements, "article") |> 
+    reduce(c) |>
+    map(process_recipe) |> 
+    list_rbind()
 ```
 
-:::
-
-5. Use your function to get daily downloads for the following `R` packages: 
-   - `ggplot2`
-   - `dplyr`
-   - `httr2`
-   - `tibble`
-   - `purrr`
-   - `tidyr`
-   and combine your results into a single data frame. Then plot the download
-   trends for each package using `ggplot2`.
-   
-   You can do this by calling your function in a loop, but you should
-   also try to apply the `map() |> list_rbind()` idiom here as well. 
-   
-::: {.callout-note collapse="true" title="Solution"}
-   
-
-```{webr}
-library(ggplot2)
-
-PACKAGES <- c("ggplot2", "dplyr", "httr2", "tibble", "purrr", "tidyr")
-
-map(PACKAGES, get_downloads) |>
-  list_rbind() |>
-  ggplot(aes(x=day, 
-             y=downloads, 
-             color=package, 
-             group=package)) +
-    geom_point() +
-    geom_line() +
-    scale_x_date() +
-    xlab("Date of Download") +
-    ylab("Number of Package Downloads") +
-    theme_bw() +
-    labs(caption="Data from cranlogs.r-pkg.org") +
-    theme(legend.position="bottom") +
-    scale_color_brewer(type="qual", 
-                         palette=2, 
-                         name="Package Name")
-```
+This is clearly quite terse and would benefit from some additional comments,
+but I'm omitting them so you can try to deconstruct this code yourself if 
+you want to practice functional programming idioms. 
 
 :::

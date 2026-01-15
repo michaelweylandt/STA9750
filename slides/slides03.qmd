@@ -1,72 +1,40 @@
 ---
 session: "`r session <- 3; session`"
+last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
 class_date:
-  "`r library(tidyverse); 
-    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
+  "`r library(tidyverse);
+    class_date <- read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
-           Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
+format: revealjs
 ---
 
 {{< include _setup.qmd >}}
 
-
-```{r}
-#| include: false
-#| warning: false
-#| message: false
-library(tidyverse)
-DATES   <- read_csv("key_dates.csv")
-TODAY   <- DATES |> 
-    filter(`Course Element` == "Class Session", 
-           `Item Number` == session)
-
-TODAY_TUESDAY  <- TODAY |> 
-    filter(Section == "Tuesday")  |> 
-    pull(Date)
-TODAY_THURSDAY <- TODAY |> 
-    filter(Section == "Thursday") |> 
-    pull(Date)
-
-TODAY_TOPIC <- TODAY |>
-    filter(str_detect(Details, "Lecture")) |>
-    pull(Details)
-
-PROJ_RELEASE <- DATES |> 
-    filter(str_detect(Details, "Project Description")) |>
-    pull(Date)
-
-ROSTERS <- DATES |> 
-    filter(Details == "Team Roster Submission") |>
-    pull(Date)
-```
-    
 ## {{< var course.short >}} Week {{< meta session >}} 
 
-Today: 
-
-- Tuesday Section: `r TODAY_TUESDAY`
-- Thursday Section: `r TODAY_THURSDAY`
-
-`r TODAY_TOPIC`
-
+Today: `r TODAY_TOPIC`
 ## Mini-Project #00 
 
-[Mini-Project #00](../miniprojects/mini00.qmd) is due `r get_mp_deadline(00)`
+[Mini-Project #00](../mini/mini00.qmd) is due `r get_mp_deadline(00)`
 
 ```{r}
 #| echo: false
 MP_SUBMISSIONS <- get_mp_submitted(0)
+if(file.exists("roster.json")){
+    N_STUDENTS <- read_yaml("_teaching.yml")$gradedir |>
+        file.path("roster.json") |> 
+        read_json() |> 
+        length()
+} else {
+    N_STUDENTS <- NA
+}
 ```
 
 As of `r Sys.Date()`: 
 
-- `r read_yaml("_teaching.yml")$gradedir |> file.path("roster.json") |> read_json() |> length()` Users registered via Piazza
+- `r N_STUDENTS` Users registered via Piazza
 - `r MP_SUBMISSIONS$n_submitted` Posts on GitHub
   - `r MP_SUBMISSIONS$n_completed` pass automated tests
   - `r MP_SUBMISSIONS$n_need_work` need more work (see comments)
@@ -900,11 +868,11 @@ Upcoming work from [course calendar](../index.qmd#calendar)
 
 ::: {.incremental}
 
-- [Pre-Assignment #0`r next_session`](../preassigns/pa04.html) due `r get_pa_deadline(session + 1)`
-- [Mini-Project #00](../miniprojects/mini00.html) due
-- [Mini-Project #00](../miniprojects/mini00.html) peer feedback
+- [Pre-Assignment #0`r next_session`](../pre/pa04.html) due `r get_pa_deadline(session + 1)`
+- [Mini-Project #00](../mini/mini00.html) due
+- [Mini-Project #00](../mini/mini00.html) peer feedback
   assigned `r get_mp_pf_assigned(0)`
-- [Mini-Project #01](../miniprojects/mini01.html) released on `r get_mp_assigned(1)`
+- [Mini-Project #01](../mini/mini01.html) released on `r get_mp_assigned(1)`
 
 :::
 

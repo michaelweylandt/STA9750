@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="generator" content="quarto-1.7.33">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>STA 9750 Week 9 In-Class Activity: Data Import – STA 9750</title>
+<title>STA 9750 Lecture #9 In-Class Activity: Reading and Manipulating HTML in R – STA 9750</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -71,9 +71,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-1c47065645911eb62ace0da5c8a22cd9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
-<script src="../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
-<link href="../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
+<link href="../site_libs/bootstrap/bootstrap-1c47065645911eb62ace0da5c8a22cd9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
@@ -99,9 +97,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script><link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
+}</script><link href="../site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+<script src="../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><script src="../site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><link href="../site_libs/leaflet-1.3.1/leaflet.css" rel="stylesheet">
+<script src="../site_libs/leaflet-1.3.1/leaflet.js"></script><link href="../site_libs/leafletfix-1.0.0/leafletfix.css" rel="stylesheet">
+<script src="../site_libs/proj4-2.6.2/proj4.min.js"></script><script src="../site_libs/Proj4Leaflet-1.0.1/proj4leaflet.js"></script><link href="../site_libs/rstudio_leaflet-1.3.1/rstudio_leaflet.css" rel="stylesheet">
+<script src="../site_libs/leaflet-binding-2.2.3/leaflet.js"></script>
 </head>
-<body class="nav-fixed quarto-light">
+<body class="floating nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top"><nav class="navbar navbar-expand-lg " data-bs-theme="dark"><div class="navbar-container container-fluid">
@@ -149,6 +151,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-prior-offerings">
 <li>
+    <a class="dropdown-item" href=".././archive/AY-2025-FALL/">
+ <span class="dropdown-text">Fall 2025</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href=".././archive/AY-2024-SPRING/">
  <span class="dropdown-text">Spring 2025</span></a>
   </li>  
@@ -165,44 +171,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       </div> <!-- /container-fluid -->
     </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-<!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">On this page</h2>
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">On this page</h2>
    
   <ul>
 <li><a href="#slides" id="toc-slides" class="nav-link active" data-scroll-target="#slides">Slides</a></li>
   <li><a href="#review" id="toc-review" class="nav-link" data-scroll-target="#review">Review Practice</a></li>
   <li>
-<a href="#fs" id="toc-fs" class="nav-link" data-scroll-target="#fs">Using the File System</a>
+<a href="#web-scraping" id="toc-web-scraping" class="nav-link" data-scroll-target="#web-scraping">Web Scraping</a>
   <ul class="collapse">
-<li><a href="#exercise01" id="toc-exercise01" class="nav-link" data-scroll-target="#exercise01">Exercises #01</a></li>
-  </ul>
-</li>
-  <li>
-<a href="#http" id="toc-http" class="nav-link" data-scroll-target="#http">HTTP and Web Access</a>
-  <ul class="collapse">
-<li><a href="#exercise02" id="toc-exercise02" class="nav-link" data-scroll-target="#exercise02">Exercises #02</a></li>
-  </ul>
-</li>
-  <li>
-<a href="#api" id="toc-api" class="nav-link" data-scroll-target="#api">API Usage</a>
-  <ul class="collapse">
-<li>
-<a href="#httr2" id="toc-httr2" class="nav-link" data-scroll-target="#httr2"><code>httr2</code></a>
-  <ul class="collapse">
-<li><a href="#build-a-request" id="toc-build-a-request" class="nav-link" data-scroll-target="#build-a-request">Build a Request</a></li>
-  <li><a href="#execute-a-request-to-get-a-response" id="toc-execute-a-request-to-get-a-response" class="nav-link" data-scroll-target="#execute-a-request-to-get-a-response">Execute a Request to get a Response</a></li>
-  <li><a href="#process-the-response-for-use-in-r" id="toc-process-the-response-for-use-in-r" class="nav-link" data-scroll-target="#process-the-response-for-use-in-r">Process the Response for Use in <code>R</code></a></li>
-  </ul>
-</li>
-  <li><a href="#exercise03" id="toc-exercise03" class="nav-link" data-scroll-target="#exercise03">Exercises #03</a></li>
+<li><a href="#ex01" id="toc-ex01" class="nav-link" data-scroll-target="#ex01">Exercise 1: Reading HTML Tables</a></li>
+  <li><a href="#ex02" id="toc-ex02" class="nav-link" data-scroll-target="#ex02">Exercise 2: CUNY Map</a></li>
+  <li><a href="#ex03" id="toc-ex03" class="nav-link" data-scroll-target="#ex03">Exercise 3: Cocktails Data</a></li>
   </ul>
 </li>
   </ul><div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/labs/lab09.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/labs/lab09.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
-<h1 class="title">STA 9750 Week 9 In-Class Activity: Data Import</h1>
+<h1 class="title">STA 9750 Lecture #9 In-Class Activity: Reading and Manipulating HTML in <code>R</code>
+</h1>
 </div>
 
 
@@ -216,64 +206,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   
 
 
-</header><div class="cell">
-<div>
-<div id="webr-1" class="exercise-cell">
-
-</div>
-<script type="webr-1-contents">
-eyJhdHRyIjp7ImVjaG8iOmZhbHNlLCJlZGl0IjpmYWxzZSwiZXZhbCI6dHJ1ZSwibWVzc2FnZSI6dHJ1ZX0sImNvZGUiOiJ3ZWJyOjppbnN0YWxsKFwiaHR0cHV2XCIsIHF1aWV0PVRSVUUpXG53ZWJyOjppbnN0YWxsKFwiZ3JhZGV0aGlzXCIsIHF1aWV0PVRSVUUpXG53ZWJyOjppbnN0YWxsKFwidGlkeXZlcnNlXCIsIHF1aWV0PVRSVUUpXG53ZWJyOjppbnN0YWxsKFwibnljZmxpZ2h0czEzXCIsIHF1aWV0PVRSVUUpXG5cbnN1cHByZXNzUGFja2FnZVN0YXJ0dXBNZXNzYWdlcyhsaWJyYXJ5KHRpZHl2ZXJzZSkpXG5cbmlmKHJlcXVpcmUoXCJncmFkZXRoaXNcIiwgcXVpZXRseSA9IFRSVUUpKXtcbiAgICBtZXNzYWdlKFwiQXV0by1ncmFkZXIgaW5pdGlhbGl6ZWQgc3VjY2Vzc2Z1bGx5LiBZb3UgY2FuIG5vdyBiZWdpbiBleGVyY2lzZXMuXCIpXG59In0=
-</script>
-</div>
-</div>
-<div class="cell" data-edit="false">
-<div>
-<div id="webr-2" class="exercise-cell">
-
-</div>
-<script type="webr-2-contents">
-eyJhdHRyIjp7ImVkaXQiOmZhbHNlLCJldmFsIjp0cnVlLCJvdXRwdXQiOmZhbHNlfSwiY29kZSI6IndlYnI6Omluc3RhbGwoXCJncmFkZXRoaXNcIiwgcXVpZXQgPSBUUlVFKVxubGlicmFyeShncmFkZXRoaXMpXG5vcHRpb25zKHdlYnIuZXhlcmNpc2UuY2hlY2tlciA9IGZ1bmN0aW9uKFxuICBsYWJlbCwgdXNlcl9jb2RlLCBzb2x1dGlvbl9jb2RlLCBjaGVja19jb2RlLCBlbnZpcl9yZXN1bHQsIGV2YWx1YXRlX3Jlc3VsdCxcbiAgZW52aXJfcHJlcCwgbGFzdF92YWx1ZSwgZW5naW5lLCBzdGFnZSwgLi4uXG4pIHtcbiAgaWYgKGlzLm51bGwoY2hlY2tfY29kZSkpIHtcbiAgICAjIE5vIGdyYWRpbmcgY29kZSwgc28ganVzdCBza2lwIGdyYWRpbmdcbiAgICBpbnZpc2libGUoTlVMTClcbiAgfSBlbHNlIGlmIChpcy5udWxsKGxhYmVsKSkge1xuICAgIGxpc3QoXG4gICAgICBjb3JyZWN0ID0gRkFMU0UsXG4gICAgICB0eXBlID0gXCJ3YXJuaW5nXCIsXG4gICAgICBtZXNzYWdlID0gXCJBbGwgZXhlcmNpc2VzIG11c3QgaGF2ZSBhIGxhYmVsLlwiXG4gICAgKVxuICB9IGVsc2UgaWYgKGlzLm51bGwoc29sdXRpb25fY29kZSkpIHtcbiAgICBsaXN0KFxuICAgICAgY29ycmVjdCA9IEZBTFNFLFxuICAgICAgdHlwZSA9IFwid2FybmluZ1wiLFxuICAgICAgbWVzc2FnZSA9IGh0bWx0b29sczo6dGFncyRkaXYoXG4gICAgICAgIGh0bWx0b29sczo6dGFncyRwKFwiQSBwcm9ibGVtIG9jY3VycmVkIGdyYWRpbmcgdGhpcyBleGVyY2lzZS5cIiksXG4gICAgICAgIGh0bWx0b29sczo6dGFncyRwKFxuICAgICAgICAgIFwiTm8gc29sdXRpb24gY29kZSB3YXMgZm91bmQuIE5vdGUgdGhhdCBncmFkaW5nIGV4ZXJjaXNlcyB1c2luZyB0aGUgXCIsXG4gICAgICAgICAgaHRtbHRvb2xzOjp0YWdzJGNvZGUoXCJncmFkZXRoaXNcIiksXG4gICAgICAgICAgXCJwYWNrYWdlIHJlcXVpcmVzIGEgbW9kZWwgc29sdXRpb24gdG8gYmUgaW5jbHVkZWQgaW4gdGhlIGRvY3VtZW50LlwiXG4gICAgICAgIClcbiAgICAgIClcbiAgICApXG4gIH0gZWxzZSB7XG4gICAgZ3JhZGV0aGlzOjpncmFkZXRoaXNfZXhlcmNpc2VfY2hlY2tlcihcbiAgICAgIGxhYmVsID0gbGFiZWwsIHNvbHV0aW9uX2NvZGUgPSBzb2x1dGlvbl9jb2RlLCB1c2VyX2NvZGUgPSB1c2VyX2NvZGUsXG4gICAgICBjaGVja19jb2RlID0gY2hlY2tfY29kZSwgZW52aXJfcmVzdWx0ID0gZW52aXJfcmVzdWx0LFxuICAgICAgZXZhbHVhdGVfcmVzdWx0ID0gZXZhbHVhdGVfcmVzdWx0LCBlbnZpcl9wcmVwID0gZW52aXJfcHJlcCxcbiAgICAgIGxhc3RfdmFsdWUgPSBsYXN0X3ZhbHVlLCBzdGFnZSA9IHN0YWdlLCBlbmdpbmUgPSBlbmdpbmUpXG4gIH1cbn0pIn0=
-</script>
-</div>
-</div>
-<div class="cell">
-<div>
-<div id="webr-3" class="exercise-cell">
-
-</div>
-<script type="webr-3-contents">
-eyJhdHRyIjp7ImVjaG8iOmZhbHNlLCJlZGl0IjpmYWxzZSwiZXZhbCI6dHJ1ZX0sImNvZGUiOiJ3ZWJyOjppbnN0YWxsKGMoXCJ0aWR5dmVyc2VcIiwgXCJtZ2N2XCIsIFwiZ2dwbWlzY1wiKSwgcXVpZXQ9VFJVRSlcbnN1cHByZXNzUGFja2FnZVN0YXJ0dXBNZXNzYWdlcyhsaWJyYXJ5KHRpZHl2ZXJzZSkpIn0=
-</script>
-</div>
-</div>
-<section id="slides" class="level1"><h1><a href="../slides/slides09.html">Slides</a></h1>
+</header><section id="slides" class="level1"><h1><a href="../slides/slides11.html">Slides</a></h1>
 </section><section id="review" class="level1"><h1>Review Practice</h1>
-<div class="quarto-video"><iframe data-external="1" src="https://www.youtube.com/embed/FjT35R8CC9Q" width="1000" height="600" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
-<p>The data can be found online at <a href="https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv" class="uri">https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv</a>.</p>
-<p>The data looks like this:</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>Rows: 85
-Columns: 13
-$ competitorname   &lt;chr&gt; "100 Grand", "3 Musketeers", "One dime", "One quarter…
-$ chocolate        &lt;dbl&gt; 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,…
-$ fruity           &lt;dbl&gt; 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1,…
-$ caramel          &lt;dbl&gt; 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ peanutyalmondy   &lt;dbl&gt; 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ nougat           &lt;dbl&gt; 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,…
-$ crispedricewafer &lt;dbl&gt; 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ hard             &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1,…
-$ bar              &lt;dbl&gt; 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,…
-$ pluribus         &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1,…
-$ sugarpercent     &lt;dbl&gt; 0.732, 0.604, 0.011, 0.011, 0.906, 0.465, 0.604, 0.31…
-$ pricepercent     &lt;dbl&gt; 0.860, 0.511, 0.116, 0.511, 0.511, 0.767, 0.767, 0.51…
-$ winpercent       &lt;dbl&gt; 66.97173, 67.60294, 32.26109, 46.11650, 52.34146, 50.…</code></pre>
-</div>
-</div>
-<p>Read this data into <code>R</code> using the <code>read_csv</code> function from the <code>readr</code> package; note that the <code>read_csv</code> function can take a URL as an input so you don’t need to directly download this data set.</p>
-<p>Once you have downloaded the candy data, create visualizations that address the following questions:</p>
-<ol type="1">
-<li>Do people prefer more sugary candies? (Think OLS)</li>
+<p>The <a href="https://opentdb.com/">Open Trivia Database</a> provides a simple API for trivia questions. You are going to use this API to create a trivia game for you and some friends.</p>
+<ol start="0" type="1">
+<li>Before beginning, explore <a href="https://opentdb.com/browse.php">the question bank</a> and the <a href="https://opentdb.com/api_config.php">API call generator</a> to understand the types of data available and the structure of the API call.</li>
+<li>Use the API call generator to create a URL to download 5 multiple-choice questions on a topic of your choosing. Copy this URL.</li>
+<li>Now, use the <code>httr2</code> package in <code>R</code> to make a request to that URL. At first, simply paste the whole URL into <code>request</code> and confirm it works. Then, break the URL into its constitutent parts using the <code><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path()</a></code> and <code><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query()</a></code> functions to construct the URL. (We won’t be parametrizing the API call in this brief exercise, but this is important to do if you are going to programmatically be making several API calls.)</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
@@ -288,20 +227,44 @@ Solution
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-4" class="exercise-cell">
-
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<span><span class="va">req1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com/api.php?amount=50&amp;category=18&amp;type=multiple"</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="co"># Decompose the URL into its various components: </span></span>
+<span><span class="va">req2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>          <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"api.php"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>          <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query</a></span><span class="op">(</span>amount   <span class="op">=</span> <span class="fl">50</span>, </span>
+<span>                        category <span class="op">=</span> <span class="fl">18</span>, </span>
+<span>                        type     <span class="op">=</span> <span class="st">"multiple"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Confirm equivalence</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html">all.equal</a></span><span class="op">(</span><span class="va">req1</span>, <span class="va">req2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
 </div>
-<script type="webr-4-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeSh0aWR5dmVyc2UpXG5saWJyYXJ5KGdncG1pc2MpXG5yZWFkX2NzdihcImh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9maXZldGhpcnR5ZWlnaHQvZGF0YS9yZWZzL2hlYWRzL21hc3Rlci9jYW5keS1wb3dlci1yYW5raW5nL2NhbmR5LWRhdGEuY3N2XCIpIHw+XG4gICAgbXV0YXRlKHdpbnBlcmNlbnQgPSB3aW5wZXJjZW50IC8gMTAwKSB8PlxuICAgIGdncGxvdChhZXMoeD1zdWdhcnBlcmNlbnQsIHk9d2lucGVyY2VudCkpICsgXG4gICAgICB4bGFiKFwiU3VnYXJpbmVzcyAoUGVyY2VudGlsZSlcIikgKyBcbiAgICAgIHlsYWIoXCJQb3B1bGFyaXR5IChQZXJjZW50aWxlKVwiKSArIFxuICAgICAgZ2VvbV9wb2ludCgpICsgXG4gICAgICBzY2FsZV94X2NvbnRpbnVvdXMobGFiZWxzID0gc2NhbGVzOjpwZXJjZW50KSArIFxuICAgICAgc2NhbGVfeV9jb250aW51b3VzKGxhYmVscyA9IHNjYWxlczo6cGVyY2VudCkgKyBcbiAgICAgIHN0YXRfc21vb3RoKG1ldGhvZD1cImxtXCIpICsgXG4gICAgICBzdGF0X3BvbHlfZXEodXNlX2xhYmVsKFwiUjJcIiwgXCJSMi5DSVwiLCBcIlBcIiksIFxuICAgICAgICAgICAgICAgICAgIGNvbG9yPVwicmVkNFwiLCBcbiAgICAgICAgICAgICAgICAgICBzaXplPTUpICsgXG4gICAgICB0aGVtZV9idygpIn0=
-</script>
+</div>
+<p>I’m using Computer Science (Category 18) but you can use others.</p>
+<p>Now that we have built our request objects, we can use <code><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform()</a></code> to actually make the request:</p>
+<div class="cell">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resp</span> <span class="op">&lt;-</span> <span class="va">req2</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">resp</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;httr2_response&gt;
+GET https://opentdb.com/api.php?amount=50&amp;category=18&amp;type=multiple
+Status: 200 OK
+Content-Type: application/json
+Body: In memory (12347 bytes)</code></pre>
 </div>
 </div>
 </div>
 </div>
 </div>
-<ol start="2" type="1">
-<li>Do people prefer more expensive candies? (Think OLS)</li>
+<ol start="3" type="1">
+<li>
+<p>The default response format is <code>json</code>, so use the <code>resp_body_json</code> function to convert the response into <code>R</code>. Print the repsonse to screen and examine the format. This will help you know what you need to do to manipulate (“rectangle”) the data into a useful structure.</p>
+<p><em>Hint:</em> To avoid printing so much to screen that it’s hard to make sense of the output, you may wish to modify your API call to temporarily only request 3-5 responses, instead of 50, even if your eventual goal is to get more responses than that.</p>
+</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
@@ -316,20 +279,74 @@ Solution
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-5" class="exercise-cell">
-
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>          <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"api.php"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>          <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query</a></span><span class="op">(</span>amount   <span class="op">=</span> <span class="fl">3</span>, </span>
+<span>                        category <span class="op">=</span> <span class="fl">18</span>, </span>
+<span>                        type     <span class="op">=</span> <span class="st">"multiple"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="co"># Some stuff to respect API rate limiting</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_throttle.html">req_throttle</a></span><span class="op">(</span>capacity<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_retry.html">req_retry</a></span><span class="op">(</span>max_tries <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_json</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 2s for retry backoff ■■■■■■■■■■■■■■■                 </code></pre>
 </div>
-<script type="webr-5-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeSh0aWR5dmVyc2UpXG5saWJyYXJ5KGdncG1pc2MpXG5yZWFkX2NzdihcImh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9maXZldGhpcnR5ZWlnaHQvZGF0YS9yZWZzL2hlYWRzL21hc3Rlci9jYW5keS1wb3dlci1yYW5raW5nL2NhbmR5LWRhdGEuY3N2XCIpIHw+XG4gICAgbXV0YXRlKHdpbnBlcmNlbnQgPSB3aW5wZXJjZW50IC8gMTAwKSB8PlxuICAgIGdncGxvdChhZXMoeD1wcmljZXBlcmNlbnQsIHk9d2lucGVyY2VudCkpICsgXG4gICAgICB4bGFiKFwiUHJpY2UgKFBlcmNlbnRpbGUpXCIpICsgXG4gICAgICB5bGFiKFwiUG9wdWxhcml0eSAoUGVyY2VudGlsZSlcIikgKyBcbiAgICAgIGdlb21fcG9pbnQoKSArIFxuICAgICAgc2NhbGVfeF9jb250aW51b3VzKGxhYmVscyA9IHNjYWxlczo6cGVyY2VudCkgKyBcbiAgICAgIHNjYWxlX3lfY29udGludW91cyhsYWJlbHMgPSBzY2FsZXM6OnBlcmNlbnQpICsgXG4gICAgICBzdGF0X3Ntb290aChtZXRob2Q9XCJsbVwiKSArIFxuICAgICAgc3RhdF9wb2x5X2VxKHVzZV9sYWJlbChcIlIyXCIsIFwiUjIuQ0lcIiwgXCJQXCIpLCBcbiAgICAgICAgICAgICAgICAgICBjb2xvcj1cInJlZDRcIiwgXG4gICAgICAgICAgICAgICAgICAgc2l6ZT01KSArIFxuICAgICAgdGhlbWVfYncoKSJ9
-</script>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 2s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■   </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 4s for retry backoff ■■■■■■■■■■                      </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 4s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■    </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 4s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>List of 2
+ $ response_code: int 0
+ $ results      :List of 3
+  ..$ :List of 6
+  .. ..$ type             : chr "multiple"
+  .. ..$ difficulty       : chr "medium"
+  .. ..$ category         : chr "Science: Computers"
+  .. ..$ question         : chr "The teapot often seen in many 3D modeling applications is called what?"
+  .. ..$ correct_answer   : chr "Utah Teapot"
+  .. ..$ incorrect_answers:List of 3
+  .. .. ..$ : chr "Pixar Teapot"
+  .. .. ..$ : chr "3D Teapot"
+  .. .. ..$ : chr "Tennessee Teapot"
+  ..$ :List of 6
+  .. ..$ type             : chr "multiple"
+  .. ..$ difficulty       : chr "hard"
+  .. ..$ category         : chr "Science: Computers"
+  .. ..$ question         : chr "Which data structure does FILO apply to?"
+  .. ..$ correct_answer   : chr "Stack"
+  .. ..$ incorrect_answers:List of 3
+  .. .. ..$ : chr "Queue"
+  .. .. ..$ : chr "Heap"
+  .. .. ..$ : chr "Tree"
+  ..$ :List of 6
+  .. ..$ type             : chr "multiple"
+  .. ..$ difficulty       : chr "hard"
+  .. ..$ category         : chr "Science: Computers"
+  .. ..$ question         : chr "Who is the original author of the realtime physics engine called PhysX?"
+  .. ..$ correct_answer   : chr "NovodeX"
+  .. ..$ incorrect_answers:List of 3
+  .. .. ..$ : chr "Ageia"
+  .. .. ..$ : chr "Nvidia"
+  .. .. ..$ : chr "AMD"</code></pre>
+</div>
+</div>
+<p>We see here that the response comes in a list of two components: <code>response_code</code> and <code>results</code>, with the content we want being in the <code>results</code>. The 3 <code>results</code> look pretty straightforward, except for the <code>incorrect_answers</code> list, which we will need to keep an eye on.</p>
 </div>
 </div>
 </div>
-</div>
-</div>
-<ol start="3" type="1">
-<li>Do people prefer chocolate candies? (Think ANOVA)</li>
+<ol start="4" type="1">
+<li>Use the <code>pluck</code> function to extract the relevant part of the JSON response. The response will have several similarly formatted response objects. Use the <code>map(as_tibble) |&gt; list_rbind()</code> paradigm to convert these into a large data frame.</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
@@ -343,25 +360,64 @@ Solution
 </div>
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>For this question, we only know whether a candy is chocolate-based or not, so a linear model is not the most straightforward approach. We can instead use an ANOVA-inspired bar plot.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 <div class="cell">
-<div>
-<div id="webr-6" class="exercise-cell">
-
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"api.php"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query</a></span><span class="op">(</span>amount   <span class="op">=</span> <span class="fl">3</span>, </span>
+<span>                  category <span class="op">=</span> <span class="fl">18</span>, </span>
+<span>                  type     <span class="op">=</span> <span class="st">"multiple"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="co"># Some stuff to respect API rate limiting</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_throttle.html">req_throttle</a></span><span class="op">(</span>capacity<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_retry.html">req_retry</a></span><span class="op">(</span>max_tries <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_json</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"results"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">as_tibble</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/list_c.html">list_rbind</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 3s for retry backoff ■■■■■■■■■■■■■■■■                </code></pre>
 </div>
-<script type="webr-6-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeSh0aWR5dmVyc2UpXG5yZWFkX2NzdihcImh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9maXZldGhpcnR5ZWlnaHQvZGF0YS9yZWZzL2hlYWRzL21hc3Rlci9jYW5keS1wb3dlci1yYW5raW5nL2NhbmR5LWRhdGEuY3N2XCIpIHw+XG4gICAgbXV0YXRlKHdpbnBlcmNlbnQgPSB3aW5wZXJjZW50IC8gMTAwLCBcbiAgICAgICAgICAgY2hvY29sYXRlID0gYXMubG9naWNhbChjaG9jb2xhdGUpKSB8PlxuICAgIGdyb3VwX2J5KGNob2NvbGF0ZSkgfD5cbiAgICBtdXRhdGUod2luX21lYW4gPSBtZWFuKHdpbnBlcmNlbnQpLCBcbiAgICAgICAgICAgd2luX3NkICAgPSBzZCh3aW5wZXJjZW50KSwgXG4gICAgICAgICAgIG4gICAgICAgID0gbigpLCBcbiAgICAgICAgICAgd2luX3NlICAgPSB3aW5fc2QgLyBzcXJ0KG4pKSB8PlxuICAgIHVuZ3JvdXAoKSB8PlxuICAgIGdncGxvdChhZXMoeD1jaG9jb2xhdGUsIHk9d2lucGVyY2VudCkpICsgXG4gICAgZ2VvbV9qaXR0ZXIoaGVpZ2h0PTAsIHdpZHRoPTAuMiwgYWxwaGE9MC4zKSArIFxuICAgIGdlb21fZXJyb3JiYXIoYWVzKHltaW4gPSB3aW5fbWVhbiAtIHdpbl9zZSwgXG4gICAgICAgICAgICAgICAgICAgICAgeW1heCA9IHdpbl9tZWFuICsgd2luX3NlKSxcbiAgICAgICAgICAgICAgICAgIHdpZHRoPTAuMiwgXG4gICAgICAgICAgICAgICAgICBjb2xvcj1cInJlZDRcIikgKyBcbiAgICBzdGF0X3N1bW1hcnkoZnVuPVwibWVhblwiLCBcbiAgICAgICAgICAgICAgICAgZ2VvbT1cImNvbFwiLCBcbiAgICAgICAgICAgICAgICAgZmlsbD1cImxpZ2h0Ymx1ZVwiLCBcbiAgICAgICAgICAgICAgICAgY29sb3I9XCJibHVlNFwiLCBcbiAgICAgICAgICAgICAgICAgYWxwaGE9MC40KSArIFxuICAgIGdlb21fcG9pbnQoYWVzKHk9d2luX21lYW4pLCBzaXplPTIsIGNvbG9yPVwicmVkNFwiKSArIFxuICAgIHRoZW1lX2J3KCkgKyBcbiAgICB4bGFiKFwiQ2hvY29sYXRlXCIpICsgXG4gICAgeWxhYihcIlBvcHVsYXJpdHkgKFBlcmNlbnRpbGUpXCIpICsgXG4gICAgc2NhbGVfeV9jb250aW51b3VzKGxhYmVscyA9IHNjYWxlczo6cGVyY2VudCwgXG4gICAgICAgICAgICAgICAgICAgICAgIGxpbWl0cyA9IGMoMCwgMSkpIn0=
-</script>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 3s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 6s for retry backoff ■■■■■■■■■■■                     </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 6s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■    </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 6s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 6
+  type     difficulty category         question correct_answer incorrect_answers
+  &lt;chr&gt;    &lt;chr&gt;      &lt;chr&gt;            &lt;chr&gt;    &lt;chr&gt;          &lt;list&gt;           
+1 multiple medium     Science: Comput… "Which … Java           &lt;chr [1]&gt;        
+2 multiple medium     Science: Comput… "Which … Java           &lt;chr [1]&gt;        
+3 multiple medium     Science: Comput… "Which … Java           &lt;chr [1]&gt;        
+4 multiple medium     Science: Comput… "Which … JavaScript     &lt;chr [1]&gt;        
+5 multiple medium     Science: Comput… "Which … JavaScript     &lt;chr [1]&gt;        
+6 multiple medium     Science: Comput… "Which … JavaScript     &lt;chr [1]&gt;        
+7 multiple easy       Science: Comput… "The El… Acorn Compute… &lt;chr [1]&gt;        
+8 multiple easy       Science: Comput… "The El… Acorn Compute… &lt;chr [1]&gt;        
+9 multiple easy       Science: Comput… "The El… Acorn Compute… &lt;chr [1]&gt;        </code></pre>
+</div>
+</div>
+<p>Everything looks pretty good here, with two notes:</p>
+<ul>
+<li>The <code>incorrect_answers</code> column appears to be a <code>list</code> type column</li>
+<li>Each of our responses was repeated across three rows.</li>
+</ul>
 </div>
 </div>
 </div>
-</div>
-</div>
-</section><section id="fs" class="level1"><h1>Using the File System</h1>
-<section id="exercise01" class="level2"><h2 class="anchored" data-anchor-id="exercise01">Exercises #01</h2>
-<ol start="0" type="1">
-<li><p>Use the <code><a href="https://rdrr.io/r/base/getwd.html">getwd()</a></code> to find your current working directory. For the following exercises to be most useful, you will want to ensure that this is your <code>STA9750-2025-FALL</code> course directory. If you have somehow changed it please use the <code><a href="https://rdrr.io/r/base/getwd.html">setwd()</a></code> function to return to the proper directory.</p></li>
-<li><p>In your <code>STA9750-2025-FALL</code> directory, you have a file called <code>index.qmd</code>. Use the <code>path</code> function from the <code>fs</code> package to create a <code>path</code> object pointing to that file and then use the <code>path_abs</code> function to convert that relative path to an absolute path.</p></li>
+<ol start="5" type="1">
+<li>
+<p>Use the <code>unnest</code> and <code>pivot_wider</code> functions to conver this data into a more usable structure.</p>
+<p>When applied to a <code>list</code> column, the <code>unnest</code> function will try to convert it into a more standard vector-type column.</p>
+<p><em>Hint</em>: Before using <code>pivot_wider</code>, you will need to create a new column with column names for the pivoted data.</p>
+</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
@@ -375,26 +431,174 @@ Solution
 </div>
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Note that these solutions will give different answers on your personal computer as opposed to this web interface. That is to be expected since we are going outside of <code>R</code> and interacting with the whole system and should not surprise you.</p>
 <div class="cell">
-<div>
-<div id="webr-7" class="exercise-cell">
-
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"api.php"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query</a></span><span class="op">(</span>amount   <span class="op">=</span> <span class="fl">3</span>, </span>
+<span>                  category <span class="op">=</span> <span class="fl">18</span>, </span>
+<span>                  type     <span class="op">=</span> <span class="st">"multiple"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="co"># Some stuff to respect API rate limiting</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_throttle.html">req_throttle</a></span><span class="op">(</span>capacity<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_retry.html">req_retry</a></span><span class="op">(</span>max_tries <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_json</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"results"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">as_tibble</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/list_c.html">list_rbind</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html">unnest</a></span><span class="op">(</span><span class="va">incorrect_answers</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">question</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>pivot_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"incorrect-"</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/row_number.html">row_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">pivot_name</span>, </span>
+<span>                values_from <span class="op">=</span> <span class="va">incorrect_answers</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">type</span>, </span>
+<span>           <span class="op">-</span><span class="va">category</span>, </span>
+<span>           <span class="op">-</span><span class="va">difficulty</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 3s for retry backoff ■■■■■■■■■■■■■                   </code></pre>
 </div>
-<script type="webr-7-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShmcylcbnBhdGgoXCJpbmRleC5xbWRcIikgfD4gcGF0aF9hYnMoKSJ9
-</script>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 3s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 4s for retry backoff ■■■■■■■■■■■■■                   </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting 4s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 5
+# Groups:   question [3]
+  question              correct_answer `incorrect-1` `incorrect-2` `incorrect-3`
+  &lt;chr&gt;                 &lt;chr&gt;          &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;        
+1 Which of the followi… ALU            CPU           RAM           Register     
+2 Which of these peopl… Jonathan Ive   Steve Jobs    Ronald Wayne  Steve Wozniak
+3 What is the number o… 104            64            94            76           </code></pre>
+</div>
+</div>
+<p>You can use this to play a bit of trivia amongst your group. Set <code>amount</code> higher for more questions.</p>
 </div>
 </div>
 </div>
-</div>
-</div>
-<ol start="2" type="1">
-<li>
-<p>A common pattern in working with files is wanting to find all files whose names match a certain pattern. This is known colloquially as <em>globbing</em>. The <code>dir_ls</code> function can be used to list all files in a directory. First use it to list all files in your <code>STA9750-2025-FALL</code> course directory; then use the <code>glob</code> argument to list only the <code>qmd</code> files in that directory.</p>
-<p><em>Hint: The <code>glob</code> argument should be a string with asterisks in it where you will allow any match. For example, <code>*.csv</code> will match all CSV files, <code>abc*</code> will match all files whose names start with <code>abc</code>, and <code>abc*.csv</code> will match files whose names start with <code>abc</code> and end with <code>.csv</code>.</em></p>
+</section><section id="web-scraping" class="level1"><h1>Web Scraping</h1>
+<p>In today’s class, we’re going to work through <strong>three</strong> web scraping exercises:</p>
+<ol type="1">
+<li>Reading a simple static table</li>
+<li>Extending our ‘CUNY Map’ from <a href="./lab01.html">Lab #01</a>
 </li>
+<li>Scraping Cocktail Recipes 🍸 from Hadley Wickham</li>
 </ol>
+<section id="ex01" class="level2"><h2 class="anchored" data-anchor-id="ex01">Exercise 1: Reading HTML Tables</h2>
+<p>Using <code>rvest</code>, read the following table into <code>R</code>. Your results should be a data frame that captures the structure of the table.</p>
+<div id="tbl-baruch-stats" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure"><figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-baruch-stats-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
+</figcaption><div aria-describedby="tbl-baruch-stats-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 19%">
+<col style="width: 64%">
+</colgroup>
+<thead><tr class="header">
+<th>Department</th>
+<th>Course Number</th>
+<th>Course Name</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>STA</td>
+<td>2000</td>
+<td>Business Statistics I</td>
+</tr>
+<tr class="even">
+<td>STA</td>
+<td>3000</td>
+<td>Statistical Computing</td>
+</tr>
+<tr class="odd">
+<td>STA</td>
+<td>3154</td>
+<td>Business Statistics II</td>
+</tr>
+<tr class="even">
+<td>STA</td>
+<td>3950</td>
+<td>Data Mining</td>
+</tr>
+<tr class="odd">
+<td>STA</td>
+<td>4155</td>
+<td>Regression &amp; Forecasting Models</td>
+</tr>
+<tr class="even">
+<td>STA</td>
+<td>4157</td>
+<td>Analysis of Variance: Principles &amp; Applications</td>
+</tr>
+<tr class="odd">
+<td>STA</td>
+<td>4950</td>
+<td>Machine Learning and AI</td>
+</tr>
+<tr class="even">
+<td>STA</td>
+<td>9700</td>
+<td>Modern Regression Analysis</td>
+</tr>
+<tr class="odd">
+<td>STA</td>
+<td>9705</td>
+<td>Multivariate Statistical Methods</td>
+</tr>
+<tr class="even">
+<td>STA</td>
+<td>9708</td>
+<td>Managerial Statistics</td>
+</tr>
+<tr class="odd">
+<td>STA</td>
+<td>9710</td>
+<td>Statistical Methods for Sampling and Audit</td>
+</tr>
+<tr class="even">
+<td>STA</td>
+<td>9715</td>
+<td>Applied Probability</td>
+</tr>
+<tr class="odd">
+<td>STA</td>
+<td>9719</td>
+<td>Foundations of Statistical Inference</td>
+</tr>
+<tr class="even">
+<td>STA</td>
+<td>9750</td>
+<td>Software Tools for Data Analysis</td>
+</tr>
+<tr class="odd">
+<td>STA</td>
+<td>9890</td>
+<td>Statistical Learning for Data Mining</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<ol type="1">
+<li>
+<p>Use the Selector Gadget or similar to identify the HTML elements defining this table. You can do this in one of two ways:</p>
+<ul>
+<li>By a specific named element, accessed as <code>html_element("#name")</code>
+</li>
+<li>By a specific element type, accessed as <code>html_element("type")</code>
+</li>
+</ul>
+</li>
+<li><p>Use the <code>read_html</code> function to read this entire page into <code>R</code>, then use the <code>html_element</code> function with the selector from the previous step to extract the table.</p></li>
+<li><p>Use the <code>html_table</code> function to conver this table into a data frame.</p></li>
+</ol>
+<p>This page is pretty simple, so a little bit of element selection and <code>html_table</code> will suffice. For more complex tables, you may need to do more to select the specific table and more to ‘clean up’ that table once it is in <code>R</code>.</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -408,20 +612,54 @@ Solution
 <div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-8" class="exercise-cell">
-
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://michael-weylandt.com/STA9750/labs/lab11.html"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">"#tbl-baruch-stats"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_table.html">html_table</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># OR - Since this page has only a single table</span></span>
+<span><span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://michael-weylandt.com/STA9750/labs/lab11.html"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">"table"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_table.html">html_table</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<script type="webr-8-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShmcylcbmRpcl9scygpICMgRGVmYXVsdCBpcyBkaXJfbHMoXCIuXCIpOiBpLmUuLCBjdXJyZW50IHdvcmtpbmcgZGlyZWN0b3J5XG5kaXJfbHMoZ2xvYj1cIipxbWRcIikifQ==
-</script>
 </div>
 </div>
 </div>
+</section><section id="ex02" class="level2"><h2 class="anchored" data-anchor-id="ex02">Exercise 2: CUNY Map</h2>
+<p>In this exercise, we’re going to take our Baruch map from <a href="./lab01.html">Lab #01</a> and extend it to pull <em>all</em> CUNY campuses. This exercise is intended to help you practice scraping data from Wikipedia, which is a good example of a relatively plain HTML site that has a bit of extra Javascript that can make it a bit tricky to find the element(s) you want.</p>
+<p>The following code is a cleaned-up version of the map creation activity from Lab #01. Review it before beginning this activity:</p>
+<div class="cell">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/leaflet/">leaflet</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">baruch_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org/wiki/Baruch_College"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">".geo"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_split.html">str_split_1</a></span><span class="op">(</span><span class="st">";"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rlang.r-lib.org/reference/set_names.html">set_names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"latitude"</span>, <span class="st">"longitude"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rstudio.github.io/leaflet/reference/leaflet.html">leaflet</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-layers.html">addTiles</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-methods.html">setView</a></span><span class="op">(</span>lat <span class="op">=</span> <span class="va">baruch_info</span><span class="op">$</span><span class="va">latitude</span>, </span>
+<span>            lng <span class="op">=</span> <span class="va">baruch_info</span><span class="op">$</span><span class="va">longitude</span>, </span>
+<span>            zoom<span class="op">=</span><span class="fl">17</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-layers.html">addPopups</a></span><span class="op">(</span>lat <span class="op">=</span> <span class="va">baruch_info</span><span class="op">$</span><span class="va">latitude</span>, </span>
+<span>              lng <span class="op">=</span> <span class="va">baruch_info</span><span class="op">$</span><span class="va">longitude</span>, </span>
+<span>               <span class="st">"Look! It's &lt;b&gt;Baruch College&lt;/b&gt;!"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
-<ol start="3" type="1">
-<li>The <code>dir_info</code> function can be used to create a data frame with information about all files in a directory. Use it and <code>dplyr</code> functionality to find the largest file in your project folder. Then return its <em>absolute</em> path.</li>
+<ol type="1">
+<li>
+<p>Building on the code above, write a function that takes the Wikipedia URL for a CUNY as an argument and returns a data frame with two columns:</p>
+<ul>
+<li>Latitude</li>
+<li>Longitude</li>
+</ul>
+<p>Confirm that your function works by applying it to Baruch’s Wikipedia page.</p>
+</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
@@ -436,51 +674,46 @@ Solution
 <div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-9" class="exercise-cell">
-
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">get_cuny_coordinates</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">url</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="va">url</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">".geo"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_split.html">str_split_1</a></span><span class="op">(</span><span class="st">";"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rlang.r-lib.org/reference/set_names.html">set_names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"latitude"</span>, <span class="st">"longitude"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu">get_cuny_coordinates</span><span class="op">(</span><span class="st">"https://en.wikipedia.org/wiki/Baruch_College"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  latitude longitude
+     &lt;dbl&gt;     &lt;dbl&gt;
+1     40.7     -74.0</code></pre>
 </div>
-<script type="webr-9-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShmcylcbmxpYnJhcnkoZHBseXIpXG5kaXJfaW5mbygpIHw+IHNsaWNlX21heChzaXplKSB8PiBwdWxsKHBhdGgpIHw+IHBhdGhfYWJzKCkifQ==
-</script>
 </div>
 </div>
 </div>
 </div>
-</div>
-<ol start="4" type="1">
-<li>
-<p>Often, we want to perform a search over all files and folders in a directory <em>recursively</em> - that is, looking inside subfolders, not just at files in the top level. The <code>recurse=TRUE</code> argument to <code>dir_info</code> will return information about all files contained in any level of the directory. Use <code>dir_info</code> to search the <code>data</code> directory you have created to store Mini-Project data and find the <em>smallest</em> data file.</p>
-<p><em>Hint: You will need to pass a <code>path</code> argument to <code>dir_info</code> so that you search only your <code>data</code> folder and not your entire course directory.</em></p>
-</li>
+<ol start="2" type="1">
+<li>Investigate the <a href="https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions">Wikipedia List of CUNYs</a> and identify which table can be used to get links to each CUNY’s page.</li>
 </ol>
-<div class="callout callout-style-default callout-tip callout-titled" title="Solution">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout callout-style-default callout-caution callout-titled" title="Wikipedia Table Scraping">
+<div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Solution
+Wikipedia Table Scraping
 </div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div class="cell">
-<div>
-<div id="webr-10" class="exercise-cell">
-
-</div>
-<script type="webr-10-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShmcylcbmxpYnJhcnkoZHBseXIpXG5kaXJfaW5mbyhcImRhdGFcIiwgcmVjdXJzZT1UUlVFKSB8PiBzbGljZV9tYXgoc2l6ZSkgfD4gcHVsbChwYXRoKSB8PiBwYXRoX2FicygpIn0=
-</script>
+<p>Wikipedia has tons of excellent data tables which have been collected by incredible volunteers. It can be an incredibly useful source, but there are a few difficulties in getting data out of Wikipedia. In particular, Wikipedia uses a rich JavaScript library to make tables slightly interactive (column sorting, <em>etc.</em>) that modifies the page HTML. <code>R</code> will get the “raw” HTML of the page, so you will need to either disable JavaScript temporarily (tricky) or make sure you are looking at the actual page source that <code>R</code> will see (“View Source”).</p>
+<p>As a general rule, try to use standard HTML elements (<code>table</code>, <code>tbody</code>) instead of fancier alternatives when possible.</p>
 </div>
 </div>
-</div>
-</div>
-</div>
-<ol start="5" type="1">
-<li>Determine how much storage is used by the 5 largest files in any part of your project directory.</li>
+<ol start="3" type="1">
+<li>Parse the table to pull links to each CUNY’s individual Wikipedia page.</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
@@ -495,20 +728,35 @@ Solution
 <div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-11" class="exercise-cell">
-
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">"tbody"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"tr td:nth-child(2)"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"a"</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>name <span class="op">=</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text</a></span><span class="op">(</span><span class="op">)</span>, </span>
+<span>                link <span class="op">=</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_attr.html">html_attr</a></span><span class="op">(</span><span class="st">"href"</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<script type="webr-11-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShmcylcbmxpYnJhcnkoZHBseXIpXG5kaXJfaW5mbyhyZWN1cnNlPVRSVUUpIHw+IHNsaWNlX21heChzaXplLCBuPTUpIHw+IHN1bW1hcml6ZSh0b3RhbF9zaXplID0gc3VtKHNpemUpKSJ9
-</script>
+<p>If you are comfortable with the <code>purrr</code> family of functions, this can be written a bit more compactly as:</p>
+<div class="cell">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">"tbody"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"tr td:nth-child(2)"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"a"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">tr</span><span class="op">)</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>name <span class="op">=</span> <span class="va">tr</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text</a></span><span class="op">(</span><span class="op">)</span>, </span>
+<span>                     link <span class="op">=</span> <span class="va">tr</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_attr.html">html_attr</a></span><span class="op">(</span><span class="st">"href"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </div>
-</div>
-<ol start="6" type="1">
-<li>Use the <code>file_exists</code> function to determine whether you have started <a href="../miniprojects/mini03.html">Mini-Project #03</a>.</li>
+<ol start="4" type="1">
+<li>
+<p>Modify the links extracted from the Wikipedia table to form full URLs.</p>
+<p>Proper URL handling is a bit subtle - it’s a common avenue for security holes</p>
+<ul>
+<li>but a simple <code>paste0</code> will suffice here.</li>
+</ul>
+</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
@@ -523,28 +771,15 @@ Solution
 <div id="callout-9" class="callout-9-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-12" class="exercise-cell">
-
-</div>
-<script type="webr-12-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShmcylcbmZpbGVfZXhpc3RzKFwibXAwMy5xbWRcIikifQ==
-</script>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>link <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org"</span>, <span class="va">link</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </div>
-</div>
-</section></section><section id="http" class="level1"><h1>HTTP and Web Access</h1>
-<section id="exercise02" class="level2"><h2 class="anchored" data-anchor-id="exercise02">Exercises #02</h2>
-<p>Earlier, we used the fact that <code>read_csv</code> could download a file automatically for us to read in the 538 Candy Data. We are now going to download the same data using <code>httr2</code>.</p>
-<ol type="1">
+<ol start="4" type="1">
 <li>
-<p>Use the <code>httr2</code> package to build a suitable <code>request</code> object. You should build your request in two steps:</p>
-<ol type="i">
-<li><p>Specify the domain using <code>request</code></p></li>
-<li><p>Add the path using <code>req_url_path</code></p></li>
-</ol>
+<p>Apply your HTML parsing function from Step 1 to each CUNY page using the <code>map</code> function or the <code><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise()</a></code> grouping structure:</p>
+<p><em>Hint</em>: You may need to use <code>unnest</code> to convert a list column into something more usable.</p>
 </li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
@@ -560,20 +795,37 @@ Solution
 <div id="callout-10" class="callout-10-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-13" class="exercise-cell">
-
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>info <span class="op">=</span> <span class="fu">get_cuny_coordinates</span><span class="op">(</span><span class="va">link</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">## Or with `map`</span></span>
+<span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>info <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">link</span>, <span class="va">get_cuny_coordinates</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Then unnest the info column</span></span>
+<span></span>
+<span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html">unnest</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">CUNYs</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 26 × 4
+   name                                             link      latitude longitude
+   &lt;chr&gt;                                            &lt;chr&gt;        &lt;dbl&gt;     &lt;dbl&gt;
+ 1 Baruch College                                   https://…     40.7     -74.0
+ 2 The City College                                 https://…     40.8     -74.0
+ 3 Graduate Center                                  https://…     40.7     -74.0
+ 4 Graduate School of Public Health &amp; Health Policy https://…     40.8     -73.9
+ 5 Guttman Community College                        https://…     40.8     -74.0
+ 6 Hunter College                                   https://…     40.8     -74.0
+ 7 John Jay College of Criminal Justice             https://…     40.8     -74.0
+ 8 Macaulay Honors College                          https://…     40.8     -74.0
+ 9 Manhattan Community College                      https://…     40.7     -74.0
+10 Newmark Graduate School of Journalism            https://…     40.8     -74.0
+# ℹ 16 more rows</code></pre>
 </div>
-<script type="webr-13-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShodHRyMilcbnJlcXVlc3QoXCJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb21cIikgfD5cbiAgICByZXFfdXJsX3BhdGgoXCJmaXZldGhpcnR5ZWlnaHRcIiwgXG4gICAgICAgICAgICAgICAgIFwiZGF0YVwiLFxuICAgICAgICAgICAgICAgICBcInJlZnNcIixcbiAgICAgICAgICAgICAgICAgXCJoZWFkc1wiLFxuICAgICAgICAgICAgICAgICBcIm1hc3RlclwiLFxuICAgICAgICAgICAgICAgICBcImNhbmR5LXBvd2VyLXJhbmtpbmdcIixcbiAgICAgICAgICAgICAgICAgXCJjYW5keS1kYXRhLmNzdlwiKSB8PlxuICAgIHJlcV9wZXJmb3JtKCkgfD5cbiAgICByZXNwX2JvZHlfc3RyaW5nKCkgfD4gXG4gICAgcmVhZF9jc3YoKSJ9
-</script>
 </div>
 </div>
 </div>
 </div>
-</div>
-<ol start="2" type="1">
-<li>Now that you have built a request, <em>perform</em> it and check to make sure your request was successful.</li>
+<ol start="5" type="1">
+<li>Use your results to build a CUNY-wide map</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
@@ -588,20 +840,34 @@ Solution
 <div id="callout-11" class="callout-11-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-14" class="exercise-cell">
-
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">MAP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/leaflet.html">leaflet</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-layers.html">addTiles</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-layers.html">addMarkers</a></span><span class="op">(</span>lng <span class="op">=</span> <span class="va">CUNYs</span><span class="op">$</span><span class="va">longitude</span>, </span>
+<span>               lat<span class="op">=</span><span class="va">CUNYs</span><span class="op">$</span><span class="va">latitude</span>, </span>
+<span>               popup<span class="op">=</span><span class="va">CUNYs</span><span class="op">$</span><span class="va">name</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">MAP</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="leaflet html-widget html-fill-item" id="htmlwidget-a1ab2953c2acb569f361" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-a1ab2953c2acb569f361">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org/copyright/\">OpenStreetMap<\/a>,  <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL<\/a>"}]},{"method":"addMarkers","args":[[40.740159,40.8194,40.7485,40.79972,40.7529,40.768538,40.7703,40.774,40.71768,40.75523,40.754894,40.8194,40.748386,40.85806,40.8175,40.8725,40.63111,40.6958,40.57806,40.6663083,40.6,40.74361,40.737,40.75556,40.7477,40.702],[-73.98338,-73.95,-73.9836,-73.93889,-73.9841,-73.964741,-73.9883,-73.9802,-74.01188,-73.988827,-73.98185599999999,-73.95,-73.99008499999999,-73.91249999999999,-73.92722000000001,-73.89389,-73.9525,-73.988,-73.93306,-73.95664720000001,-74.15000000000001,-73.93444,-73.81699999999999,-73.75667,-73.94369,-73.795],null,null,null,{"interactive":true,"draggable":false,"keyboard":true,"title":"","alt":"","zIndexOffset":0,"opacity":1,"riseOnHover":false,"riseOffset":250},["Baruch College","The City College","Graduate Center","Graduate School of Public Health & Health Policy","Guttman Community College","Hunter College","John Jay College of Criminal Justice","Macaulay Honors College","Manhattan Community College","Newmark Graduate School of Journalism","School of Labor and Urban Studies","School of Medicine","School of Professional Studies","Bronx Community College","Hostos Community College","Lehman College","Brooklyn College","College of Technology","Kingsborough Community College","Medgar Evers College","College of Staten Island","LaGuardia Community College","Queens College","Queensborough Community College","School of Law","York College"],null,null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[40.57806,40.8725],"lng":[-74.15000000000001,-73.75667]}},"evals":[],"jsHooks":[]}</script>
 </div>
-<script type="webr-14-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShodHRyMilcbnJlcXVlc3QoXCJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb21cIikgfD5cbiAgICByZXFfdXJsX3BhdGgoXCJmaXZldGhpcnR5ZWlnaHRcIiwgXG4gICAgICAgICAgICAgICAgIFwiZGF0YVwiLFxuICAgICAgICAgICAgICAgICBcInJlZnNcIixcbiAgICAgICAgICAgICAgICAgXCJoZWFkc1wiLFxuICAgICAgICAgICAgICAgICBcIm1hc3RlclwiLFxuICAgICAgICAgICAgICAgICBcImNhbmR5LXBvd2VyLXJhbmtpbmdcIixcbiAgICAgICAgICAgICAgICAgXCJjYW5keS1kYXRhLmNzdlwiKSB8PlxuICAgIHJlcV9wZXJmb3JtKCkgfD5cbiAgICByZXNwX2NoZWNrX3N0YXR1cygpIHw+In0=
-</script>
 </div>
 </div>
 </div>
 </div>
-</div>
-<ol start="3" type="1">
-<li>Because your request was successful, it will have a body. Extract this body as a string and pass it to <code>read_csv</code> to read the data into <code>R</code>.</li>
+</section><section id="ex03" class="level2"><h2 class="anchored" data-anchor-id="ex03">Exercise 3: Cocktails Data</h2>
+<p><a href="https://hadley.nz/">Hadley Wickham</a> is the author of many of the “tidy tools” we use in this course. He is also an excellent bartender and chef. In this exercise, we are going to web scrape his cocktail recipe book which can be found at <a href="https://cocktails.hadley.nz/" class="uri">https://cocktails.hadley.nz/</a>.</p>
+<p>Our goal is to create a data frame that records all 150+ recipes on this site (as rows) and the different ingredients (as columns). This week, we are going to pull the different recipes into <code>R</code>: next week we are going to process the text and create our final data frame (so stay tuned!).</p>
+<p>Working with your project team, first go through the following steps to build a scraping strategy:</p>
+<ol type="1">
+<li>Poke around the website to see how it is organized. Is there a single page listing all of the cocktails? If not, how else can you make sure that you’ve explored the entire site?</li>
+<li>Once you know how you’re going to explore the whole site, use your browser tools to see if you can identify an HTML element that corresponds to a single recipe. (This element will occur several times per page) Remember that you want to select “as small as possible” but no smaller.</li>
+<li>Once you have found the right HTML element for a recipe, identify an HTML element that corresponds to i) the title; and ii) individual ingredients.</li>
+</ol>
+<p>For this task, you will likely see several recipes more than once. Don’t worry about this for now - we can <code>distinct</code> out the duplicates later in our analysis. It’s better to be over-inclusive than under-inclusive.</p>
+<p>After you have built your plan, it’s time to start putting this all to code.</p>
+<ol type="1">
+<li>Write code to get a list of all pages you will need to process. Construct full URLs for your future requests.</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
@@ -616,20 +882,108 @@ Solution
 <div id="callout-12" class="callout-12-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-15" class="exercise-cell">
-
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">BASE_URL</span> <span class="op">&lt;-</span> <span class="st">"https://cocktails.hadley.nz/"</span></span>
+<span></span>
+<span><span class="va">PAGES</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="va">BASE_URL</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"nav a"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_attr.html">html_attr</a></span><span class="op">(</span><span class="st">"href"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">PAGE_URLS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">BASE_URL</span>, <span class="va">PAGES</span><span class="op">)</span></span>
+<span></span>
+<span></span>
+<span><span class="va">PAGE_URLS</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "https://cocktails.hadley.nz/ingredient-absinthe.html"             
+ [2] "https://cocktails.hadley.nz/ingredient-allspice-liqueur.html"     
+ [3] "https://cocktails.hadley.nz/ingredient-ancho-reyes.html"          
+ [4] "https://cocktails.hadley.nz/ingredient-angostura.html"            
+ [5] "https://cocktails.hadley.nz/ingredient-aperol.html"               
+ [6] "https://cocktails.hadley.nz/ingredient-apricot-liqueur.html"      
+ [7] "https://cocktails.hadley.nz/ingredient-averna.html"               
+ [8] "https://cocktails.hadley.nz/ingredient-banana-liqueur.html"       
+ [9] "https://cocktails.hadley.nz/ingredient-benedictine.html"          
+[10] "https://cocktails.hadley.nz/ingredient-blackberry-liqueur.html"   
+[11] "https://cocktails.hadley.nz/ingredient-blanc-vermouth.html"       
+[12] "https://cocktails.hadley.nz/ingredient-bourbon.html"              
+[13] "https://cocktails.hadley.nz/ingredient-brandy.html"               
+[14] "https://cocktails.hadley.nz/ingredient-campari.html"              
+[15] "https://cocktails.hadley.nz/ingredient-champagne.html"            
+[16] "https://cocktails.hadley.nz/ingredient-cherry-liqueur.html"       
+[17] "https://cocktails.hadley.nz/ingredient-coconut-cream.html"        
+[18] "https://cocktails.hadley.nz/ingredient-coffee-liqueur.html"       
+[19] "https://cocktails.hadley.nz/ingredient-cream.html"                
+[20] "https://cocktails.hadley.nz/ingredient-cr-me-de-cacao.html"       
+[21] "https://cocktails.hadley.nz/ingredient-cr-me-de-cassis.html"      
+[22] "https://cocktails.hadley.nz/ingredient-cynar.html"                
+[23] "https://cocktails.hadley.nz/ingredient-dry-vermouth.html"         
+[24] "https://cocktails.hadley.nz/ingredient-elderflower-liqueur.html"  
+[25] "https://cocktails.hadley.nz/ingredient-espresso.html"             
+[26] "https://cocktails.hadley.nz/ingredient-fernet.html"               
+[27] "https://cocktails.hadley.nz/ingredient-gin.html"                  
+[28] "https://cocktails.hadley.nz/ingredient-ginger-liqueur.html"       
+[29] "https://cocktails.hadley.nz/ingredient-grapefruit-bitters.html"   
+[30] "https://cocktails.hadley.nz/ingredient-grapefruit-juice.html"     
+[31] "https://cocktails.hadley.nz/ingredient-green-chartreuse.html"     
+[32] "https://cocktails.hadley.nz/ingredient-grenadine.html"            
+[33] "https://cocktails.hadley.nz/ingredient-herbstura.html"            
+[34] "https://cocktails.hadley.nz/ingredient-honey-syrup.html"          
+[35] "https://cocktails.hadley.nz/ingredient-lemon-juice.html"          
+[36] "https://cocktails.hadley.nz/ingredient-lillet-blanc.html"         
+[37] "https://cocktails.hadley.nz/ingredient-lime-juice.html"           
+[38] "https://cocktails.hadley.nz/ingredient-luxardo-bitter-bianco.html"
+[39] "https://cocktails.hadley.nz/ingredient-maple-syrup.html"          
+[40] "https://cocktails.hadley.nz/ingredient-maraschino-liqueur.html"   
+[41] "https://cocktails.hadley.nz/ingredient-meletti.html"              
+[42] "https://cocktails.hadley.nz/ingredient-mezcal.html"               
+[43] "https://cocktails.hadley.nz/ingredient-orange-bitters.html"       
+[44] "https://cocktails.hadley.nz/ingredient-orange-liqueur.html"       
+[45] "https://cocktails.hadley.nz/ingredient-orgeat.html"               
+[46] "https://cocktails.hadley.nz/ingredient-peychauds.html"            
+[47] "https://cocktails.hadley.nz/ingredient-pimms.html"                
+[48] "https://cocktails.hadley.nz/ingredient-pineapple.html"            
+[49] "https://cocktails.hadley.nz/ingredient-pineapple-juice.html"      
+[50] "https://cocktails.hadley.nz/ingredient-ramazotti.html"            
+[51] "https://cocktails.hadley.nz/ingredient-rhubarb-bitters.html"      
+[52] "https://cocktails.hadley.nz/ingredient-rhum-agricole.html"        
+[53] "https://cocktails.hadley.nz/ingredient-rum.html"                  
+[54] "https://cocktails.hadley.nz/ingredient-rye.html"                  
+[55] "https://cocktails.hadley.nz/ingredient-scotch.html"               
+[56] "https://cocktails.hadley.nz/ingredient-sherry.html"               
+[57] "https://cocktails.hadley.nz/ingredient-simple-syrup.html"         
+[58] "https://cocktails.hadley.nz/ingredient-sloe-gin.html"             
+[59] "https://cocktails.hadley.nz/ingredient-soda-water.html"           
+[60] "https://cocktails.hadley.nz/ingredient-swedish-punsch.html"       
+[61] "https://cocktails.hadley.nz/ingredient-sweet-vermouth.html"       
+[62] "https://cocktails.hadley.nz/ingredient-tequila.html"              
+[63] "https://cocktails.hadley.nz/ingredient-velvet-falernum.html"      
+[64] "https://cocktails.hadley.nz/ingredient-vodka.html"                
+[65] "https://cocktails.hadley.nz/ingredient-yellow-chartreuse.html"    
+[66] "https://cocktails.hadley.nz/tag-3-star.html"                      
+[67] "https://cocktails.hadley.nz/tag-adventurous.html"                 
+[68] "https://cocktails.hadley.nz/tag-bubbles.html"                     
+[69] "https://cocktails.hadley.nz/tag-daiquiri.html"                    
+[70] "https://cocktails.hadley.nz/tag-fizz.html"                        
+[71] "https://cocktails.hadley.nz/tag-flip.html"                        
+[72] "https://cocktails.hadley.nz/tag-manhattan.html"                   
+[73] "https://cocktails.hadley.nz/tag-negroni.html"                     
+[74] "https://cocktails.hadley.nz/tag-sazerac.html"                     
+[75] "https://cocktails.hadley.nz/tag-sour.html"                        
+[76] "https://cocktails.hadley.nz/tag-tiki.html"                        
+[77] "https://cocktails.hadley.nz/tag-vieux-carr.html"                  </code></pre>
 </div>
-<script type="webr-15-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShodHRyMilcbmxpYnJhcnkocmVhZHIpXG5yZXF1ZXN0KFwiaHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tXCIpIHw+XG4gICAgcmVxX3VybF9wYXRoKFwiZml2ZXRoaXJ0eWVpZ2h0XCIsIFxuICAgICAgICAgICAgICAgICBcImRhdGFcIixcbiAgICAgICAgICAgICAgICAgXCJyZWZzXCIsXG4gICAgICAgICAgICAgICAgIFwiaGVhZHNcIixcbiAgICAgICAgICAgICAgICAgXCJtYXN0ZXJcIixcbiAgICAgICAgICAgICAgICAgXCJjYW5keS1wb3dlci1yYW5raW5nXCIsXG4gICAgICAgICAgICAgICAgIFwiY2FuZHktZGF0YS5jc3ZcIikgfD5cbiAgICByZXFfcGVyZm9ybSgpIHw+XG4gICAgcmVzcF9jaGVja19zdGF0dXMoKSB8PlxuICAgIHJlc3BfYm9keV9zdHJpbmcoKSB8PiBcbiAgICByZWFkX2NzdigpIn0=
-</script>
 </div>
 </div>
 </div>
 </div>
-</div>
-<ol start="4" type="1">
-<li>Modify your analysis to download your <code>mp01.qmd</code> file. To find the appropriate URL, you will need to first find the file in the web interface for your GitHub repository and then click the <code>Raw</code> button to a direct link to the file. Make a request to get this data and to check whether the request was successful.</li>
+<ol start="2" type="1">
+<li>
+<p>Write a function that takes a single URL and extracts all recipes on that page as HTML elements.</p>
+<p>Try this out on a fixed URL and confirm that it gets the right number of recipes</p>
+</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
@@ -644,20 +998,34 @@ Solution
 <div id="callout-13" class="callout-13-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-16" class="exercise-cell">
-
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
+<span><span class="va">get_recipes</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">url</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="va">url</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"article"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<script type="webr-16-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShodHRyMilcbnJlcXVlc3QoXCJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb21cIikgfD5cbiAgICByZXFfdXJsX3BhdGgoWU9VUiBHSVRIVUIgSURcbiAgICAgICAgICAgICAgICAgQ09VUlNFIFJFUE8sIFxuICAgICAgICAgICAgICAgICBcInJlZnNcIixcbiAgICAgICAgICAgICAgICAgXCJoZWFkc1wiLFxuICAgICAgICAgICAgICAgICBcIm1haW5cIixcbiAgICAgICAgICAgICAgICAgXCJtcDAxLnFtZFwiKSB8PlxuICAgIHJlcV9wZXJmb3JtKCkgfD5cbiAgICByZXNwX2NoZWNrX3N0YXR1cygpICJ9
-</script>
+<p>We can test this <a href="https://cocktails.hadley.nz/tag-bubbles.html">against this page</a> and see that it works as expected:</p>
+<div class="cell">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">BUBBLES</span> <span class="op">&lt;-</span> <span class="fu">get_recipes</span><span class="op">(</span><span class="st">"https://cocktails.hadley.nz/tag-bubbles.html"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">BUBBLES</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>{xml_nodeset (7)}
+[1] &lt;article class="cocktail" id="air-mail"&gt;&lt;div class="title"&gt;\n      &lt;h2&gt;\n ...
+[2] &lt;article class="cocktail" id="campari-spritz"&gt;&lt;div class="title"&gt;\n       ...
+[3] &lt;article class="cocktail" id="dandelo"&gt;&lt;div class="title"&gt;\n      &lt;h2&gt;\n  ...
+[4] &lt;article class="cocktail" id="french-75"&gt;&lt;div class="title"&gt;\n      &lt;h2&gt;\ ...
+[5] &lt;article class="cocktail" id="hinky-dinks-fizzy"&gt;&lt;div class="title"&gt;\n    ...
+[6] &lt;article class="cocktail" id="kir-royale"&gt;&lt;div class="title"&gt;\n      &lt;h2&gt; ...
+[7] &lt;article class="cocktail" id="negroni-sbagliato"&gt;&lt;div class="title"&gt;\n    ...</code></pre>
 </div>
 </div>
 </div>
 </div>
 </div>
-<ol start="5" type="1">
-<li>Next, modify our analysis to check whether <code>mp04.qmd</code> has already been uploaded. Note that this will throw an error because a <code>404</code> is returned, indicating that you have not yet uploaded <code>mp04.qmd</code>. We will address this in the next step.</li>
+<ol start="3" type="1">
+<li>Write a function that takes in a single recipe and returns a small data frame with the title and ingredients:</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
@@ -672,20 +1040,37 @@ Solution
 <div id="callout-14" class="callout-14-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-17" class="exercise-cell">
-
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
+<span><span class="va">process_recipe</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">art</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">title</span> <span class="op">&lt;-</span> <span class="va">art</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">".title"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text2</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="va">ingredients</span> <span class="op">&lt;-</span> <span class="va">art</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"li"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text2</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>title<span class="op">=</span><span class="va">title</span>, ingredients<span class="op">=</span><span class="va">ingredients</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<script type="webr-17-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShodHRyMilcbnJlcXVlc3QoXCJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb21cIikgfD5cbiAgICByZXFfdXJsX3BhdGgoWU9VUiBHSVRIVUIgSURcbiAgICAgICAgICAgICAgICAgQ09VUlNFIFJFUE8sIFxuICAgICAgICAgICAgICAgICBcInJlZnNcIixcbiAgICAgICAgICAgICAgICAgXCJoZWFkc1wiLFxuICAgICAgICAgICAgICAgICBcIm1haW5cIixcbiAgICAgICAgICAgICAgICAgXCJtcDA0LnFtZFwiKSB8PlxuICAgIHJlcV9wZXJmb3JtKCkifQ==
-</script>
+<p>We can again test this using the recipes we extracted above:</p>
+<div class="cell">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">process_recipe</span><span class="op">(</span><span class="va">BUBBLES</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  title    ingredients      
+  &lt;chr&gt;    &lt;chr&gt;            
+1 Air mail 3 oz champagne   
+2 Air mail 1 oz rum, white  
+3 Air mail ½ oz lime juice  
+4 Air mail ¼ oz simple syrup</code></pre>
 </div>
 </div>
 </div>
 </div>
 </div>
-<ol start="6" type="1">
-<li>Obviously, that error is a bit of a problem. Let’s change how our request handles errors. The <code>req_error</code> function can be used to modify a request to change whether an error is thrown. As its argument, it takes a <em>function</em> that checks for an error. Since we want to never throw an error, define a function with one argument <code>x</code> that always returns false and pass this to <code>req_error</code>. (Note that <code>req_error</code> must come before <code>req_perform</code> since it changes how a request is performed.) Use this in conjunction with the <code>resp_is_error</code> function to check that your request fails.</li>
+<ol start="4" type="1">
+<li>
+<p>Write a function that combines your results from the previous two steps to build a data frame with <em>all</em> recipes on a single page.</p>
+<p>Try this out on a fixed URL and confirm it works as expected.</p>
+</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
@@ -700,33 +1085,69 @@ Solution
 <div id="callout-15" class="callout-15-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-18" class="exercise-cell">
-
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">process_url</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">url</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">html_recipes</span> <span class="op">&lt;-</span> <span class="fu">get_recipes</span><span class="op">(</span><span class="va">url</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">RECIPES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="kw">for</span><span class="op">(</span><span class="va">r</span> <span class="kw">in</span> <span class="va">html_recipes</span><span class="op">)</span><span class="op">{</span></span>
+<span>        <span class="va">RECIPES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span><span class="va">RECIPES</span>, <span class="fu">process_recipe</span><span class="op">(</span><span class="va">r</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    </span>
+<span>    <span class="va">RECIPES</span></span>
+<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<script type="webr-18-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShodHRyMilcblxuYWx3YXlzX2ZhbHNlIDwtIGZ1bmN0aW9uKHgpIEZBTFNFXG5cbnJlcXVlc3QoXCJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb21cIikgfD5cbiAgICByZXFfdXJsX3BhdGgoWU9VUiBHSVRIVUIgSURcbiAgICAgICAgICAgICAgICAgQ09VUlNFIFJFUE8sIFxuICAgICAgICAgICAgICAgICBcInJlZnNcIixcbiAgICAgICAgICAgICAgICAgXCJoZWFkc1wiLFxuICAgICAgICAgICAgICAgICBcIm1haW5cIixcbiAgICAgICAgICAgICAgICAgXCJtcDA0LnFtZFwiKSB8PlxuICAgIHJlcV9lcnJvcihpc19lcnJvciA9IGFsd2F5c19mYWxzZSkgfD5cbiAgICByZXFfcGVyZm9ybSgpIHw+XG4gICAgcmVzcF9pc19lcnJvcigpIn0=
-</script>
-</div>
-</div>
-<p>Using an <em>anonymous</em> function, we can write this a bit more compactly as</p>
+<p>We can test this on the page of bubbly recipes:</p>
 <div class="cell">
-<div>
-<div id="webr-19" class="exercise-cell">
-
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">process_url</span><span class="op">(</span><span class="st">"https://cocktails.hadley.nz/tag-bubbles.html"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 29 × 2
+   title                    ingredients               
+   &lt;chr&gt;                    &lt;chr&gt;                     
+ 1 "Air mail"               3 oz champagne            
+ 2 "Air mail"               1 oz rum, white           
+ 3 "Air mail"               ½ oz lime juice           
+ 4 "Air mail"               ¼ oz simple syrup         
+ 5 "Campari spritz\n\nfizz" 3 oz champagne            
+ 6 "Campari spritz\n\nfizz" 1½ oz Campari             
+ 7 "Campari spritz\n\nfizz" 1 oz soda water           
+ 8 "Campari spritz\n\nfizz" 2 drops lime acid         
+ 9 "Dandelo"                2 oz luxardo bitter bianco
+10 "Dandelo"                ½ oz lemon juice          
+# ℹ 19 more rows</code></pre>
 </div>
-<script type="webr-19-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShodHRyMilcbnJlcXVlc3QoXCJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb21cIikgfD5cbiAgICByZXFfdXJsX3BhdGgoWU9VUiBHSVRIVUIgSURcbiAgICAgICAgICAgICAgICAgQ09VUlNFIFJFUE8sIFxuICAgICAgICAgICAgICAgICBcInJlZnNcIixcbiAgICAgICAgICAgICAgICAgXCJoZWFkc1wiLFxuICAgICAgICAgICAgICAgICBcIm1haW5cIixcbiAgICAgICAgICAgICAgICAgXCJtcDA0LnFtZFwiKSB8PlxuICAgIHJlcV9lcnJvcihpc19lcnJvciA9IFxcKHgpIEZBTFNFKSB8PlxuICAgIHJlcV9wZXJmb3JtKCkgfD5cbiAgICByZXNwX2lzX2Vycm9yKCkifQ==
-</script>
 </div>
 </div>
 </div>
 </div>
-</div>
-<ol start="7" type="1">
+<ol start="5" type="1">
 <li>
-<p>Package your code into a function that takes an integer argument and tests whether that mini-project is missing from your GitHub.</p>
-<p><em>Hint: The <code>glue</code> package may be useful to make strings here: <code>glue("mp0{N}.qmd")</code> will automatically substitute the value of the variable <code>N</code> for you.</em></p>
+<p>Use your function from the first step with the list of URLs from Step 1 so that you get all of the recipes on the site. Combine your results into one large data frame that looks something like:</p>
+<table class="caption-top table">
+<thead><tr class="header">
+<th>Name</th>
+<th>Ingredient</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Daiquiri</td>
+<td>2 oz Rum</td>
+</tr>
+<tr class="even">
+<td>Daiquiri</td>
+<td>1 oz Lime Juice</td>
+</tr>
+<tr class="odd">
+<td>Daiquiri</td>
+<td>0.75 oz Simple Syrup</td>
+</tr>
+</tbody>
+</table>
+<p>To be polite, you may want to add <code>req_cache</code> to your requests so you are not requesting the same page many times over.</p>
 </li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
@@ -742,592 +1163,146 @@ Solution
 <div id="callout-16" class="callout-16-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div>
-<div id="webr-20" class="exercise-cell">
-
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ALL_RECIPES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">for</span><span class="op">(</span><span class="va">page</span> <span class="kw">in</span> <span class="va">PAGE_URLS</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">ALL_RECIPES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span><span class="va">ALL_RECIPES</span>, <span class="fu">process_url</span><span class="op">(</span><span class="va">page</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">ALL_RECIPES</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3,548 × 2
+   title                                ingredients          
+   &lt;chr&gt;                                &lt;chr&gt;                
+ 1 "Bachelor"                           1 oz rum, dark       
+ 2 "Bachelor"                           1 oz Meletti         
+ 3 "Bachelor"                           ¼ oz absinthe        
+ 4 "Bachelor"                           1 dash orange bitters
+ 5 "Bachelor"                           1 dash Angostura     
+ 6 "Banana Manhattan"                   1½ oz rum, aged      
+ 7 "Banana Manhattan"                   ½ oz sweet vermouth  
+ 8 "Banana Manhattan"                   ½ oz banana liqueur  
+ 9 "Banana Manhattan"                   1 dash absinthe      
+10 "Industry sour\n\nadventurous, sour" 1 oz absinthe, pernod
+# ℹ 3,538 more rows</code></pre>
 </div>
-<script type="webr-20-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShodHRyMilcbmxpYnJhcnkoZ2x1ZSlcbm1wX2lzX21pc3NpbmcgPC0gZnVuY3Rpb24oTikge1xuICAgIHJlcXVlc3QoXCJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb21cIikgfD5cbiAgICAgICAgcmVxX3VybF9wYXRoKFlPVVIgR0lUSFVCIElEXG4gICAgICAgICAgICAgICAgICAgICBDT1VSU0UgUkVQTywgXG4gICAgICAgICAgICAgICAgICAgICBcInJlZnNcIixcbiAgICAgICAgICAgICAgICAgICAgIFwiaGVhZHNcIixcbiAgICAgICAgICAgICAgICAgICAgIFwibWFpblwiLFxuICAgICAgICAgICAgICAgICAgICAgZ2x1ZShcIm1wMHtOfS5xbWRcIikpIHw+XG4gICAgICAgIHJlcV9lcnJvcihpc19lcnJvciA9IFxcKHgpIEZBTFNFKSB8PlxuICAgICAgICByZXFfcGVyZm9ybSgpIHw+XG4gICAgICAgIHJlc3BfaXNfZXJyb3IoKVxufSJ9
-</script>
 </div>
 </div>
 </div>
 </div>
-</div>
-<ol start="8" type="1">
+<ol start="6" type="1">
 <li>
-<p>Finally, check which of your MPs have not yet been submitted.</p>
-<p>Unfortunately, your function is not <em>vectorized</em> so this is not as simple as <code>func(1:4)</code>. Instead, we want to apply the same function separately to each element of the vector <code>c(1,2,3,4)</code>. This is a use case for the <code>map</code> family of functions. Since your function returns a logical value, we’ll use <code>map_lgl</code> here.</p>
+<p>Save your code for next week. Next week we will investigate string processing and learn how to turn a table like:</p>
+<table class="caption-top table">
+<thead><tr class="header">
+<th>Name</th>
+<th>Ingredient</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Daiquiri</td>
+<td>2 oz Rum</td>
+</tr>
+<tr class="even">
+<td>Daiquiri</td>
+<td>1 oz Lime Juice</td>
+</tr>
+<tr class="odd">
+<td>Daiquiri</td>
+<td>0.75 oz Simple Syrup</td>
+</tr>
+</tbody>
+</table>
+<p>into</p>
+<table class="caption-top table">
+<thead><tr class="header">
+<th>Name</th>
+<th>Ingredient</th>
+<th>Amount</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Daiquiri</td>
+<td>Rum</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>Daiquiri</td>
+<td>Lime Juice</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>Daiquiri</td>
+<td>Simple Syrup</td>
+<td>0.75</td>
+</tr>
+</tbody>
+</table>
 </li>
 </ol>
-<div class="cell">
-<div>
-<div id="webr-21" class="exercise-cell">
-
-</div>
-<script type="webr-21-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShodHRyMilcbmxpYnJhcnkoZ2x1ZSlcbm1wX2lzX21pc3NpbmcgPC0gZnVuY3Rpb24oTikge1xuICAgIHJlcXVlc3QoXCJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb21cIikgfD5cbiAgICAgICAgcmVxX3VybF9wYXRoKFlPVVIgR0lUSFVCIElEXG4gICAgICAgICAgICAgICAgICAgICBDT1VSU0UgUkVQTywgXG4gICAgICAgICAgICAgICAgICAgICBcInJlZnNcIixcbiAgICAgICAgICAgICAgICAgICAgIFwiaGVhZHNcIixcbiAgICAgICAgICAgICAgICAgICAgIFwibWFpblwiLFxuICAgICAgICAgICAgICAgICAgICAgZ2x1ZShcIm1wMHtOfS5xbWRcIikpIHw+XG4gICAgICAgIHJlcV9lcnJvcihpc19lcnJvciA9IFxcKHgpIEZBTFNFKSB8PlxuICAgICAgICByZXFfcGVyZm9ybSgpIHw+XG4gICAgICAgIHJlc3BfaXNfZXJyb3IoKVxufVxuXG5tYXBfbGdsKDE6NCwgbXBfaXNfbWlzc2luZykifQ==
-</script>
-</div>
-</div>
-<p>:::</p>
-<p>This example is maybe a bit silly, but it is essentially how I check whether your mini-projects have been submitted on time. (I map over students rather than the project numbers.)</p>
-</section></section><section id="api" class="level1"><h1>API Usage</h1>
-<p>Next, we are going to practice accessing data from a nice API using <code>httr2</code>. Specifically, we are going to interact with the <code>cranlogs</code> server, which keeps records of the most popular <code>R</code> packages based on download frequency.</p>
-<p>Documentation for <code>cranlogs</code> can be found <a href="https://github.com/r-hub/cranlogs.app">in its GitHub <code>README</code></a> with a very small example at <a href="https://cranlogs.r-pkg.org/#jsonapi">here</a>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
-<p>The <code>cranlogs</code> documentation give the following example of how the <code>curl</code> program can call the API from the command line:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-100    82  100    82    0     0    654      0 --:--:-- --:--:-- --:--:--   656
-[{"start":"2025-10-22","end":"2025-10-28","downloads":510746,"package":"ggplot2"}]</code></pre>
-</div>
-</div>
-<p>Even though this is not <code>R</code> code, we can emulate this action in <code>R</code>.</p>
-<div class="cell">
-<div>
-<div id="webr-22" class="exercise-cell">
-
-</div>
-<script type="webr-22-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShqc29ubGl0ZSlcbmZyb21KU09OKFwiaHR0cHM6Ly9jcmFubG9ncy5yLXBrZy5vcmcvZG93bmxvYWRzL3RvdGFsL2xhc3Qtd2Vlay9nZ3Bsb3QyXCIpIn0=
-</script>
-</div>
-</div>
-<p>And if we want to get download information for other packages, we can simply modify the URL:</p>
-<div class="cell">
-<div>
-<div id="webr-23" class="exercise-cell">
-
-</div>
-<script type="webr-23-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShqc29ubGl0ZSlcbmZyb21KU09OKFwiaHR0cHM6Ly9jcmFubG9ncy5yLXBrZy5vcmcvZG93bmxvYWRzL3RvdGFsL2xhc3Qtd2Vlay9kcGx5clwiKSJ9
-</script>
-</div>
-</div>
-<div class="cell">
-<div>
-<div id="webr-24" class="exercise-cell">
-
-</div>
-<script type="webr-24-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShqc29ubGl0ZSlcbmZyb21KU09OKFwiaHR0cHM6Ly9jcmFubG9ncy5yLXBrZy5vcmcvZG93bmxvYWRzL3RvdGFsL2xhc3Qtd2Vlay9yZWFkclwiKSJ9
-</script>
-</div>
-</div>
-<p>and so on. But this quickly becomes repetitive and we would prefer a <em>programmatic</em> interface. This is where the <code>httr2</code> package comes in.</p>
-<section id="httr2" class="level2"><h2 class="anchored" data-anchor-id="httr2"><code>httr2</code></h2>
-<p><code>httr2</code> takes a “three-stage” approach to handling HTTP requests:</p>
-<ol type="1">
-<li>First, we <em>build</em> a <em>request</em>, specifying the URL to be queried, the mode of that query, and any relevant information (data, passwords, <em>etc.</em>)</li>
-<li>Then, we <em>execute</em> that request to get a <em>response</em>
-</li>
-<li>Finally, we <em>handle</em> that response, transforming its contents into <code>R</code> as appropriate</li>
-</ol>
-<p>Let’s look at these one at a time.</p>
-<section id="build-a-request" class="level3"><h3 class="anchored" data-anchor-id="build-a-request">Build a Request</h3>
-<p>We can build a request using the <code>request</code> function:</p>
-<div class="cell">
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
-<span><span class="va">request</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>function (base_url) 
-{
-    new_request(base_url)
-}
-&lt;bytecode: 0x1387b36b8&gt;
-&lt;environment: namespace:httr2&gt;</code></pre>
-</div>
-</div>
-<p>As seen here, we start a request by putting in a “base URL” - this is the unchanging part of the URL that won’t really depend on what query we are making.</p>
-<p>For the <code>cranlogs</code> API, we can take the base URL to be</p>
-<blockquote class="blockquote">
-<p><code>https://cranlogs.r-pkg.org</code></p>
-</blockquote>
-<p>so our base request is:</p>
-<div class="cell">
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_req</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://cranlogs.r-pkg.org"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">my_req</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>&lt;httr2_request&gt;
-GET https://cranlogs.r-pkg.org
-Body: empty</code></pre>
-</div>
-</div>
-<p>We see here that this is a <code>GET</code> request by default, indicating we would like a response from the server, but we are not</p>
-<p>We then modify the <em>path</em> of the request to point to the specific <em>resource</em> or <em>endpoint</em> we want to query. For example, if we want to get the “top” <code>R</code> packages for the last day, we can run the following:</p>
-<div class="cell">
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_req</span> <span class="op">&lt;-</span> <span class="va">my_req</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path_append</a></span><span class="op">(</span><span class="st">"top"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path_append</a></span><span class="op">(</span><span class="st">"last-day"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">my_req</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>&lt;httr2_request&gt;
-GET https://cranlogs.r-pkg.org/top/last-day
-Body: empty</code></pre>
-</div>
-</div>
-</section><section id="execute-a-request-to-get-a-response" class="level3"><h3 class="anchored" data-anchor-id="execute-a-request-to-get-a-response">Execute a Request to get a Response</h3>
-<p>Now that we have built our request, we pass it to <code>req_perform</code><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> to execute (perform) the request:</p>
-<div class="cell">
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_resp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="va">my_req</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">my_resp</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>&lt;httr2_response&gt;
-GET https://cranlogs.r-pkg.org/top/last-day
-Status: 200 OK
-Content-Type: application/json
-Body: In memory (454 bytes)</code></pre>
-</div>
-</div>
-<p>The result of performing this request is a <em>response</em> object. We see several things in this response:</p>
-<ol type="1">
-<li>We received back a “200 OK” response, indicating that our query worked perfectly</li>
-<li>We received back data in a <code>json</code> format</li>
-<li>Our results are currently in memory (as opposed to be saved to a file)</li>
-</ol></section><section id="process-the-response-for-use-in-r" class="level3"><h3 class="anchored" data-anchor-id="process-the-response-for-use-in-r">Process the Response for Use in <code>R</code>
-</h3>
-<p>Since we know our response is in <code>JSON</code> format, we can use the <code>resp_body_json</code> to get the “body” (content) of the response and parse it as <code>json</code>:</p>
-<div class="cell">
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">downloads_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_json</a></span><span class="op">(</span><span class="va">my_resp</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">downloads_raw</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>$start
-[1] "2025-10-28T00:00:00.000Z"
-
-$end
-[1] "2025-10-28T00:00:00.000Z"
-
-$downloads
-$downloads[[1]]
-$downloads[[1]]$package
-[1] "ggplot2"
-
-$downloads[[1]]$downloads
-[1] "92101"
-
-
-$downloads[[2]]
-$downloads[[2]]$package
-[1] "dplyr"
-
-$downloads[[2]]$downloads
-[1] "74923"
-
-
-$downloads[[3]]
-$downloads[[3]]$package
-[1] "rlang"
-
-$downloads[[3]]$downloads
-[1] "71041"
-
-
-$downloads[[4]]
-$downloads[[4]]$package
-[1] "tibble"
-
-$downloads[[4]]$downloads
-[1] "68155"
-
-
-$downloads[[5]]
-$downloads[[5]]$package
-[1] "cli"
-
-$downloads[[5]]$downloads
-[1] "67979"
-
-
-$downloads[[6]]
-$downloads[[6]]$package
-[1] "rmarkdown"
-
-$downloads[[6]]$downloads
-[1] "65480"
-
-
-$downloads[[7]]
-$downloads[[7]]$package
-[1] "xml2"
-
-$downloads[[7]]$downloads
-[1] "63635"
-
-
-$downloads[[8]]
-$downloads[[8]]$package
-[1] "magrittr"
-
-$downloads[[8]]$downloads
-[1] "60958"
-
-
-$downloads[[9]]
-$downloads[[9]]$package
-[1] "lifecycle"
-
-$downloads[[9]]$downloads
-[1] "60082"</code></pre>
-</div>
-</div>
-<p>This gives us the type of data we were looking for!</p>
-<p>Note that <code>httr2</code> is designed for “piped” work, so we can write the entire process as</p>
-<div class="cell">
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://cranlogs.r-pkg.org"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path_append</a></span><span class="op">(</span><span class="st">"top"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path_append</a></span><span class="op">(</span><span class="st">"last-day"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_json</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>$start
-[1] "2025-10-28T00:00:00.000Z"
-
-$end
-[1] "2025-10-28T00:00:00.000Z"
-
-$downloads
-$downloads[[1]]
-$downloads[[1]]$package
-[1] "ggplot2"
-
-$downloads[[1]]$downloads
-[1] "92101"
-
-
-$downloads[[2]]
-$downloads[[2]]$package
-[1] "dplyr"
-
-$downloads[[2]]$downloads
-[1] "74923"
-
-
-$downloads[[3]]
-$downloads[[3]]$package
-[1] "rlang"
-
-$downloads[[3]]$downloads
-[1] "71041"
-
-
-$downloads[[4]]
-$downloads[[4]]$package
-[1] "tibble"
-
-$downloads[[4]]$downloads
-[1] "68155"
-
-
-$downloads[[5]]
-$downloads[[5]]$package
-[1] "cli"
-
-$downloads[[5]]$downloads
-[1] "67979"
-
-
-$downloads[[6]]
-$downloads[[6]]$package
-[1] "rmarkdown"
-
-$downloads[[6]]$downloads
-[1] "65480"
-
-
-$downloads[[7]]
-$downloads[[7]]$package
-[1] "xml2"
-
-$downloads[[7]]$downloads
-[1] "63635"
-
-
-$downloads[[8]]
-$downloads[[8]]$package
-[1] "magrittr"
-
-$downloads[[8]]$downloads
-[1] "60958"
-
-
-$downloads[[9]]
-$downloads[[9]]$package
-[1] "lifecycle"
-
-$downloads[[9]]$downloads
-[1] "60082"</code></pre>
-</div>
-</div>
-<p>This data is not super helpful for us, since it’s in a “list of lists” format. This is not uncommon with <code>json</code> responses and it is usually at this point that we have a bit of work to do in order to make the data useable. Thankfully, API data is typically well-structured, so this doesn’t wind up being too hard. I personally find this type of complex <code>R</code> output a bit hard to parse, so I instead print it as a “string” (the ‘raw text’ of the unparsed JSON) and use the <code><a href="https://jeroen.r-universe.dev/jsonlite/reference/prettify.html">prettify()</a></code> function from the <code>jsonlite</code> package to make it extra readable:</p>
-<div class="cell">
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jeroen.r-universe.dev/jsonlite">jsonlite</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'jsonlite'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:purrr':
-
-    flatten</code></pre>
-</div>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_resp</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_string</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/prettify.html">prettify</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>{
-    "start": "2025-10-28T00:00:00.000Z",
-    "end": "2025-10-28T00:00:00.000Z",
-    "downloads": [
-        {
-            "package": "ggplot2",
-            "downloads": "92101"
-        },
-        {
-            "package": "dplyr",
-            "downloads": "74923"
-        },
-        {
-            "package": "rlang",
-            "downloads": "71041"
-        },
-        {
-            "package": "tibble",
-            "downloads": "68155"
-        },
-        {
-            "package": "cli",
-            "downloads": "67979"
-        },
-        {
-            "package": "rmarkdown",
-            "downloads": "65480"
-        },
-        {
-            "package": "xml2",
-            "downloads": "63635"
-        },
-        {
-            "package": "magrittr",
-            "downloads": "60958"
-        },
-        {
-            "package": "lifecycle",
-            "downloads": "60082"
-        }
-    ]
-}
- </code></pre>
-</div>
-</div>
-<p>This is the same data as before, but much easier to read. At this point, we should pause and make an ‘attack plan’ for our analysis. I see several things here:</p>
-<ol type="1">
-<li>I really only want the <code>"downloads"</code> part of the response.</li>
-<li>Each element inside <code>downloads</code> has the same flat structure, so they can be easily built into a one-row data frame.</li>
-<li>The column names are the same for each <code>downloads</code> element, so we will be able to put them into one big easy-to-use data frame.</li>
-</ol>
-<p>To do these steps, we will need to use functionality from the <code>purrr</code> package, which we will discuss in more detail next week. For now, it suffices to run:</p>
-<div class="cell">
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/">purrr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/">tibble</a></span><span class="op">)</span></span>
-<span><span class="va">downloads_df</span> <span class="op">&lt;-</span> <span class="va">downloads_raw</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"downloads"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">as_tibble</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/list_c.html">list_rbind</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Here, we see we</p>
-<ol type="1">
-<li>Pulled out the <code>"downloads"</code> portion of the JSON (<code>pluck</code>)</li>
-<li>Converted each row to a data frame (<code>map(as_tibble)</code>)</li>
-<li>Combined the results rowwise (<code>list_rbind</code>)</li>
-</ol>
-<p>The result is a very nice little data frame:</p>
-<div class="cell">
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">downloads_df</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 9 × 2
-  package   downloads
-  &lt;chr&gt;     &lt;chr&gt;    
-1 ggplot2   92101    
-2 dplyr     74923    
-3 rlang     71041    
-4 tibble    68155    
-5 cli       67979    
-6 rmarkdown 65480    
-7 xml2      63635    
-8 magrittr  60958    
-9 lifecycle 60082    </code></pre>
-</div>
-</div>
-</section></section><section id="exercise03" class="level2"><h2 class="anchored" data-anchor-id="exercise03">Exercises #03</h2>
-<p>Now it’s your turn! In your breakout rooms, try the following:</p>
-<ol type="1">
-<li><p>Make sure you can run all of the code above.</p></li>
-<li>
-<p>Modify the above code to get the top 100 <code>R</code> packages.</p>
-<p>This is a minor change to the request only, but you will need to read the <a href="https://github.com/r-hub/cranlogs.app">documentation</a> to see where and how the request needs to be changed.</p>
-</li>
-</ol>
-<div class="callout callout-style-default callout-note callout-titled" title="Solution">
+<div class="callout callout-style-default callout-caution callout-titled" title="FP Solution">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Solution
+FP Solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-17" class="callout-17-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<p>If you are comfortable with (or want to become comfortable with) the functional programming tools of <code>purrr</code>, you can write this entire analysis in one swoop:</p>
 <div class="cell">
-<div>
-<div id="webr-25" class="exercise-cell">
-
-</div>
-<script type="webr-25-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShodHRyMilcbmxpYnJhcnkodGlkeXZlcnNlKVxucmVxdWVzdChcImh0dHBzOi8vY3JhbmxvZ3Muci1wa2cub3JnXCIpIHw+XG4gICAgcmVxX3VybF9wYXRoX2FwcGVuZChcInRvcFwiKSB8PlxuICAgIHJlcV91cmxfcGF0aF9hcHBlbmQoXCJsYXN0LWRheVwiKSB8PlxuICAgIHJlcV91cmxfcGF0aF9hcHBlbmQoMTAwKSB8PlxuICAgIHJlcV9wZXJmb3JtKCkgfD5cbiAgICByZXNwX2JvZHlfanNvbigpIHw+XG4gICAgcGx1Y2soXCJkb3dubG9hZHNcIikgfD5cbiAgICBtYXAoYXNfdGliYmxlKSB8PlxuICAgIGxpc3RfcmJpbmQoKSJ9
-</script>
-</div>
-</div>
-</div>
-</div>
-</div>
-<ol start="3" type="1">
-<li>
-<p>Modify your query to get the daily downloads for the <code>ggplot2</code> package over the last month. This will require changes to how you process the response, so be sure to look at the raw JSON first.</p>
-<p><em>Hint: The <code>pluck</code> function can also take a number as input. This will say which list item (by position) to return.</em></p>
-</li>
-</ol>
-<div class="callout callout-style-default callout-note callout-titled" title="Solution">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-18-contents" aria-controls="callout-18" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Solution
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-18" class="callout-18-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div class="cell">
-<div>
-<div id="webr-26" class="exercise-cell">
-
-</div>
-<script type="webr-26-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShodHRyMilcbmxpYnJhcnkodGlkeXZlcnNlKVxucmVxdWVzdChcImh0dHBzOi8vY3JhbmxvZ3Muci1wa2cub3JnXCIpIHw+XG4gICAgcmVxX3VybF9wYXRoX2FwcGVuZChcImRvd25sb2Fkc1wiKSB8PlxuICAgIHJlcV91cmxfcGF0aF9hcHBlbmQoXCJkYWlseVwiKSB8PlxuICAgIHJlcV91cmxfcGF0aF9hcHBlbmQoXCJsYXN0LW1vbnRoXCIpIHw+XG4gICAgcmVxX3VybF9wYXRoX2FwcGVuZChcImdncGxvdDJcIikgfD5cbiAgICByZXFfcGVyZm9ybSgpIHw+XG4gICAgcmVzcF9ib2R5X2pzb24oKSB8PlxuICAgIHBsdWNrKDEpXG4gICAgcGx1Y2soXCJkb3dubG9hZHNcIikgfD5cbiAgICBtYXAoYXNfdGliYmxlKSB8PlxuICAgIGxpc3RfcmJpbmQoKSJ9
-</script>
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
+<span><span class="va">process_recipe</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">recipe</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">title</span> <span class="op">&lt;-</span> <span class="va">recipe</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">".title"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text2</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="va">ingredients</span> <span class="op">&lt;-</span> <span class="va">recipe</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"li"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text2</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>title<span class="op">=</span><span class="va">title</span>, ingredients<span class="op">=</span><span class="va">ingredients</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">BASE_URL</span> <span class="op">&lt;-</span> <span class="st">"https://cocktails.hadley.nz/"</span></span>
+<span></span>
+<span><span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="va">BASE_URL</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"nav a"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_attr.html">html_attr</a></span><span class="op">(</span><span class="st">"href"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span>\<span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="va">BASE_URL</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">req_perform</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">resp_body_html</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">html_elements</span>, <span class="st">"article"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/reduce.html">reduce</a></span><span class="op">(</span><span class="va">c</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">process_recipe</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/list_c.html">list_rbind</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3,548 × 2
+   title                                ingredients          
+   &lt;chr&gt;                                &lt;chr&gt;                
+ 1 "Bachelor"                           1 oz rum, dark       
+ 2 "Bachelor"                           1 oz Meletti         
+ 3 "Bachelor"                           ¼ oz absinthe        
+ 4 "Bachelor"                           1 dash orange bitters
+ 5 "Bachelor"                           1 dash Angostura     
+ 6 "Banana Manhattan"                   1½ oz rum, aged      
+ 7 "Banana Manhattan"                   ½ oz sweet vermouth  
+ 8 "Banana Manhattan"                   ½ oz banana liqueur  
+ 9 "Banana Manhattan"                   1 dash absinthe      
+10 "Industry sour\n\nadventurous, sour" 1 oz absinthe, pernod
+# ℹ 3,538 more rows</code></pre>
 </div>
 </div>
-</div>
-</div>
-</div>
-<ol start="4" type="1">
-<li>
-<p>‘Functionize’ your daily downloads query as a function which takes an arbitrary package name and gets its daily downloads.</p>
-<p><em>Hint: Use a <code>mutate</code> command to add the package name as a new column to the resulting data frame and to convert the <code>day</code> column to a <code>Date</code> object (<code>day=as.Date(day)</code>)</em>.</p>
-</li>
-</ol>
-<div class="callout callout-style-default callout-note callout-titled" title="Solution">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Solution
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-19" class="callout-19-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div class="cell">
-<div>
-<div id="webr-27" class="exercise-cell">
-
-</div>
-<script type="webr-27-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShodHRyMilcbmxpYnJhcnkodGlkeXZlcnNlKVxuZ2V0X2Rvd25sb2FkcyA8LSBmdW5jdGlvbihwa2cpe1xuICAgIHJlcXVlc3QoXCJodHRwczovL2NyYW5sb2dzLnItcGtnLm9yZ1wiKSB8PlxuICAgICAgICByZXFfdXJsX3BhdGhfYXBwZW5kKFwiZG93bmxvYWRzXCIpIHw+XG4gICAgICAgIHJlcV91cmxfcGF0aF9hcHBlbmQoXCJkYWlseVwiKSB8PlxuICAgICAgICByZXFfdXJsX3BhdGhfYXBwZW5kKFwibGFzdC1tb250aFwiKSB8PlxuICAgICAgICByZXFfdXJsX3BhdGhfYXBwZW5kKHBrZykgfD5cbiAgICAgICAgcmVxX3BlcmZvcm0oKSB8PlxuICAgICAgICByZXNwX2JvZHlfanNvbigpIHw+XG4gICAgICAgIHBsdWNrKDEpIHw+IFxuICAgICAgICBwbHVjayhcImRvd25sb2Fkc1wiKSB8PlxuICAgICAgICBtYXAoYXNfdGliYmxlKSB8PlxuICAgICAgICBsaXN0X3JiaW5kKCkgfD5cbiAgICAgICAgbXV0YXRlKHBhY2thZ2U9cGtnLCBcbiAgICAgICAgICAgICAgIGRheT1hcy5EYXRlKGRheSkpXG59XG5cbmdnX2Rvd25sb2FkcyA8LSBnZXRfZG93bmxvYWRzKFwiZ2dwbG90MlwiKVxucHJpbnQoZ2dfZG93bmxvYWRzKSJ9
-</script>
-</div>
-</div>
-</div>
-</div>
-</div>
-<ol start="5" type="1">
-<li>Use your function to get daily downloads for the following <code>R</code> packages:
-<ul>
-<li><code>ggplot2</code></li>
-<li><code>dplyr</code></li>
-<li><code>httr2</code></li>
-<li><code>tibble</code></li>
-<li><code>purrr</code></li>
-<li>
-<code>tidyr</code> and combine your results into a single data frame. Then plot the download trends for each package using <code>ggplot2</code>.</li>
-</ul>
-You can do this by calling your function in a loop, but you should also try to apply the <code>map() |&gt; list_rbind()</code> idiom here as well.</li>
-</ol>
-<div class="callout callout-style-default callout-note callout-titled" title="Solution">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Solution
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-20" class="callout-20-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div class="cell">
-<div>
-<div id="webr-28" class="exercise-cell">
-
-</div>
-<script type="webr-28-contents">
-eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShnZ3Bsb3QyKVxuXG5QQUNLQUdFUyA8LSBjKFwiZ2dwbG90MlwiLCBcImRwbHlyXCIsIFwiaHR0cjJcIiwgXCJ0aWJibGVcIiwgXCJwdXJyclwiLCBcInRpZHlyXCIpXG5cbm1hcChQQUNLQUdFUywgZ2V0X2Rvd25sb2FkcykgfD5cbiAgbGlzdF9yYmluZCgpIHw+XG4gIGdncGxvdChhZXMoeD1kYXksIFxuICAgICAgICAgICAgIHk9ZG93bmxvYWRzLCBcbiAgICAgICAgICAgICBjb2xvcj1wYWNrYWdlLCBcbiAgICAgICAgICAgICBncm91cD1wYWNrYWdlKSkgK1xuICAgIGdlb21fcG9pbnQoKSArXG4gICAgZ2VvbV9saW5lKCkgK1xuICAgIHNjYWxlX3hfZGF0ZSgpICtcbiAgICB4bGFiKFwiRGF0ZSBvZiBEb3dubG9hZFwiKSArXG4gICAgeWxhYihcIk51bWJlciBvZiBQYWNrYWdlIERvd25sb2Fkc1wiKSArXG4gICAgdGhlbWVfYncoKSArXG4gICAgbGFicyhjYXB0aW9uPVwiRGF0YSBmcm9tIGNyYW5sb2dzLnItcGtnLm9yZ1wiKSArXG4gICAgdGhlbWUobGVnZW5kLnBvc2l0aW9uPVwiYm90dG9tXCIpICtcbiAgICBzY2FsZV9jb2xvcl9icmV3ZXIodHlwZT1cInF1YWxcIiwgXG4gICAgICAgICAgICAgICAgICAgICAgICAgcGFsZXR0ZT0yLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICBuYW1lPVwiUGFja2FnZSBOYW1lXCIpIn0=
-</script>
-</div>
-</div>
+<p>This is clearly quite terse and would benefit from some additional comments, but I’m omitting them so you can try to deconstruct this code yourself if you want to practice functional programming idioms.</p>
 </div>
 </div>
 </div>
 
 
-<script type="webr-data">
-eyJvcHRpb25zIjp7ImJhc2VVcmwiOiJodHRwczovL3dlYnIuci13YXNtLm9yZy92MC41LjQvIn0sInBhY2thZ2VzIjp7InBrZ3MiOlsiZXZhbHVhdGUiLCJrbml0ciIsImh0bWx0b29scyJdLCJyZXBvcyI6W119LCJyZW5kZXJfZGYiOiJkZWZhdWx0In0=
-</script><script type="ojs-module-contents">
-eyJjb250ZW50cyI6W3siY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0yOCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMjg7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0yOCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzI4ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMjgtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0yOC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8yOCA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMjgsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0yNyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMjc7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0yNyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzI3ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMjctY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0yNy1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8yNyA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMjcsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0yNiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMjY7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0yNiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzI2ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMjYtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0yNi1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8yNiA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMjYsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0yNSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMjU7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0yNSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzI1ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMjUtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0yNS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8yNSA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMjUsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0yNCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMjQ7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0yNCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzI0ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMjQtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0yNC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8yNCA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMjQsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0yMyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMjM7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0yMyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzIzID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMjMtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0yMy1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8yMyA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMjMsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0yMiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMjI7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0yMiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzIyID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMjItY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0yMi1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8yMiA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMjIsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0yMSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMjE7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0yMSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzIxID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMjEtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0yMS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8yMSA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMjEsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0yMCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMjA7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0yMCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzIwID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMjAtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0yMC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8yMCA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMjAsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xOSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTk7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xOSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzE5ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTktY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xOS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xOSA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTksIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xOCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTg7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xOCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzE4ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTgtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xOC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xOCA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTgsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xNyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTc7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xNyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzE3ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTctY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xNy1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xNyA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTcsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xNiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTY7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xNiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzE2ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTYtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xNi1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xNiA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTYsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xNSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTU7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xNSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzE1ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTUtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xNS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xNSA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTUsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xNCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTQ7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xNCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzE0ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTQtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xNC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xNCA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTQsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xMyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTM7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xMyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzEzID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTMtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xMy1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xMyA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTMsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xMiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTI7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xMiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzEyID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTItY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xMi1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xMiA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTIsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xMSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTE7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xMSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzExID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTEtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xMS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xMSA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTEsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0xMCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMTA7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xMCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzEwID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMTAtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici0xMC1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV8xMCA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfMTAsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC05IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoie1xuICAvLyBXYWl0IGZvciBvdXRwdXQgdG8gYmUgd3JpdHRlbiB0byB0aGUgRE9NLCB0aGVuIHRyaWdnZXIgd2lkZ2V0IHJlbmRlcmluZ1xuICBhd2FpdCBfd2Vicl92YWx1ZV85O1xuICBpZiAod2luZG93LkhUTUxXaWRnZXRzKSB7XG4gICAgd2luZG93LkhUTUxXaWRnZXRzLnN0YXRpY1JlbmRlcigpO1xuICB9XG4gIGlmICh3aW5kb3cuUGFnZWRUYWJsZURvYykge1xuICAgIHdpbmRvdy5QYWdlZFRhYmxlRG9jLmluaXRBbGwoKTtcbiAgfVxufVxuIn0seyJjZWxsTmFtZSI6IndlYnItOSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzkgPSB7XG4gIGNvbnN0IHsgV2ViUkV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwid2Vici05LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHdlYnItOS1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV85ID0gd2ViUk9qcy5wcm9jZXNzKF93ZWJyX2VkaXRvcl85LCB7fSk7XG4ifSx7ImNlbGxOYW1lIjoid2Vici13aWRnZXQtOCIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfODtcbiAgaWYgKHdpbmRvdy5IVE1MV2lkZ2V0cykge1xuICAgIHdpbmRvdy5IVE1MV2lkZ2V0cy5zdGF0aWNSZW5kZXIoKTtcbiAgfVxuICBpZiAod2luZG93LlBhZ2VkVGFibGVEb2MpIHtcbiAgICB3aW5kb3cuUGFnZWRUYWJsZURvYy5pbml0QWxsKCk7XG4gIH1cbn1cbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLTgiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF93ZWJyX2VkaXRvcl84ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItOC1jb250ZW50c1xcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGJsb2NrID0gSlNPTi5wYXJzZShiNjREZWNvZGUoc2NyaXB0Q29udGVudCkpO1xuXG4gIGNvbnN0IG9wdGlvbnMgPSBPYmplY3QuYXNzaWduKHsgaWQ6IGB3ZWJyLTgtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgV2ViUkV4ZXJjaXNlRWRpdG9yKHdlYlJPanMud2ViUlByb21pc2UsIGJsb2NrLmNvZGUsIG9wdGlvbnMpO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3dlYnJfdmFsdWVfOCA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfOCwge30pO1xuIn0seyJjZWxsTmFtZSI6IndlYnItd2lkZ2V0LTciLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJ7XG4gIC8vIFdhaXQgZm9yIG91dHB1dCB0byBiZSB3cml0dGVuIHRvIHRoZSBET00sIHRoZW4gdHJpZ2dlciB3aWRnZXQgcmVuZGVyaW5nXG4gIGF3YWl0IF93ZWJyX3ZhbHVlXzc7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici03IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfd2Vicl9lZGl0b3JfNyA9IHtcbiAgY29uc3QgeyBXZWJSRXhlcmNpc2VFZGl0b3IsIGI2NERlY29kZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJ3ZWJyLTctY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici03LWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFdlYlJFeGVyY2lzZUVkaXRvcih3ZWJST2pzLndlYlJQcm9taXNlLCBibG9jay5jb2RlLCBvcHRpb25zKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl93ZWJyX3ZhbHVlXzcgPSB3ZWJST2pzLnByb2Nlc3MoX3dlYnJfZWRpdG9yXzcsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC02IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoie1xuICAvLyBXYWl0IGZvciBvdXRwdXQgdG8gYmUgd3JpdHRlbiB0byB0aGUgRE9NLCB0aGVuIHRyaWdnZXIgd2lkZ2V0IHJlbmRlcmluZ1xuICBhd2FpdCBfd2Vicl92YWx1ZV82O1xuICBpZiAod2luZG93LkhUTUxXaWRnZXRzKSB7XG4gICAgd2luZG93LkhUTUxXaWRnZXRzLnN0YXRpY1JlbmRlcigpO1xuICB9XG4gIGlmICh3aW5kb3cuUGFnZWRUYWJsZURvYykge1xuICAgIHdpbmRvdy5QYWdlZFRhYmxlRG9jLmluaXRBbGwoKTtcbiAgfVxufVxuIn0seyJjZWxsTmFtZSI6IndlYnItNiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJ2aWV3b2YgX3dlYnJfZWRpdG9yXzYgPSB7XG4gIGNvbnN0IHsgV2ViUkV4ZXJjaXNlRWRpdG9yLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwid2Vici02LWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oeyBpZDogYHdlYnItNi1jb250ZW50c2AgfSwgYmxvY2suYXR0cik7XG4gIGNvbnN0IGVkaXRvciA9IG5ldyBXZWJSRXhlcmNpc2VFZGl0b3Iod2ViUk9qcy53ZWJSUHJvbWlzZSwgYmxvY2suY29kZSwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIGVkaXRvci5jb250YWluZXI7XG59XG5fd2Vicl92YWx1ZV82ID0gd2ViUk9qcy5wcm9jZXNzKF93ZWJyX2VkaXRvcl82LCB7fSk7XG4ifSx7ImNlbGxOYW1lIjoid2Vici13aWRnZXQtNSIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfNTtcbiAgaWYgKHdpbmRvdy5IVE1MV2lkZ2V0cykge1xuICAgIHdpbmRvdy5IVE1MV2lkZ2V0cy5zdGF0aWNSZW5kZXIoKTtcbiAgfVxuICBpZiAod2luZG93LlBhZ2VkVGFibGVEb2MpIHtcbiAgICB3aW5kb3cuUGFnZWRUYWJsZURvYy5pbml0QWxsKCk7XG4gIH1cbn1cbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLTUiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoidmlld29mIF93ZWJyX2VkaXRvcl81ID0ge1xuICBjb25zdCB7IFdlYlJFeGVyY2lzZUVkaXRvciwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItNS1jb250ZW50c1xcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGJsb2NrID0gSlNPTi5wYXJzZShiNjREZWNvZGUoc2NyaXB0Q29udGVudCkpO1xuXG4gIGNvbnN0IG9wdGlvbnMgPSBPYmplY3QuYXNzaWduKHsgaWQ6IGB3ZWJyLTUtY29udGVudHNgIH0sIGJsb2NrLmF0dHIpO1xuICBjb25zdCBlZGl0b3IgPSBuZXcgV2ViUkV4ZXJjaXNlRWRpdG9yKHdlYlJPanMud2ViUlByb21pc2UsIGJsb2NrLmNvZGUsIG9wdGlvbnMpO1xuXG4gIHJldHVybiBlZGl0b3IuY29udGFpbmVyO1xufVxuX3dlYnJfdmFsdWVfNSA9IHdlYlJPanMucHJvY2Vzcyhfd2Vicl9lZGl0b3JfNSwge30pO1xuIn0seyJjZWxsTmFtZSI6IndlYnItd2lkZ2V0LTQiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJ7XG4gIC8vIFdhaXQgZm9yIG91dHB1dCB0byBiZSB3cml0dGVuIHRvIHRoZSBET00sIHRoZW4gdHJpZ2dlciB3aWRnZXQgcmVuZGVyaW5nXG4gIGF3YWl0IF93ZWJyX3ZhbHVlXzQ7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici00IiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6InZpZXdvZiBfd2Vicl9lZGl0b3JfNCA9IHtcbiAgY29uc3QgeyBXZWJSRXhlcmNpc2VFZGl0b3IsIGI2NERlY29kZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJ3ZWJyLTQtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7IGlkOiBgd2Vici00LWNvbnRlbnRzYCB9LCBibG9jay5hdHRyKTtcbiAgY29uc3QgZWRpdG9yID0gbmV3IFdlYlJFeGVyY2lzZUVkaXRvcih3ZWJST2pzLndlYlJQcm9taXNlLCBibG9jay5jb2RlLCBvcHRpb25zKTtcblxuICByZXR1cm4gZWRpdG9yLmNvbnRhaW5lcjtcbn1cbl93ZWJyX3ZhbHVlXzQgPSB3ZWJST2pzLnByb2Nlc3MoX3dlYnJfZWRpdG9yXzQsIHt9KTtcbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXdpZGdldC0zIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldFF1aWV0Iiwic291cmNlIjoie1xuICAvLyBXYWl0IGZvciBvdXRwdXQgdG8gYmUgd3JpdHRlbiB0byB0aGUgRE9NLCB0aGVuIHRyaWdnZXIgd2lkZ2V0IHJlbmRlcmluZ1xuICBhd2FpdCBfd2Vicl92YWx1ZV8zO1xuICBpZiAod2luZG93LkhUTUxXaWRnZXRzKSB7XG4gICAgd2luZG93LkhUTUxXaWRnZXRzLnN0YXRpY1JlbmRlcigpO1xuICB9XG4gIGlmICh3aW5kb3cuUGFnZWRUYWJsZURvYykge1xuICAgIHdpbmRvdy5QYWdlZFRhYmxlRG9jLmluaXRBbGwoKTtcbiAgfVxufVxuIn0seyJjZWxsTmFtZSI6IndlYnItMyIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXQiLCJzb3VyY2UiOiJfd2Vicl92YWx1ZV8zID0ge1xuICBjb25zdCB7IGhpZ2hsaWdodFIsIGI2NERlY29kZSB9ID0gd2luZG93Ll9leGVyY2lzZV9vanNfcnVudGltZTtcbiAgY29uc3Qgc2NyaXB0Q29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJ3ZWJyLTMtY29udGVudHNcXFwiXWApLnRleHRDb250ZW50O1xuICBjb25zdCBibG9jayA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKHNjcmlwdENvbnRlbnQpKTtcblxuICAvLyBEZWZhdWx0IGV2YWx1YXRpb24gY29uZmlndXJhdGlvblxuICBjb25zdCBvcHRpb25zID0gT2JqZWN0LmFzc2lnbih7XG4gICAgaWQ6IFwid2Vici0zLWNvbnRlbnRzXCIsXG4gICAgZWNobzogdHJ1ZSxcbiAgICBvdXRwdXQ6IHRydWVcbiAgfSwgYmxvY2suYXR0cik7XG5cbiAgLy8gRXZhbHVhdGUgdGhlIHByb3ZpZGVkIFIgY29kZVxuICBjb25zdCByZXN1bHQgPSB3ZWJST2pzLnByb2Nlc3Moe2NvZGU6IGJsb2NrLmNvZGUsIG9wdGlvbnN9LCB7fSk7XG5cbiAgLy8gRWFybHkgeWllbGQgd2hpbGUgd2Ugd2FpdCBmb3IgdGhlIGZpcnN0IGV2YWx1YXRpb24gYW5kIHJlbmRlclxuICBpZiAob3B0aW9ucy5vdXRwdXQgJiYgIShcIjNcIiBpbiB3ZWJST2pzLnJlbmRlcmVkT2pzKSkge1xuICAgIGNvbnN0IGNvbnRhaW5lciA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJkaXZcIik7XG4gICAgY29uc3Qgc3Bpbm5lciA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJkaXZcIik7XG5cbiAgICBpZiAob3B0aW9ucy5lY2hvKSB7XG4gICAgICAvLyBTaG93IG91dHB1dCBhcyBoaWdobGlnaHRlZCBzb3VyY2VcbiAgICAgIGNvbnN0IHByZUVsZW0gPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KFwicHJlXCIpO1xuICAgICAgY29udGFpbmVyLmNsYXNzTmFtZSA9IFwic291cmNlQ29kZVwiO1xuICAgICAgcHJlRWxlbS5jbGFzc05hbWUgPSBcInNvdXJjZUNvZGUgclwiO1xuICAgICAgcHJlRWxlbS5hcHBlbmRDaGlsZChoaWdobGlnaHRSKGJsb2NrLmNvZGUpKTtcbiAgICAgIHNwaW5uZXIuY2xhc3NOYW1lID0gXCJzcGlubmVyLWdyb3cgc3Bpbm5lci1ncm93LXNtIG0tMiBwb3NpdGlvbi1hYnNvbHV0ZSB0b3AtMCBlbmQtMFwiO1xuICAgICAgcHJlRWxlbS5hcHBlbmRDaGlsZChzcGlubmVyKTtcbiAgICAgIGNvbnRhaW5lci5hcHBlbmRDaGlsZChwcmVFbGVtKTtcbiAgICB9IGVsc2Uge1xuICAgICAgc3Bpbm5lci5jbGFzc05hbWUgPSBcInNwaW5uZXItYm9yZGVyIHNwaW5uZXItYm9yZGVyLXNtXCI7XG4gICAgICBjb250YWluZXIuYXBwZW5kQ2hpbGQoc3Bpbm5lcik7XG4gICAgfVxuXG4gICAgeWllbGQgY29udGFpbmVyO1xuICB9XG5cbiAgd2ViUk9qcy5yZW5kZXJlZE9qc1tcIjNcIl0gPSB0cnVlO1xuICB5aWVsZCBhd2FpdCByZXN1bHQ7XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici13aWRnZXQtMiIsImlubGluZSI6ZmFsc2UsIm1ldGhvZE5hbWUiOiJpbnRlcnByZXRRdWlldCIsInNvdXJjZSI6IntcbiAgLy8gV2FpdCBmb3Igb3V0cHV0IHRvIGJlIHdyaXR0ZW4gdG8gdGhlIERPTSwgdGhlbiB0cmlnZ2VyIHdpZGdldCByZW5kZXJpbmdcbiAgYXdhaXQgX3dlYnJfdmFsdWVfMjtcbiAgaWYgKHdpbmRvdy5IVE1MV2lkZ2V0cykge1xuICAgIHdpbmRvdy5IVE1MV2lkZ2V0cy5zdGF0aWNSZW5kZXIoKTtcbiAgfVxuICBpZiAod2luZG93LlBhZ2VkVGFibGVEb2MpIHtcbiAgICB3aW5kb3cuUGFnZWRUYWJsZURvYy5pbml0QWxsKCk7XG4gIH1cbn1cbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLTIiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0Iiwic291cmNlIjoiX3dlYnJfdmFsdWVfMiA9IHtcbiAgY29uc3QgeyBoaWdobGlnaHRSLCBiNjREZWNvZGUgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG4gIGNvbnN0IHNjcmlwdENvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwid2Vici0yLWNvbnRlbnRzXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgYmxvY2sgPSBKU09OLnBhcnNlKGI2NERlY29kZShzY3JpcHRDb250ZW50KSk7XG5cbiAgLy8gRGVmYXVsdCBldmFsdWF0aW9uIGNvbmZpZ3VyYXRpb25cbiAgY29uc3Qgb3B0aW9ucyA9IE9iamVjdC5hc3NpZ24oe1xuICAgIGlkOiBcIndlYnItMi1jb250ZW50c1wiLFxuICAgIGVjaG86IHRydWUsXG4gICAgb3V0cHV0OiB0cnVlXG4gIH0sIGJsb2NrLmF0dHIpO1xuXG4gIC8vIEV2YWx1YXRlIHRoZSBwcm92aWRlZCBSIGNvZGVcbiAgY29uc3QgcmVzdWx0ID0gd2ViUk9qcy5wcm9jZXNzKHtjb2RlOiBibG9jay5jb2RlLCBvcHRpb25zfSwge30pO1xuXG4gIC8vIEVhcmx5IHlpZWxkIHdoaWxlIHdlIHdhaXQgZm9yIHRoZSBmaXJzdCBldmFsdWF0aW9uIGFuZCByZW5kZXJcbiAgaWYgKG9wdGlvbnMub3V0cHV0ICYmICEoXCIyXCIgaW4gd2ViUk9qcy5yZW5kZXJlZE9qcykpIHtcbiAgICBjb25zdCBjb250YWluZXIgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KFwiZGl2XCIpO1xuICAgIGNvbnN0IHNwaW5uZXIgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KFwiZGl2XCIpO1xuXG4gICAgaWYgKG9wdGlvbnMuZWNobykge1xuICAgICAgLy8gU2hvdyBvdXRwdXQgYXMgaGlnaGxpZ2h0ZWQgc291cmNlXG4gICAgICBjb25zdCBwcmVFbGVtID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcInByZVwiKTtcbiAgICAgIGNvbnRhaW5lci5jbGFzc05hbWUgPSBcInNvdXJjZUNvZGVcIjtcbiAgICAgIHByZUVsZW0uY2xhc3NOYW1lID0gXCJzb3VyY2VDb2RlIHJcIjtcbiAgICAgIHByZUVsZW0uYXBwZW5kQ2hpbGQoaGlnaGxpZ2h0UihibG9jay5jb2RlKSk7XG4gICAgICBzcGlubmVyLmNsYXNzTmFtZSA9IFwic3Bpbm5lci1ncm93IHNwaW5uZXItZ3Jvdy1zbSBtLTIgcG9zaXRpb24tYWJzb2x1dGUgdG9wLTAgZW5kLTBcIjtcbiAgICAgIHByZUVsZW0uYXBwZW5kQ2hpbGQoc3Bpbm5lcik7XG4gICAgICBjb250YWluZXIuYXBwZW5kQ2hpbGQocHJlRWxlbSk7XG4gICAgfSBlbHNlIHtcbiAgICAgIHNwaW5uZXIuY2xhc3NOYW1lID0gXCJzcGlubmVyLWJvcmRlciBzcGlubmVyLWJvcmRlci1zbVwiO1xuICAgICAgY29udGFpbmVyLmFwcGVuZENoaWxkKHNwaW5uZXIpO1xuICAgIH1cblxuICAgIHlpZWxkIGNvbnRhaW5lcjtcbiAgfVxuXG4gIHdlYlJPanMucmVuZGVyZWRPanNbXCIyXCJdID0gdHJ1ZTtcbiAgeWllbGQgYXdhaXQgcmVzdWx0O1xufVxuIn0seyJjZWxsTmFtZSI6IndlYnItd2lkZ2V0LTEiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJ7XG4gIC8vIFdhaXQgZm9yIG91dHB1dCB0byBiZSB3cml0dGVuIHRvIHRoZSBET00sIHRoZW4gdHJpZ2dlciB3aWRnZXQgcmVuZGVyaW5nXG4gIGF3YWl0IF93ZWJyX3ZhbHVlXzE7XG4gIGlmICh3aW5kb3cuSFRNTFdpZGdldHMpIHtcbiAgICB3aW5kb3cuSFRNTFdpZGdldHMuc3RhdGljUmVuZGVyKCk7XG4gIH1cbiAgaWYgKHdpbmRvdy5QYWdlZFRhYmxlRG9jKSB7XG4gICAgd2luZG93LlBhZ2VkVGFibGVEb2MuaW5pdEFsbCgpO1xuICB9XG59XG4ifSx7ImNlbGxOYW1lIjoid2Vici0xIiwiaW5saW5lIjpmYWxzZSwibWV0aG9kTmFtZSI6ImludGVycHJldCIsInNvdXJjZSI6Il93ZWJyX3ZhbHVlXzEgPSB7XG4gIGNvbnN0IHsgaGlnaGxpZ2h0UiwgYjY0RGVjb2RlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lO1xuICBjb25zdCBzY3JpcHRDb250ZW50ID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihgc2NyaXB0W3R5cGU9XFxcIndlYnItMS1jb250ZW50c1xcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGJsb2NrID0gSlNPTi5wYXJzZShiNjREZWNvZGUoc2NyaXB0Q29udGVudCkpO1xuXG4gIC8vIERlZmF1bHQgZXZhbHVhdGlvbiBjb25maWd1cmF0aW9uXG4gIGNvbnN0IG9wdGlvbnMgPSBPYmplY3QuYXNzaWduKHtcbiAgICBpZDogXCJ3ZWJyLTEtY29udGVudHNcIixcbiAgICBlY2hvOiB0cnVlLFxuICAgIG91dHB1dDogdHJ1ZVxuICB9LCBibG9jay5hdHRyKTtcblxuICAvLyBFdmFsdWF0ZSB0aGUgcHJvdmlkZWQgUiBjb2RlXG4gIGNvbnN0IHJlc3VsdCA9IHdlYlJPanMucHJvY2Vzcyh7Y29kZTogYmxvY2suY29kZSwgb3B0aW9uc30sIHt9KTtcblxuICAvLyBFYXJseSB5aWVsZCB3aGlsZSB3ZSB3YWl0IGZvciB0aGUgZmlyc3QgZXZhbHVhdGlvbiBhbmQgcmVuZGVyXG4gIGlmIChvcHRpb25zLm91dHB1dCAmJiAhKFwiMVwiIGluIHdlYlJPanMucmVuZGVyZWRPanMpKSB7XG4gICAgY29uc3QgY29udGFpbmVyID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcImRpdlwiKTtcbiAgICBjb25zdCBzcGlubmVyID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudChcImRpdlwiKTtcblxuICAgIGlmIChvcHRpb25zLmVjaG8pIHtcbiAgICAgIC8vIFNob3cgb3V0cHV0IGFzIGhpZ2hsaWdodGVkIHNvdXJjZVxuICAgICAgY29uc3QgcHJlRWxlbSA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoXCJwcmVcIik7XG4gICAgICBjb250YWluZXIuY2xhc3NOYW1lID0gXCJzb3VyY2VDb2RlXCI7XG4gICAgICBwcmVFbGVtLmNsYXNzTmFtZSA9IFwic291cmNlQ29kZSByXCI7XG4gICAgICBwcmVFbGVtLmFwcGVuZENoaWxkKGhpZ2hsaWdodFIoYmxvY2suY29kZSkpO1xuICAgICAgc3Bpbm5lci5jbGFzc05hbWUgPSBcInNwaW5uZXItZ3JvdyBzcGlubmVyLWdyb3ctc20gbS0yIHBvc2l0aW9uLWFic29sdXRlIHRvcC0wIGVuZC0wXCI7XG4gICAgICBwcmVFbGVtLmFwcGVuZENoaWxkKHNwaW5uZXIpO1xuICAgICAgY29udGFpbmVyLmFwcGVuZENoaWxkKHByZUVsZW0pO1xuICAgIH0gZWxzZSB7XG4gICAgICBzcGlubmVyLmNsYXNzTmFtZSA9IFwic3Bpbm5lci1ib3JkZXIgc3Bpbm5lci1ib3JkZXItc21cIjtcbiAgICAgIGNvbnRhaW5lci5hcHBlbmRDaGlsZChzcGlubmVyKTtcbiAgICB9XG5cbiAgICB5aWVsZCBjb250YWluZXI7XG4gIH1cblxuICB3ZWJST2pzLnJlbmRlcmVkT2pzW1wiMVwiXSA9IHRydWU7XG4gIHlpZWxkIGF3YWl0IHJlc3VsdDtcbn1cbiJ9LHsiY2VsbE5hbWUiOiJ3ZWJyLXByZWx1ZGUiLCJpbmxpbmUiOmZhbHNlLCJtZXRob2ROYW1lIjoiaW50ZXJwcmV0UXVpZXQiLCJzb3VyY2UiOiJ3ZWJST2pzID0ge1xuICBjb25zdCB7IFdlYlIsIENoYW5uZWxUeXBlIH0gPSB3aW5kb3cuX2V4ZXJjaXNlX29qc19ydW50aW1lLldlYlI7XG4gIGNvbnN0IHtcbiAgICBXZWJSRXZhbHVhdG9yLFxuICAgIFdlYlJFbnZpcm9ubWVudE1hbmFnZXIsXG4gICAgc2V0dXBSLFxuICAgIGI2NERlY29kZSxcbiAgICBjb2xsYXBzZVBhdGhcbiAgfSA9IHdpbmRvdy5fZXhlcmNpc2Vfb2pzX3J1bnRpbWU7XG5cbiAgY29uc3Qgc3RhdHVzQ29udGFpbmVyID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoXCJleGVyY2lzZS1sb2FkaW5nLXN0YXR1c1wiKTtcbiAgY29uc3QgaW5kaWNhdG9yQ29udGFpbmVyID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoXCJleGVyY2lzZS1sb2FkaW5nLWluZGljYXRvclwiKTtcbiAgaW5kaWNhdG9yQ29udGFpbmVyLmNsYXNzTGlzdC5yZW1vdmUoXCJkLW5vbmVcIik7XG5cbiAgbGV0IHN0YXR1c1RleHQgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KFwiZGl2XCIpXG4gIHN0YXR1c1RleHQuY2xhc3NMaXN0ID0gXCJleGVyY2lzZS1sb2FkaW5nLWRldGFpbHNcIjtcbiAgc3RhdHVzVGV4dCA9IHN0YXR1c0NvbnRhaW5lci5hcHBlbmRDaGlsZChzdGF0dXNUZXh0KTtcbiAgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9IGBJbml0aWFsaXNlYDtcblxuICAvLyBIb2lzdCBpbmRpY2F0b3Igb3V0IGZyb20gZmluYWwgc2xpZGUgd2hlbiBydW5uaW5nIHVuZGVyIHJldmVhbFxuICBjb25zdCByZXZlYWxTdGF0dXMgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKFwiLnJldmVhbCAuZXhlcmNpc2UtbG9hZGluZy1pbmRpY2F0b3JcIik7XG4gIGlmIChyZXZlYWxTdGF0dXMpIHtcbiAgICByZXZlYWxTdGF0dXMucmVtb3ZlKCk7XG4gICAgZG9jdW1lbnQucXVlcnlTZWxlY3RvcihcIi5yZXZlYWwgPiAuc2xpZGVzXCIpLmFwcGVuZENoaWxkKHJldmVhbFN0YXR1cyk7XG4gIH1cblxuICAvLyBNYWtlIGFueSByZXZlYWwgc2xpZGVzIHdpdGggbGl2ZSBjZWxscyBzY3JvbGxhYmxlXG4gIGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3JBbGwoXCIucmV2ZWFsIC5leGVyY2lzZS1jZWxsXCIpLmZvckVhY2goKGVsKSA9PiB7XG4gICAgZWwuY2xvc2VzdCgnc2VjdGlvbi5zbGlkZScpLmNsYXNzTGlzdC5hZGQoXCJzY3JvbGxhYmxlXCIpO1xuICB9KVxuXG4gIC8vIHdlYlIgc3VwcGxlbWVudGFsIGRhdGEgYW5kIG9wdGlvbnNcbiAgY29uc3QgZGF0YUNvbnRlbnQgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yKGBzY3JpcHRbdHlwZT1cXFwid2Vici1kYXRhXFxcIl1gKS50ZXh0Q29udGVudDtcbiAgY29uc3QgZGF0YSA9IEpTT04ucGFyc2UoYjY0RGVjb2RlKGRhdGFDb250ZW50KSk7XG5cbiAgLy8gR3JhYiBsaXN0IG9mIHJlc291cmNlcyB0byBiZSBkb3dubG9hZGVkXG4gIGNvbnN0IGZpbGVzQ29udGVudCA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoYHNjcmlwdFt0eXBlPVxcXCJ2ZnMtZmlsZVxcXCJdYCkudGV4dENvbnRlbnQ7XG4gIGNvbnN0IGZpbGVzID0gSlNPTi5wYXJzZShiNjREZWNvZGUoZmlsZXNDb250ZW50KSk7XG5cbiAgLy8gVXNlIFBvc3RNZXNzYWdlIGNoYW5uZWwgZm9yIGFzeW5jIGNvbW11bmljYXRpb25cbiAgLy8gV2UgZG8gbm90IGV4cGVjdCB0byB0YWtlIG5lc3RlZCBwcm9tcHQgaW5wdXQgaW4gUXVhcnRvIExpdmUgY2VsbHNcbiAgZGF0YS5vcHRpb25zLmNoYW5uZWxUeXBlID0gQ2hhbm5lbFR5cGUuUG9zdE1lc3NhZ2U7XG5cbiAgLy8gSW5pdGlhbGlzZSB3ZWJSIGFuZCBzZXR1cCBmb3IgUiBjb2RlIGV2YWx1YXRpb25cbiAgbGV0IHdlYlJQcm9taXNlID0gKGFzeW5jICh3ZWJSKSA9PiB7XG4gICAgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9IGBEb3dubG9hZGluZyB3ZWJSYDtcbiAgICBhd2FpdCB3ZWJSLmluaXQoKTtcblxuICAgIC8vIEluc3RhbGwgcHJvdmlkZWQgbGlzdCBvZiBwYWNrYWdlc1xuICAgIC8vIEVuc3VyZSB3ZWJSIGRlZmF1bHQgcmVwbyBpcyBpbmNsdWRlZFxuICAgIGRhdGEucGFja2FnZXMucmVwb3MucHVzaChcImh0dHBzOi8vcmVwby5yLXdhc20ub3JnXCIpXG4gICAgYXdhaXQgZGF0YS5wYWNrYWdlcy5wa2dzLm1hcCgocGtnKSA9PiAoKSA9PiB7XG4gICAgICBzdGF0dXNUZXh0LnRleHRDb250ZW50ID0gYERvd25sb2FkaW5nIHBhY2thZ2U6ICR7cGtnfWA7XG4gICAgICByZXR1cm4gd2ViUi5ldmFsUlZvaWQoYFxuICAgICAgICB3ZWJyOjppbnN0YWxsKHBrZywgcmVwb3MgPSByZXBvcylcbiAgICAgICAgbGlicmFyeShwa2csIGNoYXJhY3Rlci5vbmx5ID0gVFJVRSlcbiAgICAgIGAsIHsgZW52OiB7XG4gICAgICAgIHBrZzogcGtnLFxuICAgICAgICByZXBvczogZGF0YS5wYWNrYWdlcy5yZXBvcyxcbiAgICAgIH19KTtcbiAgICB9KS5yZWR1Y2UoKGN1ciwgbmV4dCkgPT4gY3VyLnRoZW4obmV4dCksIFByb21pc2UucmVzb2x2ZSgpKTtcblxuICAgIC8vIERvd25sb2FkIGFuZCBpbnN0YWxsIHJlc291cmNlc1xuICAgIGF3YWl0IGZpbGVzLm1hcCgoZmlsZSkgPT4gYXN5bmMgKCkgPT4ge1xuICAgICAgY29uc3QgbmFtZSA9IGZpbGUuc3Vic3RyaW5nKGZpbGUubGFzdEluZGV4T2YoJy8nKSArIDEpO1xuICAgICAgc3RhdHVzVGV4dC50ZXh0Q29udGVudCA9IGBEb3dubG9hZGluZyByZXNvdXJjZTogJHtuYW1lfWA7XG4gICAgICBjb25zdCByZXNwb25zZSA9IGF3YWl0IGZldGNoKGZpbGUpO1xuICAgICAgaWYgKCFyZXNwb25zZS5vaykge1xuICAgICAgICB0aHJvdyBuZXcgRXJyb3IoYENhbid0IGRvd25sb2FkIFxcYCR7ZmlsZX1cXGAuIEVycm9yICR7cmVzcG9uc2Uuc3RhdHVzfTogXCIke3Jlc3BvbnNlLnN0YXR1c1RleHR9XCIuYCk7XG4gICAgICB9XG4gICAgICBjb25zdCBkYXRhID0gYXdhaXQgcmVzcG9uc2UuYXJyYXlCdWZmZXIoKTtcblxuICAgICAgLy8gU3RvcmUgVVJMcyBpbiB0aGUgY3dkIHdpdGhvdXQgYW55IHN1YmRpcmVjdG9yeSBzdHJ1Y3R1cmVcbiAgICAgIGlmIChmaWxlLmluY2x1ZGVzKFwiOi8vXCIpKSB7XG4gICAgICAgIGZpbGUgPSBuYW1lO1xuICAgICAgfVxuXG4gICAgICAvLyBDb2xsYXBzZSBoaWdoZXIgZGlyZWN0b3J5IHN0cnVjdHVyZVxuICAgICAgZmlsZSA9IGNvbGxhcHNlUGF0aChmaWxlKTtcblxuICAgICAgLy8gQ3JlYXRlIGRpcmVjdG9yeSB0cmVlLCBpZ25vcmluZyBcImRpcmVjdG9yeSBleGlzdHNcIiBWRlMgZXJyb3JzXG4gICAgICBjb25zdCBwYXJ0cyA9IGZpbGUuc3BsaXQoJy8nKS5zbGljZSgwLCAtMSk7XG4gICAgICBsZXQgcGF0aCA9ICcnO1xuICAgICAgd2hpbGUgKHBhcnRzLmxlbmd0aCA+IDApIHtcbiAgICAgICAgcGF0aCArPSBwYXJ0cy5zaGlmdCgpICsgJy8nO1xuICAgICAgICBjb25zdCBhbmFseXNpcyA9IGF3YWl0IHdlYlIuRlMuYW5hbHl6ZVBhdGgocGF0aCk7XG4gICAgICAgIGlmICghYW5hbHlzaXMuZXhpc3RzKSB7XG4gICAgICAgICAgdHJ5IHtcbiAgICAgICAgICAgIGF3YWl0IHdlYlIuRlMubWtkaXIocGF0aCk7XG4gICAgICAgICAgfSBjYXRjaCAoZSkge1xuICAgICAgICAgICAgdGhyb3cgbmV3IEVycm9yKGBGaWxlc3lzdGVtIEVycm9yOiBcIiR7ZS5tZXNzYWdlfVwiLmApO1xuICAgICAgICAgIH1cbiAgICAgICAgfVxuICAgICAgfVxuXG4gICAgICAvLyBXcml0ZSB0aGlzIGZpbGUgdG8gdGhlIFZGU1xuICAgICAgcmV0dXJuIGF3YWl0IHdlYlIuRlMud3JpdGVGaWxlKGZpbGUsIG5ldyBVaW50OEFycmF5KGRhdGEpKTtcbiAgICB9KS5yZWR1Y2UoKGN1ciwgbmV4dCkgPT4gY3VyLnRoZW4obmV4dCksIFByb21pc2UucmVzb2x2ZSgpKTtcblxuICAgIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSBgSW5zdGFsbGluZyB3ZWJSIHNoaW1zYDtcbiAgICBhd2FpdCB3ZWJSLmV2YWxSVm9pZChgd2Vicjo6c2hpbV9pbnN0YWxsKClgKTtcblxuICAgIHN0YXR1c1RleHQudGV4dENvbnRlbnQgPSBgV2ViUiBlbnZpcm9ubWVudCBzZXR1cGA7XG4gICAgYXdhaXQgc2V0dXBSKHdlYlIsIGRhdGEpO1xuXG4gICAgc3RhdHVzVGV4dC5yZW1vdmUoKTtcbiAgICBpZiAoc3RhdHVzQ29udGFpbmVyLmNoaWxkcmVuLmxlbmd0aCA9PSAwKSB7XG4gICAgICBzdGF0dXNDb250YWluZXIucGFyZW50Tm9kZS5yZW1vdmUoKTtcbiAgICB9XG4gICAgcmV0dXJuIHdlYlI7XG4gIH0pKG5ldyBXZWJSKGRhdGEub3B0aW9ucykpO1xuXG4gIC8vIEtlZXAgdHJhY2sgb2YgaW5pdGlhbCBPSlMgYmxvY2sgcmVuZGVyXG4gIGNvbnN0IHJlbmRlcmVkT2pzID0ge307XG5cbiAgY29uc3QgcHJvY2VzcyA9IGFzeW5jIChjb250ZXh0LCBpbnB1dHMpID0+IHtcbiAgICBjb25zdCB3ZWJSID0gYXdhaXQgd2ViUlByb21pc2U7XG4gICAgY29uc3QgZXZhbHVhdG9yID0gbmV3IFdlYlJFdmFsdWF0b3Iod2ViUiwgY29udGV4dClcbiAgICBhd2FpdCBldmFsdWF0b3IucHJvY2VzcyhpbnB1dHMpO1xuICAgIHJldHVybiBldmFsdWF0b3IuY29udGFpbmVyO1xuICB9XG5cbiAgcmV0dXJuIHtcbiAgICBwcm9jZXNzLFxuICAgIHdlYlJQcm9taXNlLFxuICAgIHJlbmRlcmVkT2pzLFxuICB9O1xufVxuIn1dfQ==
-</script><div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
-<div id="exercise-loading-status" class="d-flex gap-2">
-
-</div>
-<div class="spinner-grow spinner-grow-sm">
-
-</div>
-</div>
-<script type="vfs-file">
-W10=
-</script></section></section><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
-<ol>
-<li id="fn1"><p>Note, however, that standard ANOVA is basically just a very restricted linear model; <em>cf.</em> <a href="https://lindeloev.github.io/tests-as-linear/" class="uri">https://lindeloev.github.io/tests-as-linear/</a>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>In this case, there is a <code>cranlogs</code> package for interacting with this API. This type of package is commonly called a “wrapper” because it shields the user from the details of the API and exposes a more idiomatic (and more useful) interface. In general, when you can find an <code>R</code> package that wraps an API, it is a good idea to use it. For certain very complex APIs, <em>e.g.</em>, the <a href="https://www.bloomberg.com/professional/support/api-library/">API that powers Bloomberg</a> Financial Information Services, use of the associated <a href="https://cran.r-project.org/web/packages/Rblpapi/vignettes/rblpapi-intro.html"><code>R</code> package</a> is almost mandatory because the underlying API is so complicated. For this in-class exercise, we will use the “raw” API as practice since you can’t always assume a nice <code>R</code> package will exist.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>We will only use the basic <code>req_perform</code> for now, but <code>httr2</code> provides options for parallel execution, delayed execution, <em>etc.</em>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol></section></div></main><!-- /main --><script type="ojs-module-contents">
-eyJjb250ZW50cyI6W119
-</script><script type="module">
-if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
-window._ojs.paths.runtimeToDoc = "../../labs";
-window._ojs.paths.runtimeToRoot = "../..";
-window._ojs.paths.docToRoot = "..";
-window._ojs.selfContained = false;
-window._ojs.runtime.interpretFromScriptTags();
-</script><script id="quarto-html-after-body" type="application/javascript">
+</section></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
     const anchorJS = new window.AnchorJS();

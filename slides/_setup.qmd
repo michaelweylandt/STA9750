@@ -7,10 +7,11 @@ library(rlang)
 library(yaml)
 library(purrr)
 library(jsonlite)
+library(tidyverse)
 
 REPO_NAME <- read_yaml("_variables.yml")$course$repo
 get_mp_title <- function(N){
-    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_file <- glue("mini/mini0{N}.qmd")
     mp_text <- readLines(mp_file, n=50)
     
     header_end <- which(grepl("---", mp_text))[2]
@@ -22,7 +23,7 @@ get_mp_title <- function(N){
 
 
 get_mp_application <- function(N){
-    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_file <- glue("mini/mini0{N}.qmd")
     mp_text <- readLines(mp_file, n=50)
     
     header_end <- which(grepl("---", mp_text))[2]
@@ -34,7 +35,7 @@ get_mp_application <- function(N){
 
 
 get_mp_rhetoric <- function(N){
-    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_file <- glue("mini/mini0{N}.qmd")
     mp_text <- readLines(mp_file, n=50)
     
     header_end <- which(grepl("---", mp_text))[2]
@@ -46,7 +47,7 @@ get_mp_rhetoric <- function(N){
 
 
 get_mp_skills <- function(N){
-    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_file <- glue("mini/mini0{N}.qmd")
     mp_text <- readLines(mp_file, n=50)
     
     header_end <- which(grepl("---", mp_text))[2]
@@ -140,4 +141,76 @@ get_project_due_date <- function(element = c("individual_report", "group_report"
 }
 
 next_session <- session + 1
+
+DATES   <- read_csv("key_dates.csv")
+TODAY   <- DATES |> filter(`Course Element` == "Class Session", 
+                           `Item Number` == session)
+
+PROJ_RELEASE <- DATES |> 
+    filter(Details == "Course Project Description Released") |>
+    pull(Date)
+
+ROSTERS <- DATES |> 
+    filter(Details == "Team Roster Submission") |>
+    pull(Date)
+
+
+TODAY_TOPIC <- TODAY |>
+    slice_head(n=1) |>
+    pull(Details) 
+
+PROPOSALS <- DATES |> 
+    filter(str_detect(Details, "Project Proposal")) |> 
+    pull(Date) |> 
+    strftime("%A %b %d") |> 
+    paste(collapse=" and ")
+
+library(jsonlite)
+library(yaml)
+
+if(file.exists("roster.json")){
+    
+    N_TEAMS <- read_yaml("_teaching.yml")$gradedir |>
+        file.path("roster.json") |> 
+        read_json(simplify=TRUE) |> 
+        pull(project_team) |> 
+        max(na.rm=TRUE)
+    
+    N_ON_TEAM <- read_yaml("_teaching.yml")$gradedir |>
+        file.path("roster.json") |> 
+        read_json(simplify=TRUE) |> 
+        filter(!is.na(project_team)) |> 
+        NROW()
+    
+    N_NO_TEAM <- read_yaml("_teaching.yml")$gradedir |>
+        file.path("roster.json") |> 
+        read_json(simplify=TRUE) |> 
+        filter(is.na(project_team)) |> 
+        NROW()
+
+} else {
+    N_TEAMS <- N_ON_TEAM <- N_NO_TEAM <- NA
+}
+
+set.seed(9750+session)
+library(yaml)
+library(jsonlite)
+
+TEAMS_FILE <- read_yaml("_teaching.yml") |> 
+  pluck("gradedir") |> 
+  file.path("teams.json")
+
+if(file.exists(TEAMS_FILE)){
+    TEAMS <- TEAMS_FILE |> 
+       read_json(simplify=TRUE) |> 
+      pull(name) |>
+      sample()
+} else {
+    TEAMS <- "TBD"
+}
+
+BREAKOUT_TABLE <- data.frame(Team=TEAMS) |> 
+  mutate(Breakout = row_number()) |> 
+  select(Breakout, Team) |> 
+  knitr::kable(row.names = FALSE)
 ```

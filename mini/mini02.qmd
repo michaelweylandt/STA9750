@@ -1,0 +1,173 @@
+---
+mp_num: "02"
+mp_title: "TBD"
+mp_skills: "TBD"
+mp_application: "TBD"
+mp_rhetoric: "TBD"
+mp_max_ec: 5
+filters:
+    - list-table
+---
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(tidyverse)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, Time)))
+```
+
+```{r}
+#| echo: false
+#| warning: false
+library(glue)
+mp_id <- as.integer(rmarkdown::metadata$mp_num)
+mp <-  DATES |> filter(element == "Mini-Projects", 
+                       item == mp_id)
+mp_file <- list(qmd=glue("`mp{sprintf('%02g', mp_id)}.qmd`"), 
+                html=glue("`mp{sprintf('%02g', mp_id)}.html`"),
+                html_long=glue("`docs/mp{sprintf('%02g', mp_id)}.html`"))
+```
+
+### Due Dates
+
+-   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+-   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
+-   **Peer Feedback:**
+    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
+    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
+
+
+*Estimated Time to Complete: 13-15 Hours*
+
+*Estimated Time for Peer Feedback: 1 Hour*
+
+
+------------------------------------------------------------------------
+
+## Introduction
+
+Welcome to Mini-Project #{{< meta mp_num >}}! TBD
+
+In this mini-project, you will: 
+
+1) Practice use of `dplyr` for combining and manipulating data from distinct
+   sources
+2) Practice use of `ggplot2` to create compelling statistical visualizations. 
+   Note that this assignment only requires "basic" `ggplot2` visualizations
+   like scatterplots or line graphs; [Mini-Project #03](mini03.html) will require
+   more complex visualization. 
+3) Practice summarizing complex analytical pipelines for non-technical audiences.
+
+As with [Mini-Project #01](mini01.html), a major portion of your grade is based on
+the _communication and writing_ elements of this mini-project, so make sure to
+budget sufficient time for the writing process. Code without context has little
+practical value - you are always writing and conveying your analysis to a specific
+target audience. 
+
+### Student Responsibilities
+
+Recall our basic analytic workflow and table of student responsibilities:
+
+{{< include _responsibilities.qmd >}}
+
+In this mini-project, you are mainly responsible for data alignment and basic 
+statistical analyses. While not the main focus of this mini-project, you are 
+also expected to provide basic data visualizations to support your findings; 
+the grading rubric, below, emphasizes the `dplyr` tools used in this project, 
+but reports without any visualization will be penalized severely. Note that data
+visualization will play a larger role in Mini-Project #03.
+
+As before, I will provide code to automatically download and read in the data 
+used for this project. Also note that, as compared with Mini-Project #01, I am
+providing less 'scaffolding' for tabular display and EDA: students are more 
+responsible for directing their own analyses.
+
+### Rubric
+
+{{< var course.short >}} Mini-Projects are evaluated using *peer grading* with 
+*meta-review* by the course staff. The following basic rubric will be used for 
+all mini-projects:
+
+{{< include _rubric.qmd >}}
+
+At this point, you are responsible for (elementary) data visualization and will
+be graded on that aspect of the rubric, as well as the sections on which you were
+assessed in [the previous mini-project](./mini01.qmd).
+
+Note that, because I am still providing code to download the data, load it into
+`R`, and prepare it for analysis, all reports submitted using my code will 
+receive an automatic 10/10 for the 'Data Preparation' element of the rubric. 
+Additionally, reports completing all tasks described under [Data Integration and
+Exploration](#eda) below should receive a 10/10 for the 'Exploratory Data Analysis'
+rubric element. 
+
+Taken together, you are only really responsible for these portions of the
+rubric in this assignment: 
+
+- Written Communication
+- Project Skeleton
+- Tables & Document Presentation
+- Data Visualization
+- Code Quality
+- Analysis and Findings
+
+Reports completing all key steps outlined below essentially start with
+20 free points. 
+
+{{< include _submission.qmd >}}
+
+
+## Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}
+
+### Data Acquisition
+
+TBD
+
+
+::: {.callout-tip title="Task 1: Data Acquisition"}
+
+Using the code above, acquire the TBD. Copy the code into
+your Quarto document and make sure it runs successfully. 
+
+:::
+
+::: {.callout-caution title="Do Not `git add` Data Files"}
+
+Make sure that `git` is set to ignore data files, such as the one created above.
+Check the `git` pane in `RStudio` and make sure that TBD
+does not appear. (If you set up your `.gitignore` file correctly in
+[MP#00](./mini00.html), it should already be ignored.) If it is appearing, you
+may need to edit your `.gitignore` file.
+
+Removing a large data file from `git` is possible, but difficult. Don't get
+into a bad state!
+
+:::
+
+### Data Cleaning and Preparation 
+
+TBD
+
+### Data Integration and Initial Exploration {#eda}
+
+TBD
+
+### Final Deliverable: TBD
+
+TBD
+
+    
+{{< include _aidisclosure.qmd >}}
+
+
+{{< include _echeader.qmd >}}
+
+TBD
+
+{{< include _footer.qmd >}}
+

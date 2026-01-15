@@ -3,6 +3,8 @@ title: "{{< var course.short >}} - Mini Projects"
 format: 
   html: 
     code-copy: true
+filters:
+  - list-table
 ---
 
 ```{r}
@@ -25,7 +27,7 @@ library(glue)
 library(rlang)
 library(yaml)
 get_mp_title <- function(N){
-    mp_file <- glue("miniprojects/mini0{N}.qmd")
+    mp_file <- glue("mini/mini0{N}.qmd")
     mp_text <- readLines(mp_file, n=50)
     
     header_end <- which(grepl("---", mp_text))[2]
@@ -49,17 +51,35 @@ management platform, as both raw analysis code and as a HTML document
 hosted on GitHub pages.
 
 After each Mini-Project is submitted, 2-4 peer reviewers will 
-be assigned to give feedback and to assign an initial grade following
-an instructor provided rubric. This feedback will be given *via* GitHub Issues. 
+be assigned to give feedback and to give an approximate grade following
+an instructor provided rubric. This feedback will be submitted anonymously
+on Brightspace; see details below. 
 
 In order to ensure good peer feedback, the peer feedback will be evaluated by 
 the instructor in a "meta-review" worth a small fraction of the overall grade. 
 
 If you believe your mini-project has received inaccurate peer feedback, please
 request a regrade from the instructor directly within **48 hours** of the peer 
-feedback deadline using the relevant form on Brightspace. No student-initiated 
-requests for re-grading will be accepted after that time, though the instructor 
+feedback deadline using the relevant form on Brightspace. No student-initiated
+requests for re-grading will be accepted after that time, though the instructor
 may re-grade the work during the meta-review stage.
+
+
+::: {.callout-caution title="Responsible Peer Feedback"}
+
+The anonymous peer feedback is an important part of the learning objectives
+of this course. *Reading* and *writing* code are both important, but distinct,
+skills. As working data analysts in large organizations, a significant fraction
+of your time will be spent reading and studying existing processes, with
+code written by other analysts. Even if you are working on a 'greenfield'
+project, you will have to re-read your own code someday, far after you
+originally wrote it. 
+
+Any attempt to interfere with the peer feedback process by pressuring or
+collaborating with classmates to achieve a different score will be considered
+a serious violation of the academic integrity expectations of this course.
+
+:::
 
 ### Mini-Projects
 
@@ -78,12 +98,12 @@ mp <-  DATES |> filter(element == "Mini-Projects", item == 0)
     - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
     - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
 
-In the ungraded [Mini-Project #00](./miniprojects/mini00.html), there is no data
-analysis required, but you will set up the basic web tooling used to submit projects
-#01 to #04. 
+In the ungraded [Mini-Project #00](./mini/mini00.qmd), there is no data
+analysis required, but you will set up the basic web tooling used to
+submit projects #01 to #04. 
 
-Note that, even though ungraded, Mini-Project #00 must be completed to remain
-enrolled in this course and before any other Mini-Projects can be submitted. 
+Note that, even though ungraded, Mini-Project #00 must be completed before any
+other Mini-Projects can be submitted. 
 
 #### Mini-Project #01: `r get_mp_title(1)`
 
@@ -100,12 +120,7 @@ mp <-  DATES |> filter(element == "Mini-Projects", item == 1)
     - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
     - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
     
-In [Mini-Project #01](./miniprojects/mini01.html), students will explore the
-Netflix Top 10 data to identify the most popular programming on the platform.
-Despite the relative simplicity of this data set, it is too big for traditional
-spreadsheet software (*i.e.*, Microsoft Excel) to handle. Students deliver their
-results in the form of a press release, conveying the results of complex
-analytical pipelines in a pithy interpretable format. 
+In [Mini-Project #01](./mini/mini01.qmd), students will TBD.
 
 #### Mini-Project #02: `r get_mp_title(2)`
 
@@ -123,16 +138,7 @@ mp <-  DATES |> filter(element == "Mini-Projects", item == 2)
     - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
     
 
-In [Mini-Project #02](./miniprojects/mini02.html), students will explore data
-from the US Census Bureau's Annual Community Survey and the Bureau of Labor
-Statistics' Quarterly Census of Employment and Wages to identify cities with 
-affordable and rapidly growing housing stock. In this project, students will
-combine data from different - and not entirely compatible - government sources
-and practice turning a qualitative concept like affordability into a measurable
-statistical index. Students also demonstrate basic statistical visualizations
-like scatterplots and line charts. Students will deliver their results in the
-form of a "policy brief" that can be used to lobby congressional representatives
-to advocate pro-housing policies at the federal level.
+In [Mini-Project #02](./mini/mini02.qmd), students will TBD.
 
 #### Mini-Project #03: `r get_mp_title(3)`
 
@@ -149,13 +155,7 @@ mp <-  DATES |> filter(element == "Mini-Projects", item == 3)
     - Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`
     - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
     
-In [Mini-Project #03](./miniprojects/mini03.html), students will explore data
-from the NYC Parks Tree Services. Students will create maps of the trees of
-NYC  and use spatial joins to align the GPS coordinates of trees with NYC's
-51 City Council districts. To acquire this data, students will also practice
-responsibly downloading large data sets from an official government resource.
-Students will deliver the findings in the form of a proposed new project for 
-NYC Parks, aiming to maintain and benefit NYC's marvelous trees.
+In [Mini-Project #03](./mini/mini03.qmd), students will TBD.
 
 #### Mini-Project #04: `r get_mp_title(4)`
 
@@ -173,21 +173,14 @@ mp <-  DATES |> filter(element == "Mini-Projects", item == 4)
     - **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)`**
 
 
-In [Mini-Project #04](./miniprojects/mini04.html), students will analyze the 
-Bureau of Labor Statistics' Current Employment Statistics report to see whether
-politicians' claims about CES revisions are actually true. To complete this
-analysis, students will use the `httr2` package to directly access official
-BLS CES records, parse the data into `R` using the `rvest` package, join
-together records from different pages using `dplyr`, explore the data
-with `ggplot2`, and finally apply computational approaches to statistical 
-inference. 
+In [Mini-Project #04](./mini/mini04.qmd), students will TBD.
 
 ### Mini-Project Submission
 
 All Mini-Projects must be submitted in two formats: 
 
 1) As a suitable HTML page hosted on the student's course repository. 
-   (See [Mini-Project #00](./miniprojects/mini00.html) for details on
+   (See [Mini-Project #00](./mini/mini00.html) for details on
    setting this up.)
 2) As a PDF on the course Brightspace page. 
 
@@ -271,11 +264,11 @@ need to ensure that other documents are also properly uploaded. In particular,
 data visualizations will be saved automatically by `quarto` as `png` files in
 your `docs` folder. These need to be included in your GitHub repository so that
 your website will render properly: if you omit these, you will get a "missing 
-image" icon and empty box instead of the desired visualization. For other projects,
-you may need to ensure various `css` or `js` files are uploaded to ensure all
-components of your site work properly. You will not need to create or edit these
-files directly, but if you don't have them, your page will not appear online
-as it does locally. As a general rule, you should `git add`, 
+image" icon and empty box instead of the desired visualization. For other 
+projects, you may need to ensure various `css` or `js` files are uploaded to 
+ensure all components of your site work properly. You will not need to create 
+or edit these files directly, but if you don't have them, your page will not 
+appear online as it does locally. As a general rule, you should `git add`, 
 `commit` and `push` _all_ files in the `docs` folder just to be safe. If you
 are not seeing something on your page that you observed locally, it is usually
 a sign that one of these files are missing.[^inspector]
@@ -353,7 +346,7 @@ Two note about the syntax:
   first thing in a chunk. 
 
 The syntax for these sort of options is `variable: value`. You should recognize
-this from the `_quarto.yml` file in [MP#00](./miniprojects/mini00.qmd) which used
+this from the `_quarto.yml` file in [MP#00](./mini/mini00.qmd) which used
 a similar syntax. Here, `code-fold` defaults to `false` (no folding), so we set
 it to `true` to turn on folding.[^quarto_flags]
 
@@ -524,74 +517,13 @@ analysis, but there are **better** and **worse**; seeing a variety of approaches
 helps students experience a variety of approaches and begin developing a sense of
 elegance and efficiency in code. 
 
-Mini-Project peer feedback is submitted as comment on the GitHub issue used to
-submit individual projects. Once the mini-project submission deadline passes, 
-the instructor will tag multiple students in the same issue and request peer
-feedback. Tagged students ("evaluators") should give their feedback in that same
-issue, **not** opening a new issue. (This is important to keep course materials
-organized.) 
+Mini-Project peer feedback will be submitted in a "single-blind" fashion through
+Brightspace; that is, students will know *who they are evaluating* but they will
+not know who they are being evaluated by. 
 
-Peer feedback comments should use the following format:
-
-::: {#peer-feedback-template}
-
-```{md}
-## Scores 
-
-- Written Communication: NN 
-- Project Skeleton: NN
-- Formatting & Display: NN
-- Code Quality: NN
-- Data Preparation: NN
-- Extra Credit: NN
-
-## Comments
-
-OPTIONAL TEXT
-
-### Written Communication
-
-TEXT TEXT TEXT
-
-### Project Skeleton
-
-TEXT TEXT TEXT
-
-### Formatting & Display
-
-TEXT TEXT TEXT
-
-### Code Quality
-
-TEXT TEXT TEXT
-
-### Data Preparation
-
-TEXT TEXT TEXT
-
-### Extra Credit
-
-TEXT TEXT TEXT
-```
-
-:::
-
-For each element, the `NN` should be replaced by a numerical value
-between 0 and 10. (It is not necessary to provide a sum; the instructor will
-calculate this.) Similarly, the `TEXT TEXT TEXT` should be replaced by comments
-justifying the assigned score. If you have overall comments on the assignment,
-not appropriate for a single category, please place them in the `OPTIONAL TEXT`
-section. (If you have no overall comments for this section, just delete this.)
-Not all mini-projects have opportunities for Extra Credit, but please leave
-those blocks in place (with a 0 for the score and something to the effect of 
-"No extra credit available" for the  comment) so the course backend automation
-works properly. The `mp_feedback_submit` function in the 
-[course helper functions](./tips.qmd#mp_feedback_submit) can be used to
-automatically format peer feedback according to the required template. 
-
-The `mp_feedback_verify` function in the 
-[course helper functions](./tips.qmd#mp_feedback_verify) can be used to 
-verify that you have submitted a comment with the correct formatting.
+This semester, I am developing a new system to assign and submit peer feedback.
+Details on this will be posted here no later than 
+`r DATES |> filter(element == "Mini-Projects", item == 0) |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)`. 
 
 ::: {.callout-caution title="Peer Grade Required for **All** Assigned Work"}
 
@@ -608,25 +540,52 @@ and assign "meta-review" feedback to each student. Meta-review feedback refers
 a grade based on the quality of your commentary. The following rubric will guide
 assessment of meta-review grades, but the instructor may deviate as appropriate.
 
-Note that the rubric is a bit *asymmetric*: students need more detailed 
-feedback on poor work -- giving them an opportunity to improve -- than on 
-strong work. Here the rough "strong" *vs* "weak" distinction is qualitative and 
-will be assessed by the instructor independently as part of meta-review grades.
+Note that the expectations here are a bit *asymmetric*: students need more 
+detailed feedback on poor work -- giving them an opportunity to improve -- than 
+on strong work. Here the rough "strong" *vs* "weak" distinction is qualitative 
+and will be assessed by the instructor independently as part of meta-review
+grades.
 
-| Score | Quality of Submitted Work | Quality of Feedback | Comments |
-|--------|----------------------|----------------------|----------------------|
-| 9-10 | Strong | Quality Positive Feedback |  |
-| TBD | Strong | Quality Negative Feedback | Addressed on a case-by-case basis. |
-| 7-8 | Strong | Minimal Positive Feedback |  |
-| 5-6 | Strong | Minimal Negative Feedback |  |
-| 4 | Strong | No Feedback |  |
-| 4-5 | Weak | Quality Positive Feedback |  |
-| 9-10 | Weak | Quality Negative Feedback |  |
-| 4-5 | Weak | Minimal Positive Feedback |  |
-| 6-8 | Weak | Minimal Negative Feedback |  |
-| 3 | Weak | No Feedback |  |
 
-: Meta-Review Rubric
+::: {.list-table width="1,2,3" aligns="c,l,l" header-rows=1 .hover}
 
-Note that if your comment is not properly formatted, as determined
-by `mp_feedback_verify`, a penalty will be applied to your meta-review score. 
+* - Score Range
+  - Quality of Feedback
+  - Comments
+* - 18-20
+  - Highly-Detailed Accurate Feedback
+  - Recognizes and accurately describes strengths while providing detailed and
+    actionable suggestions for improvement on all weaknesses (both major and 
+    minor) in submitted work
+* - 15-17
+  - Middling Accurate Feedback
+  - Comments capture major strengths and weaknesses of submission while 
+    providing actionable suggestions for major weaknesses
+* - 12-14
+  - Middling Inaccurate Feedback
+  - Comments overlook one or more minor weaknesses of submission or fail to 
+    provide accurate suggestions for improvement
+* - 9-11
+  - Minimal Accurate Feedback
+  - Brief comments giving valid, but superficial advice and/or identifying only
+    major weaknesses
+* - 6-8
+  - Minimal Inaccurate Feedback
+  - Brief comments giving poor advice and/or overlooking significant weaknesses
+    in submitted work
+* - 5
+  - None
+  - No comments given, only scores
+* - TBD
+  - Highly-Detailed Inaccurate Feedback
+  - Addressed on a Case-by-Case Basis
+
+:::
+
+A peer feedback meta-review score will be assigned for all comments given and
+then averaged to determine the overall meta-review score. 
+
+Mini-Project Peer Feedback does not receive an automatic two-day grace period, 
+but no penalty will be assessed if work is submitted before assignment closes on 
+Brightspace (generally 9-12 hours after due date) to allow for small technical
+challenges.

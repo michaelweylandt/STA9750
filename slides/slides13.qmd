@@ -1,57 +1,20 @@
 ---
 session: "`r session <- 13; session`"
+last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
 class_date:
-  "`r library(tidyverse); 
-    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
+  "`r library(tidyverse);
+    class_date <- read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
-           Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
+format: revealjs
 ---
 
 {{< include _setup.qmd >}}
 
-
-{{< include _setup.qmd >}}
-
-```{r}
-#| include: false
-#| warning: false
-#| message: false
-library(tidyverse)
-DATES   <- read_csv("key_dates.csv")
-TODAY   <- DATES |> 
-    filter(`Course Element` == "Class Session", 
-           `Item Number` == session)
-
-TODAY_TUESDAY  <- TODAY |> 
-    filter(Section == "Tuesday")  |> 
-    pull(Date)
-TODAY_THURSDAY <- TODAY |> 
-    filter(Section == "Thursday") |> 
-    pull(Date)
-
-TODAY_TOPIC <- TODAY |>
-    slice_head(n=1) |>
-    pull(Details) 
-```
-    
 ## {{< var course.short >}} Week {{< meta session >}} 
 
-::: {.smaller}
-
-Today: 
-
-- Tuesday Section: `r TODAY_TUESDAY`
-- Thursday Section: `r TODAY_THURSDAY`
-
-`r TODAY_TOPIC`
-
-:::
+Today: `r TODAY_TOPIC`
 
 . . . 
 
@@ -92,9 +55,9 @@ Charles Ramirez is our GTA
 
 ## Mini-Project #04
 
-[MP#04](../miniprojects/mini04.html) - `r get_mp_title(4)`
+[MP#04](../mini/mini04.html) - `r get_mp_title(4)`
 
-**Due `r get_mp_deadline(4)`**
+Peer feedback due `r get_mp_pf_deadline(4)`
 
 . . . 
 
@@ -292,43 +255,7 @@ See [Lab #13](../labs/lab13.html#review) for details.
 
 ```{r}
 #| echo: false
-set.seed(9750+session)
-library(yaml)
-library(jsonlite)
-
-TEAMS <- read_yaml("_teaching.yml") |> 
-  pluck("gradedir") |> 
-  file.path("teams.json") |> 
-  read_json(simplify=TRUE) |> 
-  pull(name) |>
-  sample()
-
-TUESDAY_TEAMS  <- TEAMS[str_detect(TEAMS, fixed("(T)"))]
-THURSDAY_TEAMS <- TEAMS[str_detect(TEAMS, fixed("(R)"))]
-
-pad_with_NA <- function(x, length.out){
-
-    if(length(x) < length.out){
-      x <- c(x, rep(NA, length.out - length(x)))
-    }
-
-    x
-
-}
-
-N_ROOMS <- max(length(TUESDAY_TEAMS), length(THURSDAY_TEAMS))
-
-TUESDAY_TEAMS  <- pad_with_NA(TUESDAY_TEAMS, N_ROOMS)
-THURSDAY_TEAMS <- pad_with_NA(THURSDAY_TEAMS, N_ROOMS)
-
-data.frame(t1 = TUESDAY_TEAMS, t2 = THURSDAY_TEAMS) |> 
-  mutate(Teams = case_when(
-  is.na(t1) ~ t2, 
-  is.na(t2) ~ t1, 
-  TRUE ~ paste(t1, t2, sep=" + ")), 
-         Breakout = row_number()) |> 
-  select(Breakout, Teams) |> 
-  knitr::kable(row.names = FALSE)
+BREAKOUT_TABLE
 ```
 
 :::
@@ -1143,8 +1070,8 @@ Upcoming work from [course calendar](../index.qmd#calendar)
 
 ::: {.incremental}
 
-- [Mini-Project #04](../miniprojects/mini04.html) due on `r get_mp_deadline(4)`
-- [Mini-Project #04](../miniprojects/mini04.html) peer feedback due `r get_mp_pf_deadline(4)`
+- [Mini-Project #04](../mini/mini04.html) due on `r get_mp_deadline(4)`
+- [Mini-Project #04](../mini/mini04.html) peer feedback due `r get_mp_pf_deadline(4)`
 - End of Semester Project Submissions
 
 :::

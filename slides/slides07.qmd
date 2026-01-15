@@ -1,58 +1,20 @@
 ---
 session: "`r session <- 7; session`"
+last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
 class_date:
-  "`r library(tidyverse); 
-    tuesday_date <- read_csv('key_dates_tuesday.csv', 
-                             name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
+  "`r library(tidyverse);
+    class_date <- read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    thursday_date <- read_csv('key_dates_thursday.csv', 
-                               name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
-           Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
+format: revealjs
 ---
 
 {{< include _setup.qmd >}}
 
-
-```{r}
-#| include: false
-#| warning: false
-#| message: false
-library(tidyverse)
-DATES   <- read_csv("key_dates.csv")
-TODAY   <- DATES |> 
-    filter(`Course Element` == "Class Session", 
-           `Item Number` == session)
-
-TODAY_TUESDAY  <- TODAY |> 
-    filter(Section == "Tuesday")  |> 
-    pull(Date)
-TODAY_THURSDAY <- TODAY |> 
-    filter(Section == "Thursday") |> 
-    pull(Date)
-
-TODAY_TOPIC <- TODAY |>
-    filter(str_detect(Details, "Lecture")) |>
-    pull(Details)
-
-```
-    
 ## {{< var course.short >}} Week {{< meta session >}} 
 
-::: {.smaller}
-
-Today: 
-
-- Tuesday Section: `r TODAY_TUESDAY`
-- Thursday Section: `r TODAY_THURSDAY`
-
-`r TODAY_TOPIC`
-
-:::
+Today: `r TODAY_TOPIC`
 
 . . . 
 
@@ -141,7 +103,7 @@ Teaching Assistant finally hired -- Charles E. Ramirez!
 
 ## Mini-Project #02
 
-[MP#02](../miniprojects/mini02.html) - `r get_mp_title(2)`
+[MP#02](../mini/mini02.html) - `r get_mp_title(2)`
 
 ::: {.small}
 
@@ -156,7 +118,7 @@ Teaching Assistant finally hired -- Charles E. Ramirez!
 
 ::: {.smaller}
 
-Pay attention to [the rubric](../miniprojects/mini02.html#rubric)
+Pay attention to [the rubric](../mini/mini02.html#rubric)
 
 -   Writing and presentation are about 50% of your grade
 -   Evaluated on *rigor* and *thoughtfulness*
@@ -1811,8 +1773,8 @@ Upcoming work from [course calendar](../index.qmd#calendar)
 
 ::: {.incremental}
 
-- [Pre-Assignment #0`r session+1`](../preassigns/pa07.html) due `r get_pa_deadline(session+1)`
-- [Mini-Project #02](../miniprojects/mini02.html) due on `r get_mp_deadline(2)`
+- [Pre-Assignment #0`r session+1`](../pre/pa07.html) due `r get_pa_deadline(session+1)`
+- [Mini-Project #02](../mini/mini02.html) due on `r get_mp_deadline(2)`
 
 :::
 

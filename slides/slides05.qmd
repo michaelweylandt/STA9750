@@ -1,83 +1,20 @@
 ---
 session: "`r session <- 5; session`"
+last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
 class_date:
-  "`r library(tidyverse); 
-    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
+  "`r library(tidyverse);
+    class_date <- read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
-           Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
-filters:
-    - highlight-text
+    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
+format: revealjs
 ---
 
 {{< include _setup.qmd >}}
 
-```{r}
-#| include: false
-#| warning: false
-#| message: false
-library(tidyverse)
-DATES   <- read_csv("key_dates.csv")
-TODAY   <- DATES |> 
-    filter(`Course Element` == "Class Session", 
-           `Item Number` == session)
-
-TODAY_TUESDAY  <- TODAY |> 
-    filter(Section == "Tuesday")  |> 
-    pull(Date)
-TODAY_THURSDAY <- TODAY |> 
-    filter(Section == "Thursday") |> 
-    pull(Date)
-
-TODAY_TOPIC <- TODAY |>
-    filter(str_detect(Details, "Lecture")) |>
-    pull(Details)
-
-ROSTERS <- DATES |> 
-    filter(Details == "Team Roster Submission") |>
-    pull(Date)
-
-PROPOSALS <- DATES |> 
-    filter(str_detect(Details, "Project Proposal")) |> 
-    pull(Date) |> 
-    strftime("%A %b %d") |> 
-    paste(collapse=" and ")
-
-library(jsonlite)
-library(yaml)
-
-N_TEAMS <- read_yaml("_teaching.yml")$gradedir |>
-    file.path("roster.json") |> 
-    read_json(simplify=TRUE) |> 
-    pull(project_team) |> 
-    max(na.rm=TRUE)
-
-N_ON_TEAM <- read_yaml("_teaching.yml")$gradedir |>
-    file.path("roster.json") |> 
-    read_json(simplify=TRUE) |> 
-    filter(!is.na(project_team)) |> 
-    NROW()
-
-N_NO_TEAM <- read_yaml("_teaching.yml")$gradedir |>
-    file.path("roster.json") |> 
-    read_json(simplify=TRUE) |> 
-    filter(is.na(project_team)) |> 
-    NROW()
-```
-    
 ## {{< var course.short >}} Week {{< meta session >}} 
 
-Today: 
-
-- Tuesday Section: `r TODAY_TUESDAY`
-- Thursday Section: `r TODAY_THURSDAY`
-
-`r TODAY_TOPIC`
+Today: `r TODAY_TOPIC`
 
 # Today
 
@@ -236,7 +173,7 @@ Aims: make sure you've started thinking seriously, not locking you in to answers
 [Lab #05 Review Activity](../labs/lab05.qmd#review)
 
 
-# Review of [PA#05](../preassigns/pa05.qmd)
+# Review of [PA#05](../pre/pa05.qmd)
 
 ## Multi-Table Analysis
 
@@ -890,8 +827,8 @@ Upcoming work from [course calendar](../index.qmd#calendar)
 
 ::: {.incremental}
 
-- [Pre-Assignment #0`r session+2`](../preassigns/pa07.html) due `r get_pa_deadline(session+2)`
-- [Mini-Project #01](../miniprojects/mini01.html) due on `r get_mp_deadline(1)`
+- [Pre-Assignment #0`r session+2`](../pre/pa07.html) due `r get_pa_deadline(session+2)`
+- [Mini-Project #01](../mini/mini01.html) due on `r get_mp_deadline(1)`
 - Project Teams by `r ROSTERS`
 - Project Proposals on `r PROPOSALS`
 

@@ -1,64 +1,23 @@
 ---
 session: "`r session <- 4; session`"
+last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
 class_date:
-  "`r library(tidyverse); 
-    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
+  "`r library(tidyverse);
+    class_date <- read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
-           Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
+format: revealjs
 ---
 
 {{< include _setup.qmd >}}
 
-```{r}
-#| include: false
-#| warning: false
-#| message: false
-library(tidyverse)
-DATES   <- read_csv("key_dates.csv")
-TODAY   <- DATES |> 
-    filter(`Course Element` == "Class Session", 
-           `Item Number` == session)
-
-TODAY_TUESDAY  <- TODAY |> 
-    filter(Section == "Tuesday")  |> 
-    pull(Date)
-TODAY_THURSDAY <- TODAY |> 
-    filter(Section == "Thursday") |> 
-    pull(Date)
-
-TODAY_TOPIC <- TODAY |>
-    filter(str_detect(Details, "Lecture")) |>
-    pull(Details)
-
-ROSTERS <- DATES |> 
-    filter(Details == "Team Roster Submission") |>
-    pull(Date)
-
-PROPOSALS <- DATES |> 
-    filter(str_detect(Details, "Project Proposal")) |> 
-    pull(Date) |> 
-    strftime("%A %b %d") |> 
-    paste(collapse=" and ")
-```
-    
 ## {{< var course.short >}} Week {{< meta session >}} 
 
-Today: 
-
-- Tuesday Section: `r TODAY_TUESDAY`
-- Thursday Section: `r TODAY_THURSDAY`
-
-`r TODAY_TOPIC`
-
+Today: `r TODAY_TOPIC`
 ## Mini-Project #00 
 
-[Mini-Project #00](../miniprojects/mini00.qmd) peer feedback assigned
+[Mini-Project #00](../mini/mini00.qmd) peer feedback assigned
 
 - Due ~~`r get_mp_pf_deadline(0)`~~ **2025-09-24**
 - 4 peer feedbacks per student
@@ -617,7 +576,7 @@ MP#01 due `r get_mp_deadline(1)`:
 > `r get_mp_title(1)` 
 
 
-[Instructions online](../miniprojects/mini01.qmd)
+[Instructions online](../mini/mini01.qmd)
 
 . . . 
 
@@ -654,7 +613,7 @@ Submission:
 
 ## MP#01 Rubric
 
-[Rubric online](../miniprojects/mini01.qmd#rubric)
+[Rubric online](../mini/mini01.qmd#rubric)
 
 - 4 graded sections (out of 10)
 - 1 automatic 10 as long as you copy+paste my code
@@ -902,9 +861,9 @@ Upcoming work from [course calendar](../index.qmd#calendar)
 
 ::: {.incremental}
 
-- [Pre-Assignment #0`r next_session`](../preassigns/pa05.html) due `r get_pa_deadline(next_session)`
-- [Mini-Project #00](../miniprojects/mini00.html) peer feedback
-- [Mini-Project #01](../miniprojects/mini01.html) due on `r get_mp_deadline(1)`
+- [Pre-Assignment #0`r next_session`](../pre/pa05.html) due `r get_pa_deadline(next_session)`
+- [Mini-Project #00](../mini/mini00.html) peer feedback
+- [Mini-Project #01](../mini/mini01.html) due on `r get_mp_deadline(1)`
 
 :::
 

@@ -1,0 +1,130 @@
+---
+mp_num: "03"
+mp_title: "TBD"
+mp_skills: "TBD"
+mp_application: "TBD"
+mp_rhetoric: "TBD"
+mp_max_ec: 4
+filters: 
+ - list-table
+---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+library(dplyr)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, Time)))
+```
+
+```{r}
+#| echo: false
+#| warning: false
+library(glue)
+mp_id <- as.integer(rmarkdown::metadata$mp_num)
+mp_id_s <- glue("MP #0{mp_id}")
+mp <-  DATES |> filter(element == "Mini-Projects", 
+                       item == mp_id)
+mp_file <- list(qmd=glue("`mp0{mp_id}.qmd`"), 
+                html=glue("`mp0{mp_id}.html`"),
+                html_long=glue("`docs/mp0{mp_id}.html`"))
+```
+
+### Due Dates
+
+-   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+-   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
+-   **Peer Feedback:**
+    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
+    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
+
+*Estimated Time to Complete: 13-15 Hours*
+
+*Estimated Time for Peer Feedback: 1 Hour*
+
+
+------------------------------------------------------------------------
+
+## Introduction
+
+Welcome to Mini-Project #{{< meta mp_num >}}! TBD
+
+### Student Responsibilities
+
+
+Recall our basic analytic workflow and table of student responsibilities:
+
+{{< include _responsibilities.qmd >}}
+
+In this project, I am no longer providing code to download and read the 
+necessary data files. The data files I have selected for this mini-project are 
+relatively easy to work with and should not provide a significant challenge, 
+particularly after our in-class discussion of Data Import. 
+
+### Rubric
+
+
+{{< var course.short >}} Mini-Projects are evaluated using *peer grading* with 
+*meta-review* by the course GTAs. The following basic rubric will be used for 
+all mini-projects:
+
+{{< include _rubric.qmd >}}
+
+At this point, you are responsible for the 'Data Preparation' portion of the
+project, but I am still providing a set of basic EDA activities. Accordingly,
+reports completing all tasks described under [Data Integration and
+Exploration](#eda) below should receive an automatic 10/10 for the 
+'Exploratory Data Analysis' rubric element. 
+
+
+Taken together, you are only really responsible for these portions of the
+rubric in this assignment: 
+
+- Written Communication
+- Project Skeleton
+- Tables & Document Presentation
+- Data Visualization
+- Code Quality
+- Data Preparation
+- Analysis and Findings
+
+Reports completing all key steps outlined below essentially start with
+10 free points. 
+
+{{< include _submission.qmd >}}
+
+{{< include _submission.qmd >}}
+
+## Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}
+
+### Data Acquisition
+
+TBD
+
+
+### Data Cleaning and Preparation 
+
+TBD
+
+### Data Integration and Initial Exploration {#eda}
+
+TBD
+
+### Final Deliverable: TBD
+
+TBD
+
+{{< include _aidisclosure.qmd >}}
+
+
+{{< include _echeader.qmd >}}
+
+TBD
+
+{{< include _footer.qmd >}}
+

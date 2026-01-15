@@ -1,0 +1,538 @@
+---
+lab_num: "`r lab <- 6; lab`"
+lab_title: "Thoughts on Plots"
+engine: knitr
+format: live-html
+---
+
+{{< include _gradethis_init.qmd >}}
+
+```{webr}
+#| echo: false
+webr::install(c("tidyverse", "mgcv"), quiet=TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+{{< include _setup.qmd >}}
+
+`r make_slide_link(lab)`
+
+# Review Practice {#review}
+
+
+The [Carbon Dioxide Information and Analysis Center](https://www.esd.ornl.gov/iab/iab2-15.htm) studies the effect of carbon
+dioxide on global and local temperature trends. A key tool in their analysis is
+the temperature "anomaly". An anomaly is the difference between observed
+temperature (in a world with anthropogenic atmospheric CO2) and 'natural'
+temperature (from a world without anthropogenic gases). Note that these anomalies
+require significant analysis to compute and are not "simple observational" data.
+
+Politicians have adopted the tools of temperature anomaly to set national and international emissions targets, *e.g.*, the [2 Degree
+Target](https://en.wikipedia.org/wiki/2_degree_climate_target). 
+Note that 2 degrees is calculated as a _global_ average: in practice, some regions
+will experience a much larger change in temperature, while others may experience
+a smaller change or even a negative change. 
+
+The [`CVXR`](https://www.cvxgrp.org/CVXR/) package includes the `cdiac` dataset, 
+capturing CDIAC's estimated global temperature anomalies from 1850 to 2015. In 
+this question, you will explore these estimated anomalies. Note that you may
+want to install the `CVXR` package before attempting this question on your
+personal computer.[^1] Because CVXR does not work reliably through this online
+interface, I have also posted a copy of this data [on the course website](../cdiac.csv).
+
+```{r}
+#| eval: false
+#| echo: true
+install.packages("CVXR")
+```
+
+```{webr}
+#| warning: false
+#| message: false
+library(tidyverse)
+if(!file.exists("cdiac.csv")){
+    download.file("https://raw.githubusercontent.com/michaelweylandt/STA9750/main/cdiac.csv", 
+                  destfile="cdiac.csv")
+}
+cdiac <- read_csv("cdiac.csv")
+glimpse(cdiac)
+```
+
+As you can see, this data has `r NCOL(CVXR::cdiac)` columns, with 12 monthly
+anomalies and 1 annual average anomaly, for a period covering 
+`r NROW(CVXR::cdiac)` years from `r min(CVXR::cdiac$year)` to 
+`r max(CVXR::cdiac$year)`. Use this data to answer the following questions: 
+
+1. In what year was the highest annual anomaly observed? The lowest?
+
+::: {.callout-tip collapse="true" title="Solution"}
+We can select the row with the highest and lowest values using the `slice_max`
+and `slice_min` functions from the `dplyr` package. If we want to specifically
+get the `year` column after selecting a single row, we can use the `pull` 
+function to _pull out_ that one column into a vector: 
+
+```{webr}
+cdiac |> slice_max(annual) |> pull(year)
+
+cdiac |> slice_min(annual) |> pull(year)
+```
+
+:::
+
+2. For how many months was 2015 the highest anomaly recorded?
+
+   *Hint: It will be helpful to `pivot_longer` this data into a longer format.*
+   *Note that you can use the `:` operator when specifying a set of columns to pivot*
+   
+   ```{r}
+   #| eval: false
+   library(tidyverse)
+   library(CVXR)
+   data(cdiac)
+   cdiac |> 
+     select(-annual) |> 
+     pivot_longer(cols=jan:dec, names_to="month", values_to="anomaly")
+   ```
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+cdiac |> 
+    select(-annual) |> 
+    pivot_longer(cols=jan:dec, names_to="month", values_to="anomaly") |> 
+    group_by(month) |> 
+    slice_max(anomaly) |> 
+    ungroup() |> 
+    summarize(n_2015s = sum(year == 2015))
+```
+   
+:::
+
+3. For how many years did July have the largest anomaly of that year?
+
+   *Hint: You should first pivot the data as in the previous question.*
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+cdiac |> 
+    select(-annual) |> 
+    pivot_longer(cols=jan:dec, names_to="month", values_to="anomaly") |> 
+    group_by(year) |> 
+    slice_max(anomaly) |> 
+    ungroup() |> 
+    summarize(n_july = sum(month == "jul"))
+```
+   
+:::
+
+4. What is the probability that a given July exhibits a greater (more positive)
+   anomaly than the annual average anomaly for that year?
+   
+   *Hint: Remember that probabilities can be estimated by constructing a Boolean
+   (`TRUE`/`FALSE`) vector and taking its mean.*
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+cdiac |> 
+    pivot_longer(cols=jan:dec, names_to="month", values_to="anomaly") |> 
+    filter(month == "jul") |> 
+    mutate(july_greater = anomaly > annual) |>
+    summarize(p_july_greater = mean(july_greater))
+```
+   
+:::
+
+5. Which month has the highest probability of exceeding the annual anomaly in
+   a given year?
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+cdiac |> 
+    pivot_longer(cols=jan:dec, names_to="month", values_to="anomaly") |> 
+    group_by(month) |>
+    mutate(monthly_greater = anomaly > annual) |>
+    summarize(p_greater = mean(monthly_greater)) |>
+    slice_max(p_greater) |>
+    pull(month)
+```
+
+:::
+
+# Plotting with `ggplot2`
+
+This week, we're going to break into project groups and do three `ggplot2` 
+exercises of increasing difficulty. As you work through these with your 
+teammates, be sure to reflect on what plots and what tools you will need to best
+present your mini-project and course project findings. 
+
+## Exercise 1: Basic `ggplot2` {#practice01}
+
+In this exercise, you will create `ggplot2` graphics to analyze the `diamonds`
+data from the `ggplot2` package. This data contains pricing and measurements
+for over 50,000 diamonds sold in the US. (Note that these prices are rather 
+out of date and pre-date the popularity of lab-grown diamonds.) Before beginning
+this exercise, you might want to read about the ["4 C's of
+Diamonds"](https://www.tiffany.com/engagement/the-tiffany-guide-to-diamonds/) 
+commonly used to measure quality.
+
+1. Make a scatter plot of price vs carat. 
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+library(ggplot2)
+ggplot(diamonds, aes(x=carat, y=price)) + geom_point()
+```
+
+:::
+
+2. Use `stat_smooth` to see how the price-carat relationship changes by color. 
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+library(ggplot2)
+ggplot(diamonds, aes(x=carat, y=price)) + 
+    geom_point() + 
+    stat_smooth()
+```
+
+:::
+
+3. Take your scatter plot from the previous question and iterate it to 
+   "publication quality". 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+library(ggplot2)
+ggplot(diamonds, aes(x=carat, y=price)) + 
+    # Make points slightly transparent so plot is less busy
+    geom_point(alpha=0.3) + 
+    xlab("Weight of Round Cut Diamond (Carat)") + 
+    ylab("Price (US Dollars)") + 
+    labs(title="Price as a function of Carat Weight", 
+         caption="Data from the ggplot2 R package.") + 
+    stat_smooth(se=FALSE, 
+                color="red4") +
+    # Format y axis as dollars
+    scale_y_continuous(labels=scales::dollar) + 
+    theme_bw()
+```
+
+If you want to require your trend-line to be monotone increasing, see [this StackOverflow answer](https://stackoverflow.com/a/56559086).
+
+:::
+
+4. Further refine your plot by adding a two-way small-multiples design for
+   color and cut. 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+library(ggplot2)
+ggplot(diamonds, aes(x=carat, y=price)) + 
+    geom_point(alpha=0.3) + 
+    xlab("Weight of Round Cut Diamond (Carat)") + 
+    ylab("Price (US Dollars)") + 
+    labs(title="Price as a function of Carat Weight", 
+         caption="Data from the ggplot2 R package.") + 
+    stat_smooth(se=FALSE, 
+                color="red4") +
+    scale_y_continuous(labels=scales::dollar) + 
+    theme_bw() + 
+    facet_grid(cut ~ color)
+```
+
+:::
+
+5. Create a [frequency polygon](https://ggplot2.tidyverse.org/reference/geom_histogram.html) 
+plot of price, broken out by different diamond cuts.
+
+   *Hint: Before trying this new `geom_`, make sure to read the documentation 
+   and identify required aesthetics.*
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+ggplot(diamonds, 
+       aes(x=price, color=cut)) + 
+    # Increase bin count from default 30 to show more detail
+    geom_freqpoly(bins=100) + 
+    # Log scale to spread-out x-axis
+    scale_x_log10(labels=scales::dollar) + 
+    xlab("Price (USD)") + 
+    theme_bw() + 
+    theme(legend.position="bottom") + 
+    # Sequential palette since colors are ordered from worst to best
+    scale_color_brewer(name="Color", type="seq", palette=2) + 
+    ylab(NULL) # Remove y label since it's not interpretable for histograms
+```
+
+:::
+
+6. Create a scatter plot of color by clarity. Why is this plot not useful? 
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+ggplot(diamonds, aes(x=color, y=clarity)) + geom_point()
+```
+
+This plot is not useful because both the $x$- and $y$-axis are _discrete_
+(categorical) values, resulting in significant overplotting. Alternative
+visualizations should be used when considering data of this type.
+
+:::
+   
+## Exercise 2: Trend Analysis with `ggplot2` {#practice02}
+
+Let's return to the `cdiac` data discussed above. In this set of exercises,
+you will use `geom_line` to create _line plots_ visualizing trends in this 
+data. 
+
+1. Use `geom_line` to plot the estimated annual global mean temperature (GMT)
+   anomaly from 1850 to 2015. 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+ggplot(cdiac, aes(x=year, y=annual)) + 
+    geom_point()
+```
+
+:::
+   
+2. Plot the GMT anomaly for each month on the same plot as different lines. 
+
+   *Hint: You will need to use a `pivot_longer` to get the data into the
+   appropriate shape. `ggplot2` expects one "data point" per row.*
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+cdiac |> 
+    select(-annual) |> 
+    pivot_longer(cols=jan:dec, 
+                 names_to="month", 
+                 values_to="anomaly") |> 
+    ggplot(aes(x=year, 
+               y=anomaly, 
+               color=month)) + 
+    geom_line() + 
+    theme_bw() + 
+    xlab("Year") + 
+    ylab("GMT Anomaly [K]") + 
+    labs(caption="Data from CDIAC via CVXR") + 
+    theme(legend.position="bottom") + 
+    # Specify palette from name (compare to ColorBrewer site)
+    scale_color_brewer(name="Month", type="qual", palette="Paired")
+```
+
+This solution has a problem, however: the months appear in _alphabetical_ order
+rather than their actual order. To address this, we need to transform month
+into an **factor** type with the levels in a specific order. This is a hair 
+beyond the scope of this course, but I'll show you how to do so using the
+`forcats` package (`tidyverse` tools for `factors`) here: 
+
+```{webr}
+library(forcats)
+cdiac |> 
+    select(-annual) |> 
+    pivot_longer(cols=jan:dec, 
+                 names_to="month", 
+                 values_to="anomaly") |> 
+    mutate(month = fct(month)) |> # Easy here since already in correct order
+    # Optional to convert jan => January, etc.
+    mutate(month = fct_relabel(month, 
+                               \(x) month.name[which(tolower(month.abb) == x)])) |>
+    ggplot(aes(x=year, 
+               y=anomaly, 
+               color=month)) + 
+    geom_line() + 
+    theme_bw() + 
+    xlab("Year") + 
+    ylab("GMT Anomaly [K]") + 
+    labs(caption="Data from CDIAC via CVXR") + 
+    theme(legend.position="bottom") + 
+    # Specify palette from name (compare to ColorBrewer site)
+    scale_color_brewer(name="Month", type="qual", palette="Paired")
+```
+
+When dealing with this sort of 'spaghetti' (overlapping lines) plot,
+one of my favorite strategies is to plot some sort of _average_ in bolder line
+and to plot the individual entries that go into that average semi-transparently.
+For instance: 
+
+```{webr}
+cdiac |> 
+    pivot_longer(jan:dec, 
+                 names_to="month", 
+                 values_to="anomaly") |>
+    mutate(month=factor(month, 
+                        ordered=TRUE, 
+                        levels=tolower(month.abb), 
+                        labels=month.name)) |>
+    ggplot(aes(x=year)) + 
+        geom_line(aes(y=anomaly, color=month), alpha=0.2) + 
+        geom_line(aes(y=annual), linewidth=1.5, color="red4") + 
+    theme(legend.position="bottom") + 
+    scale_color_discrete(name="Month") + 
+    xlab("Year") + 
+    ylab("GMT Anomaly (Pre-Industrial Baseline) [K]") + 
+    theme_bw() + 
+    theme(legend.position="bottom") + 
+    guides(color=guide_legend(override.aes=list(alpha=1)))
+```
+
+This lets us see both the overall trend and use the month-to-month variability
+as a proxy for sampling variability. 
+
+:::
+
+3. Plot the monthly GMT anomaly series as one long line (with a point for 
+   each month).
+   
+   *Hint: Use the `ym` function from the `lubridate` package to combine the
+   year and month into a single Date object. Something like
+   `time=lubridate::ym(paste(year, month))` should suffice.*
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+cdiac |> 
+    select(-annual) |> 
+    pivot_longer(cols=jan:dec, 
+                 names_to="month", 
+                 values_to="anomaly") |> 
+    mutate(time = ym(paste(year, month))) |> 
+    ggplot(aes(x=time, 
+               y=anomaly)) + 
+    geom_line() + 
+    theme_bw() + 
+    xlab("Year") + 
+    ylab("GMT Anomaly [K]") + 
+    labs(caption="Data from CDIAC via CVXR")
+```
+
+:::
+
+4. Now let's focus on July: use the `runmed()` function to add a second series
+   to the data frame containing the running median July GMT anomaly over the 
+   previous 5 years. Plot this and the raw July data on the same plot. Is 
+   there evidence of an increasing warming trend? 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+cdiac |> 
+    select(year, jul) |> 
+    mutate(trend = runmed(jul, 5)) |> 
+    pivot_longer(cols=c(jul, trend), 
+                 names_to="series", 
+                 values_to="anomaly") |> 
+    mutate(series = case_when(
+        series == "jul" ~ "Annual July Anomaly", 
+        series == "trend" ~ "Running 5-year Median of July Anomaly"
+    )) |>
+    ggplot(aes(x=year, 
+               y=anomaly, 
+               color=series)) + 
+    geom_point() + 
+    geom_line() + 
+    theme_bw() + 
+    xlab("Year") + 
+    ylab("GMT Anomaly [K]") + 
+    labs(caption="Data from CDIAC via CVXR") + 
+    scale_color_brewer(name=NULL, type="qual", palette=2) + 
+    theme(legend.position="bottom")
+```
+
+Since the overlay of the individual years over the trend is a bit noisy, 
+we can adjust the `alpha` aesthetic (transparency) to make the individual
+years a bit less visible. 
+
+```{webr}
+cdiac |> 
+    select(year, jul) |> 
+    mutate(trend = runmed(jul, 5)) |> 
+    pivot_longer(cols=c(jul, trend), 
+                 names_to="series", 
+                 values_to="anomaly") |> 
+    mutate(
+        alpha = if_else(series == "jul", 0.3, 1), 
+        series = case_when(
+            series == "jul" ~ "Annual July Anomaly", 
+            series == "trend" ~ "Running 5-year Median of July Anomaly"
+    )) |>
+    ggplot(aes(x=year, 
+               y=anomaly, 
+               color=series, 
+               alpha = alpha)) + 
+    geom_point() + 
+    geom_line() + 
+    theme_bw() + 
+    xlab("Year") + 
+    ylab("GMT Anomaly [K]") + 
+    labs(caption="Data from CDIAC via CVXR") + 
+    scale_color_brewer(name=NULL, type="qual", palette=2) + 
+    scale_alpha_identity() + 
+    theme(legend.position="bottom")
+```
+
+:::
+
+5. For each year, identify the warmest month (as measured by GMT anomaly).
+   Create a bar char showing the probability a given month was the 
+   hottest (greatest anomaly) in its year. 
+   
+   *Hint: Make sure your $x$-axis is in reasonable (chronological) order, 
+   not alphabetical. The following code snippet may help:*
+   
+   ```{r}
+   #| eval: false
+   mutate(month = factor(month, 
+                          levels=str_to_lower(month.abb), 
+                          labels=month.name,
+                          ordered=TRUE))
+   ```
+   This takes a column called `month` and marks it as an 
+   `ordered` categorical variable (`factor`), with order given
+   by `str_to_lower(month.abb)` (`month.abb` is a built-in variable
+   in `R`, but it is capitalized, unlike the `cdiac` variables) and
+   names to be printed from `month.name`.
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{webr}
+cdiac |> 
+    select(-annual) |> 
+    pivot_longer(jan:dec, 
+                 names_to="month", 
+                 values_to="anomaly") |> 
+    group_by(year) |> 
+    slice_max(anomaly) |> 
+    ungroup() |> 
+    count(month) |> 
+    mutate(prob_month = n / sum(n), 
+           month = factor(month, 
+                          levels=str_to_lower(month.abb), 
+                          labels=month.name,
+                          ordered=TRUE)) |>
+    ggplot(aes(x=month, y=prob_month)) + 
+    geom_col() + 
+    theme_bw() + 
+    xlab(NULL) + # Don't need to label - obvious
+    ylab("Probability of Hottest Month in Year") + 
+    scale_y_continuous(labels=scales::percent) + 
+    # Tweak formatting for legibility
+    theme(axis.text.x = element_text(angle=90, 
+                                     vjust=0.5, 
+                                     hjust=1,
+                                     size=rel(1.2))) 
+```
+
+:::

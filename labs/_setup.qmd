@@ -1,0 +1,21 @@
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(glue)
+library(rlang)
+library(yaml)
+library(purrr)
+library(jsonlite)
+library(tidyverse)
+
+make_slide_link <- function(N=lab){
+    s <- glue("Lecture #{sprintf('%02d', N)}")
+    class <- read_csv("key_dates.csv") |>
+                filter(`Course Element` == "Class Session",
+                       str_detect(Details, s)) |>
+                pull(`Item Number`)
+    
+    sprintf("# [Slides](../slides/slides%02d.qmd)", class)
+}
+```

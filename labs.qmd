@@ -1,21 +1,83 @@
 ---
-title: "{{< var course.short >}} - In-Class Labs"
+title: "{{< var course.short >}} - Slides, Labs, and In-Class Activities"
 ---
 
 Most weeks, the "lecture" for {{< var course.short >}} will be focused on an
 in-class "lab". These ungraded labs are an opportunity to see how the concepts
 introduced in that week's [pre-assignment](./preassigns.html) are used in practice.
 
-Labs:
+```{r}
+#| echo: false
+#| message: false
+library(tidyverse)
+library(glue)
+library(yaml)
 
-- [Lab #01](./labs/lab01.html): `R`ev your Engines! Setting-Up `R` and `RStudio`
-- [Lab #02](./labs/lab02.html): Getting Down with Markdown
-- [Lab #03](./labs/lab03.html): `R`, These are your first steps...
-- [Lab #04](./labs/lab04.html): Single Table Verbs, Group-Aware Filtering
-- [Lab #05](./labs/lab05.html): Let us `Join` our Tables Together
-- [Lab #07](./labs/lab07.html): More Thoughts on Plots
-- [Lab #08](./labs/lab08.html): Advanced Plotting - Chloropleths and Cartograms
-- [Lab #09](./labs/lab09.html): Data Import in `R`
-- [Lab #11](./labs/lab11.html): Manipulating and Reading HTML in `R`
-- [Lab #12](./labs/lab12.html): Strings and Stringy-Things
-- [Lab #13](./labs/lab13.html): Inference and Prediction in `R`
+get_class_date <- function(N){
+    read_csv("key_dates.csv") |>
+        filter(`Course Element` == "Class Session", 
+               `Item Number` == N) |>
+        pull(Date) |>
+        format("%A %B %d %Y")
+}
+
+get_class_topic <- function(N){
+    read_csv("key_dates.csv") |>
+        filter(`Course Element` == "Class Session", 
+               `Item Number` == N) |>
+        pull(Details)
+}
+
+get_lab_title <- function(N){
+    lab_file <- glue("labs/lab{sprintf('%02d', N)}.qmd")
+    lab_text <- readLines(lab_file, n=50)
+    
+    header_end <- which(grepl("---", lab_text))[2]
+    
+    header_info <- yaml.load(readLines(lab_file, n=header_end))
+    
+    I(header_info$lab_title %||% "TBD")
+}
+
+lab_line <- function(N){
+    if(str_detect(get_class_topic(N), "Lecture")){
+        topic <- get_class_topic(N)
+        N <- str_extract(topic, "Lecture #(\\d+)", group=1) |>
+                as.integer()
+    }
+
+    lab_file <- glue("labs/lab{sprintf('%02d', N)}.qmd")
+    NN <- sprintf('%02d', N)
+    
+    if(file.exists(lab_file)){
+        glue("\n    - [Lab #{NN}](./labs/lab{NN}.qmd): {get_lab_title(N)}", .trim=FALSE)
+    } else {
+        ""
+    }
+        
+}
+
+md_line <- function(N){
+    NN <- sprintf('%02d', N)
+    glue("Class Session #{NN} - {get_class_date(N)}
+    - {get_class_topic(N)} {lab_line(N)}
+    - [Slides #{NN}](./slides/slides{NN}.qmd)", 
+    .trim=FALSE)
+
+}
+```
+
+- `r md_line(1)`
+- `r md_line(2)`
+- `r md_line(3)`
+- `r md_line(4)`
+- `r md_line(5)`
+- `r md_line(6)`
+- `r md_line(7)`
+- `r md_line(8)`
+- `r md_line(9)`
+- `r md_line(10)`
+- `r md_line(11)`
+- `r md_line(12)`
+- `r md_line(13)`
+- `r md_line(14)`

@@ -29,30 +29,10 @@ Each class period will be split between a brief lecture covering concepts in mor
 detail and an extended [_lab activity_](./labs.html) designed to build
 familiarity and fluency with that week's subject matter. 
 
-This semester, I am teaching both the *Tuesday* and *Thursday* sections of
-{{< var course.short >}}. In order to provide maximal flexibility to students, 
-students may attend either section as their schedule permits.[^double] All
-assignments and deadlines are shared between both sections. See below for the 
-schedule relevant to each section. This makes a few of the deadlines a bit
-awkward[^deadline] (when one section has a holiday and the other doesn't) but the
-advantages for student flexibility seem to be worth it.
+::: {#calendar}
 
-[^deadline]: Note that all deadlines are set based on the appropriate due date
-for the *later* section. If your section doesn't have a holiday, you essentially
-get extra time to complete an assignment. While this may occasionally help in
-a pinch, I **strongly** encourage you to start work as soon as you are able. It 
-is often hard to estimate how long work for this course takes and waiting 
-up to the deadline is asking for trouble. 
 
-[^double]: Students who are struggling with the course material may even find
-it useful to attend *both* sections on certain topics. Both sections will
-use the same Zoom link.
-
-::: {.panel-tabset #calendar}
-
-## Tuesday Section
-
-There are quite a few moving parts to this course, so this [key dates file](./key_dates_tuesday.csv)
+There are quite a few moving parts to this course, so this [key dates file](./key_dates.csv)
 or the list of upcoming course activities below may be useful:
 
 ```{r}
@@ -65,55 +45,19 @@ variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA975
 course_repo  <- variables$course$repo
 course_short <- variables$course$short
 
-readr::read_csv("key_dates_tuesday.csv") |> 
-    dplyr::select(-Action, 
-                  -Section) |>
+readr::read_csv("key_dates.csv") |> 
+    dplyr::select(-`Significant Student Time`) |>
     dplyr::arrange(Date) |> 
     DT::datatable(options=list(searching=FALSE,
                                paging=TRUE),
-                  caption=glue("Upcoming Important Dates for {course_short} - Tuesday Section"), 
-                  elementId="tuesday_table",
+                  caption=glue("Upcoming Important Dates for {course_short}"), 
+                  elementId="calendar_table",
                   rownames=FALSE)
 ```
 
 
 A CSV file suitable for import into Google Calendar with all assignment 
-deadlines can be found [here](./key_dates_students_gcal_tuesday.csv).
-
-Instructions for how to do so can be found
-[here](https://support.google.com/calendar/answer/37118?hl=en&co=GENIE.Platform=Desktop).
-If you use another calendar system that cannot accept CSV files in this format, 
-let me know and I will try to provide additional file formats. 
-
-## Thursday Section
-
-There are quite a few moving parts to this course, so this [key dates file](./key_dates_thursday.csv)
-or the list of upcoming course activities below may be useful:
-
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-library(yaml)
-library(glue)
-variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
-course_repo  <- variables$course$repo
-course_short <- variables$course$short
-
-readr::read_csv("key_dates_thursday.csv") |> 
-    dplyr::select(-Action, 
-                  -Section) |>
-    dplyr::arrange(Date) |> 
-    DT::datatable(options=list(searching=FALSE,
-                               paging=TRUE),
-                  caption=glue("Upcoming Important Dates for {course_short} - Thursday Section"), 
-                  elementId="thursday_table",
-                  rownames=FALSE)
-```
-
-
-A CSV file suitable for import into Google Calendar with all assignment 
-deadlines can be found [here](./key_dates_students_gcal_thursday.csv).
+deadlines can be found [here](./key_dates_students_gcal.csv).
 
 Instructions for how to do so can be found
 [here](https://support.google.com/calendar/answer/37118?hl=en&co=GENIE.Platform=Desktop).
@@ -133,7 +77,7 @@ let me know and I will try to provide additional file formats.
 // We use a one time hook (\$.one) as opposed to an everytime hook (\$.on) to 
 // avoid an infinite loop. Since the table is not destroyed, just hidden, when
 // moving from one tab to the other, this seems to be safe. 
-$('#tuesday_table,#thursday_table').each(function(){
+$('#calendar_table').each(function(){
   $(this).one( 'draw.dt', function(){
     var filter_date = new Date();
     filter_date.setDate(filter_date.getDate() - 1);

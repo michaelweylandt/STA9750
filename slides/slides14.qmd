@@ -1,55 +1,20 @@
 ---
 session: "`r session <- 14; session`"
+last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
 class_date:
-  "`r library(tidyverse); 
-    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
+  "`r library(tidyverse);
+    class_date <- read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
-           Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
+format: revealjs
 ---
 
 {{< include _setup.qmd >}}
 
-
-```{r}
-#| include: false
-#| warning: false
-#| message: false
-library(tidyverse)
-DATES   <- read_csv("key_dates.csv")
-TODAY   <- DATES |> 
-    filter(`Course Element` == "Class Session", 
-           `Item Number` == session)
-
-TODAY_TUESDAY  <- TODAY |> 
-    filter(Section == "Tuesday")  |> 
-    pull(Date)
-TODAY_THURSDAY <- TODAY |> 
-    filter(Section == "Thursday") |> 
-    pull(Date)
-
-TODAY_TOPIC <- TODAY |>
-    slice_head(n=1) |>
-    pull(Details) 
-```
-    
 ## {{< var course.short >}} Week {{< meta session >}} 
 
-::: {.smaller}
-
-Today: 
-
-- Tuesday Section: `r TODAY_TUESDAY`
-- Thursday Section: `r TODAY_THURSDAY`
-
-`r TODAY_TOPIC`
-
-:::
+Today: `r TODAY_TOPIC`
 
 . . . 
 
@@ -76,15 +41,9 @@ Today:
 
 # Course Administration
 
-## GTA 
-  
-Charles Ramirez is our GTA
-
-- Wednesday Office Hours moved to 5:15-7:15 for greater access
-
 ## Mini-Project #04
 
-[MP#04](../miniprojects/mini04.html) - `r get_mp_title(4)`
+[MP#04](../mini/mini04.html) - `r get_mp_title(4)`
 
 Peer feedback due `r get_mp_pf_deadline(4)`
 
@@ -93,7 +52,6 @@ Peer feedback due `r get_mp_pf_deadline(4)`
 -   Synchronous
     - MW Office Hours 2x / week: **Tuesdays + Thursdays 5pm**
     - MW Office Hours during finals week (Dec 16 and Dec 18)
-    - GTA Office Hours: **Wednesdays at 5:15-7:15pm**
 -   Asynchronous: Piazza ($<20$ minute *average* response time)
 
 
@@ -365,10 +323,11 @@ Roughly:
 
 # On to the Show!
 
-## Tuesday Presentations {.scrollable}
+## Presentation Order {.scrollable}
 
 ```{r}
 #| echo: false
+#| eval: false
 set.seed(9750 + session)
 library(yaml)
 library(jsonlite)
@@ -394,31 +353,7 @@ data.frame(name = TUESDAY_TEAMS) |>
                  align = "l")
 ```
 
-## Thursday Presentations {.scrollable}
-
-```{r}
-#| echo: false
-data.frame(name = THURSDAY_TEAMS[-c(5, 7)]) |> 
-    # Drop team with no members (5) + conflict exam (7)
-    mutate(name = paste0(row_number(), ". ", name)) |> 
-    knitr::kable(col.names="Presentation Order", 
-                 row.names=FALSE, 
-                 align = "l")
-```
-
-
-## Finals Week Presentations {.scrollable}
-
-```{r}
-#| echo: false
-data.frame(name = FINALS_TEAMS) |> 
-    mutate(name = paste0(row_number(), ". ", name)) |> 
-    knitr::kable(col.names="Presentation Order", 
-                 row.names=FALSE, 
-                 align = "l")
-```
-
-
+TBD
 
 # Wrap Up
 

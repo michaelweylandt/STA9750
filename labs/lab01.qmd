@@ -1,12 +1,11 @@
 ---
-title: "{{< var course.short >}} Week 1 In-Class Activity: `R` and `RStudio`"
-format: 
-  html:
-    code-link: true
+lab_title: "`R`ev your Engines! Setting-Up `R` and `RStudio`"
+lab_num: "`r lab <- 1; lab`"
 ---
 
+{{< include _setup.qmd >}}
 
-# [Slides](../slides/slides01.qmd)
+`r make_slide_link(lab)`
 
 # Welcome!
 
@@ -36,8 +35,23 @@ Students should first install `R` from [https://cloud.r-project.org/](https://cl
 [![Don't fear the 90's web design! Click image for detailed installation instructions.](../images/rproj_home.png)](https://vimeo.com/203516510 "R Installation Tutorial!")
 
 
-As of 2025-08-26, the most recent version of `R` is **4.5.1**. Using the most current
-version of `R` will reduce the likelihood of issues later in the course.
+```{r}
+#| echo: false
+#| message: false
+library(tidyverse)
+library(rvest)
+latest_R <- read_html("https://cran.r-project.org/src/base/R-4/") |>
+    html_elements("a") |> 
+    html_text2() |> 
+    str_extract("R-(.*)\\.tar\\.*", group=1) |> 
+    na.omit() |> 
+    package_version() |> 
+    max()
+```
+
+As of `r Sys.Date()`, the most recent version of `R` is **`r latest_R`**. 
+Using the most current version of `R` will reduce the likelihood of issues 
+later in the course, so please upgrade even if you already have `R` installed.
 
 ### `RStudio`
 
@@ -86,7 +100,7 @@ wrong - but on balance, it should be useful.
 ### `quarto`
 
 We won't use it this week, but you will need to install [Quarto](https://quarto.org/docs/get-started/)
-before starting on [Mini-Project #00](../miniprojects/mini00.html), so if you
+before starting on [Mini-Project #00](../mini/mini00.html), so if you
 have a moment, I'd recommend doing it now.
 
 ## Code Styling
@@ -200,8 +214,9 @@ library(leaflet)
 
 pAGE <- read_html("https://en.wikipedia.org/wiki/Baruch_College")
 pAGE |>
-  html_element(".latitude") |>
-  html_text2() -> BaruchLatitude
+  html_element(".geo") |>
+  html_text2() |>
+  str_split_1(";") -> BaruchLatitude
 baruch_longitude <- pAGE |>
   html_element(".longitude") |>
   html_text2()
@@ -501,7 +516,7 @@ For this semester, you should create a project called `{{< var course.repo >}}`.
 exactly and maintain both the hyphens and the capitalization. 
 All work for this course will live within this
 project. We will discuss the use of projects in more detail in
-[Mini-Project #00](../miniprojects/mini00.html).
+[Mini-Project #00](../mini/mini00.html).
 
 To **stage** a file - prepare to save it - click the empty check box next to the file name. 
 A new file shows a status of "?" - this is `git` saying "I've never seen this file 
@@ -548,7 +563,7 @@ over the next two weeks.
 `GitHub` is an industry-standard code hosting and collaboration platform. In addition
 to hosting copies of code, `GitHub` provides web hosting, bug reporting, code review, 
 continuous integration, documentation wikis, and discussion fora. You will explore
-`GitHub` in more detail starting in [Mini-Project #00](../miniprojects/mini00.html).
+`GitHub` in more detail starting in [Mini-Project #00](../mini/mini00.html).
 
 ## Extra: Welcome to $SHELL
 
@@ -577,7 +592,7 @@ Linux-running virtual machines[^1] as they work through this section.
 ## Looking Ahead
 
 Next week, we will use these tools to begin coding in earnest. If you're feeling
-ambitious, go ahead and get started on [Mini-Project #00](../miniprojects/mini00.html).
+ambitious, go ahead and get started on [Mini-Project #00](../mini/mini00.html).
 
 [^1]: See the [Course Resources](../resources.html) page.
 

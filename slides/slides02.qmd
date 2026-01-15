@@ -1,70 +1,33 @@
 ---
 session: "`r session <- 2; session`"
+last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
 class_date:
-  "`r library(tidyverse); 
-    tuesday_date <- read_csv('key_dates_tuesday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
+  "`r library(tidyverse);
+    class_date <- read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    thursday_date <- read_csv('key_dates_thursday.csv', name_repair='universal') |>
-    filter(Course.Element == 'Class Session', 
-           Item.Number == session) |>
-    pull(Date) |> format('%a %Y-%m-%d'); 
-    paste(c(tuesday_date, thursday_date), collapse=' <br>')`"
+    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
+format: revealjs
 ---
 
-```{r}
-#| include: false
-#| warning: false
-#| message: false
-library(tidyverse)
-DATES   <- read_csv("key_dates.csv")
-TODAY   <- DATES |> 
-    filter(`Course Element` == "Class Session", 
-           `Item Number` == session)
+{{< include _setup.qmd >}}
 
-TODAY_TUESDAY  <- TODAY |> 
-    filter(Section == "Tuesday")  |> 
-    pull(Date)
-TODAY_THURSDAY <- TODAY |> 
-    filter(Section == "Thursday") |> 
-    pull(Date)
-
-TODAY_TOPIC <- TODAY |>
-    filter(str_detect(Details, "Lecture")) |>
-    pull(Details)
-
-PROJ_RELEASE <- DATES |> 
-    filter(str_detect(Details, "Project Description")) |>
-    pull(Date)
-
-ROSTERS <- DATES |> 
-    filter(Details == "Team Roster Submission") |>
-    pull(Date)
-```
-    
 ## {{< var course.short >}} Week {{< meta session >}} 
 
-Today: 
-
-- Tuesday Section: `r TODAY_TUESDAY`
-- Thursday Section: `r TODAY_THURSDAY`
-
-`r TODAY_TOPIC`
-
+Today: `r TODAY_TOPIC`
 
 ## Course Enrollment
 
 ```{r}
 #| include: false
-TOTAL_STUDENTS <- 98
-PIAZZA_ENROLLED <- 63
+TOTAL_STUDENTS <- NA
+PIAZZA_ENROLLED <- NA
 NOW <- Sys.time()
 ```
 
 Final enrollment: `r TOTAL_STUDENTS`(!)
 
-- $\approx 20$ final project teams (4-6 each)
+- $\approx 5$ final project teams (4-6 each)
 - Approx 4 MPs to review per peer-feedback cycle
 
 . . . 
@@ -154,7 +117,7 @@ MP0_DATE <- DATES |>
     pull(Date)
 ```
 
-[Mini-Project #00](../miniprojects/mini00.html)
+[Mini-Project #00](../mini/mini00.html)
 
 - Due in (slightly less than) a week
   - `r MP0_DATE |> strftime("%A, %B %d")`
@@ -295,7 +258,7 @@ In this class, *web sites*:
 
 - Each `qmd` document becomes a single `html` file (page)
 - All files in directory collectively make a web site
-  - GitHub project $\implies$ your website in [MP#00](../miniprojects/mini00.qmd)
+  - GitHub project $\implies$ your website in [MP#00](../mini/mini00.qmd)
 
 . . . 
 
@@ -776,11 +739,11 @@ Upcoming work from [course calendar](../index.qmd#calendar)
 
 ::: {.incremental}
 
-- [Pre-Assignment #03](../preassigns/pa03.html) due
-- [Mini-Project #00](../miniprojects/mini00.html) due
-- [Mini-Project #00](../miniprojects/mini00.html) peer feedback
+- [Pre-Assignment #03](../pre/pa03.html) due
+- [Mini-Project #00](../mini/mini00.html) due
+- [Mini-Project #00](../mini/mini00.html) peer feedback
   assigned
-- [Mini-Project #01](../miniprojects/mini01.html) released
+- [Mini-Project #01](../mini/mini01.html) released
 - [Course Project](../project.html) officially released
 
 :::
