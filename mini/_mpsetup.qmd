@@ -1,0 +1,51 @@
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+library <- function(pkg){
+    options(repos = c(CRAN = "https://cloud.r-project.org"))
+    
+    pkg <- as.character(substitute(pkg))
+        
+    if(!require(pkg, character.only=TRUE, quietly=TRUE)) 
+        install.packages(pkg)
+        
+    stopifnot(require(pkg, character.only=TRUE, quietly=TRUE))
+}
+
+library(tidyverse)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, Time)))
+```
+
+```{r}
+#| echo: false
+#| warning: false
+library(glue)
+library(rmarkdown)
+mp_id <- as.integer(rmarkdown::metadata$mp_num)
+mp <-  DATES |> filter(element == "Mini-Projects", 
+                       item == mp_id)
+mp_file <- list(qmd=glue("`mp{sprintf('%02g', mp_id)}.qmd`"), 
+                html=glue("`mp{sprintf('%02g', mp_id)}.html`"),
+                html_long=glue("`docs/mp{sprintf('%02g', mp_id)}.html`"))
+```
+
+### Due Dates
+
+-   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+-   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
+-   **Peer Feedback:**
+    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
+    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
+    
+*Estimated Time to Complete: 13-15 Hours*
+
+*Estimated Time for Peer Feedback: 1 Hour*
+
+------------------------------------------------------------------------

@@ -1,54 +1,13 @@
 ---
 mp_num: "01"
-mp_title: "TBD"
-mp_skills: "TBD"
-mp_application: "TBD"
-mp_rhetoric: "TBD"
-mp_max_ec: 4
-filters:
-    - list-table
+mp_title: "Assessing the Impact of SFFA on Campus Diversity One-Year Later"
+mp_skills: "Data Summarization, Exploratory Analysis, Table Formatting"
+mp_application: "Official Statistics, Demography"
+mp_rhetoric: "Op-Ed Writing"
+mp_max_ec: 6
 ---
 
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-library(tidyverse)
-DATES <- readr::read_csv("key_dates.csv") |>
-    rename(element=`Course Element`,
-           item=`Item Number`) |>
-    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
-                          TRUE ~ paste(Date, Time)))
-```
-
-```{r}
-#| echo: false
-#| warning: false
-library(glue)
-library(rmarkdown)
-mp_id <- as.integer(rmarkdown::metadata$mp_num)
-mp <-  DATES |> filter(element == "Mini-Projects", 
-                       item == mp_id)
-mp_file <- list(qmd=glue("`mp{sprintf('%02g', mp_id)}.qmd`"), 
-                html=glue("`mp{sprintf('%02g', mp_id)}.html`"),
-                html_long=glue("`docs/mp{sprintf('%02g', mp_id)}.html`"))
-```
-
-### Due Dates
-
--   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
--   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
--   **Peer Feedback:**
-    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
-    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
-    
-*Estimated Time to Complete: 13-15 Hours*
-
-*Estimated Time for Peer Feedback: 1 Hour*
-
-
-------------------------------------------------------------------------
-
+{{< include _mpsetup.qmd >}}
 
 ## Welcome to {{< var course.short >}} Mini Projects!
 
@@ -59,7 +18,34 @@ expected to be far more extensive than any single MP.)
 
 ## Introduction
 
-TBD
+On June 29, 2023, The US Supreme Court handed down its decision in the closely
+watched case of [*Students for Fair Admissions v. 
+Harvard*](https://en.wikipedia.org/wiki/Students_for_Fair_Admissions_v._Harvard)
+("SFFA"). In *SFFA*, the court found that the admissions programs at Harvard
+and at the University of North Carolina violated the Equal Protection Clause
+of the Fourteenth Amendment to the US Constitution and engaged in impermissible
+race-conscious admissions practices. While the court had explicitly disallowed
+race-conscious practices in other contexts, Harvard argued that the admissions
+process served a compelling governmental interest - educational benefits from a 
+diverse student body - that had been recognized by the court as [recently as 
+2016](https://en.wikipedia.org/wiki/Fisher_v._University_of_Texas_(2016)). 
+
+While the *SFFA* case touched on many aspects of law, one important factual
+question was the practical impact of the programs in question: were they 
+essential to maintaining a diverse student body or were they merely a slight
+"thumb on the scale" that had only a minor impact?
+
+Now that the first set of post-*SFFA* admissions data has been released,[^year] 
+you are going to attempt to analyze the extent to which post-*SFFA* admissions 
+differ from pre-*SFFA* practice. You will use admissions data distributed via 
+*IPEDS*, the Integrated Postsecondary Education Data System, managed by the 
+National Center for Education Statistics within the Federal Department of 
+Education. 
+
+After some initial analysis, you will write a brief (750) word 
+[Op-Ed](https://en.wikipedia.org/wiki/Op-ed) from the perspective of a college
+president describing the impact of *SFFA* on the demographics of admitted 
+students at your college and at colleges across the country. 
 
 In this mini-project, you will: 
 
@@ -68,12 +54,16 @@ In this mini-project, you will:
    Communication of Data Analysis Results
 3) Begin your professional data science portfolio. 
 
+[^year]: Following the decision in June 2023, universities were first applying
+post-*SFFA* admissions policies for the undergraduate class entering in Fall 
+2024. Due to reporting lags, these data were released in late 2025 and are 
+currently the latest available. As data from more admissions cycles are
+released in IPEDS, the impact (or not) of *SFFA* will become clearer. 
 
 ### Student Responsibilities
 
 For purposes of MPs, we are dividing the basic data analytic workflow into
 several major stages:
-
 
 {{< include _responsibilities.qmd >}}
 
@@ -117,14 +107,14 @@ Reports completing all key steps outlined below essentially start with
 
 Note that you are evaluated*on writing and communication in these 
 Mini-Projects. You are required to write a report in the prescribed style, 
-culminating in TBD. A submission that performs the instructor-specified 
+culminating in an Op-Ed. A submission that performs the instructor-specified 
 tasks, but does not write and give appropriate context and commentary will 
 score very poorly  on the relevant rubric elements. 
 
-In particular, if a submission does not include TBD and only
-answers the instructor prompts in narrative text, peer evaluators should judge 
-it to have "Good" quality Written Communication (at best) as key findings are 
-not conveyed appropriately. 
+In particular, if a submission does not include a clearly delineated Op-Ed and
+only answers the instructor prompts in narrative text, peer evaluators should
+judge  it to have "Good" quality Written Communication (at best) as key findings
+are  not conveyed appropriately. 
 
 Quarto's [code 
 folding](https://quarto.org/docs/output-formats/html-code.html#folding-code) 
@@ -143,15 +133,153 @@ This is particularly useful if you want to include a figure or table in an
 
 ## Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}
 
-
-
 ### Data Acquisition
 
-TBD
+The following code can be used to acquire data from
+[IPEDS](https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx). Specifically, 
+once run, this code will download the fall enrollment ("EF") and institution
+description ("HD") files for the previous 15 years. To be efficient, this
+function will save a copy of the downloaded data in a folder called
+`data/mp01` and use that copy to avoid re-downloading a file if it is already
+present on your computer. This will make your code faster to run and will avoid
+putting unnecessary stress on the IPEDS servers. 
+
+```{r}
+#| message: false
+#' Acquire IPEDS Data for MP#01
+#' 
+#' This function will acquire and standardize all data for MP#01
+#' from IPEDS (https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx)
+#' 
+#' We're starting in 2010 as the data seems to be reasonably complete 
+#' after that point. 
+acquire_ipeds_data <- function(start_year=2010, end_year=2024){
+    library(tidyverse)
+    library(glue)
+    
+    data_dir <- file.path("data", "mp01")
+    
+    if(!dir.exists(data_dir)){
+        dir.create(data_dir, showWarnings=FALSE, recursive=TRUE)
+    }
+    
+    YEARS <- seq(start_year, end_year)
+    
+    EFA_ALL <- map(YEARS, function(yy){
+        if(yy <= 2022){
+            ef_url <- glue("https://nces.ed.gov/ipeds/datacenter/data/EF{yy}A.zip")
+            
+        } else {
+            ef_url <- glue("https://nces.ed.gov/ipeds/data-generator?year={yy}&tableName=EF{yy}A&HasRV=0&type=csv")
+        }
+        
+        ef_file <- file.path(data_dir, glue("ef{yy}a.csv.zip"))
+        
+        if(!file.exists(ef_file)){
+            message(glue("Downloading Enrollment Data for {yy} from {ef_url}"))
+            download.file(ef_url, destfile = ef_file, quiet=TRUE)    
+        }
+        
+        read_csv(ef_file, 
+                 show_col_types=FALSE) |>
+            mutate(year = yy, 
+                   # American Indian or Alaskan Native
+                   enrollment_m_aian = EFAIANM, 
+                   enrollment_f_aian = EFAIANW, 
+                   # Asian
+                   enrollment_m_asia = EFASIAM, 
+                   enrollment_f_asia = EFASIAW, 
+                   # Black or African-American, 
+                   enrollment_m_bkaa = EFBKAAM, 
+                   enrollment_f_bkaa = EFBKAAW, 
+                   # Hispanic 
+                   enrollment_m_hisp = EFHISPM, 
+                   enrollment_f_hisp = EFHISPW, 
+                   # Native Hawaiian or Other Pacific Islander 
+                   enrollment_m_nhpi = EFNHPIM, 
+                   enrollment_f_nhpi = EFNHPIW, 
+                   # White
+                   enrollment_m_whit = EFWHITM, 
+                   enrollment_f_whit = EFWHITW, 
+                   # Two or More Races
+                   enrollment_m_2mor = EF2MORM, 
+                   enrollment_f_2mor = EF2MORW, 
+                   # Unknown / Undisclosed Race
+                   enrollment_m_unkn = EFUNKNM, 
+                   enrollment_f_unkn = EFUNKNW, 
+                   # US Non-Resident
+                   enrollment_m_nral = EFNRALM, 
+                   enrollment_f_nral = EFNRALW, 
+            ) |> filter(
+                (EFALEVEL %in% c(2, 12)) | (LINE %in% c(1, 15))
+                # Per 2024 Data Dictionary, 
+                # - EFALEVEL 2 = undergrad 
+                # - EFALELVE 12 = grad
+                # - Line 1 = first year first time full-time undergrad
+                # - Line 15 = first year first time part-time undergrad
+            ) |> mutate(level = case_when(
+                       EFALEVEL == 2 ~ "all undergrad", 
+                       EFALEVEL == 12 ~ "all graduate",
+                       LINE %in% c(1, 15) ~ "first year undergrad"
+                   )
+            ) |>
+            select(institution_id = UNITID, 
+                   year, 
+                   level,
+                   starts_with("enrollment_")) |>
+            group_by(institution_id, 
+                     year, 
+                     level) |>
+            summarize(across(starts_with("enrollment_"), sum), 
+                      .groups = "drop")
+        
+    }) |> bind_rows()
+    
+    DESC_ALL <- map(YEARS, function(yy){
+        if(yy <= 2022){
+            hd_url <- glue("https://nces.ed.gov/ipeds/datacenter/data/HD{yy}.zip")
+            
+        } else {
+            hd_url <- glue("https://nces.ed.gov/ipeds/data-generator?year={yy}&tableName=HD{yy}&HasRV=0&type=csv")
+        }
+        
+        hd_file <- file.path(data_dir, glue("hd{yy}.csv.zip"))
+        
+        if(!file.exists(hd_file)){
+            message(glue("Downloading Institutional Descriptions for {yy} from {hd_url}"))
+            download.file(hd_url, destfile = hd_file, quiet=TRUE)    
+        }
+        
+        suppressWarnings(
+            read_csv(hd_file, 
+                 show_col_types=FALSE, 
+                 locale=locale(encoding=if_else(yy==2024, "utf-8", "windows-1252"))) |>
+            mutate(year = yy, 
+                   INSTNM) |> 
+            select(institution_id = UNITID, 
+                   institution_name = INSTNM, 
+                   state = STABBR, 
+                   year)
+        )
+        
+    }) |> bind_rows()
+    
+    inner_join(EFA_ALL, 
+               DESC_ALL, 
+               join_by(institution_id == institution_id, 
+                       year == year))
+}
+
+IPEDS <- acquire_ipeds_data()
+```
+
+This creates a data frame called `IPEDS` that has `r NROW(IPEDS)` rows and
+`r NCOL(IPEDS)` columns in your local environment. This data will be used for
+the remainder of this mini-project. 
 
 ::: {.callout-tip title="Task 1: Data Acquisition"}
 
-Using the code above, acquire the TBD. Copy the code into
+Using the code above, acquire the IPEDS data. Copy the code into
 your Quarto document and make sure it runs successfully. 
 
 :::
@@ -159,8 +287,8 @@ your Quarto document and make sure it runs successfully.
 ::: {.callout-caution title="Do Not `git add` Data Files"}
 
 Make sure that `git` is set to ignore data files, such as the one created above.
-Check the `git` pane in `RStudio` and make sure that TBD
-does not appear. (If you set up your `.gitignore` file correctly in
+Check the `git` pane in `RStudio` and make sure that the files in `data/mp01`
+do not appear. (If you set up your `.gitignore` file correctly in
 [MP#00](./mini00.html), it should already be ignored.) If it is appearing, you
 may need to edit your `.gitignore` file.
 
@@ -170,72 +298,912 @@ into a bad state!
 :::
 
 ### Data Cleaning and Preparation
-TBD 
+
+IPEDS provides *many* different pieces of information, so I have provided you
+a subset of interesting variables. These include: 
+
+- A unique institutional ID code (`institution_id`)
+- The name of the institution (`insitution_name`)
+- The state in which the institution's principal campus is located
+- The year of reporting. Note that, for enrollment data, these are the enrollment
+  as of the *Fall* semester, so, *e.g.*, Year 2010 is for the first semester 
+  of the 2010-2011 academic year. 
+- The "level" of students being considered: 
+  - `"all graduate"` refers to all graduate students on campus (both full-time
+     and part-time)
+  - `"all undergraduate"` refers to all undergraduate students on campus (both
+    full-time and part-time)
+  - `"first year undergrad"` refers to "stereotypical" first year college 
+    students. These are students (either full-time or part-time) who are in 
+    their first year of study during their first undergraduate enrollment (*i.e.*,
+    excluding students who took time off and re-enrolled, students who 
+    transferred from another institution, and students who previously studied at
+    a different institution earning an associates' degree or similar credential)
+- Number of enrolled students in various demographic groups: these 18 variables
+  are formatted as: `enrollment_X_YYYY`, where
+  
+  - `X` is `m` or `f` for male or female students
+  - `YYYY` is a racial/ethnic group identifier:
+    - `aian`: American Indian or Alaskan Native
+    - `asia`: Asian-American
+    - `bkaa`: Black or African-American
+    - `hisp`: Hispanic
+    - `nhpi`: Native Hawaiian or Pacific Islander
+    - `whit`: White
+    - `2mor`: Two or More Races
+    - `unkn`: Unknown / Unreported
+    - `nral`: Not a US Resident before enrollment ("Non-Resident Alien")
+    
+  Note that these are somewhat non-standard identifiers and do not match other
+  official sources. (*E.g.*, the US Census considers Hispanic ancestry a 
+  separate axis so it is possible to have Non-Hispanic White, Hispanic Black, 
+  *etc.*) We use these as given since they are what IPEDS provides. 
+  
+  Together these give *18* enrollment categories that, when summed, give the
+  total enrollment at an institution. 
+  
+Before proceeding, we will create two additional variables for our analyses: 
+
+- `is_cuny`: A Boolean (True/False) variable indicating whether an institution
+  is part of the CUNY system. 
+- `is_calpublic`: A variable indicating whether an institution is a public
+  college or university of the state of California
+  
+::: {.callout-tip title="Task 2: Identify CUNY Schools"}
+
+Create a new column `is_cuny` in your IPEDS data. For our
+purposes, we will assume that CUNY schools all have "CUNY" in
+their institution name. 
+
+The `str_detect` function can be used to test whether a string (like a name)
+contains a substring:[^re] *e.g.*, 
+
+```{r}
+# True because "CUNY" (2nd arg) is in the longer string (1st arg)
+str_detect("CUNY Bernard M. Baruch College", "CUNY")
+
+# False because "Hunter" is nowhere in the first argument
+str_detect("CUNY Bernard M. Baruch College", "Hunter")
+```
+
+As with other functions in `R`, `str_detect` is vectorized, making it easy
+to use inside of other functions. 
+
+```{r}
+names <- c("City College-Miami", "CUNY City College", "CUNY Hunter College")
+str_detect(names, "CUNY")
+```
+
+Use this function, in conjunction with a `mutate` function, to create a new
+column called `is_cuny` inside the IPEDS data. Make sure to assign your mutated
+data frame so that you can use it later. 
+
+Your code should look something like: 
+
+```{r}
+#| eval: false
+IPEDS <- IPEDS |>
+    mutate(is_cuny = ...)
+```
+
+where the `...` is some code using the string `"CUNY"`, the existing column 
+names in `IPEDS` and the `str_detect` function. 
+
+:::
+
+[^re]: `str_detect` can actually be used to perform significantly more complex
+string analysis than simple "does it contain this subset of letters" but we
+won't cover that sort of string processing for a [few more weeks](../pre/pa10.qmd). 
+
+The public colleges and universities of the state of California are an 
+interesting test case. Persuant to 
+[California Proposition 209 (1996)](https://en.wikipedia.org/wiki/1996_California_Proposition_209),
+public institutions of higher education in the state were specifically not
+allowed to implement any sort of Affirmative Action program, so the ending of
+Affirmative Action would theoretically have no impact on their admissions 
+practices. We will investigate this possibility below. For now, we need to 
+create an additional variable which identifies the California public 
+institutions in our data set. 
+
+Unlike the CUNY system, which combines community colleges, senior (four-year)
+colleges, and specialized graduate institutions into a single system, California
+has *three* separate public systems: 
+
+- the [*Univeristy of California* System](https://en.wikipedia.org/wiki/University_of_California)
+- the [*California State* System](https://en.wikipedia.org/wiki/California_State_University) and
+- the [*California Community Colleges*](https://en.wikipedia.org/wiki/California_Community_Colleges) system. 
+
+Because of this, we will need to do a bit more work to create our `is_calpublic`
+variable. Because the Community Colleges are open-enrollment, we can ignore them
+from our analysis and focus exclusively on the UC system and the Cal State 
+system. 
+
+::: {.callout-tip title="Task 3: Identify UC and Cal State Schools"}
+
+Add a new variable `is_calpublic` to the `IPEDS` data that is `TRUE` for 
+institutions that are part of the University of California System or the 
+California State system. 
+
+To do this, you will need to use `str_detect` (see the previous task) and one
+of the Boolean logical operators (`!`, `&`, `|`). 
+
+Once you have created your variable, use a combination of `dplyr` functions to
+get a list of the institutions identified by your new variable. You may wish to
+compare this against the Wikipedia articles linked above to ensure your results
+are accurate. 
+
+*Note:* If you know what a *regular expression* is, you know that you can use
+only a single `str_detect` call here and avoid the use of a Boolean operator. 
+Do **not** do this - you must use some Boolean logic to get full credit for this
+task. If you do not know what a regular expression is, you can disregard this
+note. 
+
+:::
 
 ### Initial Data Exploration {#eda}
-
-
 
 Before moving to our final analysis, we will do a bit of 
 _Exploratory Data Analysis_ (EDA). EDA serves many purposes in data science-- 
 quality control, hypothesis generation, outlier identification, *etc.*--but 
 perhaps the most important is simply knowing what information can be found in a 
-novel data set. Now that our data is imported and cleaned, it's time to start 
-our EDA. 
+novel data set. Now that our data is imported and cleaned, it's almost 
+time to start our EDA. Before we do EDA, however, we should pause briefly to
+consider how we want to display data. 
 
-When faced with a new data set, it is tempting to look only at the first few
-rows to get a sense of the data: `R` does this by default. In practice, I 
-recommend viewing a _random_ selection of rows instead. This won't guarantee you
-find any issues, but it increases the probability of finding issues in 
-older parts of a data set. 
+#### Displaying Data in Tables
 
 While we could continue investigating our data using `R`'s basic print-outs, 
 this is a good time to introduce the [`gt` package](https://gt.rstudio.com/) 
 which can be used to create complex tables natively in `R`.
 
-You can use the `gt` package as follows: 
+What follows here is a very brief introduction to the `gt` package. You 
+do not need to copy this into your submission - it is provided only as background. 
+You will use the `gt` package to format your answers to the next few tasks. 
 
-TBD
+For this introduction, I am going to use the `penguins` data, but the same
+functions can be applied to the IPEDS data that you are analyzing. 
 
-We are now ready to begin some EDA.
+Let's first look at what a "basic" or "raw" display of a data frame gives us: 
 
-::: {.callout-tip title="Task 4: Exploratory Questions"}
+```{r}
+penguins
+```
 
-Using `dplyr` tools, answer the following questions. If your answer requires
-several rows, display your result as an table following the example
-above (make sure to make it 'publication quality'). If your answer is a single
-name or value, use Quarto's 
-[inline code](https://quarto.org/docs/computations/inline-code.html)
+This has *several* problems: 
+
+1. We are showing *way* too much data. A reader will not be able to easily find
+   meaningful trends or patterns in a big data set like this. 
+   
+   As a general rule, you should rarely have more than 10-15 rows in a table;
+   even then, you will still want to guide your reader to the point of the table.
+2. The column names are rather ugly. Some, like `species` are not too bad, though
+   it would still be better if they were capitalized. Others, like `bill_len`
+   are pretty terrible: `bill_len` is not an English word, the underscore
+   exists only to separate two words "in code" (recall `R`'s restrictions on 
+   variable names), and the unit isn't clear. In this case, a column name like
+   `Bill Length (mm)` would be far preferable. 
+   
+3. The row numbers are essentially pointless and just take up space, adding no
+   value. Any content that is not adding value is simply distracting the reader
+   from the content that has value. 
+4. The "point" of the table is unclear. What is a reader supposed to get from
+   this? As a data analyst - doing work on behalf of a reader who may not be a
+   data analyst - you have a responsibility to clearly convey the "story" of
+   your findings and this does not do so. 
+   
+   I may want to use this data to show that Gentoo penguins are, on average, 
+   heavier than the other two species in this data set, but this is far from 
+   clear. 
+5. It's just a bit ugly. 
+
+Good table design requires us to take on the mindset of the reader. Tools like
+`gt` can help pretty things up, but you still have to think about *what* you 
+want to display. Well-formatted garbage is still garbage. 
+
+To start improving this table, let's do the calculations for our reader instead
+of expecting them to do it all manually: 
+
+```{r}
+library(tidyverse)
+penguins |> 
+    group_by(species) |> 
+    summarize(n_species = n(), 
+              avg_body_mass = mean(body_mass, na.rm=TRUE)) |>
+    arrange(desc(avg_body_mass))
+```
+
+We're definitely not done - but here the "point" of the table is clear, at least
+if we also put some text surround it. 
+
+To improve this further, we can also pass this smaller summary data frame to
+the `gt` function from the package of the same name: 
+
+```{r}
+#| warning: false
+library(gt)
+penguins |> 
+    group_by(species) |> 
+    summarize(n_species = n(), 
+              avg_body_mass = mean(body_mass, na.rm=TRUE)) |>
+    arrange(desc(avg_body_mass)) |>
+    gt()
+```
+
+Note here that `gt` recognizes we are rendering an HTML page and produces a 
+"real" HTML table here. If you were to copy and paste the table above into 
+"table" software, *e.g.* Google Sheets or Microsoft Excel, it would be properly 
+and automatically handled. For us, the table is the end-point, but it's a nice 
+courtesy to your reader who may want to use your results in their own 
+presentations. 
+
+The `gt` package provides *many* functions for tweaking and improving the 
+appearance of a table. You will almost always want to, at a minimum, use these 
+for: 
+
+- Ordering and (re-)naming columns
+- Adding titles and footers
+- Formatting values
+
+Let's to through these one at a time. Firstly, we want to rename and reorder
+the columns. This can be done in pure `dplyr` with the `select` and `rename`
+columns, but we'll show the `gt` way here: 
+
+```{r}
+library(gt)
+penguins |> 
+    group_by(species) |> 
+    summarize(n_species = n(), 
+              avg_body_mass = mean(body_mass, na.rm=TRUE)) |>
+    arrange(desc(avg_body_mass)) |>
+    gt() |>
+    cols_move_to_end(n_species) |>
+    cols_label(species="Species", 
+               avg_body_mass = "Avg. Body Mass (g)", 
+               n_species = "Number of Penguins in Sample") 
+```
+
+Here, we used the `cols_move_to_end` function to move the `n_species` column
+to the end (no surprise!). In other contexts, we might want to use the 
+`cols_move_to_start` function to move a column to the leftmost side of a table
+or `cols_move` to put a column in the middle of the table. 
+
+The `cols_label` function essentially serves as a renaming operation: the 
+left side of each parentheses is the old column name in the table and the right 
+side gives the new name. (Note, a bit confusingly, that this is the *reverse*
+of `dplyr::rename`.) While we can just pass a basic string here, we can also
+use the `md` function to pass _Markdown_ which lets us do some custom formatting: 
+
+```{r}
+penguins |> 
+    group_by(species) |> 
+    summarize(n_species = n(), 
+              avg_body_mass = mean(body_mass, na.rm=TRUE)) |>
+    arrange(desc(avg_body_mass)) |>
+    gt() |>
+    cols_move_to_end(n_species) |>
+    cols_label(species=md("**Species**"), 
+               avg_body_mass = md("Avg. Body Mass (*g*)"), 
+               n_species = md("*Number of Penguins in Sample*"))
+```
+
+Here, we could use **boldface** and *italics* for certain text using standard
+Markdown syntax. 
+
+Next, we can add a table title and subtitle to make the content and point
+of this table clear to our reader: 
+
+```{r}
+penguins |> 
+    group_by(species) |> 
+    summarize(n_species = n(), 
+              avg_body_mass = mean(body_mass, na.rm=TRUE)) |>
+    arrange(desc(avg_body_mass)) |>
+    gt() |>
+    cols_move_to_end(n_species) |>
+    cols_label(species=md("**Species**"), 
+               avg_body_mass = md("Avg. Body Mass (*g*)"), 
+               n_species = md("*Number of Penguins in Sample*")) |>
+    tab_header(title="Average Body Mass of Three Penguin Species", 
+               subtitle="Gentoo penguins are the largest in the study")
+```
+
+While we can and should describe our analysis in more detail in the main text,
+I like this pattern of having the super-simple one-liner present directly in
+the table. This also makes it convenient to clip the table (or a screenshot
+thereof) for use in other documents and presentations. 
+
+Next, we should always note the source of the data used to get our results. 
+In this case, the original penguins data comes from 
+[this article](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0090081) 
+so we can cite that in our work Note the use of Markdown (`md()`) to let us include 
+a link to the original source within our table: 
+
+```{r}
+penguins |> 
+    group_by(species) |> 
+    summarize(n_species = n(), 
+              avg_body_mass = mean(body_mass, na.rm=TRUE)) |>
+    arrange(desc(avg_body_mass)) |>
+    gt() |>
+    cols_move_to_end(n_species) |>
+    cols_label(species=md("**Species**"), 
+               avg_body_mass = md("Avg. Body Mass (*g*)"), 
+               n_species = md("*Number of Penguins in Sample*")) |>
+    tab_header(title="Average Body Mass of Three Penguin Species", 
+               subtitle="Gentoo penguins are the largest in the study") |>
+    tab_source_note(md("Data originally published in by K.B. Gorman, T.D. Williams, 
+                       and W. R. Fraser in 'Ecological Sexual Dimorphism and 
+                       Environmental Variability within a Community of Antarctic 
+                       Penguins (Genus *Pyogscelis*). *PLoS One* 9(3): e90081.
+                       <https://doi.org/10.1371/journal.pone.0090081>. Later 
+                       popularized via the `R` package
+                       [`palmerpenguins`](https://allisonhorst.github.io/palmerpenguins/)"))
+```
+
+A small, but lovely, quality of life feature here is the fact that `md` will
+automatically re-align the text to the fit the dimensions of the rendered
+table. This lets us put new lines within our citation text so that our code 
+doesn't exceed the 80 characters-per-line guideline. 
+
+Finally, we want to make sure the number values are formatted appropriately. 
+For these numbers, plain formatting really isn't much of a problem, but for
+very large or small numbers, we might want to use scientific notation; for dates,
+we might want to control the formatting; *etc.*. This is done with the `fmt_*`
+family of functions. 
+
+Each `fmt_` function takes one or more column names and applies a formatting
+transformation to that column. The specifics of the formatting can be controlled
+with additional optional arguments. For example, if we want to round the average
+weight to the nearest gram, we would use the `fmt_number` function with the
+argument `deicmals=0`:
+
+```{r}
+penguins |> 
+    group_by(species) |> 
+    summarize(n_species = n(), 
+              avg_body_mass = mean(body_mass, na.rm=TRUE)) |>
+    arrange(desc(avg_body_mass)) |>
+    gt() |>
+    cols_move_to_end(n_species) |>
+    cols_label(species=md("**Species**"), 
+               avg_body_mass = md("Avg. Body Mass (*g*)"), 
+               n_species = md("*Number of Penguins in Sample*")) |>
+    tab_header(title="Average Body Mass of Three Penguin Species", 
+               subtitle="Gentoo penguins are the largest in the study") |>
+    tab_source_note(md("Data originally published in by K.B. Gorman, T.D. Williams, 
+                       and W. R. Fraser in 'Ecological Sexual Dimorphism and 
+                       Environmental Variability within a Community of Antarctic 
+                       Penguins (Genus *Pyogscelis*). *PLoS One* 9(3): e90081.
+                       <https://doi.org/10.1371/journal.pone.0090081>. Later 
+                       popularized via the `R` package
+                       [`palmerpenguins`](https://allisonhorst.github.io/palmerpenguins/)")) |>
+    fmt_number(avg_body_mass, decimals=0)
+```
+
+In this case, it may be more appropriate to display the body mass in *kilograms*
+and we can do so semi-automatically with the `format_number_si` formatter: 
+
+```{r}
+penguins |> 
+    group_by(species) |> 
+    summarize(n_species = n(), 
+              avg_body_mass = mean(body_mass, na.rm=TRUE)) |>
+    arrange(desc(avg_body_mass)) |>
+    gt() |>
+    cols_move_to_end(n_species) |>
+    cols_label(species=md("**Species**"), 
+               avg_body_mass = md("Avg. Body Mass "), 
+               n_species = md("*Number of Penguins in Sample*")) |>
+    tab_header(title="Average Body Mass of Three Penguin Species", 
+               subtitle="Gentoo penguins are the largest in the study") |>
+    tab_source_note(md("Data originally published in by K.B. Gorman, T.D. Williams, 
+                       and W. R. Fraser in 'Ecological Sexual Dimorphism and 
+                       Environmental Variability within a Community of Antarctic 
+                       Penguins (Genus *Pyogscelis*). *PLoS One* 9(3): e90081.
+                       <https://doi.org/10.1371/journal.pone.0090081>. Later 
+                       popularized via the `R` package
+                       [`palmerpenguins`](https://allisonhorst.github.io/palmerpenguins/)")) |>
+    fmt_number_si(avg_body_mass, 
+                  decimals=2, 
+                  unit = "g")
+```
+
+Note that, because `fmt_number_si` automatically includes the unit and transforms
+it to the most natural scale (here `kg`), we can remove the unit from the column
+name. `gt` has many more advanced options that can be used for further 
+customization; refer to the package documentation for more details or ask on the
+course discussion board.
+
+#### Exploratory Analysis
+
+When faced with a new data set, it is tempting to look only at the first few
+rows to get a sense of the data: `R` does this by default. In practice, I 
+recommend viewing a _random_ selection of rows instead. This won't guarantee you
+find any issues, but it increases the probability of finding issues in 
+older parts of a data set. The `slice_sample` function can be used for this. 
+
+While EDA can be an extensive activity on its own, at an *absolute minimum*,
+I recommend you always do at least two basic checks: 
+
+- Ensure that you know what `R` *thinks* your data is. You might see a value like
+  `"2025-12-01"` and think that `R` is reading it as a date value, but `R`
+  might instead by interpreting it as a string value.[^excel] You have several
+  options for this in `R`, but when working with a data frame, I'd recommend the
+  `glimpse` function: *e.g.*
+  
+  ```{r}
+  glimpse(penguins)
+  ```
+  
+  After getting the basic dimensions of this data frame, `glimpse()` will print
+  a line summary of each column giving its name, type, and the first few values
+  in the table. 
+  
+  In this case, since I prepared the data for you, all columns are of the 
+  correct type (mostly numeric, with a few character columns for institution name
+  and state name, and the two Boolean columns you created earlier), but this is
+  a quick and easy check. If there are issues with your data types, it's better
+  to catch them early than to have silent and hard to identify errors further
+  down the line. ("Fail fast" is *great* advice in any programming exercise.)
+  
+- Take a quick look at some basic (univariate) summary statistics for each
+  column. There are several functions for this in base `R`: *e.g.*, 
+  
+  ```{r}
+  summary(penguins)
+  ```
+  
+  But I actually like the `skim` function from the `skimr` package: 
+  
+  ```{r}
+  #| warning: false
+  library(skimr)
+  skim(penguins)
+  ```
+  
+  You'll see that this gives some nice overview about data structure and types,
+  identifies grouping structure (if any is present), and gives summaries
+  appropriate to the type of each column (here `factors`, *i.e.*, categorical 
+  variables and `numeric`). I like that this summary gives means, standard 
+  deviations, minima (`p0`), maxima (`p100`), medians (`p50`), and a cute little
+  histogram of each variable. 
+  
+  Note that this type of summary only reveals *univariate* structure: if there
+  are interesting multi-dimensional outliers or weird correlation patterns, they
+  won't appear here. 
+  
+[^excel]: In one famous (and slightly tragic) example, Microsoft Excel silently
+misinterpreted the names of various genes as numeric values and changed them
+from (what it thought was) scientific notation to (what it thought was) standard
+numeric formatting. This wound up ruining several important scientific studies. 
+Always check your data types! The original study identifying this problem can be
+found [here](https://link.springer.com/article/10.1186/s13059-016-1044-7) and
+a popular news summary is 
+[here](https://qz.com/768334/years-of-genomics-research-is-riddled-with-errors-thanks-to-a-bunch-of-botched-excel-spreadsheets). 
+
+::: {.callout-tip title="Task 4: Initial EDA Pass"}
+
+Perform the two checks described above on the IPEDS data you 
+loaded and processed above. Include the code to perform the checks, 
+the output of the checks, and describe what you see. 
+
+In general, you shouldn't include this in analysis reports, but we're making
+an exception here to practice a good habit. I won't ask you to include this
+analysis in future mini-projects or your course project reports, but these
+checks are easy and very valuable, so I recommend you make them part of all
+analyses. 
+
+:::
+
+We are now ready to begin some EDA. Analysts organize their EDA in a variety of
+ways, but one of my favorites is to think of a variety of interesting questions
+and to answer them. When the answers don't match my intuition, I know I've found
+somewhere I want to dig deeper. For the first few mini-projects, I will provide
+these exploratory questions. Later in the course, particularly after we have
+discussed the role of plotting and graphics in EDA, you will have opportunities
+to organize your EDA in other fashions. 
+
+::: {.callout-tip title="Task 5: Exploratory Questions - Inline Values"}
+
+Using `dplyr` tools, answer the following questions:
+
+1. How many distinct institutions appear in this data set? 
+2. How many graduate students were enrolled at Baruch in 2024? 
+
+   *Hint:* Use the `str_detect` function discussed above inside a `filter`
+   command to identify Baruch. 
+3. How many _total_ students were enrolled at Baruch in 2024? 
+
+   *Hint:* Make sure to avoid double-counting first-year undergraduates. 
+4. Which institution had the highest number of enrolled female students in 2019?
+
+   Report at least both the institution and the total number of female students. 
+5. Which institution with over 1000 total students *admitted* the highest 
+   *proportion* of Native Hawaiian or Pacific Islander (`nhpi`) *first-year*
+   undergraduates in 2024? 
+   
+   Report at least both the institution and the fraction of relevant students. 
+
+As you go through these questions, you may find it useful to create new 
+variables in the `IPEDS` data to avoid repeated lengthy calculations, *e.g.*,
+a new variable for the total number of enrolled students. 
+
+Each of these questions can be answered with one or two scalar values. Use 
+Quarto's [inline code](https://quarto.org/docs/computations/inline-code.html)
 functionality to place the values in a sentence; that is, you should answer in
 complete sentences, written as normal text with inline code for computed values.
 
-Note that, depending on the question, you may need to use different data frames.
-You will not need to 'combine' data sets to answer any of these questions. 
+Where appropriate, the `scales` package can be used to format numbers 
+attractively: *e.g.*, 
 
-1. TBD
-2. TBD
-3. TBD
-4. TBD
-5. TBD
-6. TBD
-7. TBD
-8. TBD
-9. TBD
-10. TBD
+```{r}
+#| message: false
+library(scales)
+comma(12345.6789)
+comma(12345.6789, accuracy=0.01)
+dollar(12345.6789)
+percent(0.1234)
+percent(0.1234, accuracy=0.01)
+```
+
+:::
+
+The next set of questions have slightly more complex answers and should be
+answered with a table, formatted using the techniques described above. Longer
+term, you will prefer plots to tables as they are a bit easier to interpret
+(humans being visual creatures) but these are the types of questions you might
+use to create plots as well. 
+
+::: {.callout-tip title="Task 6: Exploratory Questions - Table Answers"}
+
+Using `dplyr` tools, answer the following questions:
+
+1. Which 5 states had the highest number of graduate students across all 
+   institutions located in that state? 
+
+2. In 2024, how many first year undergraduate students were enrolled at CUNY 
+   colleges and which colleges did they attend? Report both absolute enrollment 
+   numbers and percent of total first-year undergraduates? 
+   
+   *Hint*: The `fmt_percent` and `fmt_number` functions will be useful here.
+3. How has Baruch's total undergraduate enrollment changed over the study 
+   period? Report both enrollment numbers and percent change year-over-year. 
+   
+   *Hint*: The `lag` function will be helpful here. 
+4. At what 5 institutions did the *fraction of white students* decrease the most
+   over the period from 2010 to 2020? 
+   
+   *Hint*: You may want to pre-filter by total enrollment to make sure you are
+   not only reporting very small institutions in your analysis, as these are
+   more prone to large fluctuations.
+5. In which 3 states did the *fraction of female undergraduates* increase the
+   most over the period from 2010 to 2024?
+   
+Each of these questions can be answered with a table of just a few rows. Use the
+`gt` package, as introduced above, to present your results in an attractive
+'publication-quality' format, not just a "raw" `R` output.
 
 :::
 
 
-### Final Deliverable: TBD
+### Final Deliverable: College Newpaper Op-Ed
 
-TBD
+At this point, you have acquired your data, cleaned and prepared it, and
+performed your EDA. Now, you are ready to get to work on the final deliverable
+of your analysis. Everything that comes before this is important, but typically
+less visible to your final customer. 
+
+
+::: {.callout-tip title="Task 7: Op-Ed"}
+
+Write a brief (no more than 750 words) Op-Ed from the perspective of a college 
+president to be published in the campus newspaper. You can be the president of 
+any institution you want, so long as it has a meaningful undergraduate population, 
+(*i.e.*, not stand-alone graduate schools like the CUNY School of Law), so
+have some fun with choosing your persona. 
+
+Your Op-Ed should include (at a minimum) the following information: 
+
+- The definition of diversity you are using
+- Some brief statistics about the size and make-up of the student body at your
+  institution
+- A year-over-year comparison of the entering first-year first-time 
+  undergraduate class. 
+- A year-over-year comparison of the demographics of the entire student body
+- A discussion of long-term diversity trends at your institution
+- A comparison of changes at your institution to one-or-more of the California
+  public institutions. 
+  
+  (Think of these as a 'critical value' in a statistical
+  test for a change: if your change is smaller than a California change, when
+  the California schools shouldn't have had to change their policy at all, your
+  change is likely just noise.)
+
+:::
+
+You may include optionally additional tables or even visualizations if you want, 
+but these do not replace the requirement to write an Op-Ed. Your Op-Ed should 
+stand  "alone" and not be mixed in with your code. Place the code necessary to
+perform the op-ed calculations in a separate section and use inline code chunks
+to include results of your analysis in the text of your op-ed. Op-Eds that 
+hard-code calculated values will be penalized. 
+
+For purposes of this exercise, you can measure "diversity" as the fraction of
+non-White/non-Asian-American students in your undergraduate class. If you want
+to use a more sophisticated metric, see the first extra credit opportunity below.
+It is up to you whether you want to consider gender diversity or not in your
+analysis: if you don't want to consider gender diversity, simply sum 
+corresponding `m` and `f` columns within each racial group.
 
 {{< include _aidisclosure.qmd >}}
 
 
 {{< include _echeader.qmd >}}
 
-TBD
+### Entropy Analysis (Up to 2 Points)
+
+Diversity of a population is a difficult quantity to measure. While simple 
+statistics ("percent female" or "percent underrepresented minority") are often
+used, they suffer from various challenges in an increasingly diverse world.
+(For example, NYC does not have a racial majority, so what does it mean to be
+an underrepresented minority in the context of city politics?) History and 
+social context can guide the choice of diversity metric, but for this extra 
+credit opportunity, you can use a *statistical* measure of diversity known as
+[entropy](https://en.wikipedia.org/wiki/Entropy_(information_theory)). 
+
+Op-Eds that use the concept of entropy may be awarded up to two points of
+extra credit. Specifically, entropy must be used to answer all of the questions
+specified in Task 7 above. 
+
+Entropy of a distribution measures how hard it is to predict. Consider two 
+scenarios: 
+
+i) An urn filled with 99% red balls and 1% green balls; 
+ii) An urn filled with an equal mix of red and green balls. 
+
+If you are asked repeatedly to guess the color of the next ball drawn from an urn,
+knowing only the baseline mixture, your predictions for the first urn will be 
+correct 99% of the time (assuming you use the obvious "always guess red" strategy),
+while no strategy can be correct more than 50% of the time for the second urn. 
+
+Entropy formalizes this concept as follows: given a (discrete) random variable 
+$X$ taking values in a set $\mathcal{X}$, each with probability $p(\cdot)$. The
+entropy of $X$ is given by: 
+
+$$H(X) = -\sum_{x \in \mathcal{X}: p(x) > 0} p(x) \log p(x)$$
+
+The sum is taken over all outcomes $x$ with non-zero probability. For our two
+urns above: 
+
+$$\begin{align*}
+H(\text{Urn 1}) = -\left(0.99 * \log(0.99) + 0.01 * \log(0.01)\right) = 0.056 \\
+H(\text{Urn 2}) = -\left(0.50 * \log(0.50) + 0.50 * \log(0.50)\right) = 0.693 \\
+\end{align*}$$
+
+This tells us that Urn 2 is quite a bit more random than Urn 1.[^units] Entropy
+is particularly helpful in our context as it applies naturally to *categorial*
+quantities like race where numerical measures of randomness like variance don't
+naturally fit. 
+
+This definition can be extended straightforwardly to multi-category quantities. 
+Consider these demographics of Bronx and Queens counties in the 2020 census: 
+
+```{r}
+#| echo: false
+demos <- tribble(
+    ~County, ~`Asian`, ~`Black`, ~`Hispanic`, ~`White`, ~`Other`,
+    "Bronx",   0.0460,   0.2848,      0.5476,   0.0888,  0.0336,
+    "Queens",  0.2730,   0.1585,      0.2276,   0.2284,  0.0625
+) 
+
+demos |> 
+    gt() |> 
+    cols_label(County = "County / Borough", 
+               Other  = "All Other") |>
+    tab_source_note(md("Percentages from relevant 
+                       [Queens](https://en.wikipedia.org/wiki/Demographics_of_Queens#Race_and_ethnicity) 
+                       and 
+                       [Bronx](https://en.wikipedia.org/wiki/Demographics_of_the_Bronx#Race_and_ethnicity) 
+                       Wikipedia articles")) |>
+    tab_footnote(md("Asian, Black, and White percentages correspond to census 
+                 estimates of Asian (only, non-hispanic), *etc.* Hispanic 
+                 percentage corresponds to census estimates of Hispanic (any 
+                 race), and All Other was calculated to values would sum to 
+                 100%.")) |>
+    tab_header("Demographics of Two NYC Boroughs", 
+               "Data from 2020 Census") |>
+    fmt_percent(-County)
+```
+If you repeat the entropy calculation here (with five terms in the sum), you 
+find that the Bronx has an entropy of approximately 1.16 while Queens has an 
+entropy of 1.49, indicating a more diverse population, even though the Bronx has
+a higher proportion of Black and Hispanic residents.  
+
+*Hint*: When computing entropy, it is useful to take $0 * \log(0) = 0$ so that
+impossible outcomes are automatically discarded. As such, code like this is 
+useful to avoid `NA` issues: 
+
+```{r}
+bronx_demos <- c(0.046, 0.2848, 0.5476, 0.0888, 0.0336)
+-sum(bronx_demos * log(bronx_demos + 1e-10))
+```
+
+The small 'nugget' term (`1e-10`) has no real impact on most probabilities, but
+prevents issues arising from $\log(0)$ being undefined. 
+
+[^units]: The units of entropy are somewhat tricky to understand. For us, 
+it suffices to know that a larger entropy means more randomness. 
+
+### Advanced `dplyr` Programming (Up to 3 Points)
+
+For up to three extra credit points, add the following question to your Task 6 
+EDA: In 2024, which 3 institutions of at least 1000 undergraduates had student 
+populations that were 'most representative' of the US undergraduate population
+as a whole?
+
+Extra credit will be determined on the basis of how accurately and how
+efficiently the KL divergence is calculated, in addition to how well it is 
+explained and presented in table format. 
+   
+The *Kullback–Leibler divergence* or KL divergence can be used to 
+measure the difference between two different probability distributions. For
+this problem, you can use the enrollment counts at each institution to define
+a probability distribution (*e.g.*, $\mathbb{P}(\text{White Male}) = 20\%$,
+$\mathbb{P}(\text{White Female}) = 22\%$, *etc.*) for that campus and compare
+it to the national undergraduate population. 
+   
+The following example may help: suppose I have categorized my personal 
+library into three categories of books: i) fiction; ii) non-fiction; and
+iii) textbooks. Furthermore, my books are unorganized and spread randomly
+across 5 shelves as follows: 
+   
+```{r}
+#| echo: false
+books <- tribble(
+    ~shelf, ~fiction, ~nonfiction, ~textbook, 
+    1,       15,          20,         5,
+    2,       20,          10,        10,
+    3,       40,          20,        20,
+    4,       10,          10,        30,
+    5,       15,          20,        20
+)
+   
+books_base_counts <- books |> 
+    select(-shelf) |>
+    summarize(across(everything(), sum)) 
+
+books_base_probs <- books_base_counts |> 
+    mutate(total = rowSums(across(everything())), 
+           across(everything(), \(x) x/total)) |> 
+    select(-total)
+
+shelf_probs <- books |> 
+    group_by(shelf) |>
+    mutate(total = rowSums(across(everything())), 
+           # No need to `-shelf` here as grouping variables aren't included in `everything()` 
+           across(everything(), \(x) x/total)) |>
+    select(-total)
+     
+shelf1_probs <- shelf_probs |> filter(shelf == 1)
+     
+# KL can be computed in two ways
+#
+# This is simpler, but requires some tools not yet introduced (joins and pivots)
+kl <- inner_join(
+    pivot_longer(shelf_probs, 
+                 -shelf, 
+                 names_to="category",
+                 values_to="shelf_prob"), 
+    pivot_longer(books_base_probs, 
+                 everything(), 
+                 values_to="collection_prob", 
+                 names_to="category"), 
+    join_by(category)) |>
+    summarize(kl=sum(collection_prob * log(collection_prob / shelf_prob)))
+
+# This avoids joins and pivots, but is pretty fragile and requires 
+# rather advanced use of the across() idiom
+kl_alt <- books |> 
+    mutate(shelf_total = rowSums(across(-shelf)), 
+           # Count total # of books per genre
+           across(-contains("shelf"), 
+                  \(x) sum(x), 
+                  .names="{.col}_collection"), 
+           # Compute total # of books total, to get collection probabilities
+           collection = rowSums(across(contains("collection"))), 
+           # Compute collection-wide probabilities
+           across(-c(contains("shelf"), 
+                     contains("collection")), 
+                  \(x) x / shelf_total, 
+                  .names="{.col}_p"),
+           # Compute per shelf probabilities of each genre
+           across(ends_with("_collection"), 
+                  \(x) x/collection, 
+                  .names="{.col}_p")
+    )|>
+    # We can now work with probabilities only
+    select(shelf, ends_with("_p")) |>
+    mutate(across(contains("collection"), 
+                  # This is some nasty magic to let us access the population (collection)
+                  # and shelf probabilities jointly
+                  # cur_column() will give a string like "fiction_collection_p", so
+                  # removing "_collection" leaves us with the string "fiction_p". 
+                  # Passing this to get() gives access to the shelf-level `fiction_p`
+                  # variable that we can then use to get the relevant term of the KL sum
+                  \(x) x * log(x / get(str_remove(cur_column(), "_collection"))), 
+                  .names="{.col}_kl"), 
+           # Sum across individual KL terms for overall KL
+           kl=rowSums(across(ends_with("_kl")))) |>
+    select(shelf, kl)
+
+# Check two approaches give the same result
+stopifnot(all.equal(kl, kl_alt))
+
+   
+books |> 
+    gt() |> 
+    cols_label_with(fn=str_to_title)
+```
+   
+Comparing these shelves is a bit tricky since there aren't the same 
+number of books on each shelf and a purely 'numbers-based' comparison
+might treat Shelf 2 as more representative than Shelf 3 simply because it
+has fewer books. The KL divergence things of these as probabilities (*e.g.*,
+Shelf 2 is 50% fiction) and can be used to compare them to the overall 
+probabilities of the whole collection. 
+   
+Adding up the columns, I have `r books_base_counts$fiction` fiction books, 
+`r books_base_counts$nonfiction` non-fiction books, and 
+`r books_base_counts$textbook` textbooks,  so my collection is about
+`r percent(books_base_probs$fiction)` fiction, 
+`r percent(books_base_probs$nonfiction)` non-fiction, and 
+`r percent(books_base_probs$textbook)` textbooks. 
+   
+We use these probabilities to compare each row against the overall 
+population using the KL divergence formula: 
+ 
+$$\mathcal{D}(P \| Q) = \sum_{x} P(x) \log \frac{P(x)}{Q(x)}$$
+   
+where the sum $x$ is taken over all categories and $P, Q$ are different 
+probability distributions. Here $P$ is the "baseline" (correct) distribution and
+$Q$ is the approximation. So the KL divergence between Shelf 1, which is about
+`r percent(shelf1_probs$fiction)` fiction, 
+`r percent(shelf1_probs$nonfiction)` non-fiction, and 
+`r percent(shelf1_probs$textbook)` textbooks, and the collection as a whole
+is given by
+   
+$$
+   `r books_base_probs$fiction` \log \frac{`r books_base_probs$fiction`}{`r shelf1_probs$fiction`} + 
+   `r books_base_probs$nonfiction` \log \frac{`r books_base_probs$nonfiction`}{`r shelf1_probs$nonfiction`} + 
+   `r books_base_probs$textbook` \log \frac{`r books_base_probs$textbook`}{`r shelf1_probs$textbook`} \approx
+   `r kl |> filter(shelf == 1) |> pull(kl)`
+$$
+   
+We can repeat this analysis across all 5 shelves to get the following KL table
+   
+```{r}
+#| echo: false
+kl |> 
+    gt() |>
+    cols_label(shelf="Shelf", 
+              kl="KL Divergence from Entire Collection") |>
+    fmt_number(kl, decimals=4)
+    
+```
+   
+From which we see that Shelf `r kl |> slice_min(kl) |> pull(shelf)` is 
+"most representative" of my whole collection. Note also that Shelves 2
+and 3 have the same KL Divergence because they are (proportionally) the same.
+
+*Hint*: Note that this is a *significantly* more complex analysis than we have
+performed so far and requires some ideas that won't be covered until Week 6 and
+some column selection functionality that will not be covered in lecture. 
+Make sure to access the source code for this assignment and use it as a guide
+for completing this extra credit task.
+
+### Data Visualization (1 point)
+
+Inclusion of a well-formatted visual element to accompany your op-ed will get
+one extra credit point. 
 
 {{< include _footer.qmd >}}
-
