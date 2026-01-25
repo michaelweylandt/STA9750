@@ -66,12 +66,16 @@ get_mp_assigned <- function(N){
         pull(Date)
 }
 
-get_mp_deadline <- function(N){
-    read_csv("key_dates.csv") |> 
-        filter(`Course Element` == "Mini-Projects", 
-               `Item Number`== N, 
-               str_detect(Details, "Due"), 
-               !str_detect(Details, "Peer")) |>
+get_mp_deadline <- function(N, as_date_obj = FALSE){
+    row <- read_csv("key_dates.csv") |> 
+                filter(`Course Element` == "Mini-Projects", 
+                       `Item Number`== N, 
+                       str_detect(Details, "Due"), 
+                      !str_detect(Details, "Peer"))
+    
+    if(as_date_obj) return(row |> pull(Date))
+    
+    row |>
         mutate(due = paste(Date, "at", Time)) |>
         pull(due)
 }
@@ -125,14 +129,20 @@ get_mp_submitted <- function(N){
          n_need_work = N_NEED_WORK)
 }
 
-get_project_due_date <- function(element = c("individual_report", "group_report", "peer_evaluation")){
+get_project_due_date <- function(element = c("individual_report", 
+                                             "group_report", 
+                                             "peer_evaluation", 
+                                             "team_formation", 
+                                             "proposal")){
     
     element <- match.arg(element)
     
     search_string = case_match(element, 
+                               "team_formation" ~ "Team Roster",
                                "individual_report" ~ "Individual Report", 
                                "group_report" ~ "Summary Report",
-                               "peer_evaluation" ~ "Peer Evaluation")
+                               "peer_evaluation" ~ "Peer Evaluation", 
+                               "proposal" ~ "Project Proposal")
     
     read_csv("key_dates.csv") |> 
         filter(`Course Element` == "Course Project", 
@@ -146,24 +156,18 @@ DATES   <- read_csv("key_dates.csv")
 TODAY   <- DATES |> filter(`Course Element` == "Class Session", 
                            `Item Number` == session)
 
-PROJ_RELEASE <- DATES |> 
-    filter(Details == "Course Project Description Released") |>
-    pull(Date)
-
-ROSTERS <- DATES |> 
-    filter(Details == "Team Roster Submission") |>
-    pull(Date)
-
-
 TODAY_TOPIC <- TODAY |>
     slice_head(n=1) |>
     pull(Details) 
 
-PROPOSALS <- DATES |> 
-    filter(str_detect(Details, "Project Proposal")) |> 
-    pull(Date) |> 
-    strftime("%A %b %d") |> 
-    paste(collapse=" and ")
+
+PROJ_RELEASE <- DATES |> 
+    filter(Details == "Course Project Description Released") |>
+    pull(Date)
+
+ROSTERS <- get_project_due_date("team_formation")
+PROPOSALS <- get_project_due_date("proposal")
+
 
 library(jsonlite)
 library(yaml)
@@ -213,4 +217,60 @@ BREAKOUT_TABLE <- data.frame(Team=TEAMS) |>
   mutate(Breakout = row_number()) |> 
   select(Breakout, Team) |> 
   knitr::kable(row.names = FALSE)
+```
+
+## Today's Logistics
+
+Today: `r TODAY_TOPIC`
+
+These slides can be found online at: 
+
+```{r}
+#| message: false
+#| echo: false
+library(yaml)
+url_base <- read_yaml("_variables.yml")$course$`web-url`
+url_file <- sprintf("slides/slides%02g.html", session)
+
+url_full <- paste0(url_base, url_file)
+```
+
+> [`r url_full`](`r url_full`)
+
+In-class activities (if any) can be found at: 
+
+```{r}
+#| message: false
+#| echo: false
+url_base <- read_yaml("_variables.yml")$course$`web-url`
+url_file <- sprintf("labs/lab%02g.html", session)
+
+url_full <- paste0(url_base, url_file)
+```
+
+> [`r url_full`](`r url_full`)
+
+## Upcoming TODO
+
+Upcoming student responsibilities:
+
+```{r}
+#| message: false
+library(gt)
+read_csv("key_dates.csv") |>
+    filter((`Responsible Party` == "Student") | (is.na(`Responsible Party`))) |>
+    mutate(Time2 = Time |> str_replace("11:", "23:") |> str_replace("6:", "18:")) |>
+    filter((Date > class_date) | 
+           ((Date == class_date) & str_detect(Time2, "23"))) |>
+    mutate(Details = case_when(
+            is.na(`Item Number`) ~ Details, 
+            TRUE ~ str_replace(Details, "Due", sprintf("#%02g Due", `Item Number`))
+           )
+    ) |>
+    arrange(Date, Time2) |> 
+    select(Date, Time, Details) |> 
+    filter(Date <= class_date + 28) |>
+    gt() |>
+    tab_options(table.width = pct(100), 
+                table.font.size = pct(80))
 ```

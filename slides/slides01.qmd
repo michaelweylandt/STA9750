@@ -1,12 +1,14 @@
 ---
 session: "`r session <- 1; session`"
-last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
+last_updated: "`r last_updated <- Sys.Date(); 
+                  last_updated |> format('%Y-%m-%d')`"
 class_date:
   "`r library(tidyverse);
     class_date <- read_csv('key_dates.csv', name_repair='universal') |>
     filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
+    pull(Date); 
+    class_date |> format('%A %Y-%m-%d')`"
 format: revealjs
 ---
 
@@ -32,7 +34,6 @@ Today: Introduction to {{< var course.short >}}
 
 ::: incremental
 
-
 - Establishing a professional data analyst portfolio
 - Increasing your effectiveness in other courses
 - Building your networks with faculty and classmates
@@ -42,7 +43,7 @@ Today: Introduction to {{< var course.short >}}
 
 ## Learning Objectives
 
-Formal learning objectives can be found [here](https://michael-weylandt.com/STA9750/objectives.html)
+Formal learning objectives can be found [here](../objectives.qmd)
 
 . . . 
 
@@ -59,7 +60,7 @@ Key aims:
 
 ## Course Website
 
-**All course information** can be found [on the course website](https://michael-weylandt.com/STA9750/)
+**All course information** can be found [on the course website](../index.qmd)
 
 {{< html https://michael-weylandt.com/STA9750/ full-screen-link="false" height="300px">}}
 
@@ -71,12 +72,12 @@ Source code [on my GitHub](https://github.com/michaelweylandt/STA9750)
 
 Look online for: 
 
-- [Syllabus](https://michael-weylandt.com/STA9750/syllabus.html)
-- [Weekly Pre-Assignments](https://michael-weylandt.com/STA9750/preassignments.html)
-- [Mini-Projects](https://michael-weylandt.com/STA9750/miniprojects.html)
-- [In-Class Activities](https://michael-weylandt.com/STA9750/labs.html)
-- [Course Project](https://michael-weylandt.com/STA9750/project.html)
-- [Additional Policies and Resources](https://michael-weylandt.com/STA9750/resources.html)
+- [Syllabus](../syllabus.qmd)
+- [Weekly Pre-Assignments](../preassignments.qmd)
+- [Mini-Projects](../miniprojects.qmd)
+- [In-Class Activities](../labs.qmd)
+- [Course Project](../project.qmd)
+- [Additional Policies and Resources](../resources.qmd)
 
 ## Instructor
 
@@ -84,13 +85,13 @@ Me: Michael Weylandt
 
 . . . 
 
-Assistant (i.e., new) Professor in the [Department of Info. Systems and Statistics](https://zicklin.baruch.cuny.edu/faculty-research/academic-departments/information-technology-statistics/)
+Assistant (i.e., new-ish) Professor in the [Department of Info. Systems and Statistics](https://zicklin.baruch.cuny.edu/faculty-research/academic-departments/information-technology-statistics/)
 
 . . . 
 
 Previously: 
 
-::: incremental
+::: {.incremental .small}
 
 - Researcher at Sandia National Labs (US Government Lab)
 - Postdoc with US Intelligence Community 
@@ -105,34 +106,98 @@ See [my website](https://michael-weylandt.com) for more on me and my research
 
 ## Course Schedule
 
-::: {.fragment}
-- Lecture / Lab sessions
-  - Tuesdays / Thursdays on Zoom (here!) at 6:05pm
-  - 14 weeks (with two holidays)
-:::
+```{r}
+#| message: false
+#| echo: false
+holidays <- DATES |> 
+    filter(`Course Element` == "No Class") |> 
+    pull(Date) |> 
+    unique() |>
+    sort() |> 
+    format("%b %d") |> 
+    paste(collapse=" + ")
 
-::: {.fragment}
-- Office Hours
+presentations <- DATES |> 
+    filter(str_detect(Details, "Presentation")) |> 
+    pull(Date) |> 
+    unique() |> 
+    sort() |>
+    format("%b %d") |> 
+    paste(collapse=" + ")
+```
+
+Lecture / Lab sessions:
+
+::: {.incremental}
+
+  - Thursdays on Zoom (here!) at 6:05pm
+    - Rescheduled class on *Tuesday* on 2026-04-21 ("Conversion Day")
+  - 14 weeks. Holidays on `r holidays`
+  - No penalty for missing class. 
+    - Slides and in-class activities online
+    - Lectures generally not posted 
+    
+:::
+  
+## Course Schedule
+  
+Presentation days: 
+
+  - Student Presentations on `r presentations`
+  - First two can be one per team, so only **required** day is 
+    final presentation
+  - Order will be randomly selected by instructor
+    - I expect you to be able to attend *all* of class on presentation day
+    
+## Getting Help
+
+Online Office Hours:
+
   - Before class (on days we have class) at 5:00pm
   - *Different Zoom Link*
-:::
 
-::: {.fragment}
-- Asynchronous
+. . . 
+
+In-person Office Hours: 
+
+- Wednesdays at 5pm (on days we have class)
+
+. . . 
+
+Asynchronous
+
   - Piazza course discussion platform
+
+## DataCamp
+
+This semester, I am providing free access to DataCamp courses
+
+- **100% optional**
+- Additional exercises and review of class material
+- Access through sign-up link on Brightspace
+
+. . . 
+
+::: {.small}
+
+Restricted to `@baruchmail.cuny.edu` emails - Piazza message if you have a 
+different CUNY email and I'll special-case you
+
 :::
 
 ## Course Schedule
 
 Major Topics: 
 
-::: incremental
-- Web Communication and Literate Programming Technologies
-- Introduction to `R`
-- Tidy Data Manipulation (SQL-type operations)
-- Plotting and Data Visualization
-- Data Import, Web Scraping, and Text Cleaning
-- Statistical Analysis
+::: {.incremental}
+
+- Web Communication and Literate Programming Technologies - 2 weeks
+- Introduction to `R` - 1 week
+- Tidy Data Manipulation (SQL-type operations) - 2 weeks
+- Plotting and Data Visualization - 2 weeks
+- Data Import, Web Scraping, and Text Cleaning - 3 weeks
+- Statistical Analysis - 1 week
+
 :::
 
 ## Grading
@@ -153,14 +218,15 @@ Final grades curved to match ZSB grading guidelines
 
 See syllabus for fine print: 
 
-::: incremental
+::: {.incremental .small}
 
-- Regrading: Must request within 48 hours; total regrade
+- Regrading: Must request within 48 hours; total regrade of assignment
 - Late work: Not without prior permission or DoS letter *ex post*
-- Grace period: two days on mini-project initial submission 
-- External Resources / AI: Free to use for *coding* only
+- Grace period: two days on mini-project initial submission, none otherwise
+- Grade Curve: One at the end of the semester
+- External Resources / AI: Free to use for *coding* only, not writing
 - Absences: No excuse required, but must attend on presentation days
-- Accomodations: ADA (SDS) or Religious (direct with instructor)
+- Accommodations: ADA (SDS) or Religious (direct with instructor)
 
 :::
 
@@ -174,7 +240,22 @@ Pre-Assignments:
 - Introduce new material + helps me know where folks are confused
 - Starts next week 
 - Every week except three presentation weeks
+
 ::: 
+
+## Pre-Assignments
+
+Pre-Assignments: 
+
+::: incremental
+
+- 24% of Overall Grade
+- Mix of new material and review questions
+- Lowest 2 dropped (best 8 of 10)
+- Take as many times as needed to get 100% (30/30)
+- Brightspace configuration is fragile, so Piazza if issues
+
+:::
 
 ## Mini-Projects
 
@@ -182,22 +263,120 @@ Traditional homework assignments - "mini-projects"
 
 ::: incremental
 
-- Guided real-data analysis using course technologies
+- **Guided** real-data analysis using course technologies
 - Increasingly ambitious over the semester
 - Practice *real* data analysis
 - Communication and coding
 - Professional portfolio
-- One ungraded 'set-up' + best 3 of 4 graded
+- One ungraded 'set-up' ("MP#00") + best 3 of 4 graded
 
 :::
 
 More later in the course
 
+## Mini-Projects
+
+```{r}
+#| echo: false
+#| message: false
+mp_00_span <- get_mp_deadline(0, as_date_obj=TRUE) - 
+              class_date
+
+mp_01_span <- get_mp_deadline(1, as_date_obj=TRUE) - 
+              get_mp_deadline(0, as_date_obj=TRUE)
+
+mp_02_span <- get_mp_deadline(2, as_date_obj=TRUE) - 
+              get_mp_deadline(1, as_date_obj=TRUE)
+
+mp_03_span <- get_mp_deadline(3, as_date_obj=TRUE) - 
+              get_mp_deadline(2, as_date_obj=TRUE)
+
+mp_04_span <- get_mp_deadline(4, as_date_obj=TRUE) - 
+              get_mp_deadline(3, as_date_obj=TRUE)
+```
+
+Due Dates: 
+
+::: {.incremental}
+
+- MP#00: `r get_mp_deadline(0)` (`r sprintf("%02g days from today", mp_00_span)`)
+- MP#01: `r get_mp_deadline(1)` (`r sprintf("%02g days", mp_01_span)`)
+- MP#02: `r get_mp_deadline(2)` (`r sprintf("%02g days", mp_02_span)`)
+- MP#03: `r get_mp_deadline(3)` (`r sprintf("%02g days", mp_03_span)`)
+- MP#04: `r get_mp_deadline(4)` (`r sprintf("%02g days", mp_04_span)`)
+
+:::
+
+These take time - "due date" $\neq$ "do date"
+
+## Mini-Projects
+
+- MP#00: [`r get_mp_title(0)`](../mini/mini00.qmd)
+- MP#01: [`r get_mp_title(1)`](../mini/mini01.qmd)
+- MP#02: [`r get_mp_title(2)`](../mini/mini02.qmd)
+- MP#03: [`r get_mp_title(3)`](../mini/mini03.qmd)
+- MP#04: [`r get_mp_title(4)`](../mini/mini04.qmd)
+
+Suggestions welcome - see Archives for previous semesters
+
+## Mini-Projects
+
+100 points per (graded) MP: 
+
+- 80 points for submission 
+- 20 points for *peer review*
+
+. . . 
+
+Important to learn to **read** and **write** code
+
+- Single-blind peer review process
+- Grade from instructor on quality of comments
+
+. . . 
+
+You *can't * do peer review if you don't submit (auto 0)
+
+. . . 
+
+Best 3 of 4 (total score out of 100) used
+
+
+## Mini-Projects
+
+A mix of 'warm-up' activities + final deliverable analysis: 
+
+. . . 
+
+Each project is graded on an 8 part rubric: 
+
+::: {.incremental .smaller}
+
+- Project Skeleton
+- Written Communication
+- Tables & Presentation
+- Data Visualization
+- Exploratory Data Analysis
+- Code Quality
+- Data Preparation
+- Analysis and Findings
+
+:::
+
+. . . 
+
+::: {.small}
+
+For earlier projects, automatic 10/10 (if you do the bare minimum) 
+on some elements
+
+:::
+
 ## Course Project
 
 In lieu of exams, semester-long group project
 
-::: incremental
+::: {.incremental}
 
 - Three presentations + two reports
   - Project Proposal
@@ -208,7 +387,22 @@ In lieu of exams, semester-long group project
   
 :::
 
-More later in the course
+More [online](../project.qmd)
+
+## Course Project
+
+46% of grade: 
+
+::: {.incremental}
+
+- Blend of individual (20%) and group (26%) grades
+- Timeline moved up a bit to give more end of semester breathing room
+- Start looking for teammates: form team by `r ROSTERS |> format("%b %d")`
+  - Proposal presentation and team contract due `r PROPOSALS |> format("%b %d")`
+- First two presentations are mainly about making sure project is well-posed
+  - Analysis due in final presentation + individual reports
+  
+:::
 
 ## Workload Expectations
 
@@ -227,7 +421,8 @@ Note that course project = sum of all mini-projects - be ambitious!
 
 ## Care Resources
 
-See [Care Resources for Students](https://michael-weylandt.com/STA9750/resources.html#care-resources-for-students1) for helpful resources
+See [Care Resources for Students](../resources.html#care-resources-for-students1)
+for helpful resources:
 
 - Mental health support
 - Physical health / medical care
@@ -236,6 +431,16 @@ See [Care Resources for Students](https://michael-weylandt.com/STA9750/resources
 - Immigration Support
 
 # Any questions?
+
+## Syllabus Quiz
+
+"Syllabus quiz": 
+
+  - Due `r DATES |> filter(str_detect(Details, "Syllabus")) |> 
+           pull(Date) |> format("%a %b %d")`
+  - Brightspace
+  - Unlimited attempts
+  - Unlocks all subsequent assignments so do early
 
 # Getting Started with `R` and `RStudio`
 
@@ -269,29 +474,27 @@ You can now start thinking about [Mini-Project #00](../mini/mini00.qmd)
   - Future Mini-Projects submitted here
 - 'Road test' to make sure everything is working correctly
 - Register on course discussion board (Piazza)
-- Verification of Enrollment
 
 :::
 
-```{r}
-#| echo: false
-mp0_due_date <- DATES |> 
-    filter(`Course Element` == "Mini-Projects", 
-           `Item Number` == 0, 
-           str_detect(Details, "Due"), 
-           !str_detect(Details, "Feedback")) |> 
-    pull(Date)
-```
-
-Due `r mp0_due_date`
+Due `r get_mp_deadline(0)`
 
 # Wrap-Up
+
+## Course Agenda
+
+- Communicating Results (`quarto`) ⬅️
+- `R` Basics 
+- Data Manipulation in `R` 
+- Data Visualization in `R` 
+- Getting Data into `R` 
+- Statistical Modeling in `R`
 
 ## Course Introduction
 
 - All materials on course website
 - Review of course structure and key policies
-- More details about mini-projects and course-project to follow
+- More details about mini-projects and course project to follow
 
 ## Getting Started with `R`
 
@@ -300,12 +503,16 @@ Due `r mp0_due_date`
 
 ## Next Week
 
+**Syllabus Quiz**  on Brightspace
+
+. . . 
+
 Writing documents using `Markdown` and `Quarto`
 
-- First Pre-Assignment
-  - Read online
-  - Submit quiz on Brightspace
-
+- First Pre-Assignment due `r get_pa_deadline(next_session)`
+  1. [Online reading](../pre/pa02.qmd)
+  2. Submit quiz on Brightspace
+  
 {{< include ../advice/office_hours.qmd >}}
 
 ## Musical Treat
