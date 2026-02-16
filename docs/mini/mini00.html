@@ -608,6 +608,46 @@ if(length(Sys.glob("mp0*.qmd")) &gt; 0){
 if(!any(grepl("rstudio", search()))){q("no")}</code></pre>
 <p>Click the <code>Source</code> button in the top-right corner of the editor pane to run this code. If everything works, it will build your website and automatically stage it the built files. Stage <code>build_site.R</code> as well.</p>
 <p>Finally, <code>Commit</code> all these staged files and <code>Push</code> them to GitHub. You have now created a website and just need to turn on a web server so you can access it.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Quick Review of Sending a File to GitHub">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Quick Review of Sending a File to GitHub
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>As a brief reminder, there’s a three step process to get your content (both source files and rendered <code>html</code>) to GitHub.</p>
+<ol type="1">
+<li>
+<p>You need to declare your intent to save a file - this is variously called ‘adding’ or ‘staging’ that changes to that file. (Git works by tracking changes and you can make edits to only part of a file, but for this class, it’s fine to think on a while file basis.) In RStudio, you do this by clicking the little ‘check box’ next to the file in the <code>Git</code> tab or by using the <code>build_site</code> script above.</p>
+<p>At this point, you’ll want to stage basically everything you have so far, most importantly;</p>
+<pre><code>1) the `_quarto.yml` file;
+2) the `index.qmd` file; and
+3) all the contents of the `docs` folder. (This is the output of 
+   rendering `index.qmd` following the configuration in `_quarto.yml`)</code></pre>
+<p>There’s more in that <code>docs</code> folder than you might think (lots of layout, color palette, formatting files), but when you ‘check’ it, you’ll see the folder expand and all of its contents will be checked automatically.</p>
+</li>
+<li>
+<p>You need to actually ‘follow-through’ on the saving. (In the previous step, you declared “I will save this” and now you actually need to follow through). This saved version in Git-speak is called a <code>commit</code>, so the verb for saving it committing.</p>
+<p>To commit your changes, hit the “Commit” button in the top left the <code>Git</code> pane in <code>RStudio</code>. This will pull up a pop-up window (a “modal”) where you can see the changes that are about to be saved. If they look good (and they usually will), type a message in the text box in the top right of the modal and hit the “Commit” button there. (Again, note that there are two different “Commit” buttons that need to be pressed to actually make the commit.)</p>
+<p>You will get a little message box that will probably say something like</p>
+<p><code>create mode 100644 FILENAME</code></p>
+<p>This is a bit technical, but it’s just <code>git</code> acknowledging that it has a new file to keep track of. At this point you can close the modal window.</p>
+<p>If your commit succeeded, you’ll now see a thin message bar in the <code>Git</code> pane of <code>RStudio</code> that says something like “Your branch is ahead of origin/main by 1 commit.” This is <code>Git</code> telling you that there is one commit, <em>i.e.</em>, one saved version, on your local machine that has not yet been sent to GitHub.</p>
+<p>After you make your commit, the list of files in the <code>Git</code> pane will become much shorter. Recall that <code>git</code> tracks unsaved changes, so since you just saved those files, they will disappear from that listing. If you make more changes to those files later, the file names will re-appear (since there are new unsaved changes)</p>
+</li>
+<li>
+<p>Push the newest version to GitHub. If everything is set up properly, just hit the <code>Push</code> button and your latest commit will be sent to GitHub. If this works, the “one commit ahead” message will go away since GitHub is now up-to-date with your local machine.</p>
+<p>After you have your GitHub pages server set up (next step below), your website will automatically update after each successful push.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
 </section></section><section id="stage-4-github-pages-deployment" class="level2"><h2 class="anchored" data-anchor-id="stage-4-github-pages-deployment">Stage 4: GitHub Pages Deployment</h2>
 <section id="activate-github-pages-server" class="level3"><h3 class="anchored" data-anchor-id="activate-github-pages-server">Activate GitHub Pages Server</h3>
 <p>Return to the GitHub repo you created; recall that the URL is something like:</p>
@@ -626,7 +666,7 @@ if(!any(grepl("rstudio", search()))){q("no")}</code></pre>
 <p>If everything works, you will see your site! (If you used the <code>Render</code> feature in RStudio, it should look familiar.)</p>
 <p>If you get stuck, use the course discussion board to seek help from your classmates and, if necessary, the instructor.</p>
 <div class="callout callout-style-default callout-note callout-titled" title="GitHub Job Failed">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -635,7 +675,7 @@ GitHub Job Failed
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>The GitHub Pages Deplay job – the steps run to update your website – almost always complete without issue. If they do not succeed, you will typically get an automated email from GitHub informing you that the job failed.</p>
 <p>The most common cause of failure is running GitHub pages without a <code>docs</code> folder. If the error email (or possibly the text it links to), ends with something like:</p>
@@ -678,7 +718,7 @@ https://YOUR_GITHUB_ID.github.io/STA9750-2026-SPRING/</code></pre>
 <p><img src="../images/github_issue.png" class="img-fluid"></p>
 <p>This will send me a notification through GitHub and I will confirm that I can access your repository and website. You should also use the <a href="../tips.html">course helper scripts</a> to verify you have opened a GitHub issue properly. For this project, simply run:</p>
 <div class="cell">
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="st">"https://michael-weylandt.com/STA9750/load_helpers.R"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="st">"https://michael-weylandt.com/STA9750/load_helpers.R"</span><span class="op">)</span></span>
 <span><span class="fu">mp_submission_verify</span><span class="op">(</span><span class="fl">0</span>, <span class="st">"YOUR_GITHUB_ID"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If you don’t do this, I may not be able to access your graded assignments when you submit them!</p>
