@@ -2,7 +2,9 @@
 
 # Standard Library
 from collections import defaultdict, namedtuple
-from functools import cache
+from enum import IntEnum
+from functools import cache, cached_property
+from itertools import chain
 from datetime import datetime
 from glob import glob
 import json
@@ -15,6 +17,7 @@ from statistics import median
 import subprocess
 import random
 import re
+from urllib.parse import urljoin
 import webbrowser
 from copy import deepcopy as dcopy
 from pprint import pformat
@@ -31,14 +34,362 @@ from requests.compat import urljoin, quote, quote_plus
 from yaml import safe_load as yaml_load
 from pandas.api.types import is_list_like
 
-Issue = namedtuple(
-    "Issue", ["title", "number", "html_url", "body", "state", "opened_by"]
-)
 
+@cache
+def course_short():
+    with open("_variables.yml") as f:
+        course_config = yaml_load(f)
+
+    return course_config["course"]["short"]
+
+
+@cache
+def course_dir():
+    click.echo("Reading configuration from _teaching.yml")
+    with open("_teaching.yml") as f:
+        course_config = yaml_load(f)
+        click.echo("Course Configuration: \n" + pformat(course_config))
+
+    course_dir = op.expanduser(course_config["gradedir"])
+
+    if not op.isdir(course_dir):
+        os.makekdirs(course_dir)
+        
+    return course_dir
+
+
+@cache
+def course_owner():
+    with open("_variables.yml") as f:
+        course_config = yaml_load(f)
+
+    return course_config["course"]["owner"]
+
+
+@cache
+def course_site():
+    with open("_variables.yml") as f:
+        course_config = yaml_load(f)
+
+    return course_config["course"]["web-url"]
+
+
+@cache
+def course_repo():
+    with open("_variables.yml") as f:
+        course_config = yaml_load(f)
+
+    return course_config["course"]["repo"]
+
+
+class IssueStatus(IntEnum):
+    BAD_TITLE = 1
+    ISSUE_CLOSED = 2
+    NO_URL = 3
+    WRONG_URL = 4
+    MISSING_SOURCE = 5
+    MISSING_FILES = 6
+    OK = 7
+    
+    @property
+    def ok(self):
+        return self == IssueStatus.OK
+    
+
+
+class Issue(object):
+    def __init__(self, title, number, html_url, body, state, opened_by):
+        self.title = title
+        self.number = number
+        self.html_url = html_url
+        self.body = body
+        self.state = state
+        self.opened_by = opened_by
+        
+        self._labels = None
+        self._comments = None
+        self._status = None
+        self._status_message = None
+        
+    TITLE_REGEX = r'STA 9750 (.*) MiniProject #0(\d)'
+        
+    @classmethod
+    def from_gh_api_resp(cls, r):
+        return cls(
+            title=r["title"],
+            number=r["number"],
+            html_url=r["html_url"],
+            body=r["body"],
+            state=r["state"],
+            opened_by=r["user"]["login"]
+        )
+        
+    @cached_property
+    def mp_num(self):
+        try: 
+            return int(re.match(self.TITLE_REGEX, self.title).group(2))
+        except: 
+            import pdb; pdb.set_trace()
+            
+            return None
+        
+    @property
+    def owner(self):
+        if match := re.match(self.TITLE_REGEX, self.title):
+            return match.group(1)
+        else:
+            if self.opened_by != "michaelweylandt":
+                return self.opened_by
+            
+            import pdb; pdb.set_trace()
+        
+    @property
+    def submission_source(self):
+        if self.mp_num == 0:
+            return f"https://raw.githubusercontent.com/{self.owner}/{course_repo()}/refs/heads/main/index.qmd"
+        else: 
+            return f"https://raw.githubusercontent.com/{self.owner}/{course_repo()}/refs/heads/main/mini0{self.mp_num}.qmd"
+            
+    @property
+    def status(self):
+        if self.mp_num is None:
+            self._status = IssueStatus.BAD_TITLE
+            return self._status
+        
+        if self.state != "open":
+            self._status = IssueStatus.ISSUE_CLOSED
+            return self._status
+        
+        submission_text = mp_submission_instructions(self.mp_num).\
+                            replace("YOUR_GITHUB_ID", self.owner)
+        
+        STUDENTS_URL = re.search(URL_REGEX, self.body, re.IGNORECASE)
+        EXPECTED_URL = re.search(URL_REGEX, submission_text, re.IGNORECASE)
+
+        if EXPECTED_URL is None:
+            raise click.ClickException("Could not find expected URL in MP Instructions")
+        else: 
+            EXPECTED_URL = EXPECTED_URL.group(0)
+
+        if STUDENTS_URL is None:
+            self._status = IssueStatus.NO_URL
+            return self._status
+        else:
+            STUDENTS_URL = STUDENTS_URL.group(0)
+        
+        if STUDENTS_URL.lower() != EXPECTED_URL.lower():
+            self._status = IssueStatus.WRONG_URL
+            self._status_message = f"Expected URL: {EXPECTED_URL}\nSubmitted URL: {STUDENTS_URL}"
+            return self._status
+        
+        source_ok = r.get(self.submission_source).ok
+        
+        if not source_ok:
+            self._status = IssueStatus.MISSING_SOURCE
+            self._status_message = f"Source File Exepcted at: {self.submission_source}"
+            
+        support_file_check_results = check_quarto_support_files(STUDENTS_URL)
+
+        if support_file_check_results["fail"]:
+            self._status = IssueStatus.MISSING_FILES
+            self._status_message = "Could not access the following files:\n" + "\n".join(support_file_check_results["fail"])
+            return self._status
+        
+        self._status = IssueStatus.OK
+        
+        return self._status
+    
+    @property
+    def status_oneline(self):
+        status = self.status
+        
+        if status == IssueStatus.BAD_TITLE:
+            return f"Could not parse issue title"
+        elif status == IssueStatus.ISSUE_CLOSED:
+            return f"Issue appears closed"
+        elif status == IssueStatus.NO_URL:
+            return f"No URL submitted"
+        elif status == IssueStatus.WRONG_URL:
+            return f"Incorrect URL submitted: " + self._status_message
+        elif status == IssueStatus.MISSING_SOURCE:
+            return f"Could not identify qmd source document\n - " + self._status_message
+        elif status == IssueStatus.MISSING_FILES:
+            return self._status_message
+        elif status == IssueStatus.OK:
+            return "OK"
+        else:
+            raise click.ClickException("Unknown status")
+        
+    @property
+    def status_full(self):
+        CHECKS = ["Correct Issue Title", 
+                  "Correct Issue Status (Open)",
+                  "Submission URL Present",
+                  "Submission URL Correct", 
+                  "Source File Accessible",
+                  "Supporting Files Present"]
+                  
+        OUT_TEXT = ""
+                  
+        assert len(CHECKS) + 1 == IssueStatus.OK # +1 b/c top status is OK (no check)
+        
+        for check_ix, check_text in enumerate(CHECKS, start=1):
+            if self.status > check_ix:
+                OUT_TEXT += "- [✅] "+  check_text + "\n"
+            elif self.status == check_ix:
+                OUT_TEXT += "- [❌] "+  check_text+ "\n"
+            else:
+                OUT_TEXT += "- [ ] "+  check_text + "\n"
+                
+        return OUT_TEXT
+    
+    @property
+    def ok(self):
+        return self.status == IssueStatus.OK
+    
+    @property
+    def comments(self):
+        if not self._comments:
+            self._comments = gh_list_comments(self.number)
+        return self._comments
+    
+    @property 
+    def labels(self):
+        if self._labels is None:
+            resp = _gh(f"/repos/{course_owner()}/{course_repo()}/issues/{self.number}/labels")
+            
+            self._labels = [l["name"] for l in resp]
+            self._labels.sort()
+
+        return self._labels
+            
+    
+    def update_labels(self):
+        available_labels = gh_available_labels()
+        new_labels = []
+        
+        if self.status == IssueStatus.OK:
+            new_labels.append("Passed Automated Checks")
+        else: 
+            new_labels.append("Failed Automated Checks")
+            
+        if self.mp_num is not None:
+            new_labels.append(f"Mini-Project #0{self.mp_num}")
+            
+        new_labels.sort()
+        
+        if any(nl not in available_labels for nl in new_labels):
+            import pdb; pdb.set_trace()
+            
+        if new_labels != self.labels:
+            click.echo(f"Updating Labels on Issue #{self.number} to {new_labels}")
+            
+            _gh(f"repos/{course_owner()}/{course_repo()}/issues/{self.number}/labels", 
+                method="put",
+                data=json.dumps({"labels":new_labels}))
+        else:
+            click.echo(f"Leaving labels unchanged: {self.labels}")
+    
+    def post_new_comment(self, text):
+        click.echo(f"Posting comment for {self.owner} in Issue #{self.number}")
+        #click.echo(text)
+        return gh_issue_comment(self.number, text)
+        
+    def __repr__(self):
+        return f'Issue #{self.number:02} - {self.title}'
+        
+class IssueCollection(object):
+    def __init__(self):
+        ALL_ISSUES = []
+        pagination = 1
+    
+        while((len(ALL_ISSUES) % 100) == 0): 
+            resp = _gh(f"/repos/{course_owner()}/{course_repo()}/issues?state=all&per_page=100&page={pagination}")
+
+            if not resp: 
+                break
+
+            if "status" in resp and resp["status"] != "200":
+                import pdb; pdb.set_trace()
+                raise click.ClickException("UNABLE TO ACCESS GITHUB API")
+        
+            ALL_ISSUES += resp
+            pagination += 1
+            
+        self._issues = [None] * len(resp)
+        
+        for ix, r in enumerate(resp):
+            self._issues[ix] = Issue.from_gh_api_resp(r)
+            
+        self._issues.sort(key=lambda x: x.number)
+            
+    def select_by_owner(self, owner):
+        return [i for i in self._issues if owner == i.owner]
+    
+    def select_unknown_mp(self):
+        return [i for i in self._issues if i.mp_num is None]
+    
+    def __getitem__(self, issue_number):
+        return [i for i in self._issues if i.number == issue_number][0]
+                     
+@cache
+def mp_submission_instructions(project_id):
+    "Download proscribed text for MP submissions"
+    
+    MP_URL = f"{course_site()}/mini/mini0{project_id}.html"
+
+    return BS(r.get(MP_URL).text, 
+              features="lxml").\
+              find(id="submission-text").get_text().strip()
+              
+@cache
+def check_quarto_support_files(url):
+    """Check if any helper files are missing from a Quarto website
+    
+    This check only goes one level deep and does not check URLs outside the
+    domain of the base url."""
+    
+    resp = r.get(url)
+    
+    if not resp.ok:
+        raise click.ClickException(f"Could not access {url} to check support files")
+    
+    url_base = op.dirname(url)
+    
+    soup = BS(resp.text, features="lxml")
+    
+    LINKS_CHECKED = []
+    LINKS_OK = []
+    LINKS_FAIL = []
+    
+    support_links = [urljoin(url, sf["href"]) for sf in soup.find_all("link") if not sf["href"].startswith("http")]
+    image_links = [urljoin(url, sf["href"]) for sf in soup.find_all("img") if not sf["href"].startswith("http")]
+    anchor_links = [urljoin(url, sf["href"]) for sf in soup.find_all("a") if not sf["href"].startswith("http")]
+
+    for sf_url in chain(support_links, image_links, anchor_links):
+        
+        LINKS_CHECKED.append(sf_url)
+        
+        if r.get(sf_url).ok:
+            LINKS_OK.append(sf_url)
+        else: 
+            LINKS_FAIL.append(sf_url)
+        
+    return {"all": LINKS_CHECKED, 
+            "ok": LINKS_OK, 
+            "fail": LINKS_FAIL}
+    
+    
+@cache
+def gh_available_labels():
+    labels =  _gh(f"/repos/{course_owner()}/{course_repo()}/labels")
+    
+    return [l["name"] for l in labels]
+              
 Comment = namedtuple("Comment", ["commenter", "text", "ctime", "url"])
 
 class PeerFeedback:
-    _template_url = "https://michael-weylandt.com/STA9750/miniprojects.html"
+    _template_url = f"{course_site()}/miniprojects.html"
     
     resp = r.get(_template_url)
         
@@ -212,7 +563,7 @@ def gh_pat():
 
 
 @cache
-def _gh(path, get=True, data=None):
+def _gh(path, method="get", data=None):
     headers = {
         "Accept": "application/vnd.github+json",
         "Authorization": f"Bearer {gh_pat()}",
@@ -220,11 +571,15 @@ def _gh(path, get=True, data=None):
     }
 
     fullpath = "https://api.github.com/" + path
-
-    if get:
+    
+    if method == "get":
         return r.get(fullpath, headers=headers).json()
-    else:
+    elif method == "post":
         return r.post(fullpath, headers=headers, data=data)
+    elif method == "put":
+        return r.post(fullpath, headers=headers, data=data)
+    else: 
+        raise click.ClickException("Unknown HTTP Verb in _gh() call")
 
 
 @cache
@@ -233,7 +588,10 @@ def gh_list_issues(owner=None):
     pagination = 1
     
     while((len(ALL_ISSUES) % 100) == 0): 
-        resp = _gh(f"/repos/michaelweylandt/{course_repo()}/issues?state=all&per_page=100&page={pagination}")
+        resp = _gh(f"/repos/{course_owner()}/{course_repo()}/issues?state=all&per_page=100&page={pagination}")
+
+        if not resp: 
+            break
 
         if "status" in resp and resp["status"] != "200":
             raise click.ClickException("UNABLE TO ACCESS GITHUB API")
@@ -265,7 +623,7 @@ def gh_list_issues(owner=None):
 
 @cache
 def gh_list_comments(issue_id):
-    resp = _gh(f"/repos/michaelweylandt/{course_repo()}/issues/{issue_id}/comments")
+    resp = _gh(f"/repos/{course_owner()}/{course_repo()}/issues/{issue_id}/comments")
     if "status" in resp and resp["status"] != "200":
         return list()
     return [
@@ -276,28 +634,19 @@ def gh_list_comments(issue_id):
 
 def gh_issue_comment(issue_id, text):
     return _gh(
-        f"/repos/michaelweylandt/{course_repo()}/issues/{issue_id}/comments",
-        get=False,
+        f"/repos/{course_owner()}/{course_repo()}/issues/{issue_id}/comments",
+        method="post",
         data=json.dumps({"body": text}),
     )
 
 
 def gh_issue_create(title, text):
     return _gh(
-        f"/repos/michaelweylandt/{course_repo()}/issues",
-        get=False,
+        f"/repos/{course_owner()}/{course_repo()}/issues",
+        method="post",
         data=json.dumps({"title": title, "body": text}),
     )
 
-
-@cache
-def course_dir():
-    click.echo("Reading configuration from _teaching.yml")
-    with open("_teaching.yml") as f:
-        course_config = yaml_load(f)
-        click.echo("Course Configuration: \n" + pformat(course_config))
-
-    return op.expanduser(course_config["gradedir"])
 
 @cache 
 def latest_issues_dir():
@@ -324,21 +673,6 @@ def load_issues():
 
     return ALL_ISSUES
 
-
-@cache
-def course_short():
-    with open("_variables.yml") as f:
-        course_config = yaml_load(f)
-
-    return course_config["course"]["short"]
-
-
-@cache
-def course_repo():
-    with open("_variables.yml") as f:
-        course_config = yaml_load(f)
-
-    return course_config["course"]["repo"]
 
 
 @cache
@@ -456,7 +790,7 @@ def get_pf_mapping(project_id):
                 raise click.ClickException("Issue appears to be issue #0. Please confirm all PF properly assigned.")
 
             issue_url = (
-                f"https://github.com/michaelweylandt/{course_repo()}/issues/{issue_num}"
+                f"https://github.com/{course_owner()}/{course_repo()}/issues/{issue_num}"
             )
             value.append((author, issue_url))
 
@@ -529,6 +863,13 @@ def current_teams():
     is_flag=True
 )
 @click.option(
+    "-S", 
+    "--include_secret", 
+    help="Should the student's secret code be printed?",
+    default=False,
+    is_flag=True
+)
+@click.option(
     "-g",
     "--github",
     help="If provided, only provide roster information for listed students",
@@ -546,24 +887,28 @@ def current_teams():
     is_flag=True,
     default=False
 )
-def roster_list(include_inactive, include_emplid, github, grep_flag, send_email):
+def roster_list(include_inactive, include_emplid, include_secret, 
+                github, grep_flag, send_email):
     """Print current course roster"""
     
     if github and grep_flag: 
         raise click.ClickException("Cannot pass -g and -G flags simultaneously")
     
     roster = current_roster(include_inactive=include_inactive)
-    teams = current_teams()
-    
-    full_roster = pd.merge(
-        roster, 
-        teams.rename(columns={
-            "name": "team_name", 
-            "number": "team_number"
-         }),
-        left_on="project_team", 
-        right_on="team_number", how="left").\
-    drop(["project_team", "team_number"], axis=1)
+    teams = current_teams(include_pending=False)
+
+    if teams.size:
+        full_roster = pd.merge(
+            roster, 
+            teams.rename(columns={
+                "name": "team_name", 
+                "number": "team_number"
+            }),
+            left_on="project_team", 
+            right_on="team_number", how="left").\
+        drop(["project_team", "team_number", "team_status"], axis=1)
+    else:
+        full_roster = roster
     
     full_roster.index = full_roster.index + 1
     
@@ -573,19 +918,48 @@ def roster_list(include_inactive, include_emplid, github, grep_flag, send_email)
     if not include_inactive:
         full_roster = full_roster.drop(["active"], axis=1)
         
+    if not include_secret:
+        full_roster = full_roster.drop(["secret"], axis=1)
+        
     full_roster = full_roster.rename(columns={
         "github": "GitHub ID", 
         "email": "Student Email", 
         "name": "Student Name", 
         "team_name": "Project Team Name", 
         "active": "Status",
-        "emplid": "Student ID"
+        "emplid": "Student ID", 
+        "secret": "Secret Code"
     })
     
-    if include_inactive:
-        click.echo(f"{full_roster.shape[0]} total students registered (including inactive).")
+    if github:
+        full_roster = full_roster.loc[full_roster["GitHub ID"].isin(github),:]
+        
+    if grep_flag: 
+        gh_re_flag = full_roster["GitHub ID"].str.contains(grep_flag, flags = re.IGNORECASE)
+        nm_re_flag = full_roster["Student Name"].str.contains(grep_flag, flags = re.IGNORECASE)
+        tm_re_flag = full_roster["Project Team Name"].str.contains(grep_flag, flags = re.IGNORECASE)
+        
+        all_re_flag = gh_re_flag | nm_re_flag | tm_re_flag
+        
+        full_roster = full_roster.loc[all_re_flag,:]
+    
+    if github or grep_flag: 
+        list_str = "match search"
     else: 
-        click.echo(f"{full_roster.shape[0]} active students registered.")
+        list_str = "registered"
+    
+    if send_email:
+        open_email(
+            subject=f"STA 9750 ",
+            to=full_roster["Student Email"].to_list(),
+        )
+    else:
+        click.echo(full_roster.to_markdown(index=True))
+
+        if include_inactive:
+            click.echo(f"{full_roster.shape[0]} total students {list_str} (including inactive).")
+        else: 
+            click.echo(f"{full_roster.shape[0]} active students {list_str}.")
 
 @roster.command(name="add")
 @click.option(
@@ -609,7 +983,13 @@ def roster_list(include_inactive, include_emplid, github, grep_flag, send_email)
     help="Student's Real Name",
     prompt="What is the Student's Real Name?",
 )
-def roster_add(github, email, emplid, name):
+@click.option(
+    "-S", 
+    "--secret",
+    help="Student's Secret Code (Used for peer feedback assignments)",
+    prompt="What is the student's secret code?"
+)
+def roster_add(github, email, emplid, name, secret):
     """Add a new student to the roster.
 
     This function is intended for use following MP00. As part of MP00,
@@ -622,6 +1002,7 @@ def roster_add(github, email, emplid, name):
             "email": email,
             "emplid": emplid,
             "name": name,
+            "secret": secret,
             "active": True,
             "project_team": None,
         },
@@ -1520,7 +1901,13 @@ def _mini_archive(project_id, github, skip_pdf=False,
     multiple=True,
     help="GitHub ID to verify. Can be given multiple times. If blank, all active students in roster. ",
 )
-def mini_verify(project_id, github):
+@click.option(
+    "--dry-run",
+    is_flag=True, 
+    default=False,
+    help="Dry run? If true, do not post confirmation messages to GitHub issues",
+)
+def mini_verify(project_id, github, dry_run):
     """Verify that a mini-project was submitted and formatted correctly
 
     This script can be used to verify correct submission of mini-projects and,
@@ -1529,17 +1916,16 @@ def mini_verify(project_id, github):
 
     To process submissions after the deadline passes, use the `process` command
     instead."""
-    return _mini_verify(project_id, github)
-
+    return _mini_verify(project_id, github, dry_run)
 
 def _get_submission_urls(project_id, github, check_master=True):
-    MP_URL = f"https://michael-weylandt.com/STA9750/miniprojects/mini0{project_id}.html"
+    MP_URL = f"{course_site()}/mini/mini0{project_id}.html"
 
     MP_PAGE = r.get(MP_URL)
     MP_TEXT = (
         BS(MP_PAGE.text, features="lxml").find(id="submission-text").get_text().strip()
     )
-    BODY = MP_TEXT.replace("<GITHUB_ID>", github)
+    BODY = MP_TEXT.replace("YOUR_GITHUB_ID", github)
     EXPECTED_URL = re.search(URL_REGEX, BODY).group()
 
     if project_id:
@@ -1555,111 +1941,47 @@ def _get_submission_urls(project_id, github, check_master=True):
     return (EXPECTED_URL, RAW_URL)
 
 
-def _mini_verify(project_id, github):
+def _mini_verify(project_id, github, dry_run=True):
     "Implementation of mini_verify. Can be called directly by other functions"
-    MP_URL = f"https://michael-weylandt.com/STA9750/miniprojects/mini0{project_id}.html"
+    MP_URL = f"{course_site()}/mini/mini0{project_id}.html"
 
     MP_PAGE = r.get(MP_URL)
-    MP_TEXT = (
-        BS(MP_PAGE.text, features="lxml").find(id="submission-text").get_text().strip()
-    )
+    MP_TEXT = BS(MP_PAGE.text, features="lxml").\
+                  find(id="submission-text").get_text().strip()
 
     if not github:
         github = current_roster().github.values
 
     RESULTS = {g: None for g in github}
+    
+    ISSUES = IssueCollection()
 
     for gh in github:
         click.echo("-----------------------------------")
         click.echo(f"Attempting to verify for user {gh}")
         TITLE = f"{course_short()} {gh} MiniProject #0{project_id}"
-        BODY = MP_TEXT.replace("<GITHUB_ID>", gh)
+        BODY = MP_TEXT.replace("YOUR_GITHUB_ID", gh)
 
-        ISSUES = gh_list_issues(gh)
-
-        if not ISSUES:
+        gh_issues = ISSUES.select_by_owner(gh)
+        
+        gh_issues = [i for i in gh_issues if i.mp_num == project_id or i.mp_num is None]
+        
+        if not gh_issues:
+            import pdb; pdb.set_trace()
             click.echo(f"No issues found for user {gh} in repo {course_repo()}")
             RESULTS[gh] = (False, gh, "NO ISSUES FOUND", None)
             continue
-        
-        ISSUE_TITLES = [str_simplify(_.title) for _ in ISSUES.values()]
-
-        if str_simplify(TITLE) not in ISSUE_TITLES:
-            click.echo("I could not find an issue with the desired title:")
-            click.echo(f" - {TITLE}")
-            click.echo("I found issues with the following titles instead:")
-
-            for t in ISSUES.values():
-                click.echo(f" - {t.title} (Issue #{t.number:02g})")
-
-            RESULTS[gh] = (False, gh, "NO TITLE MATCH", None)
-            continue
-        
-        POTENTIAL_ISSUES = [v for v in ISSUES.values() if str_simplify(v.title) == str_simplify(TITLE)]
-
-        if len(POTENTIAL_ISSUES) != 1: 
+        if len(gh_issues) > 1:
             import pdb; pdb.set_trace()
-
-        ISSUE = POTENTIAL_ISSUES[0]
-
-        if ISSUE.state != "open":
-            click.echo(f"Issue {TITLE} is not in 'open' state")
-            RESULTS[gh] = (False, gh, "ISSUE CLOSED", ISSUE.number)
-
-        SUB_URL = re.search(URL_REGEX, ISSUE.body, re.IGNORECASE)
-        EXPECTED_URL = re.search(URL_REGEX, BODY, re.IGNORECASE)
-
-        if EXPECTED_URL is None:
-            raise click.ClickException("Could not find expected URL in MP Instructions")
-
-        if SUB_URL is None:
-            click.echo("No URL found in submission")
-            RESULTS[gh] = (False, gh, "NO URL", ISSUE.number)
-            continue
-
-        SUB_URL = SUB_URL.group()
-        EXPECTED_URL = EXPECTED_URL.group()
-
-        if SUB_URL.lower() != EXPECTED_URL.lower():
-            click.echo("Submitted URL does not match MP Instructions")
-            click.echo("Expected: " + EXPECTED_URL)
-            click.echo("Submitted: " + SUB_URL)
-
-            RESULTS[gh] = (False, gh, "INCORRECT URL", ISSUE.number)
-            continue
-
-        SUB_RESP = r.get(SUB_URL)
-
-        if not SUB_RESP.ok:
-            click.echo("Submitted URL did not resolve properly")
-            click.echo(" - Submitted: " + SUB_URL)
-
-            RESULTS[gh] = (False, gh, "INVALID URL", ISSUE.number)
-            continue
-
-        if project_id:
-            RAW_URL = f"https://raw.githubusercontent.com/{gh}/{course_repo()}/refs/heads/main/mp0{project_id}.qmd"
-        else:
-            RAW_URL = f"https://raw.githubusercontent.com/{gh}/{course_repo()}/refs/heads/main/index.qmd"
-
-        RAW_RESP = r.get(RAW_URL)
-
-        if not RAW_RESP.ok:
-            # Some students use 'master' instead of 'main' branch
-            # so try this as well
-            RAW_URL_MASTER = RAW_URL.replace("main", "master")
-            RAW_RESP = r.get(RAW_URL_MASTER)
-
-        if not RAW_RESP.ok:
-            click.echo("Could not identify qmd source")
-            click.echo(" - Not Found at Expected: " + RAW_URL)
-            click.echo(" - Not Found at Alternate: " + RAW_URL_MASTER)
-
-            RESULTS[gh] = (False, gh, "NO SOURCE", ISSUE.number)
-            continue
-
-        RESULTS[gh] = (True, gh, "SUCCESS", ISSUE.number)
-
+            
+        gh_issue = gh_issues[0]
+        gh_issue_status = gh_issue.status
+        
+        RESULTS[gh] = (gh_issue_status.ok, gh, gh_issue.status_oneline, gh_issue.number)
+        
+        if not dry_run:
+            gh_issue.update_labels()
+        
     DF = pd.DataFrame(RESULTS).T
     DF.columns = ["ok", "github", "message", "issue_num"]
 
@@ -1685,15 +2007,62 @@ def _mini_verify(project_id, github):
         for ix, row in enumerate(DF_BAD.itertuples(), start=n_ok+1):
             if row.issue_num:
                 click.echo(
-                    f"- {ix:02g} GitHub user {row.github} failed with message {row.message}. See https://github.com/michaelweylandt/{course_repo()}/issues/{row.issue_num} for details"
+                    f"- {ix:02g} GitHub user {row.github} failed with message '{row.message}'. See https://github.com/{course_owner()}/{course_repo()}/issues/{row.issue_num} for details"
                 )
             else:
                 click.echo(
-                    f"- {ix:02g} GitHub user {row.github} failed with message {row.message}. No suitable issue found. See above for details."
+                    f"- {ix:02g} GitHub user {row.github} failed with message {row.message}. No suitable issue found."
                 )
-
+                
+    if dry_run:
+        return DF
+    
+    for issue_unknown_mp in ISSUES.select_unknown_mp():
+        issue_comments = issue_unknown_mp.comments
+        
+        template = Environment(
+            loader=FileSystemLoader("_cissoid/templates"), 
+            autoescape=select_autoescape()
+                            ).get_template("mp_title_parse_fail.md")
+                            
+        text_md = template.render(
+            gh = issue_unknown_mp.owner,
+            project_id = project_id, 
+            current_title = issue_unknown_mp.title
+        )
+        
+        if issue_comments and issue_comments[-1].text == text_md:
+            continue
+        else:
+            issue_unknown_mp.post_new_comment(text_md)
+            
+    loader = Environment(loader=FileSystemLoader("_cissoid/templates"), 
+                         autoescape=select_autoescape())
+            
+    for issue_num in DF.issue_num:
+        issue = ISSUES[issue_num]
+        issue_comments = issue.comments
+        
+        if issue.mp_num is None:
+            continue
+        
+        if issue.ok:
+            template = loader.get_template("mp_all_checks_pass.md")
+        else: 
+            template = loader.get_template("mp_checks_fail.md")
+            
+        text_md = template.render(
+            gh = issue.owner,
+            project_id = project_id, 
+            check_output = issue.status_full
+        )
+        
+        if issue_comments and issue_comments[-1].text == text_md:
+            continue
+        else:
+            issue.post_new_comment(text_md)
+            
     return DF
-
 
 @mini.group(name="peer")
 def peer():
@@ -2609,7 +2978,7 @@ def peer_meta(project_id, rearchive, skip_pdf, force):
                                         
                     if score == "r":
                         if not META_RUBRIC:
-                            META_RUBRIC = pd.read_html("https://michael-weylandt.com/STA9750/miniprojects.html")[0]
+                            META_RUBRIC = pd.read_html(f"{course_site()}/miniprojects.html")[0]
                         click.echo(META_RUBRIC)
                     elif score == "s":
                         latest_pdf = op.join(course_dir(), "latest", "pdfs", f"{submittor}_mp{project_id}.pdf")
@@ -2619,10 +2988,10 @@ def peer_meta(project_id, rearchive, skip_pdf, force):
                             import pdb; pdb.set_trace()
                     elif score == "R": 
                         if not RUBRIC:
-                            RUBRIC = pd.read_html(f"https://michael-weylandt.com/STA9750/miniprojects/mini0{project_id}.html")[1]
+                            RUBRIC = pd.read_html(f"{course_site()}/mini/mini0{project_id}.html")[1]
                         click.echo(RUBRIC.T)
                     elif score == "i": 
-                        webbrowser.open(f"https://github.com/michaelweylandt/{course_repo()}/issues/{FEEDBACK['issue_num']}")
+                        webbrowser.open(f"https://github.com/{course_owner()}/{course_repo()}/issues/{FEEDBACK['issue_num']}")
                     elif score == "h": 
                         webbrowser.open(f"https:/{submittor}.github.io/{course_repo()}/mp0{project_id}.html")
                     else: 
@@ -2660,7 +3029,7 @@ def peer_meta(project_id, rearchive, skip_pdf, force):
                 comment = "NO PEER FEEDBACK IDENTIFIED. CONTACT INSTRUCTOR IF YOU BELIEVE PEER FEEDBACK SUBMISSION WAS MISSED."
             
             if 'issue_num' in FEEDBACK: 
-                url = f"https://github.com/michaelweylandt/{course_repo()}/issues/{FEEDBACK['issue_num']}"
+                url = f"https://github.com/{course_owner()}/{course_repo()}/issues/{FEEDBACK['issue_num']}"
             else: 
                 url = None
 
