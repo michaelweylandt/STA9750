@@ -41,13 +41,16 @@ or the list of upcoming course activities below may be useful:
 #| warning: false
 library(yaml)
 library(glue)
+library(tidyverse)
 variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
 course_repo  <- variables$course$repo
 course_short <- variables$course$short
 
-readr::read_csv("key_dates.csv") |> 
-    dplyr::select(-`Significant Student Time`) |>
-    dplyr::arrange(Date) |> 
+read_csv("key_dates.csv") |> 
+    select(-`Significant Student Time`) |>
+    mutate(Time2 = Time |> str_replace("11:", "23:") |> str_replace("6:", "18:")) |>
+    arrange(Date, Time2) |> 
+    select(-Time2) |>
     DT::datatable(options=list(searching=FALSE,
                                paging=TRUE),
                   caption=glue("Upcoming Important Dates for {course_short}"), 

@@ -3,20 +3,7 @@ pa_num: 8
 pa_title: "Taking Plots to the Next Level"
 ---
 
-```{r}
-#| echo: false
-#| warning: false
-#| message: false
-library(tidyverse)
-NUMBER <- as.integer(rmarkdown::metadata$pa_num)
-due_date_str <- read_csv("key_dates.csv") |> 
-    filter(`Course Element` == "Pre-Assignments", 
-           `Item Number` == NUMBER, 
-           str_detect(Details, "Due")) |> 
-    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
-    pull(dt) |>
-    format("%Y-%m-%d (%A) at %I:%M%P")
-```
+{{< include _pa_setup.qmd >}}
 
 ```{r}
 #| echo: false
@@ -33,16 +20,11 @@ knitr::opts_hooks$set(fig.path = function(options){
 })
 ```
 
-**Due Date**: `{r} due_date_str`
-
-**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
-
-
 This week, we will dive deeper into the world of data visualization, with a 
 focus on tools for interactive (and animated) data visualization. Before doing 
 so, let's  pause and consolidate everything we've done to date: 
 
-1. If you did not finish [last week's in-class lab](../labs/lab07.html), 
+1. If you did not finish [last week's in-class lab](../labs/lab07.qmd), 
    do so now.
 
 2. Explore the [R Graphics Gallery "Best Charts"
@@ -95,7 +77,7 @@ versions of [`shiny`](https://shiny.posit.co/py/) and
 After finishing these activities, complete the Weekly Pre-Assignment Quiz on
 Brightspace.
 
-## Optional Enrichment: Myth Busting and Apophenia in Data Visualization"
+## Optional Enrichment: "Myth Busting and Apophenia in Data Visualization"
 
 Watch [Prof. Di Cook](https://www.dicook.org/)'s lecture "Myth busting
 and apophenia in data visualisation: is what you see really there?". As

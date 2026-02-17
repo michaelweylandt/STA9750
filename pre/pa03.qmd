@@ -6,24 +6,7 @@ pa_title: "Calculator Work with `R`"
 
 {{< include _gradethis_init.qmd >}}
 
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-library(tidyverse)
-NUMBER <- as.integer(rmarkdown::metadata$pa_num)
-due_date_str <- read_csv("key_dates.csv") |> 
-    filter(`Course Element` == "Pre-Assignments", 
-           `Item Number` == NUMBER, 
-           str_detect(Details, "Due")) |> 
-    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
-    pull(dt) |>
-    format("%Y-%m-%d (%A) at %I:%M%P")
-```
-
-**Due Date**: `{r} due_date_str`
-
-**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
+{{< include _pa_setup.qmd >}}
 
 It is now time for us to start programming in `R` properly.
 In this week's pre-assignment, we're going to focus on three

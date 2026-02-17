@@ -6,24 +6,8 @@ pa_title: "Single-Table `dplyr` Verbs"
 
 {{< include _gradethis_init.qmd >}}
 
-```{r}
-#| echo: false
-#| warning: false
-#| message: false
-library(tidyverse)
-NUMBER <- as.integer(rmarkdown::metadata$pa_num)
-due_date_str <- read_csv("key_dates.csv") |> 
-    filter(`Course Element` == "Pre-Assignments", 
-           `Item Number` == NUMBER, 
-           str_detect(Details, "Due")) |> 
-    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
-    pull(dt) |>
-    format("%Y-%m-%d (%A) at %I:%M%P")
-```
+{{< include _pa_setup.qmd >}}
 
-**Due Date**: `{r} due_date_str`
-
-**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
 
 This week, we begin manipulating `R`'s most important structure the `data.frame`. While base `R` provides tools for working with `data.frame` objects, our primary focus will be on the `tidyverse` family of tools. These provide a unified and consistent set of tools for working with data objects.
 

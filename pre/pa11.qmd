@@ -3,24 +3,7 @@ pa_num: 11
 pa_title: "Introduction to Statistical Modeling in `R`"
 ---
 
-```{r}
-#| echo: false
-#| warning: false
-#| message: false
-library(tidyverse)
-NUMBER <- as.integer(rmarkdown::metadata$pa_num)
-due_date_str <- read_csv("key_dates.csv") |> 
-    filter(`Course Element` == "Pre-Assignments", 
-           `Item Number` == NUMBER, 
-           str_detect(Details, "Due")) |> 
-    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
-    pull(dt) |>
-    format("%Y-%m-%d (%A) at %I:%M%P")
-```
-
-**Due Date**: `{r} due_date_str`
-
-**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
+{{< include _pa_setup.qmd >}}
 
 In our final week, we are going to look into predictive modeling (*i.e.*,
 black-box machine learning) with `R`. Specifically, we are going to introduce

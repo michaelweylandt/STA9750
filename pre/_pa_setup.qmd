@@ -1,0 +1,24 @@
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(tidyverse)
+NUMBER <- as.integer(rmarkdown::metadata$pa_num)
+LECTURE_NUMBER <- read_csv("key_dates.csv") |>
+    filter(`Course Element` == "Class Session") |>
+    filter(str_detect(Details, 
+                      sprintf("Lecture #%02g", NUMBER))) |>
+    pull(`Item Number`)
+due_date_str <- read_csv("key_dates.csv") |> 
+    filter(`Course Element` == "Pre-Assignments", 
+           `Item Number` == LECTURE_NUMBER, 
+           str_detect(Details, "Due")) |> 
+    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
+    pull(dt) |>
+    format("%Y-%m-%d (%A) at %I:%M%P") |>
+    paste(sprintf("(before Class Session #%02g)", LECTURE_NUMBER))
+```
+
+**Due Date**: `{r} due_date_str`
+
+**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)

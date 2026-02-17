@@ -3,25 +3,7 @@ pa_num: 9
 pa_title: "Intro to HTML"
 ---
 
-```{r}
-#| echo: false
-#| warning: false
-#| message: false
-library(tidyverse)
-NUMBER <- as.integer(rmarkdown::metadata$pa_num)
-due_date_str <- read_csv("key_dates.csv") |> 
-    filter(`Course Element` == "Pre-Assignments", 
-           `Item Number` == NUMBER, 
-           str_detect(Details, "Due")) |> 
-    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
-    pull(dt) |>
-    format("%Y-%m-%d (%A) at %I:%M%P")
-```
-
-**Due Date**: `{r} due_date_str`
-
-**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
-
+{{< include _pa_setup.qmd >}}
 
 Our next topic is scraping data from web pages, that is data stored in HTML. 
 Recall our "hierarchy" of data storage preferences: 
