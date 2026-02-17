@@ -31,7 +31,7 @@ mp_start <- function(N, github_id){
     }
     
     
-    mp_url <- glue("https://michael-weylandt.com/STA9750/miniprojects/mini0{N}.html")
+    mp_url <- glue("https://michael-weylandt.com/STA9750/mini/mini0{N}.html")
     
     if(missing(github_id)){
         github_id <- readline("What is your GitHub ID? ")
@@ -46,7 +46,7 @@ mp_start <- function(N, github_id){
     }
     
     mp_skeleton_url <- "https://michael-weylandt.com/STA9750/mp_template.qmd"
-    mp_instructions_url <- glue("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/miniprojects/mini0{N}.qmd")
+    mp_instructions_url <- glue("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/mini/mini0{N}.qmd")
     
     mp_instructions <- readLines(mp_instructions_url)
     
@@ -87,7 +87,7 @@ mp_submission_ready <- function(N, github_id){
                   choices=c(0, 1, 2, 3, 4))
     }
     
-    mp_url <- glue("https://michael-weylandt.com/STA9750/miniprojects/mini0{N}.html")
+    mp_url <- glue("https://michael-weylandt.com/STA9750/mini/mini0{N}.html")
     
     mp_text <- read_html(mp_url) |> html_element("#submission-text") |> html_text()
     
@@ -98,39 +98,40 @@ mp_submission_ready <- function(N, github_id){
     variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
     course_repo  <- variables$course$repo
     course_short <- variables$course$short
-BASE_URL <- glue("https://{github_id}.github.io/{course_repo}/")
-
-page_resp <- request(BASE_URL) |>
-    req_url_path_append(glue("mp0{N}.html")) |>
-    req_error(is_error = \(r) FALSE) |> 
-    req_perform()
-
-if(resp_is_error(page_resp)){
-    stop(glue("I was unable to access your submission at {page_resp$url}. Please make sure that your content has been successfully uploaded to GitHub."))
-}
-
-cat(glue("I was able to access your submission at {page_resp$url}, now checking JS and CSS files."), "\n")
-
-SUPPORT_FILES <- page_resp |> resp_body_html() |> html_elements("link") |> html_attr("href")
-
-SUPPORT_STATUS <- map_lgl(SUPPORT_FILES, function(s){
-    supp_resp_error <- request(BASE_URL) |> 
-        req_url_path_append(s) |>
-        req_error(is_error = \(r) FALSE) |>
-        req_perform() |>
-        resp_is_error()
     
-    if(supp_resp_error){
-        cat(glue("- I could not find the file {s} that your site attempts to load.\n  Please make sure docs/{s} has been uploaded via Git to your GitHub.\n"))
-        cat("\n")
-    }
-    !supp_resp_error
-}) 
+    BASE_URL <- glue("https://{github_id}.github.io/{course_repo}/")
+    
+    page_resp <- request(BASE_URL) |>
+        req_url_path_append(glue("mp0{N}.html")) |>
+        req_error(is_error = \(r) FALSE) |> 
+        req_perform()
 
-if(!all(SUPPORT_STATUS)){
-    stop("Necessary support files could not be verified. Please visually inspect all elements of your site before submission.")
-    browseURL(page_resp$url)
-}
+    if(resp_is_error(page_resp)){
+        stop(glue("I was unable to access your submission at {page_resp$url}. Please make sure that your content has been successfully uploaded to GitHub."))
+    }
+    
+    cat(glue("I was able to access your submission at {page_resp$url}, now checking JS and CSS files."), "\n")
+    
+    SUPPORT_FILES <- page_resp |> resp_body_html() |> html_elements("link") |> html_attr("href")
+    
+    SUPPORT_STATUS <- map_lgl(SUPPORT_FILES, function(s){
+        supp_resp_error <- request(BASE_URL) |> 
+            req_url_path_append(s) |>
+            req_error(is_error = \(r) FALSE) |>
+            req_perform() |>
+            resp_is_error()
+        
+        if(supp_resp_error){
+            cat(glue("- I could not find the file {s} that your site attempts to load.\n  Please make sure docs/{s} has been uploaded via Git to your GitHub.\n"))
+            cat("\n")
+        }
+        !supp_resp_error
+    }) 
+    
+    if(!all(SUPPORT_STATUS)){
+        stop("Necessary support files could not be verified. Please visually inspect all elements of your site before submission.")
+        browseURL(page_resp$url)
+    }
 
     IMAGE_FILES <- page_resp |> resp_body_html() |> html_elements("img") |> html_attr("src")
     
@@ -202,7 +203,7 @@ mp_submission_create <- function(N, github_id){
                   choices=c(0, 1, 2, 3, 4))
     }
     
-    mp_url <- glue("https://michael-weylandt.com/STA9750/miniprojects/mini0{N}.html")
+    mp_url <- glue("https://michael-weylandt.com/STA9750/mini/mini0{N}.html")
     
     mp_text <- read_html(mp_url) |> html_element("#submission-text") |> html_text()
     
@@ -216,7 +217,7 @@ mp_submission_create <- function(N, github_id){
     
     title <- glue("{course_short} {github_id} MiniProject #0{N}")
     
-    body <- mp_text |> str_replace("<GITHUB_ID>", github_id)
+    body <- mp_text |> str_replace("YOUR_GITHUB_ID", github_id) |> str_trim()
     
     r <- request("https://github.com/") |>
         req_url_path_append("michaelweylandt") |>
@@ -241,7 +242,7 @@ mp_submission_verify <- function(N, github_id){
                   choices=c(0, 1, 2, 3, 4))
     }
     
-    mp_url <- glue("https://michael-weylandt.com/STA9750/miniprojects/mini0{N}.html")
+    mp_url <- glue("https://michael-weylandt.com/STA9750/mini/mini0{N}.html")
     
     mp_text <- read_html(mp_url) |> html_element("#submission-text") |> html_text()
     
@@ -255,7 +256,7 @@ mp_submission_verify <- function(N, github_id){
     
     title <- glue("{course_short} {github_id} MiniProject #0{N}")
     
-    body <- mp_text |> str_replace("<GITHUB_ID>", github_id) |> str_squish()
+    body <- mp_text |> str_replace("YOUR_GITHUB_ID", github_id) |> str_squish()
     
     page <- 1
     
@@ -390,296 +391,6 @@ mp_submission_verify <- function(N, github_id){
     
     cat("Congratulations! Your mini-project appears to have been submitted correctly!\n")
     invisible(TRUE)
-}
-
-mp_feedback_locate <- function(N, github_id){
-    if(!require("yaml")) install.packages("yaml"); library(yaml)
-    if(!require("gh")) install.packages("gh"); library(gh)
-    if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
-    if(!require("rvest")) install.packages("rvest"); library(rvest)
-    if(!require("glue")) install.packages("glue"); library(glue)
-    if(!require("httr2")) install.packages("httr2"); library(httr2)
-    
-    if(missing(N)){
-        N <- menu(title="Which Mini-Project's Peer Feedback cycle is it currently?", 
-                  choices=c(0, 1, 2, 3, 4))
-    }
-    
-    if(missing(github_id)){
-        github_id <- readline("What is your GitHub ID? ")
-    }
-    
-    page <- 1
-    issues <- list()
-    
-    variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
-    course_repo  <- variables$course$repo
-    course_short <- variables$course$short
-    
-    while((length(issues) %% 100) == 0){
-        new_issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all&per_page=100&page={page}", 
-                         repo=course_repo, 
-                         page=page)
-        
-        if(length(new_issues) == 0){
-            break
-        }
-        
-        issues <- c(issues, new_issues)
-        page <- page + 1
-    }
-    
-    pf_urls <- issues |> 
-        keep(~ str_detect(.x$title, glue("#0{N}"))) |>
-        keep(~ !str_equal(.x$user$login, github_id, ignore_case=TRUE)) |>
-        map(~data.frame(html=.x$html_url, comments=.x$comments_url, body=.x$body)) |>
-        keep(~any(str_detect(map_chr(gh(.x$comments), "body"), github_id) | 
-                  str_detect(.x$body, github_id)
-                  )) |>
-        map("html") |>
-        list_c()
-    
-    cat(glue("I have found several MP#0{N} issues that may be assigned to you.\n"),
-        "Please review the following:\n")
-    for(pf in pf_urls){
-        cat(" - ", pf, "\n")
-    }
-    
-    to_browser <- menu(title="Would you like me to open these in your web browser?", 
-                       choices=c("Yes", "No"))
-    
-    if(to_browser == 1){
-        for(pf in pf_urls){
-            browseURL(pf)
-        }
-    }
-    invisible(TRUE)
-}
-
-mp_feedback_submit <- function(N, peer_id){
-    if(!require("yaml")) install.packages("yaml"); library(yaml)
-    if(!require("gh")) install.packages("gh"); library(gh)
-    if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
-    if(!require("rvest")) install.packages("rvest"); library(rvest)
-    if(!require("glue")) install.packages("glue"); library(glue)
-    if(!require("clipr")) install.packages("clipr"); library(clipr)
-    if(!require("httr2")) install.packages("httr2"); library(httr2)
-    
-    if(missing(N)){
-        N <- menu(title="Which Mini-Project's Peer Feedback would you like to check was properly submitted on GitHub?", 
-                  choices=c(0, 1, 2, 3, 4))
-    }
-    
-    if(missing(peer_id)){
-        peer_id <- readline("What is your Peer's GitHub ID? ")
-    }
-    
-    variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
-    course_repo  <- variables$course$repo
-    course_short <- variables$course$short
-    
-    title <- glue("{course_short} {peer_id} MiniProject #0{N}")
-    
-    page <- 1
-    
-    issues <- list()
-    
-    while((length(issues) %% 100) == 0){
-        new_issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all&per_page=100&page={page}", 
-                         repo=course_repo, 
-                         page=page)
-        
-        if(length(new_issues) == 0){
-            break
-        }
-        
-        issues <- c(issues, new_issues)
-        page <- page + 1
-    }
-    
-    issue_names <- vapply(issues, function(x) str_squish(x$title), "")
-    
-    name_match <- which(issue_names == title)
-    
-    if(length(name_match) != 1){
-        cat("I could not find a unique issue with the title:\n", 
-            "    ", sQuote(title),"\n",
-            "I'm afraid I can't verify whether the peer feedback was submitted properly\n", 
-            "but the issue likely lies with the submittor, not with your feedback.")
-        stop("PEER FEEDBACK NOT VERIFIED.")
-    } 
-    
-    issue <- issues[[name_match]]
-    
-    issue_url <- issue$html_url
-    
-    template_url <- "https://michael-weylandt.com/STA9750/miniprojects.html"
-    
-    template_text <- read_html(template_url) |> 
-        html_element("#peer-feedback-template") |> 
-        html_text() |>
-        str_trim() 
-    
-    template_categories <- c(
-        "Written Communication", 
-        "Project Skeleton", 
-        "Formatting & Display", 
-        "Code Quality", 
-        "Data Preparation", 
-        "Extra Credit"
-    )
-    
-    overall <- readline("Overall Comments: (Hit enter if no comments) ")
-    
-    template_text <- template_text |> str_replace("OPTIONAL TEXT", overall)
-    
-    for(category in template_categories){
-        has_score <- FALSE
-        
-        while(!has_score){
-            score <- readline(glue("On a scale of 0 to 10, how many points does {peer_id} deserve for {category}? "))
-            
-            score <- as.integer(score)
-            
-            if(!is.na(score) & (score >= 0) & (score <= 10)){
-                has_score <- TRUE
-            }
-        }
-        
-        has_score <- FALSE
-        
-        text <- readline(glue("Why did you give {peer_id} {score} points for {category}? "))
-        
-        template_text <- template_text |>
-            str_replace("NN", as.character(score)) |>
-            str_replace("TEXT TEXT TEXT", as.character(text))
-    }
-    
-    write_clip(template_text)
-    
-    readline(paste0(
-        "After you hit Enter / Return, you will be taken to a GitHub page.\n",
-        "Paste from the clipboard into the comment box at the bottom to\n",
-        "pre-populate your peer feedback. Then hit 'Comment' to finish your\n",
-        "submission. "))
-    
-    browseURL(issue_url)
-    
-    cat(glue("You can now use `mp_feedback_verify({N}, peer_id={peer_id})`\n",
-             "to confirm your submission was properly formatted.\n"))
-}
-
-mp_feedback_verify <- function(N, github_id, peer_id){
-    if(!require("yaml")) install.packages("yaml"); library(yaml)
-    if(!require("gh")) install.packages("gh"); library(gh)
-    if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
-    if(!require("rvest")) install.packages("rvest"); library(rvest)
-    if(!require("glue")) install.packages("glue"); library(glue)
-    
-    if(missing(N)){
-        N <- menu(title="Which Mini-Project's Peer Feedback would you like to check was properly submitted on GitHub?", 
-                  choices=c(0, 1, 2, 3, 4))
-    }
-    
-    if(missing(github_id)){
-        github_id <- readline("What is your GitHub ID? ")
-    }
-    
-    if(missing(peer_id)){
-        peer_id <- readline("What is your Peer's GitHub ID? ")
-    }
-    
-    variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
-    course_repo  <- variables$course$repo
-    course_short <- variables$course$short
-    
-    template_url <- "https://michael-weylandt.com/STA9750/miniprojects.html"
-    
-    template_text <- read_html(template_url) |> 
-        html_element("#peer-feedback-template") |> 
-        html_text() |>
-        str_trim() |>
-        str_replace_all("OPTIONAL TEXT", "(.*)") |>
-        str_replace_all("NN", "(.*)") |>
-        str_replace_all("TEXT TEXT TEXT", "(.*)")
-    
-    title <- glue("{course_short} {peer_id} MiniProject #0{N}")
-    
-    page <- 1
-    
-    issues <- list()
-    
-    while((length(issues) %% 100) == 0){
-        new_issues <- gh("/repos/michaelweylandt/{repo}/issues?state=all&per_page=100&page={page}", 
-                         repo=course_repo, 
-                         page=page)
-        
-        if(length(new_issues) == 0){
-            break
-        }
-        
-        issues <- c(issues, new_issues)
-        page <- page + 1
-    }
-    
-    issue_names <- vapply(issues, function(x) str_squish(x$title), "")
-    
-    name_match <- which(issue_names == title)
-    
-    if(length(name_match) != 1){
-        cat("I could not find a unique issue with the title:\n", 
-            "    ", sQuote(title),"\n",
-            "I'm afraid I can't verify whether the peer feedback was submitted properly\n", 
-            "but the issue likely lies with the submittor, not with your feedback.")
-        stop("PEER FEEDBACK NOT VERIFIED.")
-    } 
-    
-    issue <- issues[[name_match]]
-    
-    issue_url <- issue$html_url
-    issue_comment_url <- issue$comments_url
-    
-    comments <- gh(issue_comment_url)
-    
-    commenters <- vapply(comments, function(x) x$user$login, "")
-    
-    comment_num <- which(commenters == github_id)
-    
-    if(length(comment_num) != 1){
-        cat("I cannot identify your comment on the issue at", 
-            sQuote(issue_url), ". Please verify that this is the correct link.\n")
-        
-        if(length(comment_num) == 0){
-            cat("You do not appear to have commented on this issue.")
-        } else {
-            cat("You have left multiple comments on this issue.",
-                "Please consolidate your feedback")
-        }
-        stop("PEER FEEDBACK NOT VERIFIED.")
-    }
-    
-    comment_body <- comments[[comment_num]]$body
-    
-    cat("I have found your comment, with the following text:\n-----\n")
-    
-    cat(comment_body)
-    
-    cat("\n-----\n")
-    
-    comment_body  <- comment_body |> str_squish()
-    template_text <- template_text |> str_squish()
-    
-    matches <- str_match_all(comment_body, template_text)[[1]][-1]
-    
-    if(anyNA(matches)){
-        cat("I couldn't match the template to your comment. Please modify and try again.")
-        stop("PEER FEEDBACK NOT VERIFIED.")
-    }
-    
-    cat(glue("Congratulations! Your peer feedback on {peer_id}'s MP #0{N} appears properly formatted.\nThank you for your contributions to {course_short}!\n"))
-    
-    invisible(TRUE)
-    
 }
 
 count_words <- function(url){
