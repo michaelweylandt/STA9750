@@ -42,19 +42,18 @@ get_lab_title <- function(N){
 lab_line <- function(N){
     if(str_detect(get_class_topic(N), "Lecture")){
         topic <- get_class_topic(N)
-        N <- str_extract(topic, "Lecture #(\\d+)", group=1) |>
+        lab_n <- str_extract(topic, "Lecture #(\\d+)", group=1) |>
                 as.integer()
-    }
-
-    lab_file <- glue("labs/lab{sprintf('%02d', N)}.qmd")
-    NN <- sprintf('%02d', N)
-    
-    if(file.exists(lab_file)){
-        glue("\n    - [Lab #{NN}](./labs/lab{NN}.qmd): {get_lab_title(N)}", .trim=FALSE)
+        
+        lab_file <- glue("./labs/lab{sprintf('%02d', lab_n)}.qmd")
+        
+        NN <- sprintf('%02d', lab_n)
+        
+        glue("\n    - [Lab #{NN}]({lab_file}): {get_lab_title(lab_n)}",
+             .trim=FALSE)
     } else {
         ""
     }
-        
 }
 
 md_line <- function(N){

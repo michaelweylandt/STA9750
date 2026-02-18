@@ -2,6 +2,7 @@
 title: "{{< var course.short >}} - Course Syllabus"
 filters: 
  - list-table
+ - highlight-text
 format:
     html: 
         page-layout: "full"
@@ -36,13 +37,13 @@ format:
 
 ### Grading
 
--   24% [Weekly Pre-Assignments](./preassignments.html)
+-   24% [Weekly Pre-Assignments](./preassignments.qmd)
     -   3% Each (best eight of ten: lowest two dropped)
     -   Submission *via* Brightspace
--   30% [Mini Projects #01-#04](./miniprojects.html) (Best 3 of 4)
+-   30% [Mini Projects #01-#04](./miniprojects.qmd) (Best 3 of 4)
     -   8% per submission
     -   2% per peer feedback (scored *via* meta-review)
--   46% [Course Project](./project.html)
+-   46% [Course Project](./project.qmd)
     -   1% Team Contract
     -   5% Proposal
     -   5% Mid-term Check-In
@@ -143,7 +144,7 @@ this is an option that can be enabled on the student's end.
 
 Technology issues are not an approved excuse for late submissions; in
 particular, Brightspace issues are not an approved excuse for late submission
-of the [Mini-Projects](./miniprojects.html). Brightspace support is provided by
+of the [Mini-Projects](./miniprojects.qmd). Brightspace support is provided by
 [BCTC](https://bctc.baruch.cuny.edu/students/) and the [BCTC Help
 Desk](https://bctc.baruch.cuny.edu/instructional-technology/services/service-now/). 
 The Help Desk is not staffed 24 hours per day, so you are encouraged to submit
@@ -178,6 +179,13 @@ class_date <- function(n){
         filter(`Item Number` == n) |>
         pull(Date) |>
         format("%Y-%m-%d")
+}
+
+class_topic <- function(n){
+    read_csv(date_file) |>
+        filter(`Course Element` == "Class Session") |>
+        filter(`Item Number` == n) |>
+        pull(Details)
 }
 ```
 
@@ -247,17 +255,19 @@ final_grades_date <- function(){
      
    * - 1
      - `r class_date (01)`
-     - Course Overview and Key Infrastructure:
+     - `r class_topic(01)`
        1. `R` and `RStudio`
        2. `git` and GitHub
      - None
-     - [Lab #01](./labs/lab01.html)
-     - [Mini-Project #00](./mini/mini00.html) assigned. 
+     - [Lab #01](./labs/lab01.qmd)
+     - [Mini-Project #00](./mini/mini00.qmd) assigned. 
        Due `r due_date_mini(0)`
        
    * - 2
      - `r class_date (02)`
-     - Introduction to Course Project
+     - **Introduction to Course Project**
+     
+       `r class_topic(02)`
      
        1. Introduction to Reproducible Research:
           - Markdown and Quarto
@@ -266,8 +276,8 @@ final_grades_date <- function(){
        3. Interactive Use of `R`
           a. Use of the REPL
           b. Installing and Loading Packages
-     - [PA #02](./pre/pa02.html) due at start of class (6:00pm)
-     - [Lab #02](./labs/lab02.html)
+     - [PA #02](./pre/pa02.qmd) due at start of class (6:00pm)
+     - [Lab #02](./labs/lab02.qmd)
      
    * - 
      - `r holiday_date(1)`
@@ -277,79 +287,88 @@ final_grades_date <- function(){
 
    * - 3
      - `r class_date (03)`
-     - Basic Data and Control Structures in `R`:
+     - **Special Presentation: Library Data Science Resources**
+     
+     
+        `r class_topic(03)`
+     
        1. Vectors
        2. Subsetting
        3. Control Flow
        4. Function Calls
        5. Data Frames
        
-     - [PA #03](./pre/pa03.html) due at start of class (6:00pm)
-     - [Lab #03](./labs/lab03.html)
-     - [Mini-Project #00](./mini/mini00.html) due `r due_date_mini(0)`.
+     - [PA #03](./pre/pa03.qmd) due at start of class (6:00pm)
+     - [Lab #03](./labs/lab03.qmd)
+     - [Mini-Project #00](./mini/mini00.qmd) due `r due_date_mini(0)`.
      
-       [Mini-Project #01](./mini/mini01.html) assigned; due `r due_date_mini(1)`
+       [Mini-Project #01](./mini/mini01.qmd) assigned; due `r due_date_mini(1)`
      - Peer Feedback on Mini Project #00 assigned; 
        due `r due_date_mini(0, feedback=TRUE)`
-     - Project Team Rosters due at 6:00pm
+     - Project Team Rosters due at 11:59pm
      
        Professor will assign teams for 'unmatched'
        students at the end of class
        
    * - 4
      - `r class_date (04)`
-     - <td colspan="4" style="text-align:center"> **In-Class Project Proposal Presentations** <br> *Optional Enrichment Topic: Additional R Basics* </td>
+     - <td colspan="4" style="text-align:center"> 
+       **In-Class Project Proposal Presentations** <br> 
+       *Optional Enrichment Topic: Additional R Basics* 
+       </td>
      - Team Contract and Slides due at 6:00pm
 
    * - 5
      - `r class_date (05)`
-     - Tidy Data Manipulation I:
+     - `r class_topic(05)`
        1. Single Table Operations
        2. Factors
        3. Dates & Times
        
        Review of `git` fundamentals.
-     - [PA #05](./pre/pa05.html) due at start of class (6:00pm)
-     - [Lab #05](./labs/lab05.html)
+     - [PA #04](./pre/pa04.qmd) due at start of class (6:00pm)
+     - [Lab #04](./labs/lab04.qmd)
 
 
    * - 6
-     - `r class_date (06)`
-     - Tidy Data Manipulation II:
+     - `r class_date(06)`
+     - `r class_topic(06)`
        1. Multi-Table Operations (Joins)
        2. Pivots
        3. Working with Missing Data
        
        Debugging Techniques
-     - [PA #06](./pre/pa06.html) due at start of class (6:00pm)
-     - [Lab #06](./labs/lab06.html)
-     - [Mini-Project #01](./mini/mini01.html) due `r due_date_mini(1)`.
+     - [PA #05](./pre/pa05.qmd) due at start of class (6:00pm)
+     - [Lab #05](./labs/lab05.qmd)
+     - [Mini-Project #01](./mini/mini01.qmd) due `r due_date_mini(1)`.
      
-       [Mini-Project #02](./mini/mini02.html) assigned. 
+       [Mini-Project #02](./mini/mini02.qmd) assigned. 
        Due `r due_date_mini(2)`
      - Peer Feedback on Mini Project #01 assigned; due 
        `r due_date_mini(1, feedback=TRUE)`
 
    * - 7
      - `r class_date (07)`
-     - Plotting I:
+     - `r class_topic(07)`
        - Introduction to `ggplot2`
        - Customizing Formatting
-       - Maps
-     - [PA #07](./pre/pa07.html) due at start of class (6:00pm)
-     - [Lab #07](./labs/lab07.html)
+     - [PA #06](./pre/pa06.qmd) due at start of class (6:00pm)
+     - [Lab #06](./labs/lab06.qmd)
      
    * - 8
      - `r class_date (08)`
-     <td colspan="5" style="text-align:center"> **Mid-Semester Check-In Presentations** <br> *Optional Enrichment Topic: SQL* </td>
+     <td colspan="5" style="text-align:center"> 
+     **Mid-Semester Check-In Presentations** <br> 
+     *Optional Enrichment Topic: SQL* 
+     </td>
      - Mid-Semester Peer Evaluation and Slides due at 6:00pm
      
    * - 
      - `r holiday_date(2)`
      <td colspan="3" style="text-align:center"> ***`r holiday_date(2, details=TRUE)`*** </td>
-     - [Mini-Project #02](./mini/mini02.html) due `r due_date_mini(2)`.
+     - [Mini-Project #02](./mini/mini02.qmd) due `r due_date_mini(2)`.
      
-       [Mini-Project #03](./mini/mini03.html) assigned. 
+       [Mini-Project #03](./mini/mini03.qmd) assigned. 
        Due `r due_date_mini(3)`
      - Peer Feedback on Mini Project #02 assigned; due 
        `r due_date_mini(2, feedback=TRUE)`
@@ -360,62 +379,72 @@ final_grades_date <- function(){
 
    * - 9
      - `r class_date (09)`
-     - Data Import
-     - [PA #09](./pre/pa09.html) due at start of class (6:00pm)
-     - [Lab #09](./labs/lab09.html)
+     - `r class_topic(09)`
+     - [PA #07](./pre/pa07.qmd) due at start of class (6:00pm)
+     - [Lab #07](./labs/lab07.qmd)
      
      
    * - 10
-     - `r class_date (10)` **NB: Tuesday**
-     - Tools for Interactive Data Analysis
+     - `r class_date (10)` [**NB: Tuesday**]{color="#FF3333"}
+     - `r class_topic(10)`
+       - Maps
        - `shiny`
        - `ggplot2` Extensions for Animated and Interactive Plots
-     - [PA #10](./pre/pa10.html) due at start of class (6:00pm)
-     - [Lab #10](./labs/lab10.html)
+     - [PA #08](./pre/pa08.qmd) due at start of class (6:00pm)
+     - [Lab #08](./labs/lab08.qmd)
      - 
      - 
    * - 11
      - `r class_date (11)`
-     - Elements of Web Scraping
+     - `r class_topic(11)`
        - Introduction to HTTP and HTML
        - `httr2`
        - `rvest`
        - JSON
-     - [PA #11](./pre/pa11.html) due at start of class (6:00pm)
-     - [Lab #11](./labs/lab11.html)
-     - [Mini-Project #04](./mini/mini04.html) assigned. 
+     - [PA #09](./pre/pa09.qmd) due at start of class (6:00pm)
+     - [Lab #09](./labs/lab09.qmd)
+     - [Mini-Project #04](./mini/mini04.qmd) assigned. 
        Due `r due_date_mini(4)`
      - Peer Feedback on Mini Project #03 assigned; due 
        `r due_date_mini(3, feedback=TRUE)`
 
    * - 12
      - `r class_date (12)`
-     - 
+     - `r class_topic(12)`
        - Strings & Regular Expressions
        - Classical Statistical Modeling in `R`
-     - [PA #12](./pre/pa12.html) due at start of class (6:00pm)
-     - [Lab #12](./labs/lab12.html)
+     - [PA #10](./pre/pa10.qmd) due at start of class (6:00pm)
+     - [Lab #10](./labs/lab10.qmd)
     
    * - 13
      - `r class_date (13)`
-     <td colspan="5" style="text-align:center"> **Final Presentations** <br> **Optional Enrichment Topic: Functional Programming in R** </td>
+     <td colspan="5" style="text-align:center"> 
+       **Final Presentations** <br> 
+       *Optional Enrichment Topic: Functional Programming in `R`*
+     </td>
      - Slides due at 6:00pm
      
    * - 14
      - `r class_date(14)`
      - **Course Wrap-Up** </br>
      
-       Predictive Modeling in `R`
+       `r class_topic(14)`
      
-     - [PA #14](./pre/pa14.html) due at start of class (6:00pm)
-     - [Lab #14](./labs/lab14.html)
-     - [Mini-Project #04](./mini/mini04.html) due `r due_date_mini(4)`.
+     - [PA #11](./pre/pa11.qmd) due at start of class (6:00pm)
+     - [Lab #11](./labs/lab11.qmd)
+     - [Mini-Project #04](./mini/mini04.qmd) due `r due_date_mini(4)`.
      - Peer Feedback on Mini Project #04 assigned; due 
        `r due_date_mini(4, feedback=TRUE)`
      
    * - 
      - Finals Period
-      <td colspan="6" style="text-align:center"> <p>Group Report, Individual Report, Final Peer Evaluations due `r final_report_date()` (Tentatively)</p> </br> <p>Final Grades posted to CUNYFirst by `r final_grades_date()`</p>
+      <td colspan="6" style="text-align:center"> 
+        <p>Group Report, Individual Report, Final Peer Evaluations 
+           due `r final_report_date()` (Tentatively)</p> 
+        </br> 
+        <p>Final Grades posted to CUNYFirst by `r final_grades_date()`</p>
+    </td>
+      
 ::: 
 
 ### Syllabus Quiz

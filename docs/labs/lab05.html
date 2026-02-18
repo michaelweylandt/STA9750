@@ -265,6 +265,8 @@ eyJhdHRyIjp7ImVkaXQiOmZhbHNlLCJldmFsIjp0cnVlLCJvdXRwdXQiOmZhbHNlfSwiY29kZSI6Indl
 </script>
 </div>
 </div>
+<p><strong>Class #06: Thursday March 12, 2026 (Lecture #05: Multi-Table dplyr Verbs)</strong></p>
+<section id="slides" class="level1"><h1><a href="../slides/slides06.html">Slides</a></h1>
 <div class="cell">
 <div>
 <div id="webr-3" class="exercise-cell">
@@ -275,7 +277,6 @@ eyJhdHRyIjp7ImVjaG8iOmZhbHNlLCJlZGl0IjpmYWxzZSwiZXZhbCI6dHJ1ZX0sImNvZGUiOiJ3ZWJy
 </script>
 </div>
 </div>
-<section id="slides" class="level1"><h1><a href="../slides/slides06.html">Slides</a></h1>
 </section><section id="review" class="level1"><h1>Review Practice</h1>
 <p>The file <a href="https://github.com/michaelweylandt/STA9750/blob/main/births.csv">“births.csv”</a> in the course repository contains daily US birth counts for 20 years from 1969 to 1988, obtained from the US Social Security Administration. Download this file and read it into <code>R</code> and answer the following review questions with your group.</p>
 <p>The following code may be useful:</p>
@@ -1154,13 +1155,13 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeSh0aWJibGUpXG50
 <span>           cum_min  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cummin</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        date value  cum_mean cum_sum cum_max cum_min
-1 2026-01-07     1  1.000000       1       1       1
-2 2026-01-08     5  3.000000       6       5       1
-3 2026-01-09    10  5.333333      16      10       1
-4 2026-01-10    25 10.250000      41      25       1
-5 2026-01-11    50 18.200000      91      50       1
-6 2026-01-12   100 31.833333     191     100       1
-7 2026-01-13   500 98.714286     691     500       1</code></pre>
+1 2026-02-11     1  1.000000       1       1       1
+2 2026-02-12     5  3.000000       6       5       1
+3 2026-02-13    10  5.333333      16      10       1
+4 2026-02-14    25 10.250000      41      25       1
+5 2026-02-15    50 18.200000      91      50       1
+6 2026-02-16   100 31.833333     191     100       1
+7 2026-02-17   500 98.714286     691     500       1</code></pre>
 </div>
 </div>
 <p>Clearly, this sort of cumulative value is highly sensitive to row order.</p>
@@ -1174,13 +1175,13 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeSh0aWJibGUpXG50
 <span>           pct_change <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span><span class="op">(</span><span class="va">value</span> <span class="op">/</span> <span class="va">prev_value</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>        date value prev_value pct_change
-1 2026-01-07     1         NA         NA
-2 2026-01-08     5          1        400
-3 2026-01-09    10          5        100
-4 2026-01-10    25         10        150
-5 2026-01-11    50         25        100
-6 2026-01-12   100         50        100
-7 2026-01-13   500        100        400</code></pre>
+1 2026-02-11     1         NA         NA
+2 2026-02-12     5          1        400
+3 2026-02-13    10          5        100
+4 2026-02-14    25         10        150
+5 2026-02-15    50         25        100
+6 2026-02-16   100         50        100
+7 2026-02-17   500        100        400</code></pre>
 </div>
 </div>
 </section></section><section id="conditional-manipulations" class="level2"><h2 class="anchored" data-anchor-id="conditional-manipulations">Conditional Manipulations</h2>
@@ -1204,7 +1205,7 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeSh0aWJibGUpXG50
 <div class="cell">
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3</span>, <span class="op">-</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, </span>
 <span>           group<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"cos"</span>, <span class="st">"sin"</span>, <span class="st">"tan"</span>, <span class="st">"cos"</span>, <span class="st">"sin"</span>, <span class="st">"sin"</span>, <span class="st">"tan"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>x_trig <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html">case_when</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>x_trig <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html">case_when</a></span><span class="op">(</span></span>
 <span>        <span class="va">group</span> <span class="op">==</span> <span class="st">"cos"</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">cos</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, </span>
 <span>        <span class="va">group</span> <span class="op">==</span> <span class="st">"sin"</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">sin</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, </span>
 <span>        <span class="va">group</span> <span class="op">==</span> <span class="st">"tan"</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">tan</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
@@ -1224,7 +1225,7 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeSh0aWJibGUpXG50
 <div class="cell">
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3</span>, <span class="op">-</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, </span>
 <span>           group<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"cos"</span>, <span class="st">"sin"</span>, <span class="st">"unknown"</span>, <span class="st">"cos"</span>, <span class="st">"sin"</span>, <span class="st">"sin"</span>, <span class="st">"unknown"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>x_trig <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html">case_when</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>x_trig <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html">case_when</a></span><span class="op">(</span></span>
 <span>        <span class="va">group</span> <span class="op">==</span> <span class="st">"cos"</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">cos</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, </span>
 <span>        <span class="va">group</span> <span class="op">==</span> <span class="st">"sin"</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">sin</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, </span>
 <span>        <span class="cn">TRUE</span>  <span class="op">~</span> <span class="cn">NA</span></span>
@@ -1244,7 +1245,7 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeSh0aWJibGUpXG50
 <div class="cell">
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">penguins</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html">case_when</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html">case_when</a></span><span class="op">(</span></span>
 <span>        <span class="va">body_mass</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">body_mass</span>, na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">~</span> <span class="st">"Biggest of Species"</span>, </span>
 <span>        <span class="va">body_mass</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">body_mass</span>, na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">~</span> <span class="st">"Smallest of Species"</span>, </span>
 <span>        <span class="cn">TRUE</span> <span class="op">~</span> <span class="st">"In the middle"</span></span>

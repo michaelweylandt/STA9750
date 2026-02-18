@@ -9,6 +9,28 @@ library(purrr)
 library(jsonlite)
 library(tidyverse)
 
+LAB_NUMBER <- lab
+LECTURE_NUMBER <- read_csv("key_dates.csv") |>
+    filter(`Course Element` == "Class Session") |>
+    filter(str_detect(Details, 
+                      sprintf("Lecture #%02g", LAB_NUMBER))) |>
+    pull(`Item Number`)
+
+LECTURE_DATE <- read_csv("key_dates.csv") |>
+    filter(`Course Element` == "Class Session") |>
+    filter(str_detect(Details, 
+                      sprintf("Lecture #%02g", LAB_NUMBER))) |>
+    pull(Date) |>
+    strftime("%A %B %d, %Y")
+
+get_lab_topic <- function(){
+    read_csv("key_dates.csv") |>
+    filter(`Course Element` == "Class Session") |>
+    filter(str_detect(Details, 
+                      sprintf("Lecture #%02g", LAB_NUMBER))) |>
+    pull(Details)
+}
+
 make_slide_link <- function(N=lab){
     s <- glue("Lecture #{sprintf('%02d', N)}")
     class <- read_csv("key_dates.csv") |>
@@ -16,6 +38,12 @@ make_slide_link <- function(N=lab){
                        str_detect(Details, s)) |>
                 pull(`Item Number`)
     
-    sprintf("# [Slides](../slides/slides%02d.qmd)", class)
+    sprintf("**Class #%02d: %s (%s)** \n\n# [Slides](../slides/slides%02d.qmd)", 
+            LECTURE_NUMBER, 
+            LECTURE_DATE, 
+            get_lab_topic(),
+            LECTURE_NUMBER)
 }
 ```
+
+`r make_slide_link()`

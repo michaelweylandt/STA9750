@@ -218,9 +218,10 @@ eyJhdHRyIjp7ImVkaXQiOmZhbHNlLCJldmFsIjp0cnVlLCJvdXRwdXQiOmZhbHNlfSwiY29kZSI6Indl
 </script>
 </div>
 </div>
+<p><strong>Class #12: Thursday April 30, 2026 (Lecture #10: Strings, Regular Expressions, and Text Processing)</strong></p>
 <section id="slides" class="level1"><h1><a href="../slides/slides12.html">Slides</a></h1>
 </section><section id="review" class="level1"><h1>Review and Warm-Up</h1>
-<p><em>Redux of <a href="./lab11.html#ex03">Exercise 03 from Last Week</a></em></p>
+<p><em>Redux of <a href="../labs/lab09.html#ex03">Exercise 03 from Last Week</a></em></p>
 <p><a href="https://hadley.nz/">Hadley Wickham</a> is the author of many of the “tidy tools” we use in this course. He is also an excellent bartender and chef. In this exercise, we are going to web scrape his cocktail recipe book which can be found at <a href="https://cocktails.hadley.nz/" class="uri">https://cocktails.hadley.nz/</a>.</p>
 <p>Our goal is to create a data frame that records all 150+ recipes on this site (as rows) and the different ingredients (as columns). This week, we are going to pull the different recipes into <code>R</code>: next week we are going to process the text and create our final data frame (so stay tuned!).</p>
 <p>Working with your project team, first go through the following steps to build a scraping strategy:</p>
@@ -1091,8 +1092,12 @@ Solution
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">ingredient</span>, values_from<span class="op">=</span><span class="va">number</span>, values_fill<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>`summarise()` has grouped output by 'title'. You can override using the
-`.groups` argument.</code></pre>
+<pre><code>`summarise()` has regrouped the output.
+ℹ Summaries were computed grouped by title and ingredient.
+ℹ Output is grouped by title.
+ℹ Use `summarise(.groups = "drop_last")` to silence this message.
+ℹ Use `summarise(.by = c(title, ingredient))` for per-operation grouping
+  (`?dplyr::dplyr_by`) instead.</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 161 × 168
@@ -1184,7 +1189,7 @@ Combined Solution
 <span>           ingredient <span class="op">=</span> <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_trim.html">str_trim</a></span><span class="op">(</span><span class="va">ingredient</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="co"># For some ingredients, e.g. a lemon twist, the implied</span></span>
 <span>    <span class="co"># but unstated quantity is 1</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>amount <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html">case_when</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>amount <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html">case_when</a></span><span class="op">(</span></span>
 <span>        <span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">amount</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>, </span>
 <span>        <span class="cn">TRUE</span> <span class="op">~</span> <span class="va">amount</span><span class="op">)</span>, </span>
 <span>        ingredient <span class="op">=</span> <span class="fu"><a href="https://stringr.tidyverse.org/reference/case.html">str_to_title</a></span><span class="op">(</span><span class="va">ingredient</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1192,7 +1197,7 @@ Combined Solution
 <span>           Amount <span class="op">=</span> <span class="va">amount</span>, </span>
 <span>           Unit <span class="op">=</span> <span class="va">unit</span>, </span>
 <span>           Ingredient <span class="op">=</span> <span class="va">ingredient</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>Ingredient <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html">case_when</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>Ingredient <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html">case_when</a></span><span class="op">(</span></span>
 <span>        <span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">Unit</span><span class="op">)</span> <span class="op">~</span> <span class="va">Ingredient</span>, <span class="co"># Handle unit-less ingredients</span></span>
 <span>        <span class="cn">TRUE</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">Ingredient</span>, <span class="st">" ("</span>, <span class="va">Unit</span>, <span class="st">")"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="co"># Spanish Coffee lists orange liqueur twice, so let's </span></span>
