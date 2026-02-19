@@ -111,17 +111,26 @@ get_pa_deadline <- function(N){
 }
 
 get_mp_submitted <- function(N){
-    ISSUES <- read_json(glue("https://api.github.com/repos/michaelweylandt/{REPO_NAME}/issues?labels=MiniProject%20%230{N}&per_page=100&state=open"))
+    ISSUES <- read_json(glue("https://api.github.com/repos/michaelweylandt/{REPO_NAME}/issues?per_page=100&state=open"))
     
-    LABELS <- ISSUES |> 
-        map(pluck("labels")) |> 
-        purrr::flatten() |> 
-        map(pluck("name")) |> 
-        list_c()
+    KEEP_ISSUES <- ISSUES |> keep(\(x) x |> 
+                                      pluck("labels") |> 
+                                      map_chr("name") |>
+                                      str_detect(glue("Mini-Project #0{N}")) |>
+                                      any()
+                                  )
     
-    N_SUBMITTED <- length(ISSUES)
     
-    N_COMPLETED <- LABELS |> str_equal("Passed all automated checks") |> sum()
+    PASSED_CHECKS <- KEEP_ISSUES |> keep(\(x) x |> 
+                                      pluck("labels") |> 
+                                      map_chr("name") |>
+                                      str_detect("Passed Automated Checks") |>
+                                      any()
+                                  )
+    
+    
+    N_SUBMITTED <- length(KEEP_ISSUES)
+    N_COMPLETED <- length(PASSED_CHECKS)
     N_NEED_WORK <- N_SUBMITTED - N_COMPLETED
     
     list(n_submitted = N_SUBMITTED, 

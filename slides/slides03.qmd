@@ -1,36 +1,186 @@
 ---
 session: "`r session <- 3; session`"
-last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
+last_updated: "`r last_updated <- Sys.Date(); 
+                  last_updated |> format('%Y-%m-%d')`"
 class_date:
   "`r library(tidyverse);
     class_date <- read_csv('key_dates.csv', name_repair='universal') |>
     filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
+    pull(Date); class_date |> format('%A %Y-%m-%d')`"
 format: revealjs
 ---
 
 {{< include _setup.qmd >}}
 
-## {{< var course.short >}} Week {{< meta session >}} 
+## Course Project
 
-Today: `r TODAY_TOPIC`
+Course project description is now [online](../project.qmd) 
+
+Detailed discussion of:
+
+- Project structure
+- Key deadlines
+- Grading rubrics
+
+Please send me questions!
+
+Team rosters due at **midnight tonight**. If you don't have a team, stick around
+after class and meet others without a team. 
+
+## Course Project
+
+::: {.small}
+
+- Teams: 4-6 classmates
+- Stages: 
+  - Proposal (in class presentation)
+  - Mid-semester check-in (in class presentation)
+  - Final: in class presentation, individual report, summary report
+- Structure:
+  - Shared "Overarching Question" (OQ)
+  - Individual "Specific Question" (SQ, one per teammate)
+  
+:::
+  
+Full description [online](../project.qmd)
+
+## Course Project 
+
+Conceit:
+
+::: {.incremental .smaller}
+
+- Consultants hired by client interested in _qualitative_ OQ
+- You break OQ into several _quantitative_ SQs
+- Combine results from SQs to answer OQ
+
+::: 
+
+. . . 
+
+Process: 
+
+::: {.incremental .smaller}
+
+- Proposal: Sales pitch for consultants - here's the OQ we will answer
+- Mid-Semester: Scope of work - here's the SQs and data we will use
+- End-of-Semester: Presentation of Results
+  - Group Report: "Executive Summary"
+  - Individual Reports: "Technical Appendices"
+
+:::
+
+
+## Course Project
+
+Next week: [project proposal
+presentations](../project.qmd#project-proposal-presentations)
+
+. . . 
+
+Major goal: 
+
+- What is the overarching / motivating question for your project? 
+
+See instructions for more
+
+. . . 
+
+Post slides and team contract to Brightspace before class - you will present
+from your computer
+
+## Overarching Question
+
+Example Topic: NYC Apartment Prices
+
+::: {.incremental .smaller}
+
+- Very Bad: Is there a relationship between rent and location? 
+
+  - Problems: Binary, Obvious, Limited room for exploration
+
+- Bad: What is the correlation between rent and location? 
+
+  - Problems: Simple (one numeric answer), Linear, Limited room for exploration
+  
+- Good: What is the relationship between rent and location?
+
+  - Strengths: Allows more interesting analysis, subgroups / differential impact
+  
+  - Weaknesses: Very broad (lots has been said about this), not clear how to
+    split up
+
+- Great: What are the key drivers of NYC rents and do they suggest multiple 
+  market segments with different relative priorities?
+
+  - Strengths: Allows project to be split up (different factors), clear intent
+    to integrate findings, working hypothesis (multiple segments)
+  
+:::
+
+
+## Finding Data
+
+Advice:
+
+::: {.incremental .smaller}
+
+- Start early!
+- [NYC Open Data](https://opendata.cityofnewyork.us/) is great
+  - See also: [FRED](https://fred.stlouisfed.org/), 
+    [Federal Open Data](https://data.gov), 
+    [Nasa EarthData](https://search.earthdata.nasa.gov)
+  - [Kaggle](https://www.kaggle.com/datasets) is not really a primary source
+  - Ask on Piazza for pointers
+  - Lots of data hidden in Wikipedia
+- Nothing paid or private without express instructor submission
+- Everyone loves _spatial_ data!
+- Avoid overdone topics (NYC rents, NYC schools) - new topics => low-hanging fruit
+
+:::
+
+## Presentation Hints
+
+- Longest time $\neq$ most important
+- Story, story, story! _Why_ are you making these choices? 
+- Hourglass Structure
+  - Start big
+  - Motivate _your_ overarching question
+  - Specific questions
+  - Tie specific to overarching
+  - From overarching back to big motivation
+- No less than one figure every other slide
+
+## Special Presentation
+
+Data Science Resources at the Baruch Libraries
+
+. . . 
+
+Presenter: Jason Amey (Baruch Business Librarian and Former STA 9750 Student)
+
 ## Mini-Project #00 
 
 [Mini-Project #00](../mini/mini00.qmd) is due `r get_mp_deadline(00)`
 
+- Automatic grace period until Sunday at midnight
+
 ```{r}
 #| echo: false
 MP_SUBMISSIONS <- get_mp_submitted(0)
-if(file.exists("roster.json")){
-    N_STUDENTS <- read_yaml("_teaching.yml")$gradedir |>
-        file.path("roster.json") |> 
-        read_json() |> 
-        length()
+ROSTER_FILE <- read_yaml("_teaching.yml") |> 
+    pluck("gradedir") |>
+    file.path("roster.json")
+
+if(file.exists(ROSTER_FILE)){
+    N_STUDENTS <- ROSTER_FILE |> read_json() |> length()
 } else {
     N_STUDENTS <- NA
 }
 ```
+
+::: {.smaller}
 
 As of `r Sys.Date()`: 
 
@@ -39,10 +189,12 @@ As of `r Sys.Date()`:
   - `r MP_SUBMISSIONS$n_completed` pass automated tests
   - `r MP_SUBMISSIONS$n_need_work` need more work (see comments)
   
+:::
+  
 . . . 
 
-Recall that you need to post on *both* GitHub and Piazza for this assignment - 
-sending GitHub ID is **most important**
+Recall that you need to submit *via* GitHub, Brightspace, and Piazza for this 
+assignment - sending GitHub ID is **most important**
 
 ## MP #00 Goals
 
@@ -52,7 +204,6 @@ Mini-Project #00 is ungraded to:
 
 i)   Sort out tech trouble
 ii)  Show danger of waiting to the last minute
-iii) Demonstrate importance of closely following instructions 
 
 :::
 
@@ -67,29 +218,16 @@ learn more about you
 
 ## MP #00 Peer Feedback
 
-On `r get_mp_pf_assigned(0)`, I will assign _peer-feedback_ on GitHub: 
+On `r get_mp_pf_assigned(0)`, I will assign _peer-feedback_:
 
-::: {.smallest}
+- For MP #00, no real scores (give all 10s!): practice with process
+- I will provide an `R` function to solicit your peer feedback
+  - You provide your GitHub ID and your secret phrase
+  - Answer questions
+  - Upload result file to Brightspace
+- Full details to follow via Brightspace announcement
 
-- I will _tag_ you in several GitHub issues
-  - Email
-  - [GitHub notifications](https://github.com/notifications)
-  - [Feedback locator](https://michael-weylandt.com/STA9750/tips.html#find-peer-feedback-assigned-to-me)
-  
-:::
-. . . 
-
-::: {.smallest}
-
-- Provide feedback [formatted according to template](https://michael-weylandt.com/STA9750/miniprojects.html#peer-feedback)
-  - For MP #00, no real scores (give all 10s!): practice with process
-  - [Formatting check](https://michael-weylandt.com/STA9750/tips.html#verify-peer-feedback-properly-formatted) can verify proper formatting
-
-:::
-
-. . . 
-
-::: {.smallest}
+## MP #00 Peer Feedback
 
 Aims: 
 
@@ -99,65 +237,96 @@ Aims:
 
 > "Good artists copy; great artists steal." -- Steve Jobs
 
-:::
+More discussion in advance of MP #01 feedback cycle
 
-More discussion next week
+## CISSOID
+
+New this semester: `cissoid`
+
+- `CIS Scripts for Organizing Instructional Delivery`
+
+. . . 
+
+Course robot to help guarantee submissions are complete and to provide automated
+help where possible
+
+. . . 
+
+Feature requests welcome 
 
 ## Course Support
 
 ```{r}
 #| echo: false
 TOTAL_STUDENTS <- 97 
-PIAZZA_ENROLLS <- 96
+PIAZZA_ENROLLS <- 21
 ```
 
 Asynchronous Support: Piazza
 
 - `r PIAZZA_ENROLLS` students registered in Piazza
-- `r TOTAL_STUDENTS - PIAZZA_ENROLLS` still needs to register(!)
-- **10 minute** average time to response
 
 . . . 
 
 Synchronous Support: Office Hours
 
-- Tuesdays and Thursdays at 5pm
-- Still waiting on CUNY HR before TA office hours begin
+- Wednesday at 5pm (In-Person)
+- Thursdays at 5pm (Zoom)
 
 ## Pre-Assignments
 
-`r session |> sprintf("Pre-Assignment #%02d", x= _)`
+Pre-assignment quizzes
 
-::: {.small}
-
-  - Ignore Brightspace's Grading
-    - Brightspace calls all short answers wrong
-    - Gradebook shows complete/incomplete grading
-  - I often give feedback through Brightspace, so 
+  - 30 point quiz
+    - My intent is for everyone to get 30/30
+    - Take as many times as needed
+    - Settings tweaked to only re-show incorrect questions
+  - I sometimes give feedback through Brightspace, so 
     check 'feedback' if you are alerted to any
-    
+
+. . . 
+
+No pre-assignment next week - presentations instead
+
+## Mini-Project #01
+
+[Mini-Project #01](../mini/mini01.qmd) officially released today
+
+::: {.incremental}
+
+- Due `r get_mp_deadline(01)` (`r get_mp_deadline(01, as_date_obj=TRUE) - class_date` Days)
+- Topic: `r get_mp_title(01)`
+- Analysis of IPEDS Data
+- Graded out of 80
+  - 30 points for completed submissions
+
 :::
 
-. . .
-  
-`r (session + 1) |> sprintf("Pre-Assignment #%02d", x= _)`
 
-::: {.small}
+## Mini-Project #01
 
-  - Day before class at midnight each week
-  - Available on course website + Brightspace after 9pm
-  
-:::
+7 'Tasks' covering: 
 
+- data import (#1), 
+- data preparation / feature engineering (#2-3)
+- Exploratory Data Analysis (#4-6), and 
+- writing up your analysis (#7)
+
+. . . 
+
+For this MP, you are a college president describing changes (or lack of changes)
+to the demographics of your student body post-*SFFA*. 
 
 # Today
 
 ## Today
 
 - Brief Review of Quarto Render + Git Commit Cycle
-- Introduction to Course Project
-- `R`: Data Frames, Functions, Packages and Control Flow
+- Introduction to `R` Programming
+- Key Ideas in `R`: Data Frames, Functions, Packages and Control Flow
 - Wrap Up
+
+# Git Review
 
 ## Render + Commit Cycle
 
@@ -167,6 +336,18 @@ In Mini-Project #00, your goal is to _get rendered HTML to GitHub_
 - Things will go wrong - better now than later
 
 Once you do this once, cycle becomes easier
+
+## Git Workflow
+
+Three key commands: 
+
+- `git add`: add some changes to a 'box'
+- `git commit`: seal the 'box'
+- `git push`: send the 'box' to GitHub
+
+`Git` pane in `RStudio` shows _uncommited changes_, not files. 
+
+If a file 'vanishes' after a commit, that's good!
 
 ## Render + Commit
 
@@ -196,88 +377,6 @@ Tips:
 . . . 
 
 Storage is cheap - your time isn't
-
-. . . 
-
-Live demo
-
-# Course Project Overview
-
-## Course Project
-
-::: {.small}
-
-- Teams: 4-6 classmates
-- Stages: 
-  - Proposal (in class presentation)
-  - Mid-semester check-in (in class presentation)
-  - Final: in class presentation, individual report, summary report
-- Structure:
-  - Shared "Overarching Question" (OQ)
-  - Individual "Specific Question" (SQ, one per teammate)
-  
-:::
-  
-Full description [online](https://michael-weylandt.com/STA9750/project.html)
-
-## Course Project Conceit
-
-::: {.incremental .smaller}
-
-- Consultants hired by client interested in _qualitative_ OQ
-- You break OQ into several _quantitative_ SQs
-- Combine results from SQs to answer OQ
-
-::: 
-
-. . . 
-
-Process: 
-
-::: {.incremental .smaller}
-
-- Proposal: Sales pitch for consultants - here's the OQ we will answer
-- Mid-Semester: Scope of work - here's the SQs and data we will use
-- End-of-Semester: Presentation of Results
-  - Group Report: "Executive Summary"
-  - Individual Reports: "Technical Appendices"
-
-:::
-
-## Finding Data
-
-- Start early!
-- [NYC Open Data](https://opendata.cityofnewyork.us/) is great
-  - See also: [FRED](https://fred.stlouisfed.org/), [Federal Open Data](https://data.gov), [Nasa EarthData](https://search.earthdata.nasa.gov)
-  - [Kaggle](https://www.kaggle.com/datasets) is not really a primary source
-  - Ask on Piazza for pointers
-  - Lots of data hidden in Wikipedia
-- Nothing paid or private without express instructor submission
-- Everyone loves _spatial_ data!
-
-## Presentation Hints
-
-- Longest time $\neq$ most important
-- Story, story, story! _Why_ are you making these choices? 
-- Hourglass Structure
-  - Start big
-  - Motivate _your_ overarching question
-  - Specific questions
-  - Tie specific to overarching
-  - From overarching back to big motivation
-- No less than one figure every other slide
-
-## Next Steps
-
-First step: By `r ROSTERS`, email me your group members.
-
-. . . 
-
-Proposal Presentations: 
-
-- In-class `r DATES |> filter(str_detect(Details, "Proposal")) |> pull(Date) |> strftime("%B %d (%A)") |> paste(collapse=" and ")`
-- See details and rubric [online](https://michael-weylandt.com/STA9750/project.html#project-proposal-presentations)
-- No Pre-Assignment **that week**
 
 # Getting Started with `R`
 
@@ -326,7 +425,8 @@ Basic arithmetic in `R` runs as expected
 
 . . . 
 
-PEMDAS Ordering: Parentheses, Exponentials, Multiplication/Division, Addition/Subtraction
+PEMDAS Ordering: Parentheses, Exponents, Multiplication/Division, 
+Addition/Subtraction
 
 ## Arithmetic in R
 
@@ -386,7 +486,7 @@ Most interesting functions require _input_:
 
 > [name]{color="red"}([argument]{color="blue"})
 
-Here, the _argument_ is passed as input to the function: 
+Here, the _argument_ is **input** to the function: 
 
 ```{r}
 #| echo: true
@@ -429,7 +529,8 @@ head(lm, 5) |> cat(sep="\n"); cat("...")
 
 . . . 
 
-Conceptually `sqrt` vs `sqrt(4)` is "concept of square rooting" vs "the actual square root of 4, *i.e.*, 2"
+Conceptually `sqrt` vs `sqrt(4)` is "concept of square rooting" vs 
+"the actual square root of 4, *i.e.*, 2"
 
 ## Function Calls
 
@@ -665,7 +766,7 @@ A _package_ is a set of code (and data) packaged up for distribution and use
 . . . 
 
 `R` has _many_ helpful packages - these are distributed via `CRAN` 
-(currently over 200,000)
+(currently over 20,000)
 
 . . . 
 
@@ -736,7 +837,7 @@ More discussion of comments later as we write more complex code
 # FAQs from PA #03
 
 
-## FAQ: Vector Index Printout
+## Vector Index Printing
 
 Default vector printing: 
 ```{r}
@@ -758,7 +859,7 @@ matrix(1:9, nrow=3, ncol=3)
 
 Print width is controlled by `getOption("width")`.
 
-## FAQ: Recycling Rules
+## Recycling Rules
 
 ::: {.small}
 
@@ -789,7 +890,7 @@ x + y
 
 :::
 
-## FAQ: Recycling Warning
+## Recycling Warning
 
 ```{r}
 #| echo: true
@@ -805,7 +906,7 @@ Not a problem _per se_, but often a sign that something has gone wrong.
 - 2 vectors of same size is usually safe
 - vectors of different size is usually a programming mistake
 
-## FAQ: Warnings vs Errors
+## Warnings vs Errors
 
 - _Warnings_: heuristics pointing at typical problem
   - Code still executed without a problem
@@ -813,7 +914,7 @@ Not a problem _per se_, but often a sign that something has gone wrong.
 - _Errors_: code failed to execute
   - You have to fix these to run your code
 
-## FAQ: Changing Functions
+## Changing Functions
 
 Most built-in functions can't / shouldn't be changed. 
 
@@ -838,19 +939,20 @@ cosd(90)
 
 Always try `?name` to see documentation.
 
-## FAQ: Git Workflow
-
-Three key commands: 
-
-- `git add`: add some changes to a 'box'
-- `git commit`: seal the 'box'
-- `git push`: send the 'box' to GitHub
-
-`Git` pane in `RStudio` shows _uncommited changes_, not files. 
-
-If a file 'vanishes' after a commit, that's good!
-
 # Wrap-Up
+
+## Orientation
+
+::: {.smaller}
+
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ⬅️
+- Data Manipulation in `R`
+- Data Visualization in `R`
+- Getting Data into `R` 
+- Statistical Modeling in `R`
+
+:::
 
 ## Review
 
@@ -862,27 +964,14 @@ Introduction to `R`:
 - Packages
 - Help System
 
-## Upcoming Work
+## Next Time
 
-Upcoming work from [course calendar](../index.qmd#calendar)
+**Data Frames**: 
 
-::: {.incremental}
+- Organizing several 'connected' vectors into a table
+- table operations with `dplyr`
 
-- [Pre-Assignment #0`r next_session`](../pre/pa04.html) due `r get_pa_deadline(session + 1)`
-- [Mini-Project #00](../mini/mini00.html) due
-- [Mini-Project #00](../mini/mini00.html) peer feedback
-  assigned `r get_mp_pf_assigned(0)`
-- [Mini-Project #01](../mini/mini01.html) released on `r get_mp_assigned(1)`
-
-:::
-
-## Looking Ahead
-
-Course Project: 
-
-- Start looking for teammates and topics
-
-{{< include ../advice/zsb_benefits.qmd >}}
+{{< include ../advice/taxes.qmd >}}
 
 ## Musical Treat
 
