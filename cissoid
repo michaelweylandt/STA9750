@@ -17,10 +17,11 @@ from statistics import median
 import subprocess
 import random
 import re
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote_plus
 import webbrowser
 from copy import deepcopy as dcopy
 from pprint import pformat
+from textwrap import dedent
 
 # PyPI Modules - Nothing here is too exotic, so not worrying about
 # environment management / versioning for now
@@ -32,8 +33,8 @@ import pandas as pd
 import requests as r
 from requests.compat import urljoin, quote, quote_plus
 from yaml import safe_load as yaml_load
+from yaml import dump as yaml_dump
 from pandas.api.types import is_list_like
-
 
 @cache
 def course_short():
@@ -81,20 +82,26 @@ def course_repo():
 
     return course_config["course"]["repo"]
 
+def vernam_encode(nums, secret, offset=0):
+    if len(secret) < len(nums) + offset:
+        raise click.ClickException("Secret is too short!")
+
+    return [n ^ ord(s) for n, s in zip(nums, secret[offset:])]
 
 class IssueStatus(IntEnum):
-    BAD_TITLE = 1
-    ISSUE_CLOSED = 2
-    NO_URL = 3
-    WRONG_URL = 4
-    MISSING_SOURCE = 5
-    MISSING_FILES = 6
-    OK = 7
+    NO_ISSUE = 1
+    BAD_TITLE = 2
+    ISSUE_CLOSED = 3
+    NO_URL = 4
+    WRONG_URL = 5
+    PAGE_404 = 6
+    MISSING_SOURCE = 7
+    MISSING_FILES = 8
+    OK = 9
     
     @property
     def ok(self):
         return self == IssueStatus.OK
-    
 
 
 class Issue(object):
@@ -105,13 +112,31 @@ class Issue(object):
         self.body = body
         self.state = state
         self.opened_by = opened_by
-        
+
         self._labels = None
         self._comments = None
         self._status = None
         self._status_message = None
+        self._fix_advice = None
+
+        self._title_match = re.match(self.TITLE_REGEX, self.title)
         
-    TITLE_REGEX = r'STA 9750 (.*) MiniProject #0(\d)'
+        self._default_branch = "main"
+
+    TITLE_REGEX = r'STA +9750 +(\S*) +Mini-?Project #0(\d)'
+
+    def to_json(self):
+        return json.dumps({
+            "number": self.number,
+            "title": self.title,
+            "opened_by": self.opened_by,
+            "html_url": self.html_url, 
+            "state": self.state,
+            "body": self.body, 
+            "labels": self.labels, 
+            "comments": [c.to_dict() for c in self.comments],
+            "status": self.status.name
+        }, indent=4)
         
     @classmethod
     def from_gh_api_resp(cls, r):
@@ -127,77 +152,151 @@ class Issue(object):
     @cached_property
     def mp_num(self):
         try: 
-            return int(re.match(self.TITLE_REGEX, self.title).group(2))
+            return int(self._title_match.group(2))
         except: 
             import pdb; pdb.set_trace()
             
             return None
         
     @property
+    def expected_title(self):
+        return f"STA 9750 {self.opened_by} MiniProject #0{self.mp_num}"
+    
+    @property
+    def expected_url(self):
+        submission_text = mp_submission_instructions(self.mp_num).\
+                            replace("YOUR_GITHUB_ID", self.owner)
+
+        EXPECTED_URL = re.search(URL_REGEX, submission_text, re.IGNORECASE)
+        
+        return EXPECTED_URL.group(0)
+        
+    @property
     def owner(self):
-        if match := re.match(self.TITLE_REGEX, self.title):
-            return match.group(1)
+        if match := self._title_match:
+            if match.group(1).lower() == self.opened_by.lower():
+                return match.group(1).lower()
+            elif match.group(1) == "YOUR_GITHUB_ID":
+                return self.opened_by.lower()
+            else: 
+                click.echo(f"Issue parsing title {self.title} for issue {self.number}")
+                return None #import pdb; pdb.set_trace()
         else:
             if self.opened_by != "michaelweylandt":
-                return self.opened_by
+                return self.opened_by.lower()
             
             import pdb; pdb.set_trace()
+            
+    def confirm_default_branch(self):
+        available_branches = [b["name"] for b in _gh(f"repos/{self.opened_by}/{course_repo()}/branches")]
+        if self._default_branch not in available_branches:
+            self._default_branch = available_branches[0]
+            
+        return self._default_branch
         
     @property
     def submission_source(self):
         if self.mp_num == 0:
-            return f"https://raw.githubusercontent.com/{self.owner}/{course_repo()}/refs/heads/main/index.qmd"
+            return f"https://raw.githubusercontent.com/{self.owner}/{course_repo()}/refs/heads/{self._default_branch}/index.qmd"
         else: 
-            return f"https://raw.githubusercontent.com/{self.owner}/{course_repo()}/refs/heads/main/mini0{self.mp_num}.qmd"
-            
+            return f"https://raw.githubusercontent.com/{self.owner}/{course_repo()}/refs/heads/{self._default_branch}/mini0{self.mp_num}.qmd"
+
     @property
     def status(self):
+        if self._status is not None :
+            return self._status
+
         if self.mp_num is None:
             self._status = IssueStatus.BAD_TITLE
+            self._status_message = f"Could not parse title {self.title}"
             return self._status
-        
+
+        if not self._title_match or (self.owner is None) or "YOUR_GITHUB_ID" in self.title:
+            self._status = IssueStatus.BAD_TITLE
+            self._status_message = dedent(f"""\
+            Expected title: {self.expected_title}
+            Actual title: {self.title}""")
+            self._fix_advice = dedent("""\
+            Note that you can change the title of this issue to fix this
+            problem by hitting the 'Edit' button to the right of the current title
+            at the top of this page. You do not need to open a new issue.""")
+            return self._status
+
         if self.state != "open":
             self._status = IssueStatus.ISSUE_CLOSED
             return self._status
-        
+
         submission_text = mp_submission_instructions(self.mp_num).\
                             replace("YOUR_GITHUB_ID", self.owner)
-        
-        STUDENTS_URL = re.search(URL_REGEX, self.body, re.IGNORECASE)
-        EXPECTED_URL = re.search(URL_REGEX, submission_text, re.IGNORECASE)
 
-        if EXPECTED_URL is None:
-            raise click.ClickException("Could not find expected URL in MP Instructions")
-        else: 
-            EXPECTED_URL = EXPECTED_URL.group(0)
+        STUDENTS_URL = re.search(URL_REGEX, self.body, re.IGNORECASE)
 
         if STUDENTS_URL is None:
             self._status = IssueStatus.NO_URL
+            self._fix_advice = dedent("""\
+            You can modify your post by scrolling up to your original post and
+            clicking the three dots button at the top right of your post. Select
+            "Edit" and you can edit the text of your post. You do not need to
+            open a new issue to resolve this issue.
+            """)
             return self._status
         else:
             STUDENTS_URL = STUDENTS_URL.group(0)
         
-        if STUDENTS_URL.lower() != EXPECTED_URL.lower():
+        if STUDENTS_URL.lower() != self.expected_url.lower():
             self._status = IssueStatus.WRONG_URL
-            self._status_message = f"Expected URL: {EXPECTED_URL}\nSubmitted URL: {STUDENTS_URL}"
+            self._status_message = f"Expected URL: {self.expected_url}\nSubmitted URL: {STUDENTS_URL}"
+            self._fix_advice = dedent("""\
+            You can modify your post by scrolling up to your original post and
+            clicking the three dots button at the top right of your post. Select
+            "Edit" and you can edit the text of your post. You do not need to
+            open a new issue to resolve this issue.
+            """)
+            return self._status
+        
+        page_resp = r.get(self.expected_url)
+        
+        if not page_resp.ok: 
+            self._status = IssueStatus.PAGE_404
+            self._status_message = f"Accessing {STUDENTS_URL} returns HTTP code {page_resp.status_code}"
             return self._status
         
         source_ok = r.get(self.submission_source).ok
         
         if not source_ok:
+            self.confirm_default_branch()
+            source_ok = r.get(self.submission_source).ok
+        
+        if not source_ok:
             self._status = IssueStatus.MISSING_SOURCE
-            self._status_message = f"Source File Exepcted at: {self.submission_source}"
-            
+            self._status_message = f"Expected source file not found at: {self.submission_source}"
+            self._fix_advice = dedent(f"""\
+            Typically, this means you need to:
+                
+                1) `git add` the missing file `{op.basename(self.submission_source)}`
+                   (or check the corresponding box in `RStudio`'s `Git` pane), 
+                2) make a new  git commit and 
+                3) push that commit to GitHub. 
+                
+            You do not need to open a new issue to resolve this issue.""")
+            return self._status
+
         support_file_check_results = check_quarto_support_files(STUDENTS_URL)
 
         if support_file_check_results["fail"]:
             self._status = IssueStatus.MISSING_FILES
-            self._status_message = "Could not access the following files:\n" + "\n".join(support_file_check_results["fail"])
+            self._status_message = "Could not access the following files:\n - " + "\n - ".join(support_file_check_results["fail"])
             return self._status
         
         self._status = IssueStatus.OK
         
         return self._status
+    
+    @property 
+    def fix_advice(self):
+        if not self._fix_advice:
+            _ = self.status
+        return self._fix_advice
     
     @property
     def status_oneline(self):
@@ -211,6 +310,8 @@ class Issue(object):
             return f"No URL submitted"
         elif status == IssueStatus.WRONG_URL:
             return f"Incorrect URL submitted: " + self._status_message
+        elif status == IssueStatus.PAGE_404:
+            return f"Page fails to load: " + self._status_message
         elif status == IssueStatus.MISSING_SOURCE:
             return f"Could not identify qmd source document\n - " + self._status_message
         elif status == IssueStatus.MISSING_FILES:
@@ -222,12 +323,14 @@ class Issue(object):
         
     @property
     def status_full(self):
-        CHECKS = ["Correct Issue Title", 
+        CHECKS = ["Issue Identified", 
+                  "Correct Issue Title", 
                   "Correct Issue Status (Open)",
                   "Submission URL Present",
                   "Submission URL Correct", 
+                  "Submission URL Accessible",
                   "Source File Accessible",
-                  "Supporting Files Present"]
+                  "All Supporting Files Present"]
                   
         OUT_TEXT = ""
                   
@@ -241,11 +344,18 @@ class Issue(object):
             else:
                 OUT_TEXT += "- [ ] "+  check_text + "\n"
                 
-        return OUT_TEXT
+        if self._status_message: 
+            OUT_TEXT += "\n" + self._status_message 
+            
+        return OUT_TEXT 
     
     @property
     def ok(self):
         return self.status == IssueStatus.OK
+    
+    @property
+    def already_passed(self):
+        return "Passed Automated Checks" in self.labels
     
     @property
     def comments(self):
@@ -263,18 +373,53 @@ class Issue(object):
 
         return self._labels
             
+    def add_label(self, label):
+        available_labels = gh_available_labels()
+        
+        if label not in available_labels:
+            raise click.ClickException(f"Unsupported label - {label}")
+        
+        if self._labels is not None and label in self._labels:
+            return
+        
+        _gh(f"repos/{course_owner()}/{course_repo()}/issues/{self.number}/labels", 
+            method="post",
+            labels=tuple([label]))
+            
+        # Reset cached value
+        self._labels = None
+            
+    def remove_label(self, label):
+        available_labels = gh_available_labels()
+        
+        if label not in available_labels:
+            raise click.ClickException(f"Unsupported label - {label}")
+        
+        if label not in self.labels:
+            return
+        
+        _gh(f"repos/{course_owner()}/{course_repo()}/issues/{self.number}/labels/{label}", 
+            method="delete")
+            
+        # Reset cached values
+        self._labels = None
     
-    def update_labels(self):
+    def update_labels_submission_checks(self):
         available_labels = gh_available_labels()
         new_labels = []
         
         if self.status == IssueStatus.OK:
             new_labels.append("Passed Automated Checks")
+            self.remove_label("Failed Automated Checks")
         else: 
             new_labels.append("Failed Automated Checks")
+            self.remove_label("Passed Automated Checks")
             
         if self.mp_num is not None:
             new_labels.append(f"Mini-Project #0{self.mp_num}")
+            
+        # FIXME: Check whether PF has been assigned for this issue
+        new_labels.append("Awaiting Peer Feedback Assignment")
             
         new_labels.sort()
         
@@ -286,20 +431,31 @@ class Issue(object):
             
             _gh(f"repos/{course_owner()}/{course_repo()}/issues/{self.number}/labels", 
                 method="put",
-                data=json.dumps({"labels":new_labels}))
+                ## FIXME: Why is tuple required here? Without it I get a
+                ## TypeError because new_labels is unhashable, but this is the
+                ## value, not the key, so who cares?
+                labels=tuple(new_labels))
         else:
             click.echo(f"Leaving labels unchanged: {self.labels}")
     
     def post_new_comment(self, text):
-        click.echo(f"Posting comment for {self.owner} in Issue #{self.number}")
-        #click.echo(text)
-        return gh_issue_comment(self.number, text)
+        text = "\n".join(t.rstrip() for t in text.split("\n"))
+
+        if self.comments and (self.comments[-1].text == text):
+            return # No need to double post if verbatim match!
+        
+        _gh(f"/repos/{course_owner()}/{course_repo()}/issues/{self.number}/comments",
+            method="post",
+            body=text)
+            
+        self._comments = None
         
     def __repr__(self):
         return f'Issue #{self.number:02} - {self.title}'
         
 class IssueCollection(object):
     def __init__(self):
+        click.echo("Acquiring all GitHub issues")
         ALL_ISSUES = []
         pagination = 1
     
@@ -322,15 +478,57 @@ class IssueCollection(object):
             self._issues[ix] = Issue.from_gh_api_resp(r)
             
         self._issues.sort(key=lambda x: x.number)
+        click.echo("Issue import complete")
             
     def select_by_owner(self, owner):
-        return [i for i in self._issues if owner == i.owner]
+        return [i for i in self._issues if owner.lower() == i.owner]
     
     def select_unknown_mp(self):
         return [i for i in self._issues if i.mp_num is None]
     
+    def select_mp_or_unknown(self, mp_num, ask=True):
+        known = [i for i in self._issues if i.mp_num == mp_num]
+        unknown = self.select_unknown_mp()
+        
+        for u in unknown: 
+            click.echo(f"Issue #{u.number:03} ({u.title}) was opened by {u.opened_by}.")
+            
+            if ask:     
+                if click.confirm("Should this issue be considered as part of MP#0{mp_num}?", default=False):
+                    known.append(u)
+                else: 
+                    click.echo(f"Omitting Issue #{u.number:03} ({u.title}) from processing.")
+            else:
+                known.append(u) # Silently keep for later processing
+            
+        owners = [k.owner for k in known]
+        repeated_owners = [o for o in owners if owners.count(o) >= 2]
+        
+        for ro in repeated_owners:
+            ro_issues = [k for k in known if k.owner == ro]
+            # If only one passes checks, let's use this one
+            if sum(i.ok for i in ro_issues) == 1:
+                for i in ro_issues:
+                    if not i.ok:
+                        known.remove(i)
+            else:
+                import pdb; pdb.set_trace()    
+
+        return known
+    
     def __getitem__(self, issue_number):
-        return [i for i in self._issues if i.number == issue_number][0]
+        matches = [i for i in self._issues if i.number == issue_number]
+        
+        if matches:
+            return matches[0]
+        else:
+            raise IndexError
+    
+    def __len__(self):
+        return len(self._issues)
+    
+    def __iter__(self):
+        return self._issues.__iter__()
                      
 @cache
 def mp_submission_instructions(project_id):
@@ -361,9 +559,9 @@ def check_quarto_support_files(url):
     LINKS_CHECKED = []
     LINKS_OK = []
     LINKS_FAIL = []
-    
+
     support_links = [urljoin(url, sf["href"]) for sf in soup.find_all("link") if not sf["href"].startswith("http")]
-    image_links = [urljoin(url, sf["href"]) for sf in soup.find_all("img") if not sf["href"].startswith("http")]
+    image_links = [urljoin(url, sf["src"]) for sf in soup.find_all("img") if not sf["src"].startswith("http")]
     anchor_links = [urljoin(url, sf["href"]) for sf in soup.find_all("a") if not sf["href"].startswith("http")]
 
     for sf_url in chain(support_links, image_links, anchor_links):
@@ -386,7 +584,21 @@ def gh_available_labels():
     
     return [l["name"] for l in labels]
               
-Comment = namedtuple("Comment", ["commenter", "text", "ctime", "url"])
+class Comment(object):
+    def __init__(self, commenter, text, ctime, url):
+        self.commenter = commenter
+        self.text = "\n".join(t.rstrip() for t in text.split("\n"))
+        self.ctime = ctime
+        self.url = url
+        
+    def to_dict(self):
+        return {
+            "commenter": self.commenter, 
+            "text": self.text, 
+            "ctime": self.ctime, 
+            "url": self.url
+        }
+
 
 class PeerFeedback:
     _template_url = f"{course_site()}/miniprojects.html"
@@ -478,7 +690,7 @@ class PeerFeedback:
 
 # FIXME: This technically isn't sufficient for arbitrary URLs, but it
 # seems to cover the whole GitHub API, which is enough for us.
-URL_REGEX = "http[A-Za-z0-9:/\\.\\-]+"
+URL_REGEX = "http[A-Za-z0-9:/\\.\\-_]+"
 
 SCORES_STR = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 
@@ -563,7 +775,7 @@ def gh_pat():
 
 
 @cache
-def _gh(path, method="get", data=None):
+def _gh(path, method="get", **kwargs):
     headers = {
         "Accept": "application/vnd.github+json",
         "Authorization": f"Bearer {gh_pat()}",
@@ -575,9 +787,9 @@ def _gh(path, method="get", data=None):
     if method == "get":
         return r.get(fullpath, headers=headers).json()
     elif method == "post":
-        return r.post(fullpath, headers=headers, data=data)
+        return r.post(fullpath, headers=headers, data=json.dumps(kwargs))
     elif method == "put":
-        return r.post(fullpath, headers=headers, data=data)
+        return r.post(fullpath, headers=headers, data=json.dumps(kwargs))
     else: 
         raise click.ClickException("Unknown HTTP Verb in _gh() call")
 
@@ -631,21 +843,12 @@ def gh_list_comments(issue_id):
         for c in resp
     ]
 
-
-def gh_issue_comment(issue_id, text):
-    return _gh(
-        f"/repos/{course_owner()}/{course_repo()}/issues/{issue_id}/comments",
-        method="post",
-        data=json.dumps({"body": text}),
-    )
-
-
 def gh_issue_create(title, text):
     return _gh(
         f"/repos/{course_owner()}/{course_repo()}/issues",
         method="post",
-        data=json.dumps({"title": title, "body": text}),
-    )
+        title=title,
+        body=text)
 
 
 @cache 
@@ -1822,7 +2025,7 @@ def _mini_archive(project_id, github, skip_pdf=False,
                 subprocess.run(["git", "-C", student_git_dir, "pull"])
             else:
                 student_repo_url = f"https://github.com/{gh}/{course_repo()}"
-                subprocess.run(["git", "clone", student_repo_url, student_git_dir])
+                subprocess.run(["git", "clone", "--no-checkout", student_repo_url, student_git_dir])
     
             if skip_pdf:
                 continue
@@ -1867,15 +2070,14 @@ def _mini_archive(project_id, github, skip_pdf=False,
     
         click.echo(f"Exporting GitHub Issues to {issues_dir}")
     
-        ISSUES = [issue._asdict() for issue in gh_list_issues().values()]
+        ISSUES = IssueCollection()
     
         for issue in ISSUES:
-            click.echo(f" - Exporting Issue #{issue['number']:03g}")
-            issue["comments"] = [c._asdict() for c in gh_list_comments(issue["number"])]
-            issue_file = op.join(issues_dir, f"issue{issue['number']:03}.json")
+            click.echo(f" - Exporting Issue #{issue.number:03g}")
+            issue_file = op.join(issues_dir, f"issue{issue.number:03}.json")
     
             with open(issue_file, "w") as f:
-                f.write(json.dumps(issue, indent=4))
+                f.write(issue.to_json())
     
         issue_symlink = op.join(latest_dir, "issues")
         try:
@@ -1907,7 +2109,14 @@ def _mini_archive(project_id, github, skip_pdf=False,
     default=False,
     help="Dry run? If true, do not post confirmation messages to GitHub issues",
 )
-def mini_verify(project_id, github, dry_run):
+@click.option(
+    "-F",
+    "--force",
+    is_flag=True, 
+    default=False, 
+    help="Force re-check? If true, run checks on issues even which have already been marked as having passsed checks"
+)
+def mini_verify(project_id, github, dry_run, force):
     """Verify that a mini-project was submitted and formatted correctly
 
     This script can be used to verify correct submission of mini-projects and,
@@ -1916,7 +2125,7 @@ def mini_verify(project_id, github, dry_run):
 
     To process submissions after the deadline passes, use the `process` command
     instead."""
-    return _mini_verify(project_id, github, dry_run)
+    return _mini_verify(project_id, github, dry_run, force)
 
 def _get_submission_urls(project_id, github, check_master=True):
     MP_URL = f"{course_site()}/mini/mini0{project_id}.html"
@@ -1941,7 +2150,7 @@ def _get_submission_urls(project_id, github, check_master=True):
     return (EXPECTED_URL, RAW_URL)
 
 
-def _mini_verify(project_id, github, dry_run=True):
+def _mini_verify(project_id, github, dry_run=True, force=False):
     "Implementation of mini_verify. Can be called directly by other functions"
     MP_URL = f"{course_site()}/mini/mini0{project_id}.html"
 
@@ -1958,7 +2167,7 @@ def _mini_verify(project_id, github, dry_run=True):
 
     for gh in github:
         click.echo("-----------------------------------")
-        click.echo(f"Attempting to verify for user {gh}")
+        click.echo(f"Attempting to verify for user {gh}...", nl=False)
         TITLE = f"{course_short()} {gh} MiniProject #0{project_id}"
         BODY = MP_TEXT.replace("YOUR_GITHUB_ID", gh)
 
@@ -1969,21 +2178,37 @@ def _mini_verify(project_id, github, dry_run=True):
         if not gh_issues:
             import pdb; pdb.set_trace()
             click.echo(f"No issues found for user {gh} in repo {course_repo()}")
-            RESULTS[gh] = (False, gh, "NO ISSUES FOUND", None)
+            RESULTS[gh] = (False, gh, IssueStatus.NO_ISSUE, "NO ISSUES FOUND", None)
             continue
         if len(gh_issues) > 1:
-            import pdb; pdb.set_trace()
+            open_issues = [g for g in gh_issues if g.state == "open"]
             
+            if len(open_issues) == 1:
+                gh_issues = open_issues
+            else:
+                import pdb; pdb.set_trace()
+
         gh_issue = gh_issues[0]
+        
+        if not force and gh_issue.already_passed: 
+            RESULTS[gh] = (True, gh, IssueStatus.OK, "OK", gh_issue.number)
+        
         gh_issue_status = gh_issue.status
         
-        RESULTS[gh] = (gh_issue_status.ok, gh, gh_issue.status_oneline, gh_issue.number)
+        RESULTS[gh] = (gh_issue_status.ok, gh, gh_issue.status, gh_issue.status_oneline, gh_issue.number)
+        
+        if gh_issue_status.ok:
+            click.echo(f"All checks passed for {gh}")
+        else:
+            click.echo(f"Check failed for {gh} - {gh_issue.status.name}")
+            if gh_issue._status_message:
+                click.echo(gh_issue._status_message)
         
         if not dry_run:
-            gh_issue.update_labels()
+            gh_issue.update_labels_submission_checks()
         
     DF = pd.DataFrame(RESULTS).T
-    DF.columns = ["ok", "github", "message", "issue_num"]
+    DF.columns = ["ok", "github", "status", "message", "issue_num"]
 
     click.echo("-----------------------------------")
     click.echo("----------ANALYSIS COMPLETE--------")
@@ -2007,12 +2232,17 @@ def _mini_verify(project_id, github, dry_run=True):
         for ix, row in enumerate(DF_BAD.itertuples(), start=n_ok+1):
             if row.issue_num:
                 click.echo(
-                    f"- {ix:02g} GitHub user {row.github} failed with message '{row.message}'. See https://github.com/{course_owner()}/{course_repo()}/issues/{row.issue_num} for details"
+                    f"- {ix:02g} GitHub user {row.github} failed with status '{row.status.name}'.\n  See https://github.com/{course_owner()}/{course_repo()}/issues/{row.issue_num} for details"
                 )
             else:
                 click.echo(
-                    f"- {ix:02g} GitHub user {row.github} failed with message {row.message}. No suitable issue found."
+                    f"- {ix:02g} GitHub user {row.github} failed with status {row.status.name}. No suitable issue found."
                 )
+                
+    
+    click.echo("-----------------------------------")
+    click.echo("-------------END SUMMARY-----------")
+    click.echo("-----------------------------------")
                 
     if dry_run:
         return DF
@@ -2038,29 +2268,41 @@ def _mini_verify(project_id, github, dry_run=True):
             
     loader = Environment(loader=FileSystemLoader("_cissoid/templates"), 
                          autoescape=select_autoescape())
+
+    with click.progressbar(DF.itertuples(), length = DF.shape[0], show_pos=True,
+                           label="Posting GitHub Comments (if needed)",
+                           item_show_func=lambda r: r.Index if r else None) as bar:        
+        for issue_row in bar:
+            if issue_row.issue_num is None:
+                continue
             
-    for issue_num in DF.issue_num:
-        issue = ISSUES[issue_num]
-        issue_comments = issue.comments
-        
-        if issue.mp_num is None:
-            continue
-        
-        if issue.ok:
-            template = loader.get_template("mp_all_checks_pass.md")
-        else: 
-            template = loader.get_template("mp_checks_fail.md")
+            issue = ISSUES[issue_row.issue_num]
             
-        text_md = template.render(
-            gh = issue.owner,
-            project_id = project_id, 
-            check_output = issue.status_full
-        )
-        
-        if issue_comments and issue_comments[-1].text == text_md:
-            continue
-        else:
-            issue.post_new_comment(text_md)
+            if not force and issue.already_passed: 
+                continue
+            
+            issue_comments = issue.comments
+            
+            if issue.mp_num is None:
+                continue
+            
+            if issue.ok:
+                template = loader.get_template("mp_all_checks_pass.md")
+            else: 
+                template = loader.get_template("mp_checks_fail.md")
+                
+            text_md = template.render(
+                gh = issue.owner,
+                project_id = project_id, 
+                check_output = issue.status_full,
+                fix_advice = issue.fix_advice
+            )
+            
+            if issue_comments and issue_comments[-1].text == text_md:
+                continue
+            else:
+                #click.echo(f"Posting new comment for {issue.owner}")
+                issue.post_new_comment(text_md)
             
     return DF
 
@@ -2072,90 +2314,6 @@ def peer():
     mini-project. Roughly,
 
     - Assign: Review all submission issues"""
-
-
-def _peer_assignment_master():
-    """Take all registered students and create a balanced Latin Square
-
-    This function implements a _Balanced Latin Square_ using the algorithm
-    of J.V. Bradley JASA 53, pp.525-528(1958). The code is modified from
-    https://medium.com/@graycoding/balanced-latin-squares-in-python-2c3aa6ec95b9.
-    Once this Latin Square is created, it can be used to create peer assignments
-    for the mini-projects."""
-
-    MAPPING_FILE = mapping_file()
-
-    if (not op.exists(MAPPING_FILE)) or (op.getsize(MAPPING_FILE) == 0):
-        NAMES = current_roster(include_inactive=True)["github"]
-        
-        random.shuffle(NAMES)
-        n = len(NAMES)
-
-        l = [
-            [((j // 2 + 1 if j % 2 else n - j // 2) + i) % n + 1 for j in range(n)]
-            for i in range(n)
-        ]
-        if n % 2:  # Repeat reversed for odd n
-            l += [seq[::-1] for seq in l]
-        MAPPING_MATRIX = np.asarray(l[:n]) - 1
-
-        MAPPING = {}
-
-        for ix, nm in enumerate(NAMES):
-            MAPPING[nm] = NAMES[MAPPING_MATRIX[ix, 1:]].to_list()
-
-        with open(MAPPING_FILE, "w") as f:
-            f.write(json.dumps(MAPPING, indent=4))
-
-    with open(MAPPING_FILE, "r") as f:
-        MAPPING = json.loads(f.read())
-
-    return MAPPING
-
-
-def _peer_assignment_mapping(project_id, n_peers=None):
-    MASTER_MAPPING = _peer_assignment_master()
-    project_id_s = f"mp0{project_id}"
-    
-    # Check for previous mappings
-    INDEX_TO_PF_FILE = op.join(course_dir(), "mapping_indices.json")
-
-    if (not op.exists(INDEX_TO_PF_FILE)) or (op.getsize(INDEX_TO_PF_FILE) == 0):
-        Path(INDEX_TO_PF_FILE).touch(exist_ok=True)
-
-    with open(INDEX_TO_PF_FILE, "r") as f:
-        try:
-            INDEX_DICT = json.loads(f.read())
-
-        except json.JSONDecodeError:
-            INDEX_DICT = {}
-
-    if project_id_s not in INDEX_DICT:
-        if not n_peers:
-            raise click.ClickException("Invalid team number provided.")
-        
-        ALL_PREVIOUS = [ix for mp in INDEX_DICT.values() for ix in mp]
-        ALL_POSSIBLE = range(len(MASTER_MAPPING))
-        AVAILABLE = set(ALL_POSSIBLE) - set(ALL_PREVIOUS)
-
-        NEW_IX = [AVAILABLE.pop() for _ in range(n_peers)]
-        INDEX_DICT[project_id_s] = NEW_IX
-
-        with open(INDEX_TO_PF_FILE, "w") as f:
-            f.write(json.dumps(INDEX_DICT, indent=2))
-
-    with open(INDEX_TO_PF_FILE, "r") as f:
-        INDEX_DICT = json.loads(f.read())
-
-    INDEX_SET = INDEX_DICT[project_id_s]
-
-    PROJECT_MAPPING = {}
-
-    for nm, pf in MASTER_MAPPING.items():
-        PROJECT_MAPPING[nm] = [pf[n] for n in INDEX_SET]
-
-    return PROJECT_MAPPING
-
 
 @peer.command(name="assign")
 @click.option(
@@ -2188,162 +2346,159 @@ def _peer_assignment_mapping(project_id, n_peers=None):
     multiple=True,
     help="GitHub ID to skip submission. This is used when students have a pre-approved extension.",
 )
-def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip):
+@click.option(
+    "--no-lint", 
+    "lint",
+    default=True, 
+    is_flag=True,
+    help="Skip linting student submissions"
+)
+def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip, lint):
     """Assign Mini-Project Peer Feedback
 
     This command does several things:
 
     0) It archives all submissions for that MP
-    1) It creates a mapping from submitters to peer reviewers
-    2) It automatically creates assignment comments for each student,
-       noting any automatically identified issues
-    3) It posts comments to GitHub.
+    1) It creates a mapping from submitters to peer reviewers.
+       Since I'm now doing assignment only among students who submitted,
+       this mapping must be created randomly each time. 
+    2) It creates an encoded file that can be posted to the course GitHub
+       repo with peer feedback assignments. 
+    3) It opens a page to post the encoded file automatically 
+    4) It lints student submissions [TODO]
+    5) It posts notifications comments and lint output to GitHub. [TODO]
 
     Note that this command should only be used once per assignment.
     """
-    if not skip_archive:
-        _mini_archive(project_id, [])
-
-    # We begin by loading the peer feedback
-    # mapping for this assignment
-    ROSTER = current_roster(include_inactive=False)
-    PF_MAPPING = _peer_assignment_mapping(project_id, peer_count)
-
+    
     PF_DIR = op.join(course_dir(), f"mp0{project_id}")
     os.makedirs(PF_DIR, exist_ok=True)
-    os.makedirs(op.join(PF_DIR, "assignments"), exist_ok=True)
-
-    PF_TEMPLATES = Environment(
-        loader=FileSystemLoader("_cissoid/templates"), autoescape=select_autoescape()
-    )
-
-    STUDENTS = set(ROSTER.github.values)
-    STUDENTS -= set(github_skip)
-
-    for gh in STUDENTS:
-        post_glob = glob(op.join(PF_DIR, "assignments", f"{gh}_issue*.md"))
-
-        if post_glob:
-            continue
-
-        EVALUATORS = [e for e in set(PF_MAPPING[gh]) & set(ROSTER.github.values)]
+    PF_MAPPING_FILE = op.join(PF_DIR, "pf_assignments.json")
+    PF_STUDENT_FILE = op.join(PF_DIR, f"pf_mp0{project_id}.yaml")
+    
+    if not skip_archive:
+        _mini_archive(project_id, [])
         
-        ISSUE_STATUS = _mini_verify(project_id, [gh])
+    if False: # TODO: Implement linting
+        lint_result_dir = mini_lint(project_id)
+        
+    ROSTER = current_roster(include_inactive=False)
+        
+    ## First thing, let's load the relevant issues and identify 
+    ## those for this MP only
+    ISSUES = IssueCollection().select_mp_or_unknown(project_id, ask=True)
+    
+    with click.progressbar(ISSUES, length = len(ISSUES), 
+                           show_pos=True,
+                           label="Checking Submissions",
+                           item_show_func=lambda r: r.owner if r else None) as bar:
+        for i in bar:
+            i.status
+    
+    ISSUES_DF = pd.DataFrame([(i.number, i.owner, i.ok, i.status_oneline) for i in ISSUES], 
+                        columns=["number", "owner", "ok", "status_oneline"])
+    
+    actual_submittors = [i.owner.lower() for i in ISSUES]
+    expected_submittors = set(g.lower() for g in ROSTER.github)
+    
+    for a in actual_submittors:
+        if a not in expected_submittors:
+            raise click.ClickException(f"Unknown submission received - {a}")
+        
+    for e in expected_submittors:
+        if e not in actual_submittors and e not in github_skip:
+            click.confirm(f"No submission received for {e} - ok to continue?", default=True)
+            
+    if len(actual_submittors) < 2 * peer_count:
+        raise click.ClickException("Too many peers required for given submission pool.")
+    
+    random.shuffle(actual_submittors)
+        
+    if op.exists(PF_MAPPING_FILE):
+        click.echo(f"Using existing mapping file from {PF_MAPPING_FILE}.")
+    else:
+        PEER_REVIEW_MAPPING = {}
+        
+        n_submittors = len(actual_submittors)
+        
+        for ix, a in enumerate(actual_submittors): 
+            to_review = []
+            for offset in range(1, peer_count + 1):
+                to_review.append(actual_submittors[(ix + offset) % n_submittors])
+            
+        PEER_REVIEW_MAPPING[a] = to_review
 
-        SUB_URL, RAW_URL = _get_submission_urls(project_id, gh)
-
-        if ISSUE_STATUS.ok.item():
-            gh_issue_num = ISSUE_STATUS.issue_num.item()
-            template = PF_TEMPLATES.get_template("success.md")
-        elif ISSUE_STATUS.issue_num.item():
-            gh_issue_num = ISSUE_STATUS.issue_num.item()
-            template = PF_TEMPLATES.get_template("fail_issue_ok.md")
-        else:
-            try:
-                ALL_ISSUES = gh_list_issues(gh)
-            except TypeError:
-                import pdb; pdb.set_trace()
-
-            ALL_ISSUES = list(ALL_ISSUES.values())
-            ALL_ISSUES.sort(key=lambda i: i.number)
-
-            if ALL_ISSUES:
-                click.echo(
-                    f"The following GitHub issues opened by {gh} were found on the repository."
-                )
-                for issue in ALL_ISSUES:
-                    if issue.opened_by == gh:
-                        click.echo(
-                            f" - Issue Number {issue.number}. Title '{issue.title}"
-                        )
-                click.echo("Where would you like to assign peer feedback?")
-
-                gh_issue_num = input(
-                    "Enter the number of the issue above or 0 for opening a new issue: >> "
-                )
-                gh_issue_num = int(gh_issue_num)
-            else:
-                click.echo("No issues found. Creating new issue")
-                gh_issue_num = 0
-
-            if gh_issue_num:
-                template = PF_TEMPLATES.get_template("fail_issue_selected.md")
-            else:
-                template = PF_TEMPLATES.get_template("fail_issue_created.md")
-
-        post_md = template.render(
-            project_id=project_id,
-            gh=gh,
-            peers=EVALUATORS,
-            sub_url=SUB_URL,
-            raw_url=RAW_URL,
-            check_message=ISSUE_STATUS.message.item(),
-        )
-
-        post_file = op.join(PF_DIR, "assignments", f"{gh}_issue{gh_issue_num}.md")
-
-        with open(post_file, "w") as f:
-            f.write(post_md)
-
-    if dry_run:
+        with open(PF_MAPPING_FILE, "w") as f:
+            f.write(json.dumps(PEER_REVIEW_MAPPING, indent=4))
+            
+    with open(PF_MAPPING_FILE) as f:
+        PEER_REVIEW_MAPPING = json.loads(f.read())
+        
+    if op.exists(PF_STUDENT_FILE):
+        click.echo(f"Using existing student file from {PF_STUDENT_FILE}.")
+    else:
+        YAML_OUT = {
+            "mp_number": project_id,
+            "number_of_peers": peer_count, 
+            "number_of_submissions": n_submittors, 
+            "assignments": {}, 
+            "issue_status": ISSUES_DF.to_dict(orient="records")
+        }
+        
+        for student in ROSTER.itertuples():
+            if student.github.lower() not in actual_submittors:
+                continue
+        
+            # Get assigned issue numbers
+            to_review = PEER_REVIEW_MAPPING[student.github.lower()]
+            assigned_issues = sorted([i.number for i in ISSUES if i.owner in to_review])
+    
+            # Encode using a Vernam cipher
+            vernam_code = vernam_encode(assigned_issues, student.secret, offset=0)
+            assert assigned_issues == vernam_encode(vernam_code, student.secret, offset=0)
+            
+            YAML_OUT["assignments"][student.github.lower()] = vernam_code
+        
+        with open(PF_STUDENT_FILE, "w") as f:
+            f.write(yaml_dump(YAML_OUT, sort_keys=False))
+    
+    
+        click.echo(f"Student peer feedback assignment file saved to {PF_STUDENT_FILE}")
+        
+    click.echo(f"If not already done, please upload {PF_STUDENT_FILE} to GitHub at https://github.com/{course_owner()}/{course_repo()} as 'pf_mp0{project_id}.yaml' and announce assignment to students")
+    
+    with open(PF_STUDENT_FILE, "r") as f:
+        f_txt = f.read()
+    
+    PF_STUDENT_URL = f"https://raw.githubusercontent.com/{course_owner()}/{course_repo()}/refs/heads/main/pf_mp0{project_id}.yaml"
+    
+    if not r.get(PF_STUDENT_URL).ok:
+        webbrowser.open(f"https://github.com/{course_owner()}/{course_repo()}/new/main?filename=pf_mp0{project_id}.yaml&value={quote_plus(f_txt)}")
+    
+    if dry_run: 
         return 0
-
-    for gh in STUDENTS:
-        click.echo(f"Assigning Peer Feedback for {gh}'s MP#0{project_id}")
-        post_glob = glob(op.join(PF_DIR, "assignments", f"{gh}_issue*.md"))
-
-        if len(post_glob) != 1:
-            raise click.ClickException(f"Cannot find unique PF assignment script for {gh}")
-
-        post_file = post_glob[0]
-
-        with open(post_file, "r") as f:
-            post_md = f.read()
-
-        post_file_short = op.basename(post_file)
-
-        gh_issue_num = int(re.search("_issue([0-9]+)\\.md$", post_file_short).group(1))
-
-        # Directory with files indicating a successful post
-        confirm_dir = op.join(PF_DIR, "confirms")
-        os.makedirs(confirm_dir, exist_ok=True)
-
-        # Check to see if issue has already been posted
-        confirm_file = op.join(confirm_dir, f"{gh}_mp{project_id}_GITHUBSUCCESS")
-        if op.exists(confirm_file):
-            click.echo(f"Peer Feedback already assigned for {gh}'s MP#0{project_id}")
-            continue  # If we find something that matches, move to next student
-
-        # Else make a post
-        if gh_issue_num:
-            resp = gh_issue_comment(gh_issue_num, post_md)
-            if resp.ok:
-                with open(confirm_file, "w") as f:
-                    f.write(
-                        f"Successfully posted as {datetime.now().astimezone().strftime('%Y-%m-%dT%H:%M:%S_%Z')}"
-                    )
-                click.echo(
-                    f"Peer Feedback successfully assigned for {gh}'s MP#0{project_id}"
-                )
-            else:
-                raise click.ClickException(f"Could not post issue for {gh} at #{gh_issue_num}")
-        else:
-            title = f"MP #0{project_id} Peer Feedback for {gh} [INSTRUCTOR OPENED]"
-            resp = gh_issue_create(title, post_md)
-            if resp.ok:
-                with open(confirm_file, "w") as f:
-                    f.write(
-                        f"Successfully posted as {datetime.now().astimezone().strftime('%Y-%m-%dT%H:%M:%S_%Z')}"
-                    )
-                click.echo(
-                    f"Peer Feedback successfully assigned for {gh}'s MP#0{project_id}"
-                )
-                new_issue_num = int(resp.json()["number"])
-                new_file = post_file.replace("issue0", f"issue{new_issue_num}")
-                os.rename(post_file, new_file)
-            else:
-                raise click.ClickException(f"Could not post issue for {gh} at #{gh_issue_num}")
-
+    
+    template = Environment(
+            loader=FileSystemLoader("_cissoid/templates"), 
+            autoescape=select_autoescape()
+                            ).get_template("pf_assigned_gh_comment.md")
+        
+    with click.progressbar(ISSUES, length=len(ISSUES), 
+                           show_pos=True,
+                           label="Updating Labels and Posting Notification Comments",
+                           item_show_func=lambda r: r.owner if r else None) as bar:
+        # TODO: Comments to submittors? Update issue labels?
+        for issue in bar:
+            text_md = template.render(
+                gh = issue.owner,
+                project_id = project_id, 
+                n_assignments=peer_count
+            )
+        
+            issue.post_new_comment(text_md)
+        
+            issue.remove_label('Awaiting Peer Feedback Assignment')
+            issue.add_label('Peer Feedback Period')
 
 @cache
 def _peer_feedback_collect_file(project_id):

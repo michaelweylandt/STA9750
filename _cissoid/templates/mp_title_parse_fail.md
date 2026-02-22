@@ -10,7 +10,7 @@ I expected an issue with the title:
 which differs from the title you used (`{{current_title}}`). 
 
 Please edit the title of this issue to conform to the desired format. (Note that
-there is a large green "Edit" button to the right of the issue title at the top
+there is a large "Edit" button to the right of the issue title at the top
 of this page that you can use to edit the title. You do not need to open a new
 issue.)
 

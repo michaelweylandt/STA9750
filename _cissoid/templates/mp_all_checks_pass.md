@@ -7,7 +7,7 @@ Your submission for Mini-Project #0{{project_id}} has passed all automated check
 {{check_output}}
 
 At this point, feel free to make minor tweaks to your submission up to the start
-of the peer grading period, but the automated checks will not be run again. 
+of the peer grading period, but the automated checks may not be run again. 
 Once the peer grading period begins, please refrain from making any further 
 changes to your submission. 
 
