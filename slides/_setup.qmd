@@ -177,26 +177,25 @@ PROJ_RELEASE <- DATES |>
 ROSTERS <- get_project_due_date("team_formation")
 PROPOSALS <- get_project_due_date("proposal")
 
-
 library(jsonlite)
 library(yaml)
 
-if(file.exists("roster.json")){
-    
-    N_TEAMS <- read_yaml("_teaching.yml")$gradedir |>
-        file.path("roster.json") |> 
+ROSTER_FILE <- read_yaml("_teaching.yml") |>
+    pluck("gradedir") |>
+    file.path("roster.json")
+
+if(file.exists(ROSTER_FILE)){
+    N_TEAMS <- ROSTER_FILE |> 
         read_json(simplify=TRUE) |> 
         pull(project_team) |> 
         max(na.rm=TRUE)
     
-    N_ON_TEAM <- read_yaml("_teaching.yml")$gradedir |>
-        file.path("roster.json") |> 
+    N_ON_TEAM <- ROSTER_FILE |> 
         read_json(simplify=TRUE) |> 
         filter(!is.na(project_team)) |> 
         NROW()
     
-    N_NO_TEAM <- read_yaml("_teaching.yml")$gradedir |>
-        file.path("roster.json") |> 
+    N_NO_TEAM <- ROSTER_FILE |> 
         read_json(simplify=TRUE) |> 
         filter(is.na(project_team)) |> 
         NROW()
@@ -218,6 +217,18 @@ if(file.exists(TEAMS_FILE) & file.info(TEAMS_FILE)$size > 0){
        read_json(simplify=TRUE) |> 
       pull(name) |>
       sample()
+    
+    if(all(TEAMS == "TBD")){
+      TEAMS <- ROSTER_FILE |> 
+        read_json(simplify=TRUE) |> 
+        mutate(name_split = str_split(name, " "), 
+               initials = map_chr(name_split, \(x) paste(str_sub(x, end=1), collapse=""))) |>
+        group_by(project_team) |>
+        summarize(initials = reduce(initials, \(x, y) paste(x, y, sep="+"))) |>
+        pull(initials) |>
+        str_remove_all("[^+[:alpha:]]") |>
+        sample()
+    }
 } else {
     TEAMS <- "TBD"
 }
@@ -226,6 +237,11 @@ BREAKOUT_TABLE <- data.frame(Team=TEAMS) |>
   mutate(Breakout = row_number()) |> 
   select(Breakout, Team) |> 
   knitr::kable(row.names = FALSE)
+
+PRESENTATION_TABLE <- data.frame(Team=TEAMS) |> 
+  mutate(`Presentation Number` = row_number()) |> 
+  select(`Presentation Number`, Team) |> 
+  knitr::kable(row.names = FALSE, align="c")
 ```
 
 ## {{< var course.short >}} Week {{< meta session >}} 
