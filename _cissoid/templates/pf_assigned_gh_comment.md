@@ -16,7 +16,7 @@ Follow the prompts and, after all your comments are recorded, upload the
 file `pf_mp0{{project_id}}_{{gh}}.bspf` on [CUNY Brightspace](https://brightspace.cuny.edu/).
 
 Before providing your comments, please review the project instructions at 
-<https://michael-weylandt.com/STA9750/miniprojects/mini0{{ project_id }}.html>
+<https://michael-weylandt.com/STA9750/mini/mini0{{ project_id }}.html>
 and the general peer feedback instructions at 
 <https://michael-weylandt.com/STA9750/miniprojects.html#peer-feedback>.
 

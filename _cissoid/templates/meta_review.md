@@ -2,7 +2,7 @@ Hi {{ name }} ({{ github }}),
 {%- if feedback %}
 
 Thank you for providing peer feedback on MP#0{{ project_id }}
-(https://michael-weylandt.com/STA9750/miniprojects/mini0{{ project_id }}.html). 
+(https://michael-weylandt.com/STA9750/mini/mini0{{ project_id }}.html). 
 Your _meta-review_ grade reflects the quality of the feedback you provided to
 your peers. Learning to read and understand code written by others is an 
 important learning objective of this course: most of the code you interact with
