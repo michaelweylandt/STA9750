@@ -169,6 +169,14 @@ TODAY_TOPIC <- TODAY |>
     slice_head(n=1) |>
     pull(Details) 
 
+if(str_detect(TODAY_TOPIC, "Lecture")){
+  lecture <- str_extract(TODAY_TOPIC, "^Lecture #(\\d{2}):", group=1) |> as.integer()
+} else {
+  lecture <- NA
+}
+
+next_lecture <- lecture + 1
+
 
 PROJ_RELEASE <- DATES |> 
     filter(Details == "Course Project Description Released") |>
@@ -268,7 +276,7 @@ In-class activities (if any) can be found at:
 #| message: false
 #| echo: false
 url_base <- read_yaml("_variables.yml")$course$`web-url`
-url_file <- sprintf("labs/lab%02g.html", session)
+url_file <- sprintf("labs/lab%02g.html", lecture)
 
 url_full <- paste0(url_base, url_file)
 ```
