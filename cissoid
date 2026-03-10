@@ -97,7 +97,8 @@ class IssueStatus(IntEnum):
     PAGE_404 = 6
     MISSING_SOURCE = 7
     MISSING_FILES = 8
-    OK = 9
+    MISSING_AI = 9
+    OK = 10
     
     @property
     def ok(self):
@@ -199,7 +200,7 @@ class Issue(object):
         if self.mp_num == 0:
             return f"https://raw.githubusercontent.com/{self.owner}/{course_repo()}/refs/heads/{self._default_branch}/index.qmd"
         else: 
-            return f"https://raw.githubusercontent.com/{self.owner}/{course_repo()}/refs/heads/{self._default_branch}/mini0{self.mp_num}.qmd"
+            return f"https://raw.githubusercontent.com/{self.owner}/{course_repo()}/refs/heads/{self._default_branch}/mp{self.mp_num:02}.qmd"
 
     @property
     def status(self):
@@ -288,6 +289,30 @@ class Issue(object):
             self._status_message = "Could not access the following files:\n - " + "\n - ".join(support_file_check_results["fail"])
             return self._status
         
+        page_bs =  BS(page_resp.text, features="lxml")
+        ai_disclosure = page_bs.find(class_="callout-note")
+        
+        if ai_disclosure is None:
+            self._status = IssueStatus.MISSING_AI
+            self._status_message = dedent("""Could not locate your AI Usage 
+            Statement. No '.callout-note' identified. Please update your
+            submission and wait for checks to be re-run.""")
+            return self._status
+            
+        try:
+            ai_title = ai_disclosure["title"]
+            
+            if ai_title != "AI Usage Statement":
+                import pdb; pdb.set_trace()
+                self._status = IssueStatus.MISSING_AI
+                self._status_message = dedent("""Could not locate your AI Usage
+                Statement. No '.callout-note' with title 'AI Usage Statement'
+                identified. Pease update your submission and wait for checks to
+                be re-run.""")
+        except KeyError:
+            import pdb; pdb.set_trace()
+            self._status = IssueStatus.MISSING_AI
+        
         self._status = IssueStatus.OK
         
         return self._status
@@ -316,6 +341,8 @@ class Issue(object):
             return f"Could not identify qmd source document\n - " + self._status_message
         elif status == IssueStatus.MISSING_FILES:
             return self._status_message
+        elif status == IssueStatus.MISSING_AI:
+            return self._status_message
         elif status == IssueStatus.OK:
             return "OK"
         else:
@@ -330,7 +357,8 @@ class Issue(object):
                   "Submission URL Correct", 
                   "Submission URL Accessible",
                   "Source File Accessible",
-                  "All Supporting Files Present"]
+                  "All Supporting Files Present",
+                  "AI Disclosure Present",]
                   
         OUT_TEXT = ""
                   
