@@ -10,7 +10,7 @@
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.7.33">
 
-  <title>STA 9750 – Software Tools for Data AnalysisSTA 9750Michael WeylandtWeek 6 – Thursday 2026-03-12Last Updated: 2026-01-14</title>
+  <title>STA 9750 – Software Tools for Data AnalysisSTA 9750Michael WeylandtWeek 6 – Thursday 2026-03-12Last Updated: 2026-03-09</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -193,13 +193,536 @@
     <div class="slides">
 
 <section id="title-slide" data-background-image="../images/baruch_title.png" data-background-size="100% 100%" class="quarto-title-block center">
-  <h1 class="title"><br><br><br><br><br>Software Tools for Data Analysis<br>STA 9750<br>Michael Weylandt<br>Week 6 – Thursday 2026-03-12<br>Last Updated: 2026-01-14</h1>
+  <h1 class="title"><br><br><br><br><br>Software Tools for Data Analysis<br>STA 9750<br>Michael Weylandt<br>Week 6 – Thursday 2026-03-12<br>Last Updated: 2026-03-09</h1>
 
 <div class="quarto-title-authors">
 </div>
 
 </section>
 <section id="week" class="slide level2">
+<h2>STA 9750 Week 6</h2>
+<p>Today: Lecture #05: Multi-Table dplyr Verbs</p>
+<p>These slides can be found online at:</p>
+<blockquote>
+<p><a href="https://michael-weylandt.com/STA9750/slides/slides06.html">https://michael-weylandt.com/STA9750/slides/slides06.html</a></p>
+</blockquote>
+<p>In-class activities (if any) can be found at:</p>
+<blockquote>
+<p><a href="https://michael-weylandt.com/STA9750/labs/lab05.html">https://michael-weylandt.com/STA9750/labs/lab05.html</a></p>
+</blockquote>
+</section>
+<section id="upcoming-todo" class="slide level2">
+<h2>Upcoming TODO</h2>
+<p>Upcoming student responsibilities:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="qtizecwubn" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qtizecwubn table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#qtizecwubn thead, #qtizecwubn tbody, #qtizecwubn tfoot, #qtizecwubn tr, #qtizecwubn td, #qtizecwubn th {
+  border-style: none;
+}
+
+#qtizecwubn p {
+  margin: 0;
+  padding: 0;
+}
+
+#qtizecwubn .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 80%;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: 100%;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#qtizecwubn .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#qtizecwubn .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#qtizecwubn .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#qtizecwubn .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qtizecwubn .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qtizecwubn .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qtizecwubn .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#qtizecwubn .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#qtizecwubn .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#qtizecwubn .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#qtizecwubn .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#qtizecwubn .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#qtizecwubn .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#qtizecwubn .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#qtizecwubn .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#qtizecwubn .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#qtizecwubn .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#qtizecwubn .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qtizecwubn .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#qtizecwubn .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#qtizecwubn .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#qtizecwubn .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qtizecwubn .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#qtizecwubn .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#qtizecwubn .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qtizecwubn .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qtizecwubn .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#qtizecwubn .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qtizecwubn .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#qtizecwubn .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qtizecwubn .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qtizecwubn .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qtizecwubn .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qtizecwubn .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qtizecwubn .gt_left {
+  text-align: left;
+}
+
+#qtizecwubn .gt_center {
+  text-align: center;
+}
+
+#qtizecwubn .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#qtizecwubn .gt_font_normal {
+  font-weight: normal;
+}
+
+#qtizecwubn .gt_font_bold {
+  font-weight: bold;
+}
+
+#qtizecwubn .gt_font_italic {
+  font-style: italic;
+}
+
+#qtizecwubn .gt_super {
+  font-size: 65%;
+}
+
+#qtizecwubn .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#qtizecwubn .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#qtizecwubn .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#qtizecwubn .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#qtizecwubn .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#qtizecwubn .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#qtizecwubn .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#qtizecwubn .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#qtizecwubn div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_col_headings header">
+<th id="Date" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Date</th>
+<th id="Time" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Time</th>
+<th id="Details" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Details</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_right" headers="Date">2026-03-13</td>
+<td class="gt_row gt_left" headers="Time">11:59pm ET</td>
+<td class="gt_row gt_left" headers="Details">Mini-Project #01 Due</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="Date">2026-03-19</td>
+<td class="gt_row gt_left" headers="Time">6:00pm ET</td>
+<td class="gt_row gt_left" headers="Details">Pre-Assignment #07 Due</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="Date">2026-03-22</td>
+<td class="gt_row gt_left" headers="Time">11:59pm ET</td>
+<td class="gt_row gt_left" headers="Details">Mini-Project Peer Feedback #01 Due</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="Date">2026-03-26</td>
+<td class="gt_row gt_left" headers="Time">6:00pm ET</td>
+<td class="gt_row gt_left" headers="Details">Mid-Semester Check-In Slides Due</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="Date">2026-04-02</td>
+<td class="gt_row gt_left" headers="Time">11:59pm ET</td>
+<td class="gt_row gt_left" headers="Details">Mid-Semester Teammate Peer Evaluations Due</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="Date">2026-04-02</td>
+<td class="gt_row gt_left" headers="Time">NA</td>
+<td class="gt_row gt_left" headers="Details">Classes Cancelled (Spring Break – Week 1)</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="Date">2026-04-03</td>
+<td class="gt_row gt_left" headers="Time">11:59pm ET</td>
+<td class="gt_row gt_left" headers="Details">Mini-Project #02 Due</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="Date">2026-04-09</td>
+<td class="gt_row gt_left" headers="Time">NA</td>
+<td class="gt_row gt_left" headers="Details">Classes Cancelled (Spring Break – Week 2)</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="week-1" class="slide level2">
 <h2>STA 9750 Week 6</h2>
 <p>Today: Lecture #05: Multi-Table dplyr Verbs</p>
 </section>
@@ -211,39 +734,64 @@
 <section id="today-1" class="slide level2">
 <h2>Today</h2>
 <ul>
-<li>Course Administration</li>
-<li>Mini-Project #01 Reflection</li>
-<li>Project Proposal Presentations</li>
+<li>Mini-Projects</li>
+<li>Review</li>
+<li>Diving Deeper into Multi-Table Verbs</li>
+<li>PA#05 FAQs</li>
 <li>Wrap-Up
 <ul>
 <li>Life Tip of the Day</li>
 </ul></li>
-<li><em>Time Allowing</em>: <code>dplyr</code> vs <code>SQL</code></li>
 </ul>
+</section>
+<section id="mp01---deadline-soon" class="slide level2">
+<h2>MP#01 - Deadline Soon</h2>
+<p><a href="../mini/mini01.html">Mini-Project #01</a> due on 2026-03-13 at 11:59pm ET</p>
+<div class="fragment">
+<div class="small">
+<p>Topics Covered:</p>
+<ul>
+<li>Reproducible Research Tooling</li>
+<li>Packages and Functions</li>
+<li>Basic Data Manipulation</li>
+<li>Tables for Data Display</li>
+</ul>
+</div>
+</div>
+<div class="fragment">
+<p>Make sure to complete <em>all</em> instructor-provided EDA questions and writing prompts</p>
+<p><strong>Be reasonable, justify, and document your analysis.</strong></p>
+<ul>
+<li>Do your answers pass the sniff test?<br>
+</li>
+<li>At least one sentence of text per short question is a good baseline</li>
+</ul>
+</div>
 </section>
 <section id="mp01---peer-feedback" class="slide level2">
 <h2>MP#01 - Peer Feedback</h2>
 <p>Assigned on GitHub - due on 2026-03-22</p>
 <ul>
 <li><span class="math inline">\(\approx 4\)</span> feedbacks each</li>
-<li>Take this seriously: around 20% of this assignment is “meta-review”</li>
+<li>Take this seriously: 20% of this assignment is “meta-review”</li>
 <li>Goal: <em>rigorous</em> <em>constructive</em> critique</li>
 </ul>
-<p>Use <a href="https://michael-weylandt.com/STA9750/tips.html#find-peer-feedback-assigned-to-me">helper functions</a> to find submissions assigned to you. Ask on Piazza if still having trouble.</p>
+<p>Use <a href="https://michael-weylandt.com/STA9750/tips.html">helper function</a> to perform peer feedback assigned to you. Ask on Piazza if still having trouble.</p>
 </section>
 <section id="mp01---peer-feedback-1" class="slide level2">
 <h2>MP#01 - Peer Feedback</h2>
 <p>Submissions may not map perfectly to rubric - use your best judgement</p>
 <div class="fragment">
 <p>Be <em>generous</em> but serious:</p>
+<div class="small">
 <ul>
 <li>Goal is improvement, so “everything is great, no comments” is unhelpful
 <ul>
 <li>Nothing is completely right nor completely wrong</li>
 </ul></li>
-<li>Remember, <em>meta-review</em> (TA scores of your feedback) to follow</li>
-<li>Extra Credit is limited per instructions; only award for exceptional work</li>
+<li>Remember, <em>meta-review</em> (instructor scores of your feedback) to follow</li>
 </ul>
+</div>
 </div>
 <div class="fragment">
 <p>Learn from this! What can <em>you</em> adapt for MP#02?</p>
@@ -253,15 +801,7 @@
 <h2>MP#01 - Peer Feedback</h2>
 <p>Example of poor feedback:</p>
 <div class="smallest">
-<pre><code>Scores
-Written Communication: 10
-Project Skeleton: 10
-Formatting &amp; Display: 10
-Code Quality: 10
-Data Preparation: 10
-Extra Credit: 10
-
-Comments
+<pre><code>Comments
 Website looks really good, nice and clean!
 
 Written Communication
@@ -283,7 +823,6 @@ Extra Credit
 Added graphes for even better understanding.</code></pre>
 </div>
 <ul>
-<li>Improper formatting</li>
 <li>Superficial comments / no sign of actually reading work</li>
 </ul>
 <p>Red Flag: Repeated verbatim on several posts</p>
@@ -293,16 +832,7 @@ Added graphes for even better understanding.</code></pre>
 <h2>MP#01 - Peer Feedback</h2>
 <p>Example of medium feedback:</p>
 <div class="smallest">
-<pre><code>## Scores 
-
-- Written Communication: 8
-- Project Skeleton: 10
-- Formatting &amp; Display: 9
-- Code Quality: 10
-- Data Preparation: 10
-- Extra Credit: 1
-
-## Comments
+<pre><code>## Comments
 
 Love the visuals for Press Releases.
 
@@ -331,7 +861,6 @@ Automatic (10/10). Out of scope for this mini-project.
 I found all the Press Releases very interesting. The visuals were a great touch.</code></pre>
 </div>
 <ul>
-<li>Proper formatting</li>
 <li>Gave actionable suggestions</li>
 <li>Directionally correct, but a bit vague</li>
 </ul>
@@ -340,21 +869,11 @@ I found all the Press Releases very interesting. The visuals were a great touch.
 <h2>MP#01 - Peer Feedback</h2>
 <p>Example of great feedback:</p>
 <div class="smallest">
-<pre><code>
-## Scores
+<pre><code>### Written Communication
 
-- Written Communication: 9
-- Project Skeleton: 10
-- Formatting &amp; Display: 9
-- Code Quality: 9
-- Data Preparation: 10
-- Extra Credit: 2
-
-## Comments
-
-### Written Communication
-
-Overall, your writing is clear and easy to follow. I noticed a few small typos, but nothing major — using the built-in spell check in RStudio should catch those quickly. Everything else looks solid, and I didn’t have any major concerns based on my review.
+Overall, your writing is clear and easy to follow. I noticed a few small typos, 
+but nothing major — using the built-in spell check in RStudio should catch those quickly. Everything else looks solid, and I didn’t have any major concerns based
+on my review.
 
 ### Project Skeleton
 
@@ -362,17 +881,26 @@ All tasks were completed satisfactorily.
 
 ### Formatting &amp; Display
 
-Overall, your tables and figures are well-organized and clear. There is one table in the "Data" section with column titles that could be formatted a little more cleanly for easier reading. I also noticed a few small typos in some of the table captions, but they should be easy to fix.
+Overall, your tables and figures are well-organized and clear. There is one 
+table in the "Data" section with column titles that could be formatted a little
+more cleanly for easier reading. I also noticed a few small typos in some of the
+table captions, but they should be easy to fix.
 
 ### Code Quality
 
-The code quality is generally good, but there are a few minor linter issues. The comments could be more frequent and clearer in some places. For example, the comment `#checking dupolicate so that github will not block it` should be corrected to "duplicate," and the explanation could be clarified to avoid confusion–what duplicate are you referring to, and how does it block GitHub? It might confuse someone else reading the code.
+The code quality is generally good, but there are a few minor linter issues. The
+comments could be more frequent and clearer in some places. For example, the
+comment `#checking dupolicate so that github will not block it` should be 
+corrected to "duplicate," and the explanation could be clarified to avoid
+confusion–what duplicate are you referring to, and how does it block GitHub? 
+It might confuse someone else reading the code.
 
 Also, I would recommend moving all library imports to the top of the script, as that is typically considered standard practice.
 
 ### Data Preparation
 
-The data preparation looks solid overall. I like how you handle missing files and JSON parsing failures–it demonstrates strong defensive programming.
+The data preparation looks solid overall. I like how you handle missing files 
+and JSON parsing failures–it demonstrates strong defensive programming.
 
 ### Extra Credit
 
@@ -394,24 +922,8 @@ Additional two points for using quarto's video support!</code></pre>
 <li>You don’t have to be definitive in comments - impressions and questions are just as helpful.</li>
 </ul>
 </section>
-<section id="mp01---impressions" class="slide level2">
-<h2>MP#01 - Impressions</h2>
-<p>👏 Thank you for excellent work here! 👏</p>
-<div class="fragment">
-<p>I’ve started reading some submissions - really impressive!</p>
-<ul>
-<li>Plots (exciting!)</li>
-<li>Sophisticated and Insightful Analyses</li>
-<li>Lots of <em>K-Pop Demon Hunters</em></li>
-<li>Fun for me to get to learn your interests</li>
-</ul>
-</div>
-<div class="fragment">
-<p>Hopefully automated checks helpful. If you have ideas for other useful automated ‘supports’ let me know</p>
-</div>
-</section>
-<section id="mp01---common-questions" class="slide level2">
-<h2>MP#01 - Common Questions</h2>
+<section id="mp-faqs" class="slide level2">
+<h2>MP FAQs</h2>
 <p>Q: Why doesn’t my site look the same on GitHub as it does on my laptop?</p>
 <div class="fragment">
 <p>A: Missing <code>css</code> and <code>js</code> files. Need to <em>upload</em> everything in <code>docs</code>.</p>
@@ -425,8 +937,8 @@ Additional two points for using quarto's video support!</code></pre>
 <p>Tries to make sure all ‘secondary’ files are present.</p>
 </div>
 </section>
-<section id="mp01---common-questions-1" class="slide level2">
-<h2>MP#01 - Common Questions</h2>
+<section id="mp-faqs-1" class="slide level2">
+<h2>MP FAQs</h2>
 <p>Q: Why doesn’t my submission have the right URL?</p>
 <div class="fragment">
 <p>A: <em>Most</em> computers have case-sensitive file names, Mac doesn’t, and Windows is iffy.</p>
@@ -442,116 +954,887 @@ Additional two points for using quarto's video support!</code></pre>
 </section>
 <section id="mini-project-02" class="slide level2">
 <h2>Mini-Project #02</h2>
-<p><a href="../mini/mini02.html">MP#02 released</a> - TBD</p>
+<p><a href="../mini/mini02.html">MP#02 released</a> - How Do You Do ‘You Do You’?</p>
 <div class="fragment">
 <p><strong>Due2026-04-03 at 11:59pm ET</strong></p>
 <ul>
-<li>GitHub post (used for peer feedback) AND Brightspace</li>
-<li><span class="math inline">\(\approx\)</span> One Month: don’t wait until the very end</li>
+<li>GitHub post (used for automated checks) AND Brightspace</li>
+<li>22 days: don’t wait until the very end</li>
 </ul>
 </div>
 <div class="fragment">
-<p>Pay attention to <a href="../mini/mini02.html#rubric">the rubric</a></p>
+<p>Topics covered:</p>
 <ul>
-<li>Writing and presentation are about 50% of your grade</li>
-<li>Evaluated on <em>rigor</em> and <em>thoughtfulness</em>, not necessarily correctness</li>
+<li>Combining Data from Different Sources</li>
+<li>Data Visualization</li>
+<li>Using Survey Weights for Microdata Analysis</li>
 </ul>
-<div class="smallest">
-<p>Thanks to HI and SK for help with Windows-compatibility!</p>
-</div>
 </div>
 </section>
 <section id="upcoming-mini-projects" class="slide level2">
 <h2>Upcoming Mini-Projects</h2>
 <p>Tentative Topics</p>
 <ul>
-<li>MP#03: NYC Trees - 2026-04-24 at 11:59pm ET</li>
-<li>MP#04: US Employment Surveys - 2026-05-15 at 11:59pm ET</li>
-</ul>
-</section>
-<section id="pre-assignments" class="slide level2">
-<h2>Pre-Assignments</h2>
-<p>Brightspace - day before class</p>
-<ul>
-<li>Reading, typically on course website</li>
-<li>Brightspace auto-grades
-<ul>
-<li>I have to manually change to completion grading</li>
-</ul></li>
-</ul>
-<p>Next pre-assignment is <strong>2026-03-12 at 6:00pm ET</strong></p>
-<div class="fragment">
-<p>I missed a few comments in the previous cycle (sorry!) - trying to catch up in the next few days</p>
-</div>
-</section>
-<section id="course-support" class="slide level2">
-<h2>Course Support</h2>
-<ul>
-<li>Synchronous
-<ul>
-<li>Virtual Office Hours 2x / week on Class Days</li>
-</ul></li>
-<li>Asynchronous
-<ul>
-<li>Piazza (<span class="math inline">\(&lt;20\)</span> minute average response time)</li>
-</ul></li>
-</ul>
-</section>
-<section id="upcoming-week" class="slide level2">
-<h2>Upcoming Week</h2>
-<p>Due Wednesday at 11:45pm:</p>
-<ul>
-<li>Pre-Assignment #07 (Brightspace)
-<ul>
-<li><strong>Introduction to plotting with <code>ggplot2</code></strong></li>
-</ul></li>
-</ul>
-<p>Expect back:</p>
-<ul>
-<li>MP#01 grades</li>
-<li>Project proposal instructor feedback</li>
-</ul>
-</section>
-<section id="project-proposals" class="slide level2">
-<h2>Project Proposals</h2>
-<p><a href="https://michael-weylandt.com/STA9750/project.html#project-proposal-presentations">Official Description</a></p>
-<ul>
-<li><strong>6 minute presentation</strong></li>
-<li>Key topics:
-<ul>
-<li><em>Animating Question</em></li>
-<li><em>Team Roster</em></li>
-</ul></li>
-<li>Also discuss: Possible specific questions, data sources, analytical plan, anticipated challenges</li>
-</ul>
-<div class="fragment">
-<p>Most important: team names!</p>
-<p>Previous: Rat Pack, Subway Surfers, Going for Gold, <em>etc.</em></p>
-</div>
-</section>
-<section id="after-proposals" class="slide level2">
-<h2>After Proposals</h2>
-<p>100% optional discussion of <code>dplyr</code> vs <code>SQL</code></p>
-<ul>
-<li><code>SQL</code> is a very common Data Scientist interview topic so if you’re not taking a database course, might be useful</li>
+<li>MP#03: State-to-State Moving - 2026-04-24 at 11:59pm ET</li>
+<li>MP#04: Olympics Results - 2026-05-15 at 11:59pm ET</li>
 </ul>
 </section></section>
 <section>
-<section id="on-to-the-show" class="title-slide slide level1 center">
-<h1>On to the Show!</h1>
+<section id="review-from-last-week" class="title-slide slide level1 center">
+<h1>Review from Last Week</h1>
 
 </section>
-<section id="presentation-order" class="slide level2 scrollable">
-<h2>Presentation Order</h2>
-<p>TBD</p>
-<div class="smaller">
-
+<section id="single-table-verbs" class="slide level2">
+<h2>Single-Table Verbs</h2>
+<p><code>dplyr</code> single-table verbs</p>
+<ul>
+<li class="fragment"><code>select</code>, <code>filter</code>: Selecting rows and columns</li>
+<li class="fragment"><code>rename</code>, <code>mutate</code>: Changing rows and columns</li>
+<li class="fragment"><code>summarize</code>, <code>group_by</code>: Combining multiple rows</li>
+<li class="fragment"><code>arrange</code>, <code>slice_min/max</code>: Re-ordering</li>
+</ul>
+<div class="fragment">
+<p><a href="../labs/lab05.html#review">Lab #05 Review Activity</a></p>
 </div>
+</section>
+<section id="breakout-rooms" class="slide level2">
+<h2>Breakout Rooms</h2>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Breakout</th>
+<th style="text-align: left;">Team</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">XC+ML+ER+RJSN</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">MUO+KN+CM+ID+KM</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">HHS+KK+FC+DN</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">LR+MOG+APTL+TN</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">JE+JABB+MTP+JA+AS</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section></section>
+<section>
+<section id="multi-table-verbs" class="title-slide slide level1 center">
+<h1>Multi-Table Verbs</h1>
+
+</section>
+<section id="multi-table-analysis" class="slide level2">
+<h2>Multi-Table Analysis</h2>
+<p><em>Multiple Tables</em>:</p>
+<ul>
+<li>More insights than from a single table</li>
+<li>Maintain ‘tidy’ structure throughout</li>
+</ul>
+<p>Will create new (compound) rows:</p>
+<ul>
+<li>Dangers: <em>drops</em> and <em>(over) duplication</em></li>
+</ul>
+</section>
+<section id="primary-keys" class="slide level2">
+<h2>Primary Keys</h2>
+<div class="small">
+<p><em>Keys</em> are unique identifiers for individual records</p>
+<ul>
+<li>Primary (one column) or compound (multiple columns together)</li>
+</ul>
+</div>
+<div class="fragment">
+<div class="small">
+<p>The history of corporate IT is largely one of (failed) primary keys</p>
+<ul>
+<li>Finance: Tickers, Tickers + Exchange, Tickers + Share Class, CUSIP, ISIN, SEDOL, …</li>
+</ul>
+</div>
+</div>
+<div class="fragment">
+<div class="small">
+<p>Meaningful true keys are vanishingly rare - cherish them when you find them</p>
+<p>Often ‘unique enough’ for an analysis</p>
+<p><code>dplyr::group_by() + dplyr::count()</code> is helpful here</p>
+</div>
+</div>
+</section>
+<section id="joins" class="slide level2">
+<h2>Joins</h2>
+<p>Joins combine tables <em>by identity</em> - not simple ‘stacking’</p>
+<p>Specify a <em>join key</em> - ideally this is an actual key, but doesn’t have to be</p>
+<p>In <code>dplyr</code>, we use the <code>join_by</code> function:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a></a>dplyr<span class="sc">::</span><span class="fu">join_by</span>(table_1_name <span class="sc">==</span> table_2_name)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here <code>table_1_name</code> and <code>table_2_name</code> are column names from two tables</p>
+<div class="fragment">
+<p>Join rows where these values are equal (advanced joins possible)</p>
+</div>
+</section>
+<section id="inner-and-outer-joins" class="slide level2">
+<h2>Inner and Outer Joins</h2>
+<p>When tables are perfectly matched, not an issue:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a></a>cunys</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  college campus_borough
+  &lt;chr&gt;   &lt;chr&gt;         
+1 CCNY    Manhattan     
+2 Baruch  Manhattan     
+3 CSI     Staten Island 
+4 York    Queens        </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a></a>routes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  borough_name  bus_code
+  &lt;chr&gt;         &lt;chr&gt;   
+1 Manhattan     M       
+2 Staten Island S       
+3 Queens        Q       </code></pre>
+</div>
+</div>
+</section>
+<section id="inner-and-outer-joins-1" class="slide level2">
+<h2>Inner and Outer Joins</h2>
+<p>When tables are perfectly matched, not an issue:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a></a><span class="fu">inner_join</span>(cunys, routes, <span class="fu">join_by</span>(campus_borough <span class="sc">==</span> borough_name))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 3
+  college campus_borough bus_code
+  &lt;chr&gt;   &lt;chr&gt;          &lt;chr&gt;   
+1 CCNY    Manhattan      M       
+2 Baruch  Manhattan      M       
+3 CSI     Staten Island  S       
+4 York    Queens         Q       </code></pre>
+</div>
+</div>
+<p>Default to <code>inner</code> but irrelevant</p>
+<p>Note automatic repetition of <code>"M"</code> row</p>
+</section>
+<section id="inner-and-outer-joins-2" class="slide level2">
+<h2>Inner and Outer Joins</h2>
+<p>How to handle ‘unaligned’ values?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a></a>cunys <span class="ot">&lt;-</span> <span class="fu">tribble</span>(<span class="sc">~</span>college, <span class="sc">~</span>campus_borough, </span>
+<span id="cb13-2"><a></a>                 <span class="st">"CCNY"</span>, <span class="st">"Manhattan"</span>,</span>
+<span id="cb13-3"><a></a>                 <span class="st">"Baruch"</span>, <span class="st">"Manhattan"</span>, </span>
+<span id="cb13-4"><a></a>                 <span class="st">"CSI"</span>, <span class="st">"Staten Island"</span>,</span>
+<span id="cb13-5"><a></a>                 <span class="st">"York"</span>, <span class="st">"Queens"</span>, </span>
+<span id="cb13-6"><a></a>                 <span class="st">"Medgar Evers"</span>, <span class="st">"Brooklyn"</span>)</span>
+<span id="cb13-7"><a></a></span>
+<span id="cb13-8"><a></a><span class="fu">inner_join</span>(cunys, routes, <span class="fu">join_by</span>(campus_borough <span class="sc">==</span> borough_name))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 3
+  college campus_borough bus_code
+  &lt;chr&gt;   &lt;chr&gt;          &lt;chr&gt;   
+1 CCNY    Manhattan      M       
+2 Baruch  Manhattan      M       
+3 CSI     Staten Island  S       
+4 York    Queens         Q       </code></pre>
+</div>
+</div>
+<div class="fragment">
+<p><span class="light-content" style="color: red;">MEC vanished!</span></p>
+</div>
+</section>
+<section id="inner-and-outer-joins-3" class="slide level2">
+<h2>Inner and Outer Joins</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a></a><span class="fu">left_join</span>(cunys, routes, <span class="fu">join_by</span>(campus_borough <span class="sc">==</span> borough_name))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 3
+  college      campus_borough bus_code
+  &lt;chr&gt;        &lt;chr&gt;          &lt;chr&gt;   
+1 CCNY         Manhattan      M       
+2 Baruch       Manhattan      M       
+3 CSI          Staten Island  S       
+4 York         Queens         Q       
+5 Medgar Evers Brooklyn       &lt;NA&gt;    </code></pre>
+</div>
+</div>
+<p>MEC stays, but no bus code - <code>NA</code> value</p>
+<div class="fragment">
+<div class="smaller">
+<ul>
+<li><code>inner_join</code> - Keep only matches</li>
+<li><code>left_join</code> - Keep all rows in left (first) table even w/o matches</li>
+<li><code>right_join</code> - Keep all rows in right (second) table even w/o matches</li>
+<li><code>full_join</code> - Keep all rows from both tables, even w/o matches</li>
+</ul>
+</div>
+<p><code>left_</code> and <code>right_</code> are types of ‘outer’ joins</p>
+</div>
+</section>
+<section id="pivoting" class="slide level2">
+<h2>Pivoting</h2>
+<p>The <code>pivot_*</code> functions change the <strong>shape</strong> of data</p>
+<ul>
+<li class="fragment">Values are not created or destroyed, just moved around</li>
+<li class="fragment"><strong>wider</strong> data sets are formed by forming multiple rows into columns</li>
+<li class="fragment"><strong>longer</strong> data sets are splitting columns from the same row into new rows</li>
+</ul>
+<div class="fragment">
+<p>These functions come from the <code>tidyr</code> package - not <code>dplyr</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a></a><span class="fu">library</span>(tidyr) <span class="co"># included in library(tidyverse)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</section>
+<section id="pivoting-1" class="slide level2">
+<h2>Pivoting</h2>
+<p>Untidy example from last week:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 4
+   Semester Course     Number Type      
+   &lt;chr&gt;    &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt;     
+ 1 Fall     Accounting    200 Enrollment
+ 2 Fall     Accounting    250 Cap       
+ 3 Fall     Law           100 Enrollment
+ 4 Fall     Law           125 Cap       
+ 5 Fall     Statistics    200 Enrollment
+ 6 Fall     Statistics    200 Cap       
+ 7 Spring   Accounting    300 Enrollment
+ 8 Spring   Accounting    350 Cap       
+ 9 Spring   Law            50 Enrollment
+10 Spring   Law           100 Cap       
+11 Spring   Statistics    400 Enrollment
+12 Spring   Statistics    400 Cap       </code></pre>
+</div>
+</div>
+</section>
+<section id="pivoting-2" class="slide level2">
+<h2>Pivoting</h2>
+<p>This data was untidy because it split a single unit (course) across multiple rows</p>
+<p><code>pivot_wider</code> to get to the right format</p>
+<div class="fragment">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a></a><span class="fu">pivot_wider</span>(BARUCH_UNTIDY, <span class="at">names_from=</span>Type, <span class="at">values_from=</span>Number)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 4
+  Semester Course     Enrollment   Cap
+  &lt;chr&gt;    &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;
+1 Fall     Accounting        200   250
+2 Fall     Law               100   125
+3 Fall     Statistics        200   200
+4 Spring   Accounting        300   350
+5 Spring   Law                50   100
+6 Spring   Statistics        400   400</code></pre>
+</div>
+</div>
+</div>
+</section>
+<section id="pivots" class="slide level2">
+<h2>Pivots</h2>
+<p><code>pivot_</code> changes the shape of a data set. Purposes:</p>
+<ul>
+<li>Get ready for presentation</li>
+<li>Prep for a join</li>
+<li>Combine rows before looking at ‘cross-row’ structure</li>
+</ul>
+</section>
+<section id="pivots-1" class="slide level2">
+<h2>Pivots</h2>
+<p>Which penguin species has the largest between-sex mass difference?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb21-2"><a></a>avg_mass_tbl <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span> <span class="fu">drop_na</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb21-3"><a></a>    <span class="fu">group_by</span>(sex, species) <span class="sc">|&gt;</span> </span>
+<span id="cb21-4"><a></a>    <span class="fu">summarize</span>(<span class="at">avg_mass =</span> <span class="fu">mean</span>(body_mass), <span class="at">.groups=</span><span class="st">"drop"</span>)</span>
+<span id="cb21-5"><a></a>    <span class="co"># .groups="drop" is equivalent to |&gt; ungroup()</span></span>
+<span id="cb21-6"><a></a>avg_mass_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 3
+  sex    species   avg_mass
+  &lt;fct&gt;  &lt;fct&gt;        &lt;dbl&gt;
+1 female Adelie       3369.
+2 female Chinstrap    3527.
+3 female Gentoo       4680.
+4 male   Adelie       4043.
+5 male   Chinstrap    3939.
+6 male   Gentoo       5485.</code></pre>
+</div>
+</div>
+</section>
+<section id="pivots-2" class="slide level2">
+<h2>Pivots</h2>
+<p>We want data that is <em>wider</em> (or at least not longer) than our current data:</p>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th>species</th>
+<th>male_avg</th>
+<th>female_avg</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Adelie</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr class="even">
+<td>Chinstrap</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr class="odd">
+<td>Gentoo</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="pivots-3" class="slide level2">
+<h2>Pivots</h2>
+<p>For the penguins:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a></a><span class="fu">pivot_wider</span>(avg_mass_tbl, </span>
+<span id="cb23-2"><a></a>            <span class="at">id_cols =</span> species, </span>
+<span id="cb23-3"><a></a>            <span class="at">names_from=</span>sex, </span>
+<span id="cb23-4"><a></a>            <span class="at">values_from=</span>avg_mass)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 3
+  species   female  male
+  &lt;fct&gt;      &lt;dbl&gt; &lt;dbl&gt;
+1 Adelie     3369. 4043.
+2 Chinstrap  3527. 3939.
+3 Gentoo     4680. 5485.</code></pre>
+</div>
+</div>
+<div class="fragment">
+<div class="small">
+<p>Put it all together:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a></a><span class="fu">pivot_wider</span>(avg_mass_tbl, </span>
+<span id="cb25-2"><a></a>            <span class="at">id_cols =</span> species, </span>
+<span id="cb25-3"><a></a>            <span class="at">names_from=</span>sex, </span>
+<span id="cb25-4"><a></a>            <span class="at">values_from=</span>avg_mass) <span class="sc">|&gt;</span></span>
+<span id="cb25-5"><a></a>    <span class="fu">mutate</span>(<span class="at">sex_diff =</span> male <span class="sc">-</span> female) <span class="sc">|&gt;</span></span>
+<span id="cb25-6"><a></a>    <span class="fu">slice_max</span>(sex_diff)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  species female  male sex_diff
+  &lt;fct&gt;    &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+1 Gentoo   4680. 5485.     805.</code></pre>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="pivots-4" class="slide level2">
+<h2>Pivots</h2>
+<p><code>pivot_wider</code> Arguments:</p>
+<div class="small">
+<ul>
+<li><code>id_cols</code>: kept as ‘keys’ for new table</li>
+<li><code>names_from</code>: existing column ‘spread’ to create new columns names</li>
+<li><code>values_from</code>: values in new table</li>
+</ul>
+</div>
+<div class="fragment">
+<p><code>pivot_longer</code>:</p>
+<div class="small">
+<ul>
+<li>‘Inverse’ operation</li>
+<li>Spread one row + multiple columns =&gt; one col + multiple rows</li>
+</ul>
+</div>
+</div>
+<div class="fragment">
+<div class="small">
+<p><code>pivot_wider</code> and <code>pivot_longer</code> have many additional arguments for dealing with repeats / missing values. The help page (+ experimenting) is your friend</p>
+</div>
+</div>
+</section>
+<section id="legos-of-data-analysis" class="slide level2">
+<h2>Legos of Data Analysis</h2>
+<p>These functions are like Legos:</p>
+<ul>
+<li>Simple individually</li>
+<li>Combine for complex structures</li>
+</ul>
+</section>
+<section id="legos-of-data-analysis-1" class="slide level2">
+<h2>Legos of Data Analysis</h2>
+<p><strong>Q: How many distinct flights left NYC in 2013?</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb27-2"><a></a><span class="fu">library</span>(nycflights13)</span>
+<span id="cb27-3"><a></a>flights <span class="sc">|&gt;</span> </span>
+<span id="cb27-4"><a></a>    <span class="fu">n_distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 336776</code></pre>
+</div>
+</div>
+<div class="fragment">
+<p>Not quite what we wanted…</p>
+</div>
+</section>
+<section id="legos-of-data-analysis-2" class="slide level2">
+<h2>Legos of Data Analysis</h2>
+<p><strong>Q: How many distinct flights left NYC in 2013?</strong></p>
+<div class="fragment">
+<p>How many unique combinations of <code>carrier</code> + <code>flight</code> (<em>e.g.</em>, United 101)?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a></a>flights <span class="sc">|&gt;</span></span>
+<span id="cb29-2"><a></a>    <span class="fu">select</span>(carrier, flight) <span class="sc">|&gt;</span></span>
+<span id="cb29-3"><a></a>    <span class="fu">n_distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 5725</code></pre>
+</div>
+</div>
+</div>
+</section>
+<section id="legos-of-data-analysis-3" class="slide level2">
+<h2>Legos of Data Analysis</h2>
+<p><strong>Q: How many distinct flights left NYC in 2013?</strong></p>
+<div class="small">
+<p>💡 Did airlines re-use flight numbers for different destinations?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a></a>flights <span class="sc">|&gt;</span></span>
+<span id="cb31-2"><a></a>    <span class="fu">distinct</span>(carrier, flight, dest) <span class="sc">|&gt;</span></span>
+<span id="cb31-3"><a></a>    <span class="co"># Find reuse of number across different destinations</span></span>
+<span id="cb31-4"><a></a>    <span class="co"># Shorthand for group_by + summarize(n = n())</span></span>
+<span id="cb31-5"><a></a>    <span class="fu">count</span>(carrier, flight) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5,725 × 3
+   carrier flight     n
+   &lt;chr&gt;    &lt;int&gt; &lt;int&gt;
+ 1 9E        2900     1
+ 2 9E        2901     1
+ 3 9E        2902     1
+ 4 9E        2903     2
+ 5 9E        2904     2
+ 6 9E        2905     1
+ 7 9E        2906     1
+ 8 9E        2907     1
+ 9 9E        2908     1
+10 9E        2909     2
+# ℹ 5,715 more rows</code></pre>
+</div>
+</div>
+</div>
+<div class="fragment">
+<p>Seems so!</p>
+</div>
+</section>
+<section id="legos-of-data-analysis-4" class="slide level2 scrollable">
+<h2>Legos of Data Analysis</h2>
+<p><strong>Q: How many distinct flights left NYC in 2013?</strong></p>
+<p>Find examples of re-use:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a></a>flights <span class="sc">|&gt;</span></span>
+<span id="cb33-2"><a></a>    <span class="fu">distinct</span>(carrier, flight, dest) <span class="sc">|&gt;</span></span>
+<span id="cb33-3"><a></a>    <span class="fu">count</span>(carrier, flight) <span class="sc">|&gt;</span> </span>
+<span id="cb33-4"><a></a>    <span class="fu">slice_max</span>(n)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  carrier flight     n
+  &lt;chr&gt;    &lt;int&gt; &lt;int&gt;
+1 UA        1162    16</code></pre>
+</div>
+</div>
+</section>
+<section id="legos-of-data-analysis-5" class="slide level2 scrollable">
+<h2>Legos of Data Analysis</h2>
+<p><strong>Q: How many distinct flights left NYC in 2013?</strong></p>
+<p>Finding most re-used flight number:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a></a>flights <span class="sc">|&gt;</span></span>
+<span id="cb35-2"><a></a>    <span class="fu">distinct</span>(carrier, flight, dest) <span class="sc">|&gt;</span></span>
+<span id="cb35-3"><a></a>    <span class="fu">count</span>(carrier, flight) <span class="sc">|&gt;</span> </span>
+<span id="cb35-4"><a></a>    <span class="fu">slice_max</span>(n) <span class="sc">|&gt;</span> </span>
+<span id="cb35-5"><a></a>    <span class="fu">left_join</span>(flights, <span class="fu">join_by</span>(carrier <span class="sc">==</span> carrier, flight <span class="sc">==</span> flight)) <span class="sc">|&gt;</span></span>
+<span id="cb35-6"><a></a>    <span class="fu">pull</span>(dest) <span class="sc">|&gt;</span> <span class="co"># pull out column as vector</span></span>
+<span id="cb35-7"><a></a>    <span class="fu">table</span>() <span class="co"># frequency table</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+BOS CLE DEN DFW IAH JAC LAS MIA MSY ORD SAN SAT SEA SFO SNA TPA 
+ 13   1  19   5   8   2   1   2   8  55   4   1  18   2  27   4 </code></pre>
+</div>
+</div>
+</section>
+<section id="legos-of-data-analysis-6" class="slide level2 scrollable">
+<h2>Legos of Data Analysis</h2>
+<p><strong>Q: How many distinct flights left NYC in 2013?</strong></p>
+<p>Finding most re-used flight number:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a></a>flights <span class="sc">|&gt;</span></span>
+<span id="cb37-2"><a></a>    <span class="fu">distinct</span>(carrier, flight, dest) <span class="sc">|&gt;</span></span>
+<span id="cb37-3"><a></a>    <span class="fu">count</span>(carrier, flight) <span class="sc">|&gt;</span> </span>
+<span id="cb37-4"><a></a>    <span class="fu">slice_max</span>(n)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  carrier flight     n
+  &lt;chr&gt;    &lt;int&gt; &lt;int&gt;
+1 UA        1162    16</code></pre>
+</div>
+</div>
+</section>
+<section id="legos-of-data-analysis-7" class="slide level2 scrollable">
+<h2>Legos of Data Analysis</h2>
+<p><strong>Q: How many distinct flights left NYC in 2013?</strong></p>
+<p>Seeing where our most reused number went:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a></a>flights <span class="sc">|&gt;</span></span>
+<span id="cb39-2"><a></a>    <span class="fu">distinct</span>(carrier, flight, dest) <span class="sc">|&gt;</span></span>
+<span id="cb39-3"><a></a>    <span class="fu">count</span>(carrier, flight) <span class="sc">|&gt;</span> </span>
+<span id="cb39-4"><a></a>    <span class="fu">slice_max</span>(n) <span class="sc">|&gt;</span></span>
+<span id="cb39-5"><a></a>    <span class="fu">inner_join</span>(flights, <span class="fu">join_by</span>(carrier <span class="sc">==</span> carrier, flight <span class="sc">==</span> flight)) <span class="sc">|&gt;</span></span>
+<span id="cb39-6"><a></a>    <span class="fu">count</span>(flight, carrier, dest)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 16 × 4
+   flight carrier dest      n
+    &lt;int&gt; &lt;chr&gt;   &lt;chr&gt; &lt;int&gt;
+ 1   1162 UA      BOS      13
+ 2   1162 UA      CLE       1
+ 3   1162 UA      DEN      19
+ 4   1162 UA      DFW       5
+ 5   1162 UA      IAH       8
+ 6   1162 UA      JAC       2
+ 7   1162 UA      LAS       1
+ 8   1162 UA      MIA       2
+ 9   1162 UA      MSY       8
+10   1162 UA      ORD      55
+11   1162 UA      SAN       4
+12   1162 UA      SAT       1
+13   1162 UA      SEA      18
+14   1162 UA      SFO       2
+15   1162 UA      SNA      27
+16   1162 UA      TPA       4</code></pre>
+</div>
+</div>
+</section>
+<section id="legos-of-data-analysis-8" class="slide level2 scrollable">
+<h2>Legos of Data Analysis</h2>
+<p><strong>Q: How many distinct flights left NYC in 2013?</strong></p>
+<p>Additional join to get airport information + formatting:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a></a>flights <span class="sc">|&gt;</span></span>
+<span id="cb41-2"><a></a>    <span class="fu">distinct</span>(carrier, flight, dest) <span class="sc">|&gt;</span></span>
+<span id="cb41-3"><a></a>    <span class="fu">count</span>(carrier, flight) <span class="sc">|&gt;</span> </span>
+<span id="cb41-4"><a></a>    <span class="fu">slice_max</span>(n) <span class="sc">|&gt;</span></span>
+<span id="cb41-5"><a></a>    <span class="fu">inner_join</span>(flights, <span class="fu">join_by</span>(carrier <span class="sc">==</span> carrier, flight <span class="sc">==</span> flight)) <span class="sc">|&gt;</span></span>
+<span id="cb41-6"><a></a>    <span class="fu">count</span>(flight, carrier, dest) <span class="sc">|&gt;</span> </span>
+<span id="cb41-7"><a></a>    <span class="fu">inner_join</span>(airports, <span class="fu">join_by</span>(dest <span class="sc">==</span> faa)) <span class="sc">|&gt;</span></span>
+<span id="cb41-8"><a></a>    <span class="fu">select</span>(name, n, carrier, flight) <span class="sc">|&gt;</span></span>
+<span id="cb41-9"><a></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(n)) <span class="sc">|&gt;</span></span>
+<span id="cb41-10"><a></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">Destination Airport</span><span class="st">`</span> <span class="ot">=</span> name, </span>
+<span id="cb41-11"><a></a>           <span class="st">`</span><span class="at">Number of Times Flown</span><span class="st">`</span> <span class="ot">=</span> n, </span>
+<span id="cb41-12"><a></a>           <span class="st">`</span><span class="at">Carrier Code</span><span class="st">`</span> <span class="ot">=</span> carrier, </span>
+<span id="cb41-13"><a></a>           <span class="st">`</span><span class="at">Flight Number</span><span class="st">`</span><span class="ot">=</span> flight)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 16 × 4
+   `Destination Airport`   Number of Times Flow…¹ `Carrier Code` `Flight Number`
+   &lt;chr&gt;                                    &lt;int&gt; &lt;chr&gt;                    &lt;int&gt;
+ 1 Chicago Ohare Intl                          55 UA                        1162
+ 2 John Wayne Arpt Orange…                     27 UA                        1162
+ 3 Denver Intl                                 19 UA                        1162
+ 4 Seattle Tacoma Intl                         18 UA                        1162
+ 5 General Edward Lawrenc…                     13 UA                        1162
+ 6 George Bush Interconti…                      8 UA                        1162
+ 7 Louis Armstrong New Or…                      8 UA                        1162
+ 8 Dallas Fort Worth Intl                       5 UA                        1162
+ 9 San Diego Intl                               4 UA                        1162
+10 Tampa Intl                                   4 UA                        1162
+11 Jackson Hole Airport                         2 UA                        1162
+12 Miami Intl                                   2 UA                        1162
+13 San Francisco Intl                           2 UA                        1162
+14 Cleveland Hopkins Intl                       1 UA                        1162
+15 Mc Carran Intl                               1 UA                        1162
+16 San Antonio Intl                             1 UA                        1162
+# ℹ abbreviated name: ¹​`Number of Times Flown`</code></pre>
+</div>
+</div>
+</section>
+<section id="legos-of-data-analysis-9" class="slide level2 scrollable">
+<h2>Legos of Data Analysis</h2>
+<p><strong>Q: How many distinct flights left NYC in 2013?</strong></p>
+<div class="small">
+<p>Extra join to match to <code>airlines</code> as well:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a></a><span class="fu">head</span>(airlines, <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  carrier name                  
+  &lt;chr&gt;   &lt;chr&gt;                 
+1 9E      Endeavor Air Inc.     
+2 AA      American Airlines Inc.
+3 AS      Alaska Airlines Inc.  </code></pre>
+</div>
+</div>
+</div>
+<div class="fragment">
+<p>Also has a column named <code>name</code> - need to disambiguate!</p>
+</div>
+</section>
+<section id="legos-of-data-analysis-10" class="slide level2 scrollable">
+<h2>Legos of Data Analysis</h2>
+<p><strong>Q: How many distinct flights left NYC in 2013?</strong></p>
+<p>Additional join to get airport information + formatting:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a></a>flights <span class="sc">|&gt;</span></span>
+<span id="cb45-2"><a></a>    <span class="fu">distinct</span>(carrier, flight, dest) <span class="sc">|&gt;</span></span>
+<span id="cb45-3"><a></a>    <span class="fu">count</span>(carrier, flight) <span class="sc">|&gt;</span> </span>
+<span id="cb45-4"><a></a>    <span class="fu">slice_max</span>(n) <span class="sc">|&gt;</span></span>
+<span id="cb45-5"><a></a>    <span class="fu">inner_join</span>(flights, <span class="fu">join_by</span>(carrier <span class="sc">==</span> carrier, flight <span class="sc">==</span> flight)) <span class="sc">|&gt;</span></span>
+<span id="cb45-6"><a></a>    <span class="fu">count</span>(flight, carrier, dest) <span class="sc">|&gt;</span>  </span>
+<span id="cb45-7"><a></a>    <span class="fu">inner_join</span>(airports, <span class="fu">join_by</span>(dest <span class="sc">==</span> faa)) <span class="sc">|&gt;</span></span>
+<span id="cb45-8"><a></a>    <span class="fu">select</span>(name, n, carrier, flight) <span class="sc">|&gt;</span></span>
+<span id="cb45-9"><a></a>    <span class="fu">rename</span>(<span class="at">dest_name =</span> name) <span class="sc">|&gt;</span> </span>
+<span id="cb45-10"><a></a>    <span class="fu">inner_join</span>(airlines, <span class="fu">join_by</span>(carrier <span class="sc">==</span> carrier)) <span class="sc">|&gt;</span> </span>
+<span id="cb45-11"><a></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(n)) <span class="sc">|&gt;</span></span>
+<span id="cb45-12"><a></a>    <span class="fu">select</span>(<span class="sc">-</span>carrier) <span class="sc">|&gt;</span> </span>
+<span id="cb45-13"><a></a>    <span class="fu">rename</span>(<span class="st">`</span><span class="at">Destination Airport</span><span class="st">`</span> <span class="ot">=</span> dest_name, </span>
+<span id="cb45-14"><a></a>           <span class="st">`</span><span class="at">Number of Times Flown</span><span class="st">`</span> <span class="ot">=</span> n, </span>
+<span id="cb45-15"><a></a>           <span class="st">`</span><span class="at">Carrier</span><span class="st">`</span> <span class="ot">=</span> name, </span>
+<span id="cb45-16"><a></a>           <span class="st">`</span><span class="at">Flight Number</span><span class="st">`</span><span class="ot">=</span> flight)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 16 × 4
+   `Destination Airport`          Number of Times Flow…¹ `Flight Number` Carrier
+   &lt;chr&gt;                                           &lt;int&gt;           &lt;int&gt; &lt;chr&gt;  
+ 1 Chicago Ohare Intl                                 55            1162 United…
+ 2 John Wayne Arpt Orange Co                          27            1162 United…
+ 3 Denver Intl                                        19            1162 United…
+ 4 Seattle Tacoma Intl                                18            1162 United…
+ 5 General Edward Lawrence Logan…                     13            1162 United…
+ 6 George Bush Intercontinental                        8            1162 United…
+ 7 Louis Armstrong New Orleans I…                      8            1162 United…
+ 8 Dallas Fort Worth Intl                              5            1162 United…
+ 9 San Diego Intl                                      4            1162 United…
+10 Tampa Intl                                          4            1162 United…
+11 Jackson Hole Airport                                2            1162 United…
+12 Miami Intl                                          2            1162 United…
+13 San Francisco Intl                                  2            1162 United…
+14 Cleveland Hopkins Intl                              1            1162 United…
+15 Mc Carran Intl                                      1            1162 United…
+16 San Antonio Intl                                    1            1162 United…
+# ℹ abbreviated name: ¹​`Number of Times Flown`</code></pre>
+</div>
+</div>
+</section>
+<section id="legos-of-data-analysis-11" class="slide level2">
+<h2>Legos of Data Analysis</h2>
+<p>Question: What does this do I can’t do in <code>Excel</code>?</p>
+<div class="fragment">
+<p><em>Technically</em>, nothing. All programming languages of sufficient complexity are equally powerful (Turing equivalence).</p>
+<p><br></p>
+</div>
+<div class="fragment">
+<p>In actuality, quite a lot:</p>
+<ul>
+<li><p><code>filter</code> allows more complex filtering than clicking on values</p></li>
+<li><p><code>group_by</code> + <code>summarize</code> extend array formulas</p></li>
+<li><p><code>*_join</code> provides more complex matching than <code>VLOOKUP</code></p></li>
+<li><p><code>pivot_*</code> provide general formulation of pivot tables</p></li>
+<li><p>everything else you can do in <code>R</code>.</p></li>
+</ul>
+<p>Ability to <em>script</em> minimizes “hard-coding” of names and values.</p>
+</div>
+</section>
+<section id="but-truthfully" class="slide level2">
+<h2>But truthfully</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a></a>fortunes<span class="sc">::</span><span class="fu">fortune</span>(<span class="dv">59</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Let's not kid ourselves: the most widely used piece of software for statistics
+is Excel.
+   -- Brian D. Ripley ('Statistical Methods Need Software: A View of
+      Statistical Computing')
+      Opening lecture RSS 2002, Plymouth (September 2002)</code></pre>
+</div>
+</div>
+<div class="fragment">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a></a>fortunes<span class="sc">::</span><span class="fu">fortune</span>(<span class="dv">222</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Some people familiar with R describe it as a supercharged version of
+Microsoft's Excel spreadsheet software.
+   -- Ashlee Vance (in his article "Data Analysts Captivated by R's Power")
+      The New York Times (January 2009)</code></pre>
+</div>
+</div>
+</div>
+</section></section>
+<section>
+<section id="diving-deeper-into-multi-table-verbs" class="title-slide slide level1 center">
+<h1>Diving Deeper into Multi-Table Verbs</h1>
+
+</section>
+<section id="diving-deeper-into-joins" class="slide level2">
+<h2>Diving deeper Into Joins</h2>
+<p>Data Set: <a href="https://nycflights13.tidyverse.org/"><code>nycflights13</code></a></p>
+<p>Exercises: <a href="../labs/lab05.html">Lab #05</a></p>
+</section>
+<section id="additional-dplyr-tricks" class="slide level2">
+<h2>Additional dplyr Tricks</h2>
+<ul>
+<li class="fragment">Ranking functions
+<ul>
+<li class="fragment"><code>row_number</code>, <code>min_rank</code>, <code>dense_rank</code>: differ in ties</li>
+<li class="fragment">Use with <code>desc()</code> to flip ordering</li>
+<li class="fragment"><code>cum_dist</code>, <code>percent_rank</code>: compute quantiles</li>
+</ul></li>
+<li class="fragment">Cumulative Statistics
+<ul>
+<li class="fragment"><code>cummean</code>, <code>cummax</code>, <code>cummin</code>, …</li>
+</ul></li>
+</ul>
+</section></section>
+<section>
+<section id="multi-table-faqs" class="title-slide slide level1 center">
+<h1>Multi-Table FAQs</h1>
+
+</section>
+<section id="subqueries" class="slide level2">
+<h2>Subqueries</h2>
+<blockquote>
+<p>[W]ill we be learning how to perform joins within a subquery?</p>
+</blockquote>
+<p>You don’t need subqueries in <code>R</code> since it’s an imperative language. Just create a new variable to represent the result of the subquery and use that in the next command.</p>
+<pre><code>SELECT first_name, last_name
+FROM collectors
+WHERE id IN (
+    SELECT collector_id
+    FROM sales
+);</code></pre>
+<pre><code>collector_ids &lt;- sales |&gt; pull(collector_id)
+collectors |&gt; filter(id %in% collector_ids) |&gt; select(first_name, last_name)</code></pre>
+</section>
+<section id="data-integrity" class="slide level2">
+<h2>Data Integrity</h2>
+<blockquote>
+<p>[H]ow can we ensure that the information [resulting from a join] is accurate and not repeated?</p>
+</blockquote>
+<ol type="1">
+<li>If you have a true unique ID, you’re usually safe</li>
+<li>Pay attention to all warnings</li>
+<li>Manually examine the result of any joins</li>
+</ol>
+</section>
+<section id="performance" class="slide level2">
+<h2>Performance</h2>
+<blockquote>
+<p>Will joining large data sets […] affect performance?</p>
+</blockquote>
+<p>Somewhat - larger data sets are always slower.</p>
+<p>Bigger danger is “bad joins” creating huge data automatically.</p>
+<p>Note that <code>R</code> is less “smart” than <code>SQL</code>, so won’t optimize execution order for you automatically.</p>
+</section>
+<section id="dplyr-joins-vs-sql-joins" class="slide level2">
+<h2>dplyr joins vs SQL joins</h2>
+<blockquote>
+<p>What is the difference between <code>dplyr</code> and <code>SQL</code> joins?</p>
+</blockquote>
+<p>Not too much - biggest difference is no <code>INDEX</code> or <code>FOREIGN KEY</code> in <code>R</code> so less guarantees of data integrity.</p>
+</section>
+<section id="when-to-use-anti_join" class="slide level2">
+<h2>When to use anti_join()?</h2>
+<p>Rare: looking for <em>unmatched</em> rows.</p>
+<ul>
+<li>Useful to find data integrity issues or ‘implicit’ missingness.</li>
+<li>I use an <code>anti_join</code> to find students who haven’t submitted an assignment.</li>
+</ul>
+</section>
+<section id="many-to-many-warning" class="slide level2">
+<h2>many-to-many Warning</h2>
+<p>Tricky to address, but fortunately pretty rare.</p>
+<ul>
+<li><code>SQL</code> explicitly forbids many-to-many</li>
+<li>Usually a sign that a “key” isn’t really unique
+<ul>
+<li>Check for duplicates in <code>x</code> and <code>y</code> tables</li>
+<li>Can occur with “fancy” joins (rolling, inequality)</li>
+</ul></li>
+<li>Add additional join variables to break “duplication”</li>
+</ul>
+</section>
+<section id="how-to-check-efficiency" class="slide level2">
+<h2>How to Check Efficiency?</h2>
+<p>No automatic way. Some rules of thumb:</p>
+<ul>
+<li>Don’t create large tables just to filter down
+<ul>
+<li>filter before join when possible</li>
+</ul></li>
+<li><code>full_outer</code> join is a bit dangerous</li>
+<li><code>cross_join</code> is <em>rarely</em> the right answer</li>
+</ul>
+</section>
+<section id="tidyr-vs-dplyr" class="slide level2">
+<h2>tidyr vs dplyr</h2>
+<blockquote>
+<p>Is <code>tidyr</code> more efficient than <code>dplyr</code>?</p>
+</blockquote>
+<p>Nope - different packages from the same developers.</p>
+<p>Designed to work together elegantly.</p>
+</section>
+<section id="rare-joins" class="slide level2">
+<h2>Rare Joins</h2>
+<blockquote>
+<p>What are <code>cross_join</code>, filter joins, and <code>nest_join</code>?</p>
+</blockquote>
+<ul>
+<li><code>cross_join</code>: dangerous.
+<ul>
+<li>Creates “all pairs” of rows. Useful for ‘design’ problems</li>
+</ul></li>
+<li>filter joins (<code>anti_</code>, <code>semi_</code>):
+<ul>
+<li>Hunting down quietly missing data.</li>
+<li>Filtering to sub-samples</li>
+</ul></li>
+<li><code>nest_join</code>: beyond this course.
+<ul>
+<li><code>left_join</code> with extra structure to output.</li>
+</ul></li>
+</ul>
 </section></section>
 <section>
 <section id="wrap-up" class="title-slide slide level1 center">
 <h1>Wrap-Up</h1>
 
+</section>
+<section id="review" class="slide level2">
+<h2>Review</h2>
+<p>Multi-Table <code>dplyr</code>:</p>
+<ul>
+<li><code>inner_join</code> and <code>left_join</code></li>
+<li><code>join_by</code> specifications</li>
+<li><code>pivot_longer</code> and <code>pivot_wider</code> to get data into optimal formats (<code>tidyr</code>)</li>
+</ul>
+<div class="fragment">
+<p>Additional <code>dplyr</code>:</p>
+<ul>
+<li>Ranking, cumulative, and shift functions</li>
+</ul>
+</div>
 </section>
 <section id="orientation" class="slide level2">
 <h2>Orientation</h2>
@@ -563,1093 +1846,101 @@ Additional two points for using quarto's video support!</code></pre>
 <li>Getting Data into <code>R</code></li>
 <li>Statistical Modeling in <code>R</code></li>
 </ul>
-</section>
-<section id="upcoming-work" class="slide level2">
-<h2>Upcoming Work</h2>
-<p>Upcoming work from <a href="../index.html#calendar">course calendar</a></p>
-<ul>
-<li class="fragment"><a href="../miniprojects.html">Mini-Project #01 Peer Feedback</a> due on 2026-03-22</li>
-<li class="fragment"><a href="../pre/pa07.html">Pre-Assignment #07</a> due 2026-03-12 at 6:00pm ET</li>
-<li class="fragment"><a href="../mini/mini02.html">Mini-Project #02</a> due on 2026-04-03 at 11:59pm ET</li>
-</ul>
+</section></section>
+<section>
+<section id="section" class="title-slide slide level1 center">
+<h1></h1>
+<p><img data-src="https://constitutioncenter.org/images/uploads/heros/students-pledge-of-allegiance-Virginia.png"></p>
 </section>
 <section id="life-tip-of-the-week" class="slide level2">
 <h2>Life Tip of the Week</h2>
-<h3 id="register-to-vote">Register to Vote</h3>
-<p>If you want to vote in the upcoming NYC Election, it’s time to register to vote:</p>
-<blockquote>
-<p><a href="https://www.vote.nyc/page/register-vote">https://www.vote.nyc/page/register-vote</a></p>
-</blockquote>
-<p>Early voting begins October 25th: need to be registered by then</p>
-<ul>
-<li>Forms must be <em>received</em> not just mailed</li>
-</ul>
+<p>West Virginia State Board of Education v. Barnette (March 11, 1943)</p>
+<div class="fragment">
+<p>Students cannot be compelled to recite the Pleldge of Allegiance, even during a period of war</p>
+<p><em>Iconic First Amendment Victory</em></p>
+</div>
 </section>
-<section id="life-tip-of-the-week-1" class="slide level2">
-<h2>Life Tip of the Week</h2>
-<h3 id="on-the-ballot">On the Ballot</h3>
+<section id="barnette" class="slide level2">
+<h2>Barnette</h2>
+<p>Justice Jackson’s Opinion (6-3):</p>
+<blockquote>
+<p>If there is any fixed star in our constitutional constellation, it is that no official, high or petty, can prescribe what shall be orthodox in politics, nationalism, religion, or other matters of opinion or force citizens to confess by word or act their faith therein.</p>
+</blockquote>
+</section>
+<section id="story-behind-the-case" class="slide level2">
+<h2>Story Behind the Case</h2>
+<p>1940 Case <em>Minersville School District v. Gobitis</em></p>
 <ul>
-<li>Mayor, Comptroller, Advocate</li>
-<li>Borough President, Council Member</li>
-<li>Judges</li>
-<li><strong>5 City Charter Amendments</strong> (<a href="https://www.nycvotes.org/whats-on-the-ballot/2025-ballot-proposals/">Official NYC-CFB Voter Guide</a>)</li>
+<li>JW Students in PA refused to recite Pledge of Allegience</li>
 </ul>
+<div class="fragment">
+<p>Justice Frankfurter (8-1 Majority Opinion):</p>
+<blockquote>
+<p>National Unity is the basis of National Security</p>
+</blockquote>
+<p>Students <strong>could be forced</strong> to pledge</p>
+</div>
+<div class="fragment">
+<p><br></p>
+<p>After the decision, waves of violence against JW students and adults accused of “treason” against the war effort</p>
+</div>
+</section>
+<section id="story-behind-the-case-1" class="slide level2">
+<h2>Story Behind the Case</h2>
+<p>Justice Stone (Dissent):</p>
+<blockquote>
+<p>[T]he guarantees of civil liberty are but guarantees of freedom of the human mind and spirit and of reasonable freedom and opportunity to express them. [… T]he very essence of the liberty which they guarantee is the freedom of the individual from compulsion as to what he shall think and what he shall say.</p>
+</blockquote>
+<div class="fragment">
+<p>A few years later, changed court wanted to revisit, leading to <em>Barnette</em></p>
+</div>
+</section>
+<section id="more-from-j.-jackson" class="slide level2">
+<h2>More from J. Jackson</h2>
+<blockquote>
+<p>As governmental pressure toward unity becomes greater, so strife becomes more bitter as to whose unity it shall be.[…] Those who begin coercive elimination of dissent soon find themselves exterminating dissenters. Compulsory unification of opinion achieves only the unanimity of the graveyard.</p>
+</blockquote>
+<div class="fragment">
+<blockquote>
+<p>Authority [in the United States] is to be controlled by public opinion, not public opinion by authority.</p>
+</blockquote>
+</div>
+</section>
+<section id="more-from-j.-jackson-1" class="slide level2">
+<h2>More from J. Jackson</h2>
+<blockquote>
+<p>[F]reedom to differ is not limited to things that do not matter much. That would be a mere shadow of freedom. The test of its substance is the right to differ as to things that touch the heart of the existing order.</p>
+</blockquote>
+</section>
+<section id="lessons" class="slide level2">
+<h2>Lessons</h2>
+<ul>
+<li>We get things wrong, often very wrong, in times of public fear</li>
+</ul>
+<div class="fragment">
+<ul>
+<li>Law of Free Speech is necessary but not sufficient for a Culture of Free Speech</li>
+</ul>
+</div>
+<div class="fragment">
+<ul>
+<li>Freedom to Dissent is at the core of a pluralistic society</li>
+</ul>
+</div>
+<div class="fragment">
+<ul>
+<li>Rules and norms exist for the hard cases, not the easy ones</li>
+</ul>
+</div>
+</section>
+<section id="baruch-connects---civil-discourse-initiative" class="slide level2">
+<h2>Baruch Connects - Civil Discourse Initiative</h2>
+<p><a href="https://president.baruch.cuny.edu/baruch-connects/"><img data-src="https://president.baruch.cuny.edu/wp-content/uploads/sites/10/2024/11/BaruchConnects-header-FINAL.jpg"></a></p>
 </section>
 <section id="musical-treat" class="slide level2">
 <h2>Musical Treat</h2>
 <p><br></p>
 <iframe data-external="1" src="https://www.youtube.com/embed/LBIo5QuEeaA" width="80%" height="400px" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
-</section></section>
-<section>
-<section id="optional-material-time-allowing" class="title-slide slide level1 center">
-<h1>Optional Material (Time Allowing)</h1>
-
-</section>
-<section id="sql" class="slide level2">
-<h2>SQL</h2>
-<p><em>S</em>tructured <em>Q</em>uery <em>L</em>anguage (ISO 9075)</p>
-<ul>
-<li class="fragment">Standard language for interacting with <em>Relational Database Management Systems</em> (RDMS)</li>
-<li class="fragment">Divided into three main sub-languages:
-<ul>
-<li class="fragment">Data Manipulation Language (DML)</li>
-<li class="fragment">Data Declaration Language (DDL)</li>
-<li class="fragment">Data Control Language (DCL)</li>
-</ul></li>
-<li class="fragment"><em>Declarative</em>, not <em>Imperative</em> Programming</li>
-</ul>
-</section>
-<section id="sql-languages" class="slide level2">
-<h2>SQL Languages</h2>
-<p>Data Definition Language (DDL)</p>
-<div class="small">
-<ul>
-<li>“Design” language for DB</li>
-<li>What tables are present? What types are the columns? What relationships (keys) are enforced?</li>
-</ul>
-</div>
-<div class="fragment">
-<p>Data Manipulation Language (DML)</p>
-<div class="small">
-<ul>
-<li>“User” interaction with DB: queries, adding, changing, deleting data</li>
-<li><code>SELECT</code>, <code>GROUP BY</code>, <code>WHERE</code>, <code>HAVING</code>, <code>JOIN</code>, <em>etc.</em></li>
-<li>Roughly coextensive with <code>dplyr</code></li>
-</ul>
-</div>
-</div>
-<div class="fragment">
-<p>Data Control Language (DCL)</p>
-<div class="small">
-<ul>
-<li>“Security” language for DB</li>
-<li>What permissions do different users have?</li>
-</ul>
-</div>
-</div>
-</section>
-<section id="rdms" class="slide level2">
-<h2>RDMS</h2>
-<p>Relational Database Management System (RDMS)</p>
-<ul>
-<li class="fragment">Data management server for complex environments</li>
-<li class="fragment"><em>Relational</em> tabular data structures</li>
-<li class="fragment">Manipulated using SQL
-<ul>
-<li class="fragment">Common SQL Standard + <em>Many</em> RDMS-specific extensions</li>
-</ul></li>
-<li class="fragment">ACID Guarantees</li>
-</ul>
-</section>
-<section id="ddl" class="slide level2">
-<h2>DDL</h2>
-<p>RDMS has a fixed number of <em>tables</em> (roughly <code>data.frame</code>s). DDL specifies</p>
-<ul>
-<li>Column names and type</li>
-<li>Can values be left blank (nullability)?</li>
-<li>Identifiers (Primary Keys)</li>
-<li>Constraints (non-negative, <code>a &lt; b</code>, <em>etc.</em>)</li>
-<li>Relationships to other tables (Foreign Keys)</li>
-</ul>
-</section>
-<section id="ddl-1" class="slide level2">
-<h2>DDL</h2>
-<p>Basic command is the <code>CREATE TABLE</code> statement.</p>
-<p><code>TYPE</code> can be <code>INTEGER</code>, <code>DECIMAL</code>, <code>CHAR</code>, <code>VARCHAR</code>, <code>DATE</code>, <code>TIMESTAMP</code> and more</p>
-</section>
-<section id="ddl-2" class="slide level2">
-<h2>DDL</h2>
-<p>Our beloved <code>penguins</code>:</p>
-<p>Compare:</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>Rows: 344
-Columns: 8
-$ species     &lt;fct&gt; Adelie, Adelie, Adelie, Adelie, Adelie, Adelie, Adelie, Ad…
-$ island      &lt;fct&gt; Torgersen, Torgersen, Torgersen, Torgersen, Torgersen, Tor…
-$ bill_len    &lt;dbl&gt; 39.1, 39.5, 40.3, NA, 36.7, 39.3, 38.9, 39.2, 34.1, 42.0, …
-$ bill_dep    &lt;dbl&gt; 18.7, 17.4, 18.0, NA, 19.3, 20.6, 17.8, 19.6, 18.1, 20.2, …
-$ flipper_len &lt;int&gt; 181, 186, 195, NA, 193, 190, 181, 195, 193, 190, 186, 180,…
-$ body_mass   &lt;int&gt; 3750, 3800, 3250, NA, 3450, 3650, 3625, 4675, 3475, 4250, …
-$ sex         &lt;fct&gt; male, female, female, NA, female, male, female, male, NA, …
-$ year        &lt;int&gt; 2007, 2007, 2007, 2007, 2007, 2007, 2007, 2007, 2007, 2007…</code></pre>
-</div>
-</div>
-</section>
-<section id="ddl-3" class="slide level2">
-<h2>DDL</h2>
-<p>We can add a <em>constraint</em> so the year is 2007-2009:</p>
-</section>
-<section id="ddl-4" class="slide level2">
-<h2>DDL</h2>
-<p>Constraints for categorical variables (<code>R</code> <code>factor</code>s) can be tricky. Create a <em>normalized</em> set of tables:</p>
-<div class="smaller">
-<table class="caption-top">
-<thead>
-<tr class="header">
-<th>Sex ID</th>
-<th>Name</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>1</td>
-<td>Female</td>
-</tr>
-<tr class="even">
-<td>2</td>
-<td>Male</td>
-</tr>
-</tbody>
-</table>
-<table class="caption-top">
-<thead>
-<tr class="header">
-<th>Penguin ID</th>
-<th>Sex ID</th>
-<th>Weight</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>1</td>
-<td>1</td>
-<td>4000</td>
-</tr>
-<tr class="even">
-<td>2</td>
-<td>1</td>
-<td>3500</td>
-</tr>
-<tr class="odd">
-<td>3</td>
-<td>2</td>
-<td>5000</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="fragment">
-<p>We want to make sure each <code>Sex ID</code> in table 2 matches a row of the first table</p>
-</div>
-</section>
-<section id="ddl-5" class="slide level2">
-<h2>DDL</h2>
-<p>Constraints for categorical variables (<code>R</code> <code>factor</code>s) can be tricky. Create a <em>normalized</em> set of tables:</p>
-</section>
-<section id="ddl-normalization" class="slide level2">
-<h2>DDL Normalization</h2>
-<p>Normalization:</p>
-<ol type="1">
-<li>Increases integrity via constraints</li>
-<li>Reduces redundancy (need to change value in 1 place only)</li>
-<li>Slight performance benefits</li>
-</ol>
-<div class="fragment">
-<p>More <code>JOIN</code> work in <code>SQL</code> than in <code>dplyr</code></p>
-</div>
-<div class="fragment">
-<p>Proper table design is a science and an art</p>
-</div>
-</section>
-<section id="dml" class="slide level2">
-<h2>DML</h2>
-<p><strong>Data Manipulation Language</strong> is for DB users.</p>
-<ul>
-<li>Close parallels to <code>dplyr</code></li>
-<li>Compare:</li>
-</ul>
-<p><em>vs.</em></p>
-<p><code>SELECT *</code> means <em>all columns</em> which matches <code>R</code>’s default</p>
-</section>
-<section id="dml-1" class="slide level2">
-<h2>DML</h2>
-<p><strong>Data Manipulation Language</strong> is for DB users.</p>
-<ul>
-<li>Close parallels to <code>dplyr</code></li>
-<li>Compare:</li>
-</ul>
-<p><em>vs.</em></p>
-</section>
-<section id="dml-2" class="slide level2">
-<h2>DML</h2>
-<p><strong>Data Manipulation Language</strong> is for DB users.</p>
-<ul>
-<li>Close parallels to <code>dplyr</code></li>
-<li>Compare:</li>
-</ul>
-<p><em>vs.</em></p>
-</section>
-<section id="dml-3" class="slide level2">
-<h2>DML</h2>
-<p>Note that</p>
-<p>and</p>
-<p>are both</p>
-<div class="fragment">
-<p>Why?</p>
-</div>
-<div class="fragment">
-<p>They <em>commute</em> – same result in either order</p>
-</div>
-</section>
-<section id="dml-4" class="slide level2">
-<h2>DML</h2>
-<ul>
-<li><code>R</code> is an <em>imperative</em> paradigm - you say <em>what to do</em></li>
-<li><code>SQL</code> is a <em>declarative</em> paradigm - you say <em>what you want</em></li>
-</ul>
-<div class="fragment">
-<p>Declarative paradigms let the server figure out the <em>best</em> way to compute, but are more restrictive</p>
-</div>
-<div class="fragment">
-<p>For a well-defined paradigm like SQL, <em>much</em> work has gone into query optimization</p>
-</div>
-</section>
-<section id="dml-5" class="slide level2">
-<h2>DML</h2>
-<ul>
-<li>Compare:</li>
-</ul>
-<p><em>vs.</em></p>
-<p><code>summarize()</code> is implicit in <code>SELECT</code> clause when we have a <code>GROUP BY</code></p>
-</section>
-<section id="dml-6" class="slide level2">
-<h2>DML</h2>
-<p>But:</p>
-<p>is</p>
-<div class="fragment">
-<p>Why not <code>WHERE</code> again?</p>
-</div>
-</section>
-<section id="dml-7" class="slide level2">
-<h2>DML</h2>
-<p>In <code>SQL</code>: - <code>WHERE</code> happens before a <code>GROUP BY</code>; and - <code>HAVING</code> happens after a <code>GROUP BY</code></p>
-<p>In <code>R</code>: - Ordering of <code>summarize()</code> and <code>filter</code> controls execution order</p>
-</section>
-<section id="acid-guarantees" class="slide level2">
-<h2>ACID Guarantees</h2>
-<p>Most RDMSs provide a set of four <code>ACID</code> guarantees:</p>
-<ul>
-<li class="fragment"><strong>Atomicity</strong>: Changes occur all-or-nothing
-<ul>
-<li class="fragment"><em>E.g.</em>: Add charge to customer’s account + schedule item for shipping</li>
-</ul></li>
-<li class="fragment"><strong>Consistency</strong>: DDL Constraints are always valid
-<ul>
-<li class="fragment"><em>E.g.</em>: Can’t create a user without having an email on file</li>
-</ul></li>
-<li class="fragment"><strong>Isolation</strong>: Two different users don’t “step on each other’s toes”
-<ul>
-<li class="fragment"><em>E.g.</em>: If I’m updating prices while you are checking out, you get your original price</li>
-</ul></li>
-<li class="fragment"><strong>Durability</strong>: When a change is complete, it is guaranteed to be saved to disk</li>
-</ul>
-</section>
-<section id="getting-started-with-rdms" class="slide level2">
-<h2>Getting Started with RDMS</h2>
-<p>Easiest RDMS to use is <code>SQLite</code></p>
-<ul>
-<li>Most ubiquitous DB in the world (by a long-shot)</li>
-<li>Already installed on your computer (many times over!)</li>
-<li>Access directly through <code>sqlite3</code> or <code>sqlite3.exe</code></li>
-<li>Access from <code>R</code> with <code>RSQLite</code> package</li>
-</ul>
-<div class="fragment">
-<p><a href="https://sqlite.org/lang.html">Excellent documentation</a></p>
-</div>
-</section>
-<section id="dbplyr" class="slide level2">
-<h2>dbplyr</h2>
-<p>Can use <code>dbplyr</code> (extra <code>b</code>!) to put <code>dplyr</code>-UX on DB</p>
-<p><em>E.g.</em></p>
-</section>
-<section id="dbplyr-1" class="slide level2">
-<h2>dbplyr</h2>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># Source:   table&lt;`penguins`&gt; [?? x 8]
-# Database: sqlite 3.50.4 [:memory:]
-   species island    bill_len bill_dep flipper_len body_mass sex     year
-   &lt;chr&gt;   &lt;chr&gt;        &lt;dbl&gt;    &lt;dbl&gt;       &lt;int&gt;     &lt;int&gt; &lt;chr&gt;  &lt;int&gt;
- 1 Adelie  Torgersen     39.1     18.7         181      3750 male    2007
- 2 Adelie  Torgersen     39.5     17.4         186      3800 female  2007
- 3 Adelie  Torgersen     40.3     18           195      3250 female  2007
- 4 Adelie  Torgersen     NA       NA            NA        NA &lt;NA&gt;    2007
- 5 Adelie  Torgersen     36.7     19.3         193      3450 female  2007
- 6 Adelie  Torgersen     39.3     20.6         190      3650 male    2007
- 7 Adelie  Torgersen     38.9     17.8         181      3625 female  2007
- 8 Adelie  Torgersen     39.2     19.6         195      4675 male    2007
- 9 Adelie  Torgersen     34.1     18.1         193      3475 &lt;NA&gt;    2007
-10 Adelie  Torgersen     42       20.2         190      4250 &lt;NA&gt;    2007
-# ℹ more rows</code></pre>
-</div>
-</div>
-</section>
-<section id="dbplyr-2" class="slide level2">
-<h2>dbplyr</h2>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>&lt;SQL&gt;
-SELECT `species`, AVG(`body_mass`) AS `mean_mass`
-FROM `penguins`
-GROUP BY `species`</code></pre>
-</div>
-</div>
-<p>Extra step - <code>show_query</code> to see SQL or <code>collect()</code> to run in DB:</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 3 × 2
-  species   mean_mass
-  &lt;chr&gt;         &lt;dbl&gt;
-1 Adelie        3701.
-2 Chinstrap     3733.
-3 Gentoo        5076.</code></pre>
-</div>
-</div>
-</section>
-<section id="dbplyr-3" class="slide level2">
-<h2>dbplyr</h2>
-<div class="smaller">
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>&lt;SQL&gt;
-SELECT `species`, AVG(`body_mass`) AS `mean_mass`
-FROM (
-  SELECT `penguins`.*
-  FROM `penguins`
-  WHERE (`body_mass` &gt; 4000.0)
-) AS `q01`
-GROUP BY `species`</code></pre>
-</div>
-</div>
-<p>Compared to:</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>&lt;SQL&gt;
-SELECT `species`, AVG(`body_mass`) AS `mean_mass`
-FROM `penguins`
-GROUP BY `species`
-HAVING (AVG(`body_mass`) &gt; 4000.0)</code></pre>
-</div>
-</div>
-<p>Not the best SQL, but RDMS can make quick work of it</p>
-</div>
-</section>
-<section id="dbplyr-4" class="slide level2 scrollable">
-<h2>dbplyr</h2>
-<p>A more substantial example:</p>
-<div class="smaller">
-
-</div>
-</section>
-<section id="dbplyr-5" class="slide level2 scrollable">
-<h2>dbplyr</h2>
-<p>A more substantial example:</p>
-<div class="smaller">
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>CREATE TABLE `AllstarFull` (
-  `playerID` TEXT,
-  `yearID` INTEGER,
-  `gameNum` INTEGER,
-  `gameID` TEXT,
-  `teamID` TEXT,
-  `lgID` TEXT,
-  `GP` INTEGER,
-  `startingPos` TEXT
-);
-CREATE INDEX `AllstarFull_playerID` ON `AllstarFull` (`playerID`);
-CREATE INDEX `AllstarFull_yearID` ON `AllstarFull` (`yearID`);
-CREATE INDEX `AllstarFull_gameID` ON `AllstarFull` (`gameID`);
-CREATE INDEX `AllstarFull_teamID` ON `AllstarFull` (`teamID`);
-CREATE INDEX `AllstarFull_lgID` ON `AllstarFull` (`lgID`);
-CREATE TABLE sqlite_stat1(tbl,idx,stat);
-CREATE TABLE sqlite_stat4(tbl,idx,neq,nlt,ndlt,sample);
-CREATE TABLE `Appearances` (
-  `yearID` INTEGER,
-  `teamID` TEXT,
-  `lgID` TEXT,
-  `playerID` TEXT,
-  `G_all` INTEGER,
-  `GS` INTEGER,
-  `G_batting` INTEGER,
-  `G_defense` INTEGER,
-  `G_p` INTEGER,
-  `G_c` INTEGER,
-  `G_1b` INTEGER,
-  `G_2b` INTEGER,
-  `G_3b` INTEGER,
-  `G_ss` INTEGER,
-  `G_lf` INTEGER,
-  `G_cf` INTEGER,
-  `G_rf` INTEGER,
-  `G_of` INTEGER,
-  `G_dh` INTEGER,
-  `G_ph` INTEGER,
-  `G_pr` INTEGER
-);
-CREATE INDEX `Appearances_yearID` ON `Appearances` (`yearID`);
-CREATE INDEX `Appearances_teamID` ON `Appearances` (`teamID`);
-CREATE INDEX `Appearances_lgID` ON `Appearances` (`lgID`);
-CREATE INDEX `Appearances_playerID` ON `Appearances` (`playerID`);
-CREATE TABLE `AwardsManagers` (
-  `playerID` TEXT,
-  `awardID` TEXT,
-  `yearID` INTEGER,
-  `lgID` TEXT,
-  `tie` TEXT,
-  `notes` TEXT
-);
-CREATE INDEX `AwardsManagers_playerID` ON `AwardsManagers` (`playerID`);
-CREATE INDEX `AwardsManagers_awardID` ON `AwardsManagers` (`awardID`);
-CREATE INDEX `AwardsManagers_yearID` ON `AwardsManagers` (`yearID`);
-CREATE INDEX `AwardsManagers_lgID` ON `AwardsManagers` (`lgID`);
-CREATE TABLE `AwardsPlayers` (
-  `playerID` TEXT,
-  `awardID` TEXT,
-  `yearID` INTEGER,
-  `lgID` TEXT,
-  `tie` TEXT,
-  `notes` TEXT
-);
-CREATE INDEX `AwardsPlayers_playerID` ON `AwardsPlayers` (`playerID`);
-CREATE INDEX `AwardsPlayers_awardID` ON `AwardsPlayers` (`awardID`);
-CREATE INDEX `AwardsPlayers_yearID` ON `AwardsPlayers` (`yearID`);
-CREATE INDEX `AwardsPlayers_lgID` ON `AwardsPlayers` (`lgID`);
-CREATE TABLE `AwardsShareManagers` (
-  `awardID` TEXT,
-  `yearID` INTEGER,
-  `lgID` TEXT,
-  `playerID` TEXT,
-  `pointsWon` INTEGER,
-  `pointsMax` INTEGER,
-  `votesFirst` INTEGER
-);
-CREATE INDEX `AwardsShareManagers_awardID` ON `AwardsShareManagers` (`awardID`);
-CREATE INDEX `AwardsShareManagers_yearID` ON `AwardsShareManagers` (`yearID`);
-CREATE INDEX `AwardsShareManagers_lgID` ON `AwardsShareManagers` (`lgID`);
-CREATE INDEX `AwardsShareManagers_playerID` ON `AwardsShareManagers` (`playerID`);
-CREATE TABLE `AwardsSharePlayers` (
-  `awardID` TEXT,
-  `yearID` INTEGER,
-  `lgID` TEXT,
-  `playerID` TEXT,
-  `pointsWon` INTEGER,
-  `pointsMax` INTEGER,
-  `votesFirst` INTEGER
-);
-CREATE INDEX `AwardsSharePlayers_awardID` ON `AwardsSharePlayers` (`awardID`);
-CREATE INDEX `AwardsSharePlayers_yearID` ON `AwardsSharePlayers` (`yearID`);
-CREATE INDEX `AwardsSharePlayers_lgID` ON `AwardsSharePlayers` (`lgID`);
-CREATE INDEX `AwardsSharePlayers_playerID` ON `AwardsSharePlayers` (`playerID`);
-CREATE TABLE `Batting` (
-  `playerID` TEXT,
-  `yearID` INTEGER,
-  `stint` INTEGER,
-  `teamID` TEXT,
-  `lgID` TEXT,
-  `G` INTEGER,
-  `AB` INTEGER,
-  `R` INTEGER,
-  `H` INTEGER,
-  `X2B` INTEGER,
-  `X3B` INTEGER,
-  `HR` INTEGER,
-  `RBI` INTEGER,
-  `SB` INTEGER,
-  `CS` INTEGER,
-  `BB` INTEGER,
-  `SO` INTEGER,
-  `IBB` INTEGER,
-  `HBP` INTEGER,
-  `SH` INTEGER,
-  `SF` INTEGER,
-  `GIDP` INTEGER
-);
-CREATE INDEX `Batting_playerID` ON `Batting` (`playerID`);
-CREATE INDEX `Batting_yearID` ON `Batting` (`yearID`);
-CREATE INDEX `Batting_teamID` ON `Batting` (`teamID`);
-CREATE INDEX `Batting_lgID` ON `Batting` (`lgID`);
-CREATE TABLE `BattingPost` (
-  `yearID` INTEGER,
-  `round` TEXT,
-  `playerID` TEXT,
-  `teamID` TEXT,
-  `lgID` TEXT,
-  `G` INTEGER,
-  `AB` INTEGER,
-  `R` INTEGER,
-  `H` INTEGER,
-  `X2B` INTEGER,
-  `X3B` INTEGER,
-  `HR` INTEGER,
-  `RBI` INTEGER,
-  `SB` INTEGER,
-  `CS` INTEGER,
-  `BB` INTEGER,
-  `SO` INTEGER,
-  `IBB` INTEGER,
-  `HBP` INTEGER,
-  `SH` INTEGER,
-  `SF` INTEGER,
-  `GIDP` INTEGER
-);
-CREATE INDEX `BattingPost_yearID` ON `BattingPost` (`yearID`);
-CREATE INDEX `BattingPost_playerID` ON `BattingPost` (`playerID`);
-CREATE INDEX `BattingPost_teamID` ON `BattingPost` (`teamID`);
-CREATE INDEX `BattingPost_lgID` ON `BattingPost` (`lgID`);
-CREATE TABLE `CollegePlaying` (
-  `playerID` TEXT,
-  `schoolID` TEXT,
-  `yearID` INTEGER
-);
-CREATE INDEX `CollegePlaying_playerID` ON `CollegePlaying` (`playerID`);
-CREATE INDEX `CollegePlaying_schoolID` ON `CollegePlaying` (`schoolID`);
-CREATE INDEX `CollegePlaying_yearID` ON `CollegePlaying` (`yearID`);
-CREATE TABLE `Fielding` (
-  `playerID` TEXT,
-  `yearID` INTEGER,
-  `stint` INTEGER,
-  `teamID` TEXT,
-  `lgID` TEXT,
-  `POS` TEXT,
-  `G` INTEGER,
-  `GS` INTEGER,
-  `InnOuts` INTEGER,
-  `PO` INTEGER,
-  `A` INTEGER,
-  `E` INTEGER,
-  `DP` INTEGER,
-  `PB` INTEGER,
-  `WP` INTEGER,
-  `SB` INTEGER,
-  `CS` INTEGER,
-  `ZR` INTEGER
-);
-CREATE INDEX `Fielding_playerID` ON `Fielding` (`playerID`);
-CREATE INDEX `Fielding_yearID` ON `Fielding` (`yearID`);
-CREATE INDEX `Fielding_teamID` ON `Fielding` (`teamID`);
-CREATE INDEX `Fielding_lgID` ON `Fielding` (`lgID`);
-CREATE TABLE `FieldingOF` (
-  `playerID` TEXT,
-  `yearID` INTEGER,
-  `stint` INTEGER,
-  `Glf` INTEGER,
-  `Gcf` INTEGER,
-  `Grf` INTEGER
-);
-CREATE INDEX `FieldingOF_playerID` ON `FieldingOF` (`playerID`);
-CREATE INDEX `FieldingOF_yearID` ON `FieldingOF` (`yearID`);
-CREATE TABLE `FieldingOFsplit` (
-  `playerID` TEXT,
-  `yearID` INTEGER,
-  `stint` INTEGER,
-  `teamID` TEXT,
-  `lgID` TEXT,
-  `POS` TEXT,
-  `G` INTEGER,
-  `GS` INTEGER,
-  `InnOuts` INTEGER,
-  `PO` INTEGER,
-  `A` INTEGER,
-  `E` INTEGER,
-  `DP` INTEGER,
-  `PB` INTEGER,
-  `WP` INTEGER,
-  `SB` INTEGER,
-  `CS` INTEGER,
-  `ZR` INTEGER
-);
-CREATE INDEX `FieldingOFsplit_playerID` ON `FieldingOFsplit` (`playerID`);
-CREATE INDEX `FieldingOFsplit_yearID` ON `FieldingOFsplit` (`yearID`);
-CREATE INDEX `FieldingOFsplit_teamID` ON `FieldingOFsplit` (`teamID`);
-CREATE INDEX `FieldingOFsplit_lgID` ON `FieldingOFsplit` (`lgID`);
-CREATE TABLE `FieldingPost` (
-  `playerID` TEXT,
-  `yearID` INTEGER,
-  `teamID` TEXT,
-  `lgID` TEXT,
-  `round` TEXT,
-  `POS` TEXT,
-  `G` INTEGER,
-  `GS` INTEGER,
-  `InnOuts` INTEGER,
-  `PO` INTEGER,
-  `A` INTEGER,
-  `E` INTEGER,
-  `DP` INTEGER,
-  `TP` INTEGER,
-  `PB` INTEGER,
-  `SB` INTEGER,
-  `CS` INTEGER
-);
-CREATE INDEX `FieldingPost_playerID` ON `FieldingPost` (`playerID`);
-CREATE INDEX `FieldingPost_yearID` ON `FieldingPost` (`yearID`);
-CREATE INDEX `FieldingPost_teamID` ON `FieldingPost` (`teamID`);
-CREATE INDEX `FieldingPost_lgID` ON `FieldingPost` (`lgID`);
-CREATE TABLE `HallOfFame` (
-  `playerID` TEXT,
-  `yearID` INTEGER,
-  `votedBy` TEXT,
-  `ballots` REAL,
-  `needed` REAL,
-  `votes` REAL,
-  `inducted` TEXT,
-  `category` TEXT,
-  `needed_note` TEXT
-);
-CREATE INDEX `HallOfFame_playerID` ON `HallOfFame` (`playerID`);
-CREATE INDEX `HallOfFame_yearID` ON `HallOfFame` (`yearID`);
-CREATE TABLE `HomeGames` (
-  `year.key` INTEGER,
-  `league.key` TEXT,
-  `team.key` TEXT,
-  `park.key` TEXT,
-  `span.first` TEXT,
-  `span.last` TEXT,
-  `games` INTEGER,
-  `openings` INTEGER,
-  `attendance` INTEGER
-);
-CREATE TABLE `LahmanData` (
-  `file` TEXT,
-  `class` TEXT,
-  `nobs` REAL,
-  `nvar` REAL,
-  `title` TEXT
-);
-CREATE TABLE `Managers` (
-  `playerID` TEXT,
-  `yearID` INTEGER,
-  `teamID` TEXT,
-  `lgID` TEXT,
-  `inseason` INTEGER,
-  `G` INTEGER,
-  `W` INTEGER,
-  `L` INTEGER,
-  `rank` INTEGER,
-  `plyrMgr` TEXT
-);
-CREATE INDEX `Managers_playerID` ON `Managers` (`playerID`);
-CREATE INDEX `Managers_yearID` ON `Managers` (`yearID`);
-CREATE INDEX `Managers_teamID` ON `Managers` (`teamID`);
-CREATE INDEX `Managers_lgID` ON `Managers` (`lgID`);
-CREATE TABLE `ManagersHalf` (
-  `playerID` TEXT,
-  `yearID` INTEGER,
-  `teamID` TEXT,
-  `lgID` TEXT,
-  `inseason` INTEGER,
-  `half` INTEGER,
-  `G` INTEGER,
-  `W` INTEGER,
-  `L` INTEGER,
-  `rank` INTEGER
-);
-CREATE INDEX `ManagersHalf_playerID` ON `ManagersHalf` (`playerID`);
-CREATE INDEX `ManagersHalf_yearID` ON `ManagersHalf` (`yearID`);
-CREATE INDEX `ManagersHalf_teamID` ON `ManagersHalf` (`teamID`);
-CREATE INDEX `ManagersHalf_lgID` ON `ManagersHalf` (`lgID`);
-CREATE TABLE `Parks` (
-  `park.alias` TEXT,
-  `park.key` TEXT,
-  `park.name` TEXT,
-  `city` TEXT,
-  `state` TEXT,
-  `country` TEXT
-);
-CREATE TABLE `People` (
-  `playerID` TEXT,
-  `birthYear` INTEGER,
-  `birthMonth` INTEGER,
-  `birthDay` INTEGER,
-  `birthCity` TEXT,
-  `birthCountry` TEXT,
-  `birthState` TEXT,
-  `deathYear` INTEGER,
-  `deathMonth` INTEGER,
-  `deathDay` INTEGER,
-  `deathCountry` TEXT,
-  `deathState` TEXT,
-  `deathCity` TEXT,
-  `nameFirst` TEXT,
-  `nameLast` TEXT,
-  `nameGiven` TEXT,
-  `weight` INTEGER,
-  `height` INTEGER,
-  `bats` TEXT,
-  `throws` TEXT,
-  `debut` TEXT,
-  `bbrefID` TEXT,
-  `finalGame` TEXT,
-  `retroID` TEXT,
-  `deathDate` REAL,
-  `birthDate` REAL
-);
-CREATE INDEX `People_playerID` ON `People` (`playerID`);
-CREATE INDEX `People_bbrefID` ON `People` (`bbrefID`);
-CREATE INDEX `People_retroID` ON `People` (`retroID`);
-CREATE TABLE `Pitching` (
-  `playerID` TEXT,
-  `yearID` INTEGER,
-  `stint` INTEGER,
-  `teamID` TEXT,
-  `lgID` TEXT,
-  `W` INTEGER,
-  `L` INTEGER,
-  `G` INTEGER,
-  `GS` INTEGER,
-  `CG` INTEGER,
-  `SHO` INTEGER,
-  `SV` INTEGER,
-  `IPouts` INTEGER,
-  `H` INTEGER,
-  `ER` INTEGER,
-  `HR` INTEGER,
-  `BB` INTEGER,
-  `SO` INTEGER,
-  `BAOpp` REAL,
-  `ERA` REAL,
-  `IBB` INTEGER,
-  `WP` INTEGER,
-  `HBP` INTEGER,
-  `BK` INTEGER,
-  `BFP` INTEGER,
-  `GF` INTEGER,
-  `R` INTEGER,
-  `SH` INTEGER,
-  `SF` INTEGER,
-  `GIDP` INTEGER
-);
-CREATE INDEX `Pitching_playerID` ON `Pitching` (`playerID`);
-CREATE INDEX `Pitching_yearID` ON `Pitching` (`yearID`);
-CREATE INDEX `Pitching_teamID` ON `Pitching` (`teamID`);
-CREATE INDEX `Pitching_lgID` ON `Pitching` (`lgID`);
-CREATE TABLE `PitchingPost` (
-  `playerID` TEXT,
-  `yearID` INTEGER,
-  `round` TEXT,
-  `teamID` TEXT,
-  `lgID` TEXT,
-  `W` INTEGER,
-  `L` INTEGER,
-  `G` INTEGER,
-  `GS` INTEGER,
-  `CG` INTEGER,
-  `SHO` INTEGER,
-  `SV` INTEGER,
-  `IPouts` INTEGER,
-  `H` INTEGER,
-  `ER` INTEGER,
-  `HR` INTEGER,
-  `BB` INTEGER,
-  `SO` INTEGER,
-  `BAOpp` REAL,
-  `ERA` REAL,
-  `IBB` INTEGER,
-  `WP` INTEGER,
-  `HBP` INTEGER,
-  `BK` INTEGER,
-  `BFP` INTEGER,
-  `GF` INTEGER,
-  `R` INTEGER,
-  `SH` INTEGER,
-  `SF` INTEGER,
-  `GIDP` INTEGER
-);
-CREATE INDEX `PitchingPost_playerID` ON `PitchingPost` (`playerID`);
-CREATE INDEX `PitchingPost_yearID` ON `PitchingPost` (`yearID`);
-CREATE INDEX `PitchingPost_teamID` ON `PitchingPost` (`teamID`);
-CREATE INDEX `PitchingPost_lgID` ON `PitchingPost` (`lgID`);
-CREATE TABLE `Salaries` (
-  `yearID` INTEGER,
-  `teamID` TEXT,
-  `lgID` TEXT,
-  `playerID` TEXT,
-  `salary` INTEGER
-);
-CREATE INDEX `Salaries_yearID` ON `Salaries` (`yearID`);
-CREATE INDEX `Salaries_teamID` ON `Salaries` (`teamID`);
-CREATE INDEX `Salaries_lgID` ON `Salaries` (`lgID`);
-CREATE INDEX `Salaries_playerID` ON `Salaries` (`playerID`);
-CREATE TABLE `Schools` (
-  `schoolID` TEXT,
-  `name_full` TEXT,
-  `city` TEXT,
-  `state` TEXT,
-  `country` TEXT
-);
-CREATE INDEX `Schools_schoolID` ON `Schools` (`schoolID`);
-CREATE TABLE `SeriesPost` (
-  `yearID` INTEGER,
-  `round` TEXT,
-  `teamIDwinner` TEXT,
-  `lgIDwinner` TEXT,
-  `teamIDloser` TEXT,
-  `lgIDloser` TEXT,
-  `wins` INTEGER,
-  `losses` INTEGER,
-  `ties` INTEGER
-);
-CREATE INDEX `SeriesPost_yearID` ON `SeriesPost` (`yearID`);
-CREATE TABLE `Teams` (
-  `yearID` INTEGER,
-  `lgID` TEXT,
-  `teamID` TEXT,
-  `franchID` TEXT,
-  `divID` TEXT,
-  `Rank` INTEGER,
-  `G` INTEGER,
-  `Ghome` INTEGER,
-  `W` INTEGER,
-  `L` INTEGER,
-  `DivWin` TEXT,
-  `WCWin` TEXT,
-  `LgWin` TEXT,
-  `WSWin` TEXT,
-  `R` INTEGER,
-  `AB` INTEGER,
-  `H` INTEGER,
-  `X2B` INTEGER,
-  `X3B` INTEGER,
-  `HR` INTEGER,
-  `BB` INTEGER,
-  `SO` INTEGER,
-  `SB` INTEGER,
-  `CS` INTEGER,
-  `HBP` INTEGER,
-  `SF` INTEGER,
-  `RA` INTEGER,
-  `ER` INTEGER,
-  `ERA` REAL,
-  `CG` INTEGER,
-  `SHO` INTEGER,
-  `SV` INTEGER,
-  `IPouts` INTEGER,
-  `HA` INTEGER,
-  `HRA` INTEGER,
-  `BBA` INTEGER,
-  `SOA` INTEGER,
-  `E` INTEGER,
-  `DP` INTEGER,
-  `FP` REAL,
-  `name` TEXT,
-  `park` TEXT,
-  `attendance` INTEGER,
-  `BPF` INTEGER,
-  `PPF` INTEGER,
-  `teamIDBR` TEXT,
-  `teamIDlahman45` TEXT,
-  `teamIDretro` TEXT
-);
-CREATE INDEX `Teams_yearID` ON `Teams` (`yearID`);
-CREATE INDEX `Teams_lgID` ON `Teams` (`lgID`);
-CREATE INDEX `Teams_teamID` ON `Teams` (`teamID`);
-CREATE INDEX `Teams_franchID` ON `Teams` (`franchID`);
-CREATE INDEX `Teams_divID` ON `Teams` (`divID`);
-CREATE TABLE `TeamsFranchises` (
-  `franchID` TEXT,
-  `franchName` TEXT,
-  `active` TEXT,
-  `NAassoc` TEXT
-);
-CREATE INDEX `TeamsFranchises_franchID` ON `TeamsFranchises` (`franchID`);
-CREATE TABLE `TeamsHalf` (
-  `yearID` INTEGER,
-  `lgID` TEXT,
-  `teamID` TEXT,
-  `Half` INTEGER,
-  `divID` TEXT,
-  `DivWin` TEXT,
-  `Rank` INTEGER,
-  `G` INTEGER,
-  `W` INTEGER,
-  `L` INTEGER
-);
-CREATE INDEX `TeamsHalf_yearID` ON `TeamsHalf` (`yearID`);
-CREATE INDEX `TeamsHalf_lgID` ON `TeamsHalf` (`lgID`);
-CREATE INDEX `TeamsHalf_teamID` ON `TeamsHalf` (`teamID`);
-CREATE INDEX `TeamsHalf_divID` ON `TeamsHalf` (`divID`);</code></pre>
-</div>
-</div>
-</div>
-</section>
-<section id="dbplyr-6" class="slide level2 scrollable">
-<h2>dbplyr</h2>
-<p>List the 5 modern-era managers with the highest winning percentages. (Define modern-era as managed over 1000 games post 1920.)</p>
-<div class="smaller">
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>&lt;SQL&gt;
-SELECT `nameGiven` || ' ' || `nameLast` AS `name`, `W`, `L`, `G`, `record`
-FROM (
-  SELECT `q01`.*, RANK() OVER (ORDER BY `record` DESC) AS `col01`
-  FROM (
-    SELECT
-      `LHS`.*,
-      `birthYear`,
-      `birthMonth`,
-      `birthDay`,
-      `birthCity`,
-      `birthCountry`,
-      `birthState`,
-      `deathYear`,
-      `deathMonth`,
-      `deathDay`,
-      `deathCountry`,
-      `deathState`,
-      `deathCity`,
-      `nameFirst`,
-      `nameLast`,
-      `nameGiven`,
-      `weight`,
-      `height`,
-      `bats`,
-      `throws`,
-      `debut`,
-      `bbrefID`,
-      `finalGame`,
-      `retroID`,
-      `deathDate`,
-      `birthDate`
-    FROM (
-      SELECT `q01`.*, `W` / (`G` + 0.0) AS `record`
-      FROM (
-        SELECT `q01`.*, `W` + `L` AS `G`
-        FROM (
-          SELECT `playerID`, SUM(`W`) AS `W`, SUM(`L`) AS `L`
-          FROM (
-            SELECT `Managers`.*
-            FROM `Managers`
-            WHERE (`yearID` &gt;= 1920.0)
-          ) AS `q01`
-          GROUP BY `playerID`
-        ) AS `q01`
-      ) AS `q01`
-      WHERE (`G` &gt; 1000.0)
-    ) AS `LHS`
-    INNER JOIN `People`
-      ON (`LHS`.`playerID` = `People`.`playerID`)
-  ) AS `q01`
-) AS `q01`
-WHERE (`col01` &lt;= 5)</code></pre>
-</div>
-</div>
-</div>
-</section>
-<section id="dbplyr-7" class="slide level2 scrollable">
-<h2>dbplyr</h2>
-<p>Add <code>|&gt; explain()</code> to see the DB internal <em>query plan</em>:</p>
-<div class="smaller">
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>&lt;SQL&gt;
-SELECT `nameGiven` || ' ' || `nameLast` AS `name`, `W`, `L`, `G`, `record`
-FROM (
-  SELECT `q01`.*, RANK() OVER (ORDER BY `record` DESC) AS `col01`
-  FROM (
-    SELECT
-      `LHS`.*,
-      `birthYear`,
-      `birthMonth`,
-      `birthDay`,
-      `birthCity`,
-      `birthCountry`,
-      `birthState`,
-      `deathYear`,
-      `deathMonth`,
-      `deathDay`,
-      `deathCountry`,
-      `deathState`,
-      `deathCity`,
-      `nameFirst`,
-      `nameLast`,
-      `nameGiven`,
-      `weight`,
-      `height`,
-      `bats`,
-      `throws`,
-      `debut`,
-      `bbrefID`,
-      `finalGame`,
-      `retroID`,
-      `deathDate`,
-      `birthDate`
-    FROM (
-      SELECT `q01`.*, `W` / (`G` + 0.0) AS `record`
-      FROM (
-        SELECT `q01`.*, `W` + `L` AS `G`
-        FROM (
-          SELECT `playerID`, SUM(`W`) AS `W`, SUM(`L`) AS `L`
-          FROM (
-            SELECT `Managers`.*
-            FROM `Managers`
-            WHERE (`yearID` &gt;= 1920.0)
-          ) AS `q01`
-          GROUP BY `playerID`
-        ) AS `q01`
-      ) AS `q01`
-      WHERE (`G` &gt; 1000.0)
-    ) AS `LHS`
-    INNER JOIN `People`
-      ON (`LHS`.`playerID` = `People`.`playerID`)
-  ) AS `q01`
-) AS `q01`
-WHERE (`col01` &lt;= 5)
-
-&lt;PLAN&gt;
-   id parent notused                                                 detail
-1   2      0       0                                         CO-ROUTINE q01
-2   5      2       0                                CO-ROUTINE (subquery-8)
-3   7      5       0                                         CO-ROUTINE q01
-4  14      7     142            SCAN Managers USING INDEX Managers_playerID
-5  55      5      82                                               SCAN q01
-6  62      5      42 SEARCH People USING INDEX People_playerID (playerID=?)
-7 120      5       0                           USE TEMP B-TREE FOR ORDER BY
-8 163      2      81                                      SCAN (subquery-8)
-9 285      0      81                                               SCAN q01</code></pre>
-</div>
-</div>
-</div>
-<p>Beyond this class to interpret, but in general use of <code>INDEX</code> yields good performance. Take DB classes for <em>much more</em></p>
-</section>
-<section id="dbplyr-8" class="slide level2 scrollable">
-<h2>dbplyr</h2>
-<p>List the 5 modern-era managers with the highest winning percentages. (Define modern-era as managed over 1000 games post 1920.)</p>
-<div class="smaller">
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 5 × 5
-  name                          W     L     G record
-  &lt;chr&gt;                     &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;
-1 David Ray Roberts           851   507  1358  0.627
-2 Joseph Vincent McCarthy    2125  1333  3458  0.615
-3 Miller James Huggins        927   597  1524  0.608
-4 William Harold Southworth  1044   704  1748  0.597
-5 Aaron John Boone            603   428  1031  0.585</code></pre>
-</div>
-</div>
-</div>
 
 
 </section></section>
