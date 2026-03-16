@@ -1,13 +1,16 @@
 ---
 session: "`r session <- 7; session`"
-last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
+last_updated: "`r last_updated <- Sys.Date(); 
+                  last_updated |> format('%Y-%m-%d')`"
 class_date:
   "`r library(tidyverse);
     class_date <- read_csv('key_dates.csv', name_repair='universal') |>
     filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
-format: revealjs
+    pull(Date); class_date |> format('%A %Y-%m-%d')`"
+format: 
+  revealjs:
+    echo: true
 ---
 
 {{< include _setup.qmd >}}
@@ -31,75 +34,69 @@ Today: `r TODAY_TOPIC`
 
 :::
 
-## Schedule Tweak
+## Schedule Notes
 
-Today: 
+Upcoming schedule is a bit confusing:
 
-- Static Plots
+::: {.incremental}
 
-Next Week: 
+- Today: Static Plots
+- Next Week: Mid-Semester Check-In Presentations
+- Two Weeks of Spring Break (April 2 and 9)
+- April 16: Data Import Part 1 
+- **Tuesday** April 21: Make-Up Class (Advanced Plotting)
+- April 23: Data Import Part 2
 
-- Maps (moved!)
-- Interactive Tools
-- Animated Plots (Time Allowing)
+:::
 
 # Today
 
 ## Today
 
 - Course Administration
+  - MP#02 Advice
+  - Mid-Semester Check-In Advice
 - Warm-Up Exercises
+- Plotting: Principles for Visual Storytelling
 - Introduction to `ggplot2`
-- PA#07 FAQs
+- Plotting FAQs
 - Wrap-Up
-  - Life Tip of the Day
   
-## Tuesday Visitor
+## Special Visitor {.scrollable}
 
-Prof. [Rongning Wu](https://www.baruch.cuny.edu/profiles/faculty/Rongning-Wu) is
-joining our course today
+Prof. [Ann Brandwein](https://zicklin.baruch.cuny.edu/faculty-profile/ann-brandwein/) is
+joining us today
 
-- You may know Prof. Wu from STA 9700 and STA 9715
+![](https://zicklin.baruch.cuny.edu/wp-content/uploads/sites/10/2019/12/Ann-Cohen-Brandwein.jpg){height="200px" fig-align="center"}
+
+::: {.smaller}
+
+Advisor for MS Stat and MS QMM. If you don't already know Prof. B, you should!
+
+:::
 
 . . . 
+
+
+::: {.smaller}
 
 Under [CUNY Procedures](https://psc-cuny.org/contract/article-18-professional-evaluation/), 
 untenured faculty (like me!) are observed and evaluated once a semester. 
 
+:::
+
 . . . 
+
+
+::: {.smaller}
 
 You don't need to do anything different. 
 
-- Prof. Wu will be randomly assigned to a breakout room. (Be nice 😀!)
+- Prof. Brandwein will be assigned to a random breakout room. (Be nice 😀!)
+
+:::
 
 # Course Administration
-
-## GTA 
-
-Teaching Assistant finally hired -- Charles E. Ramirez!
-
-
-:::: {.columns}
-
-::: {.column}
-
-![](../images/cer_headshot.jpg){width="60%"}
-
-:::
-
-::: {.column}
-
-::::: {.incremental}
-
-- Office Hour (student support) on Wednesdays at 6pm (see Brightspace)
-- Review of peer grading
-- Took STA 9750 in Spring 2024; TA in Fall 2024
-
-:::::
-
-:::
-
-::::
 
 ## Mini-Project #02
 
@@ -116,32 +113,27 @@ Teaching Assistant finally hired -- Charles E. Ramirez!
 
 . . .
 
-::: {.smaller}
+::: {.small}
 
 Pay attention to [the rubric](../mini/mini02.html#rubric)
 
 -   Writing and presentation are about 50% of your grade
+-   You now receive a grade (no automatic 10/10 on data visualization)
 -   Evaluated on *rigor* and *thoughtfulness*
 -   Use what you learned from MP#01
 
 :::
 
-. . . 
-
-::: {.small}
-
-Rubric updated to clarify opportunities for and limits to extra credit
-
-:::
 
 ## Mini-Project #02
 
-Rare issues downloading BLS-QCEW data files
+Rare issues downloading BLS-ATUS data files (especially on Windows)
 
 :::: {.columns}
 
 ::: {.column}
 
+- Hopefully addressed already
 - My code only downloads files once
 - If files are corrupted, please delete and try again
 - Post on Piazza for help debugging
@@ -156,73 +148,175 @@ Rare issues downloading BLS-QCEW data files
 
 ::::
 
+## Mini-Project #02
+
+From [WSJ 2016](https://graphics.wsj.com/time-use/): 
+
+<iframe src="https://graphics.wsj.com/time-use/" height="400px" width="800px" ></iframe>
+
+(Remember, you get [free WSJ subscription](../resources.qmd#additional-baruch-and-cuny-benefits) as a Baruch student)
 
 ## Mini-Project #02
 
-Key Questions:
+Key Question:
 
-::: {.incremental}
+- What do "people like you" spend their time on?
 
-- Where is housing (relatively) cheap? 
-- Are changes in house prices associated with building new housing?
-- Are large cities building enough housing?
+. . . 
 
-:::
+Analytical Techniques: 
+
+- Use of *microdata* and *survey weights*
+- Translating informal concepts ("like you") to quantitative measures
 
 . . . 
 
 Tools:
 
-::: {.incremental}
+::: {.incremental .small}
 
 - `join`s to combine Census and BLS data
-- `dplyr` to standardize and explore high/low CBSAs
-- _Visualization_ to find outliers and trends
+- `dplyr` to standardize and explore high/low trends (also `quantile` & `cut`)
+- _Visualization_ to find outliers and trends (today!)
 
 :::
 
+
+## Mini-Project #02
+
+Four data files (use my code!): 
+
+- Activity Data File: self-reported time spent on different activities
+- Respondent File: demographic information
+- Roster File: who else was present? (Least useful)
+- Activity Codes: Translating IDs into actual activities (*e.g.*, 070101 = grocery shopping)
+
+## MP#02 Files
+
+Activity Data File
+
+```{r}
+#| echo: false
+dplyr::glimpse(read_csv("data/mp02/atusact_0324.dat"))
+```
+
+## MP#02 Files {.scrollable}
+
+Respondent Data File
+
+```{r}
+#| echo: false
+dplyr::glimpse(read_csv("data/mp02/atusresp_0324.dat"))
+```
+
+## MP#02 Files
+
+Roster Data File
+
+```{r}
+#| echo: false
+dplyr::glimpse(read_csv("data/mp02/atusrost_0324.dat"))
+```
+
+## MP#02 Files
+
+Activity Codes File
+
+```{r}
+#| echo: false
+dplyr::glimpse(read_csv("data/mp02/atus_activity_codes.csv"))
+```
+
 ## Mini-Project #01
 
-Grades returned on Friday
+Peer Feedback Period
 
-[Regrade policy](https://michael-weylandt.com/STA9750/syllabus.html#regrading-policy)
-
-- 48 hours after grades returned (See email)
-- Regrading 'from scratch'
-- Identify rubric elements on which were misgraded
+- Run `mp_pf_perform(N=1)` to walk through prompts
+- See examples of good and bad feedback in last week's slides
+- Submit `bspf` file on Brightspace
 
 . . . 
 
-I will open a *Brightspace Quiz* where you can request instructor re-grading
+Reminder: New peer feedback system, so please contact me with any questions
 
-## Grading in Progress
+## Mid-Semester Check-In
 
-I owe you: 
+Mid-Semester Check-In Presentations
 
-- Project Proposal Feedback
-- MP#01 Meta-Review Grades
-- (Selected) MP#01 Regrades 
+::: {.incremental}
 
-## Pre-Assignments
+- Overarching Question
+- **Data Sources**
+  - Quality
+  - Suitability
+- Specific Questions
+- **Prior Art**
+- Challenges
 
-Brightspace:
+:::
 
--   Reading, typically on course website
--   Brightspace auto-grades for completion
+. . . 
 
-Next PA is due **`r get_pa_deadline(8)`**: 
+See [Project Instructions](../project.qmd#mid-semester-check-in-presentations)
+for more details and rubric
 
-- Introduces tools for interactive data tools, *i.e.*, dashboards
-- Includes optional (great!) lecture on data
-  viz from [Di Cook (Monash B School (AUS))](https://www.dicook.org/)
+## Data Sources
+
+When using 'found' data, two important questions to ask: 
+
+::: {.incremental}
+
+- _Quality_: Does the data do what it claims to?
+  - Exhaustiveness, sampling error, sampling bias, missingness
+- _Suitability_: Does the data do what you need it to?
+  - Right 'unit of analysis', construct alignment
+
+:::
+
+## Prior Art
+
+Context and Novelty: 
+
+::: {.incremental}
+
+- What else have people said on your topic? 
+  - What is missing? 
+- What do you have to add to this conversation? (Novelty)
+  - New data set, new way of measuring, new style of analysis
+  
+:::
+
+. . . 
+
+A _research_ project is not just summarization of other work: 
+how can you contribute something new?
+
+## Project Advice
+
+General Advice:
+
+::: {.incremental}
+
+- Work on _as small a scale as possible_
+- Leave room to _demonstrate your coding skill_: if you can't  
+  demonstrate the skills of this class, your SQ may be too small
+- Plan how to _integrate_ your findings: if you find 5 factors 
+  are all correlated with response, how can you identify which ones
+  are most important? 
+
+:::
+
+. . . 
+
+After presentations: 100% optional intro to SQL
 
 ## Course Support
 
--   Synchronous
-    -   MW Office Hours 2x / week: **Tuesdays + Thursdays 5pm**
-        - Rest of Semester except Thanksgiving (Nov 27th)
-    - GTA Office Hours: **Wednesdays at 6pm**
--   Asynchronous: Piazza ($<20$ minute *average* response time)
+- Synchronous
+  - MW Office Hours 2x / week: 
+    - **Wednesdays (In Person) + Thursdays (Zoom) 5pm**
+    - No OH over Spring Break; extra OH on 'make-up class' day
+- Asynchronous: Piazza ($<1$ hour *average* response time)
 
 . . . 
 
@@ -239,7 +333,7 @@ Ask early for help with MPs
 
 # Review Exercise
 
-## Global Temperature Anomaly {.scrollable}
+## Global Temperature Anomaly
 
 [CDIAC](https://www.esd.ornl.gov/iab/iab2-15.htm) estimates of global temperature
 
@@ -248,12 +342,18 @@ Ask early for help with MPs
 
 . . . 
 
-`cdiac` data in `CVXR` package: 
+`cdiac` data in `CVXR` package or via my GitHub: 
 
 ```{r}
-data(cdiac, package="CVXR")
+#| warning: false
+#| message: false
+cdiac <- read_csv("https://michael-weylandt.com/STA9750/cdiac.csv")
 cdiac
 ```
+
+## Temperature Anomaly
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/T_comp_61-90.pdf/page1-500px-T_comp_61-90.pdf.jpg){height="600px" fig-align="center"}
 
 ## Global Temperature Anomaly {.scrollable}
 
@@ -263,22 +363,17 @@ In breakout rooms:
 2. For how many months was 2015 the highest anomaly recorded? 
 3. For how many years did July have the largest anomaly of that year?
 
-See [Lab #07](../labs/lab07.html#review) for details.
+See [Lab #07](../labs/lab06.html#review) for details.
 
-# Plotting with `ggplot2`
+## Aside: Oak Ridge
 
-## ggplot2
+![](../images/oppenheimer_ornl.gif){height="600px" fig-align="center"}
 
-`ggplot2`: 
+## Calutron Girls
 
-::: {.incremental}
+![](https://upload.wikimedia.org/wikipedia/commons/7/7d/%22_The_Calutron_Girls%22_Y-12_Oak_Ridge_1944_Large_Format_%2832093954911%29_%282%29.jpg){height="600px" fig-align="center"}
 
-- **G**rammar of **G**raphics **Plot**ing, Version 2
-- Structured Plotting
-  - Plotting to express _statistical visualization_
-  - Not raw shapes and colors ("graphics primitives")
-- Make it easy to make _good_ visualizations
-:::
+# Plotting
 
 ## Why Visualization?
 
@@ -321,6 +416,131 @@ Modeling and visualizing are not sequential:
 - Build a model, where does it fail?
 - See a pattern, does it hold up in a model / test?
 
+:::
+
+## Spot the Problem!
+
+
+<!-- Crime Growth (Reversed X) --> 
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/618055460368eb28f228493a1ad24244/tumblr_qv7l1892cm1sgh0voo1_1280.jpg){height="600px" fig-align="center"}
+
+## Spot the Problem!
+
+
+<!-- Insane Color Labels --> 
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/3a484c7bc030ce4109bdae11b9cf8d2e/tumblr_qm8kj9BEoD1sgh0voo1_640.jpg){height="600px" fig-align="center"}
+## Spot the Problem!
+
+<!-- Color Pie Chart -->
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/cc32a4f450a6d1960bf9b7ff1b274d32/tumblr_q8isvmN57E1sgh0voo1_1280.jpg){height="600px" fig-align="center"}
+
+## Spot the Problem!
+
+<!-- WFH Unlabeled Pie Chart --> 
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/2e8a439b671e1ab092a862ee09bfb4f3/tumblr_q8q6uu5FGa1sgh0voo1_1280.jpg){height="600px" fig-align="center"}
+
+## Spot the Problem!
+
+<!-- 3D Pie -->
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/dd3b99ccbaec2d7e16fd752912bfbe38/tumblr_oi79u8H5cG1sgh0voo1_1280.jpg){height="600px" fig-align="center"}
+
+## Spot the Problem!
+
+<!-- >100% Pie Chart --> 
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/f6e406879ff19fff195dbb529e80f3aa/tumblr_qfeb9gSlU41sgh0voo1_1280.jpg){height="600px" fig-align="center"}
+
+## Spot the Problem!
+
+<!-- Non Radial Pie Chart -->
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/2c3170def5f3d7ebd6ea403a2931464c/tumblr_oxm9f1VBht1sgh0voo1_1280.jpg){height="600px" fig-align="center"}
+
+## Spot the Problem!
+
+<!-- Compound Pie -->
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/fd2be427c6794cc8e25bc23c42da73aa/tumblr_omvcm7m9va1sgh0voo1_1280.jpg){height="600px" fig-align="center"}
+
+## Spot the Problem!
+
+<!-- Vegan Cheese Growth --> 
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/a937c9fdc10e2a880c85a08349d56998/tumblr_qf0idiOVVJ1sgh0voo1_1280.pnj){height="600px" fig-align="center"}
+
+## Spot the Problem!
+
+<!-- X vs 1 -X -->
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/db84958c0234e3a9985e43ebdffad887/tumblr_ovyr7jaDq61sgh0voo1_1280.jpg){height="600px" fig-align="center"}
+
+## Spot the Problem!
+
+<!-- Double Axis Chart -->
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/7fbfeacf7649b5d16ad4e938c040a6b1/tumblr_p79fyvl1id1sgh0voo1_1280.jpg){height="600px" fig-align="center"}
+
+## Spot the Problem!
+
+<!-- Map vs Area -->
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/0750d78170483b7e109419ab020b8b1d/tumblr_q69w7vIOqG1sgh0voo1_1280.pnj){height="600px" fig-align="center"}
+
+## Spot the Problem!
+
+<!-- Biden / Trump Georgia --> 
+
+Examples from [Viz.WTF](https://viz.wtf): 
+
+![](https://64.media.tumblr.com/5edb95ec3827adaac11c7544f9225840/tumblr_qjdc5wHQII1sgh0voo1_1280.pnj){height="600px" fig-align="center"}
+
+
+## Spot the Problem! 
+
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">BREAKING🚨: Asteroid the size of 14 flamingos has just skimmed past Earth, according to NASA. <a href="https://t.co/vfUTk2OAvG">pic.twitter.com/vfUTk2OAvG</a></p>&mdash; All day Astronomy (@forallcurious) <a href="https://twitter.com/forallcurious/status/2029627456920105133?ref_src=twsrc%5Etfw">March 5, 2026</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> 
+
+# Plotting with `ggplot2`
+
+## ggplot2
+
+`ggplot2`: 
+
+::: {.incremental}
+
+- **G**rammar of **G**raphics **Plot**ing, Version 2
+- Structured Plotting
+  - Plotting to express _statistical visualization_
+  - Not raw shapes and colors ("graphics primitives")
+- Make it easy to make _good_ visualizations
 :::
 
 ## ggplot2
@@ -910,7 +1130,7 @@ Many ways to get the same result
 
 Return to breakout rooms for [Practice Activity #01](../labs/lab07.html#practice01)
 
-## ggplot2 Customization - Themes {.scrollable}
+## Custom Themes {.scrollable}
 
 The `theme` mechanism provides _extensive_ opportunities to customize:
 
@@ -919,7 +1139,7 @@ library(ggplot2)
 theme_grey() # Default theme
 ```
 
-## ggplot2 Customization - Themes {.scrollable}
+## Custom Themes {.scrollable}
 
 From the [Tidyverse Blog](https://tidyverse.org/blog/2025/10/ggplot2-styling/):
 
@@ -1011,14 +1231,14 @@ girafe(
 ))
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 Best practice: 
 
 - Pick a starting theme you like and customize
 - `theme_STARTER() + theme(things.i.change="to.new.values")`
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 `ggplot2` has 8 built-in themes. The `ggthemes` and `ThemePark` packages has _many_ more!
 
@@ -1035,7 +1255,7 @@ my_plot <- ggplot(penguins_ok,
 
 *Reminder: `ggplot2` only displays plot _when printed_ so assign to variable if you want to keep modifying*
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 Default theme (`theme_grey()`)
 
@@ -1044,7 +1264,7 @@ Default theme (`theme_grey()`)
 my_plot + theme_grey() # Default: can omit
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 Black-and-White theme (`ggplot2::theme_bw()`) - MW's favorite
 
@@ -1053,7 +1273,7 @@ Black-and-White theme (`ggplot2::theme_bw()`) - MW's favorite
 my_plot + theme_bw()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 Minimal theme (`ggplot2::theme_minimal()`) 
 
@@ -1062,7 +1282,7 @@ Minimal theme (`ggplot2::theme_minimal()`)
 my_plot + theme_minimal()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 Light theme (`ggplot2::theme_light()`) 
 
@@ -1071,7 +1291,7 @@ Light theme (`ggplot2::theme_light()`)
 my_plot + theme_light()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 Dark theme (`ggplot2::theme_dark()`) 
 
@@ -1080,7 +1300,7 @@ Dark theme (`ggplot2::theme_dark()`)
 my_plot + theme_dark()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 Old-school MS Excel theme (`ggthemes::theme_excel()`) 
 
@@ -1090,7 +1310,7 @@ library(ggthemes)
 my_plot + theme_excel()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 Google Docs theme (`ggthemes::theme_gdocs()`) 
 
@@ -1100,7 +1320,7 @@ library(ggthemes)
 my_plot + theme_gdocs()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 *Economist* theme (`ggthemes::theme_economist()`) 
 
@@ -1110,7 +1330,7 @@ library(ggthemes)
 my_plot + theme_economist()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 *Wall St Journal* theme (`ggthemes::theme_wsj()`) 
 
@@ -1120,7 +1340,7 @@ library(ggthemes)
 my_plot + theme_wsj()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 [Edward Tufte](https://www.edwardtufte.com/) theme (`ggthemes::theme_tufte()`) 
 
@@ -1130,7 +1350,7 @@ library(ggthemes)
 my_plot + theme_tufte()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 *Barbie* theme (`ThemePark::theme_barbie()`) 
 
@@ -1140,7 +1360,7 @@ library(ThemePark)
 my_plot + theme_barbie()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 *Oppenheimer* theme (`ThemePark::theme_oppenheimer()`) 
 
@@ -1150,7 +1370,7 @@ library(ThemePark)
 my_plot + theme_oppenheimer()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 *Simpsons* theme (`ThemePark::theme_simpsons()`) 
 
@@ -1160,7 +1380,7 @@ library(ThemePark)
 my_plot + theme_simpsons()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 *Spiderman* theme (`ThemePark::theme_spiderman()`) 
 
@@ -1170,7 +1390,7 @@ library(ThemePark)
 my_plot + theme_spiderman()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 *Game of Thrones* theme (`ThemePark::theme_gameofthrones()`) 
 
@@ -1180,7 +1400,7 @@ library(ThemePark)
 my_plot + theme_gameofthrones()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 *Avatar* theme (`ThemePark::theme_avatar()`) 
 
@@ -1190,7 +1410,7 @@ library(ThemePark)
 my_plot + theme_avatar()
 ```
 
-## ggplot2 Customization - Themes
+## Custom Themes
 
 Most of these are silly
 
@@ -1415,7 +1635,7 @@ employment prospects.
 
 ::: {.center}
 
-![](../images/gelman_cover.jpg){height="20%"}
+![](../images/gelman_cover.jpg){height="600px"}
 
 :::
 
@@ -1437,13 +1657,15 @@ How can we reconcile this?
 
 ## Red State Blue State {.scrollable}
 
+
+Figure from Gelman *et al*, *Q.J.Poli.Sci.* 2007. 
+
 ::: {.center}
 
-![](../images/gelman_regr.png){height="20%"}
+![](../images/gelman_regr.png){height="200px"}
 
 :::
 
-Figure from Gelman *et al*, *Q.J.Poli.Sci.* 2007. 
 
 . . . 
 
@@ -1468,7 +1690,7 @@ General advice on data science projects:
 
 -   B. Yu and R. Barter [*Veridical Data Science*](https://vdsbook.com/)
 
-# Pre-Assignment #07 FAQs
+# Plotting FAQs
 
 ## ggplot2 vs Tableau
 
@@ -1695,7 +1917,7 @@ Humans are better at:
 
 - Length > Area > Volume
 
-## FAQ: When to Use Facets?
+## When to Facet?
 
 Facets are `group_by` for plots. Useful for
 
@@ -1767,16 +1989,14 @@ ggdraw() +
 - Integrates with `dplyr`, `tidyr` to get into suitable format
 
 
-## Upcoming Work
+## Orientation
 
-Upcoming work from [course calendar](../index.qmd#calendar)
-
-::: {.incremental}
-
-- [Pre-Assignment #0`r session+1`](../pre/pa07.html) due `r get_pa_deadline(session+1)`
-- [Mini-Project #02](../mini/mini02.html) due on `r get_mp_deadline(2)`
-
-:::
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R`  ✅
+- Data Visualization in `R`  ⬅️
+- Getting Data into `R`
+- Statistical Modeling in `R`
 
 {{< include ../advice/interview_tips.qmd >}}
 
