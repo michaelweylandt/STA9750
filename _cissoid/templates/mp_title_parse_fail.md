@@ -5,7 +5,7 @@ Thank you for your submission to STA 9750.
 I cannot parse the title of your submission. Per the instructions for [Mini-Project #0{{project_id}}](https://michael-weylandt.com/STA9750/mini/mini0{{project_id}}.html), 
 I expected an issue with the title: 
 
-> `STA 9750 {{gh}} MiniProject #0{{project_id}}`
+> `STA 9750 {{gh}} MiniProject #**0{{project_id}}**`
 
 which differs from the title you used (`{{current_title}}`). 
 

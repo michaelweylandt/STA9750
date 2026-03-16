@@ -119,12 +119,14 @@ class Issue(object):
         self._status = None
         self._status_message = None
         self._fix_advice = None
+        self._owner = None
 
         self._title_match = re.match(self.TITLE_REGEX, self.title)
         
+        self._branch_confirmed = False
         self._default_branch = "main"
 
-    TITLE_REGEX = r'STA +9750 +(\S*) +Mini-?Project #0(\d)'
+    TITLE_REGEX = r'STA +9750 +(\S*) +[Mm]ini-?[Pp]roject #\*{,2}?0(\d)\*{,2}'
 
     def to_json(self):
         return json.dumps({
@@ -150,6 +152,12 @@ class Issue(object):
             opened_by=r["user"]["login"]
         )
         
+    @classmethod
+    def from_gh_api(cls, issue_num):
+        r = _gh(f"/repos/{course_owner()}/{course_repo()}/issues/{issue_num}")
+        
+        return cls.from_gh_api_resp(r)
+        
     @cached_property
     def mp_num(self):
         try: 
@@ -161,7 +169,18 @@ class Issue(object):
         
     @property
     def expected_title(self):
-        return f"STA 9750 {self.opened_by} MiniProject #0{self.mp_num}"
+        return f"STA 9750 {self.owner} MiniProject #{self.mp_num:02}"
+    
+    @property
+    def title_ok(self):
+        if not self._title_match:
+            return False
+        if possible_owner := self._title_match.group(1):
+            if self.opened_by == "michaelweylandt":
+                return True
+            return possible_owner.lower() == self.opened_by.lower()
+        return False
+        
     
     @property
     def expected_url(self):
@@ -174,25 +193,40 @@ class Issue(object):
         
     @property
     def owner(self):
+        if self._owner is not None:
+            return self._owner
+        
         if match := self._title_match:
-            if match.group(1).lower() == self.opened_by.lower():
-                return match.group(1).lower()
+            if self.opened_by == "michaelweylandt" and match.group(1).lower() != "michaelweylandt":
+                self._owner = match.group(1).lower()
+            elif match.group(1).lower() == self.opened_by.lower():
+                self._owner = match.group(1).lower()
             elif match.group(1) == "YOUR_GITHUB_ID":
-                return self.opened_by.lower()
+                self._owner = self.opened_by.lower()
             else: 
                 click.echo(f"Issue parsing title {self.title} for issue {self.number}")
-                return None #import pdb; pdb.set_trace()
+                if click.confirm(f"Issue {self.number} ('{self.title}') opened by {self.opened_by}. Use {self.opened_by} as owner?"):
+                    self._owner = self.opened_by.lower()
+        elif self.opened_by != "michaelweylandt":
+                self._owner = self.opened_by.lower()
         else:
-            if self.opened_by != "michaelweylandt":
-                return self.opened_by.lower()
-            
             import pdb; pdb.set_trace()
-            
+                
+        return self._owner
+
     def confirm_default_branch(self):
         available_branches = [b["name"] for b in _gh(f"repos/{self.opened_by}/{course_repo()}/branches")]
         if self._default_branch not in available_branches:
             self._default_branch = available_branches[0]
             
+        self._branch_confirmed = True
+        return self._default_branch
+    
+    @property
+    def branch(self):
+        if not self._branch_confirmed:
+            return self.confirm_default_branch()
+    
         return self._default_branch
         
     @property
@@ -212,11 +246,11 @@ class Issue(object):
             self._status_message = f"Could not parse title {self.title}"
             return self._status
 
-        if not self._title_match or (self.owner is None) or "YOUR_GITHUB_ID" in self.title:
+        if not self.title_ok:
             self._status = IssueStatus.BAD_TITLE
             self._status_message = dedent(f"""\
             Expected title: {self.expected_title}
-            Actual title: {self.title}""")
+            Actual title:   {self.title}""")
             self._fix_advice = dedent("""\
             Note that you can change the title of this issue to fix this
             problem by hitting the 'Edit' button to the right of the current title
@@ -287,31 +321,64 @@ class Issue(object):
         if support_file_check_results["fail"]:
             self._status = IssueStatus.MISSING_FILES
             self._status_message = "Could not access the following files:\n - " + "\n - ".join(support_file_check_results["fail"])
+            
+            self._status_message += dedent("""
+            Please make sure to `git add` the corresponding files from your
+            `docs` repository. Once you have done this, make a new commit and
+            `git push` to update your GitHub repository. You do not need to open
+            a new issue or re-post here (though adding a new comment won't hurt)
+            - simply pushing the updated and corrected files will automatically 
+            propogate through to this issue thread.""")
+
             return self._status
         
         page_bs =  BS(page_resp.text, features="lxml")
-        ai_disclosure = page_bs.find(class_="callout-note")
-        
-        if ai_disclosure is None:
+        ai_disclosure = page_bs.find_all(class_="callout-note")
+
+        if not ai_disclosure:
             self._status = IssueStatus.MISSING_AI
-            self._status_message = dedent("""Could not locate your AI Usage 
-            Statement. No '.callout-note' identified. Please update your
-            submission and wait for checks to be re-run.""")
+            self._status_message = "Could not locate your AI Usage Statement - No '.callout-note' block."
+            
+            self._fix_advice = dedent("""
+            See MP instructions for how to use a suitable block for AI Usage 
+            Statement. Please update your qmd file, re-render the 
+            document, and `git push` to update your GitHub repository. You 
+            do not need to open a new issue or re-post here (though adding a
+            new comment won't hurt) - simply pushing the updated and 
+            corrected files will automatically propogate through to this 
+            issue thread.""")
             return self._status
-            
-        try:
-            ai_title = ai_disclosure["title"]
-            
-            if ai_title != "AI Usage Statement":
+        
+        if len(ai_disclosure) > 1:
+            if sum("AI" in ai.get_text() for ai in ai_disclosure):
+                ai_disclosure = [ai for ai in ai_disclosure if "AI" in ai.get_text()][-1]
+            else:
                 import pdb; pdb.set_trace()
-                self._status = IssueStatus.MISSING_AI
-                self._status_message = dedent("""Could not locate your AI Usage
-                Statement. No '.callout-note' with title 'AI Usage Statement'
-                identified. Pease update your submission and wait for checks to
-                be re-run.""")
-        except KeyError:
+        else:
+            ai_disclosure = ai_disclosure[-1]
+        
+        if "title" in ai_disclosure.attrs:
+            ai_title = ai_disclosure["title"]
+        elif ai_title_container := ai_disclosure.find(class_="callout-title-container"): 
+            ai_title = ai_title_container.find_all(string=True, recursive=False)
+            ai_title = "".join(ai_title).strip()
+        else: 
             import pdb; pdb.set_trace()
+            
+        if ai_title != "AI Usage Statement":
             self._status = IssueStatus.MISSING_AI
+            self._status_message = "Could not locate your AI Usage Statement - '.callout-note' block title incorrect."
+            self._fix_advice = dedent(f"""
+            No '.callout-note' with title 'AI Usage Statement' identified,
+            though I did find one with the title '{ai_title}' instead. If this 
+            is your AI Usage Statement, please update your qmd file, re-render 
+            the document, and `git push` to update your GitHub repository. You 
+            do not need to open a new issue or re-post here (though adding a
+            new comment won't hurt) - simply pushing the updated and 
+            corrected files will automatically propogate through to this 
+            issue thread.""")
+            return self._status
+
         
         self._status = IssueStatus.OK
         
@@ -334,7 +401,7 @@ class Issue(object):
         elif status == IssueStatus.NO_URL:
             return f"No URL submitted"
         elif status == IssueStatus.WRONG_URL:
-            return f"Incorrect URL submitted: " + self._status_message
+            return f"Incorrect URL submitted"
         elif status == IssueStatus.PAGE_404:
             return f"Page fails to load: " + self._status_message
         elif status == IssueStatus.MISSING_SOURCE:
@@ -380,6 +447,10 @@ class Issue(object):
     @property
     def ok(self):
         return self.status == IssueStatus.OK
+    
+    @property
+    def is_open(self):
+        return self.state == "open"
     
     @property
     def already_passed(self):
@@ -431,6 +502,20 @@ class Issue(object):
             
         # Reset cached values
         self._labels = None
+        
+    def close(self):
+        if self.state == "closed":
+            return
+        
+        r = _gh(f"repos/{course_owner()}/{course_repo()}/issues/{self.number}", 
+                method="patch", 
+                state="closed", 
+                state_reason="completed")
+                
+        if not r.ok:
+            raise click.ClickException(f"GitHub problem closing issue {self.issue_num}")
+        
+        self.state = "closed"
     
     def update_labels_submission_checks(self):
         available_labels = gh_available_labels()
@@ -522,7 +607,7 @@ class IssueCollection(object):
             click.echo(f"Issue #{u.number:03} ({u.title}) was opened by {u.opened_by}.")
             
             if ask:     
-                if click.confirm("Should this issue be considered as part of MP#0{mp_num}?", default=False):
+                if click.confirm("Should this issue be considered as part of MP#{mp_num:02}?", default=False):
                     known.append(u)
                 else: 
                     click.echo(f"Omitting Issue #{u.number:03} ({u.title}) from processing.")
@@ -538,6 +623,11 @@ class IssueCollection(object):
             if sum(i.ok for i in ro_issues) == 1:
                 for i in ro_issues:
                     if not i.ok:
+                        known.remove(i)
+            # If only one issue is open, let's use that one
+            elif sum(i.is_open for i in ro_issues) == 1:
+                for i in ro_issues:
+                    if not i.is_open:
                         known.remove(i)
             else:
                 import pdb; pdb.set_trace()    
@@ -591,10 +681,17 @@ def check_quarto_support_files(url):
     support_links = [urljoin(url, sf["href"]) for sf in soup.find_all("link") if not sf["href"].startswith("http")]
     image_links = [urljoin(url, sf["src"]) for sf in soup.find_all("img") if not sf["src"].startswith("http")]
     anchor_links = [urljoin(url, sf["href"]) for sf in soup.find_all("a") if not sf["href"].startswith("http")]
-
+    
+    # Dedup multiple links on the same page
+    anchor_links = set(a.split("#")[0] for a in anchor_links)
+    
     for sf_url in chain(support_links, image_links, anchor_links):
-        
         LINKS_CHECKED.append(sf_url)
+        
+        # Skip embedded elements
+        if sf_url.startswith("data:") or sf_url.startswith("javascript:"):
+            LINKS_OK.append(sf_url)
+            continue 
         
         if r.get(sf_url).ok:
             LINKS_OK.append(sf_url)
@@ -975,60 +1072,6 @@ def number_to_letter(score):
     else:
         return "F"
 
-def get_pf_mapping(project_id):
-    """Load peer feedback mapping for MP#N.
-
-    Returns a dict of with (REVIEWER_NAME, GITHUB, EMAIL) keys and a list of
-    (AUTHOR, URL) pairs as the value."""
-    with open(mapping_file(), "r") as f:
-        MASTER_MAPPING = json.loads(f.read())
-
-    with open(mapping_index_file(), "r") as f:
-        MAPPING_INDEX = json.loads(f.read())
-        MAPPING_INDEX = MAPPING_INDEX[f"mp0{project_id}"]
-
-    ROSTER = current_roster()
-
-    MAPPING = {}
-    PF_DIR = op.join(course_dir(), f"mp0{project_id}", "assignments")
-
-    for row in ROSTER.itertuples(index=False):
-        name = row.name
-        gh = row.github
-        email = row.email
-
-        key = (name, gh, email)
-
-        value = []
-        for ix in MAPPING_INDEX:
-            author = MASTER_MAPPING[gh][ix]
-
-            issue = glob(op.join(PF_DIR, f"{author}_*.md"))
-
-            if not issue:
-                click.echo(
-                    f"No issue assignment found for {author} on MP #0{project_id}. Skpping."
-                )
-                continue
-
-            if len(issue) > 1:
-                raise click.ClickException(f"Multiple issues found for {author} on MP #0{project_id}")
-
-            issue_file = op.basename(issue[0])
-            issue_num = int(re.search("_issue([0-9]+)\\.md$", issue_file).group(1))
-
-            if not issue_file:
-                raise click.ClickException("Issue appears to be issue #0. Please confirm all PF properly assigned.")
-
-            issue_url = (
-                f"https://github.com/{course_owner()}/{course_repo()}/issues/{issue_num}"
-            )
-            value.append((author, issue_url))
-
-        MAPPING[key] = value
-
-    return MAPPING
-
 
 @click.group()
 @click.option(
@@ -1243,8 +1286,8 @@ def roster_add(github, email, emplid, name, secret):
     ROSTER = current_roster()
 
     if not ROSTER.empty and github in ROSTER.github.values:
-        warning("Student with GitHub ID", github, "already in roster.")
-        click.confirm("Should I overwrite?", abort=True)
+        click.echo(f"Student with GitHub ID {github} already in roster.")
+        click.confirm("Should I continue?", abort=True)
 
     NEW_ROSTER = pd.concat([ROSTER, NEW_STUDENT], ignore_index=True)
 
@@ -1253,7 +1296,6 @@ def roster_add(github, email, emplid, name, secret):
 
     with open(roster_file(), "w+") as f:
         f.write(NEW_ROSTER.to_json(orient="records", indent=2))
-
 
 @roster.command(name="delete")
 @click.option(
@@ -2038,9 +2080,8 @@ def _mini_archive(project_id, github, skip_pdf=False,
     now = datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S_%Z")
     
     if archive_submissions:
-
         for gh in github:
-            click.echo(f"Archiving Mini-Project #0{project_id} for User {gh}")
+            click.echo(f"Archiving Mini-Project #{project_id:02} for User {gh}")
     
             click.echo("Syncronizing Git Repository")
     
@@ -2064,8 +2105,8 @@ def _mini_archive(project_id, github, skip_pdf=False,
             # Don't worry too much about race conditions / file system issues
             os.makedirs(student_web_dir, exist_ok=True)
             if project_id > 0:
-                student_mp_url = f"https://{gh}.github.io/{course_repo()}/mp0{project_id}"
-                student_mp_pdf = op.join(student_web_dir, f"mp0{project_id}.pdf")
+                student_mp_url = f"https://{gh}.github.io/{course_repo()}/mp{project_id:02}"
+                student_mp_pdf = op.join(student_web_dir, f"mp{project_id:02}.pdf")
             else:
                 student_mp_url = f"https://{gh}.github.io/{course_repo()}/"
                 student_mp_pdf = op.join(student_web_dir, "index.pdf")
@@ -2078,7 +2119,7 @@ def _mini_archive(project_id, github, skip_pdf=False,
             latest_pdf_dir = op.join(latest_dir, "pdfs")
             os.makedirs(latest_pdf_dir, exist_ok=True)
     
-            pdf_symlink = op.join(latest_pdf_dir, f"{gh}_mp{project_id}.pdf")
+            pdf_symlink = op.join(latest_pdf_dir, f"{gh}_mp{project_id:02}.pdf")
             try:
                 os.remove(pdf_symlink)
             except FileNotFoundError:
@@ -2166,7 +2207,7 @@ def _get_submission_urls(project_id, github, check_master=True):
     EXPECTED_URL = re.search(URL_REGEX, BODY).group()
 
     if project_id:
-        RAW_URL = f"https://raw.githubusercontent.com/{github}/{course_repo()}/refs/heads/main/mp0{project_id}.qmd"
+        RAW_URL = f"https://raw.githubusercontent.com/{github}/{course_repo()}/refs/heads/main/mp{project_id:02}.qmd"
     else:
         RAW_URL = f"https://raw.githubusercontent.com/{github}/{course_repo()}/refs/heads/main/index.qmd"
 
@@ -2325,7 +2366,7 @@ def _mini_verify(project_id, github, dry_run=True, force=False):
                 check_output = issue.status_full,
                 fix_advice = issue.fix_advice
             )
-            
+
             if issue_comments and issue_comments[-1].text == text_md:
                 continue
             else:
@@ -2333,6 +2374,45 @@ def _mini_verify(project_id, github, dry_run=True, force=False):
                 issue.post_new_comment(text_md)
             
     return DF
+
+def _possible_open_instructor_issue(github_id, project_id):
+    click.echo("Opening HTML file")
+    webbrowser.open(f"https://{github_id}.github.io/{course_repo()}/mp{project_id:02}.html")
+    
+    if not click.prompt("Was a working HTML file submitted?", type=bool, default=True):
+        return False
+    
+    webbrowser.open(f"https://github.com/{github_id}/{course_repo()}/")
+    
+    if not click.prompt("Was a suitable qmd file submitted?", type=bool, default=True):
+        return False
+    
+    if not click.prompt(f"Would you like to open an MP#{project_id:02} issue on behalf of {github_id}", default=True, type=bool):
+        return False
+    
+    template = Environment(
+            loader=FileSystemLoader("_cissoid/templates"), 
+            autoescape=select_autoescape()
+    ).get_template("mp_instructor_issue_opened.md")
+    
+    issue_text = template.render(gh = github_id, 
+                                 project_id = project_id, 
+                                 course_repo = course_repo())
+    
+    r = _gh(f"/repos/{course_owner()}/{course_repo()}/issues", 
+            method="post", 
+            title=f"{course_short()} {github_id} MiniProject #0{project_id}",
+            body=issue_text)
+            
+    if r.ok:
+        _mini_verify(project_id, github_id, dry_run=False)
+        _mini_archive(project_id, github_id)
+        
+        return True
+    else:
+        import pdb; pdb.set_trace()
+    
+    
 
 @mini.group(name="peer")
 def peer():
@@ -2399,10 +2479,11 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip, lint
     Note that this command should only be used once per assignment.
     """
     
-    PF_DIR = op.join(course_dir(), f"mp0{project_id}")
+    PF_DIR = op.join(course_dir(), f"mp{project_id:02}")
     os.makedirs(PF_DIR, exist_ok=True)
-    PF_MAPPING_FILE = op.join(PF_DIR, "pf_assignments.json")
-    PF_STUDENT_FILE = op.join(PF_DIR, f"pf_mp0{project_id}.yaml")
+    
+    PF_MAPPING_FILE = _peer_feedback_mapping_file(project_id)
+    PF_STUDENT_FILE = _peer_feedback_student_file(project_id)
     
     if not skip_archive:
         _mini_archive(project_id, [])
@@ -2421,40 +2502,65 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip, lint
                            label="Checking Submissions",
                            item_show_func=lambda r: r.owner if r else None) as bar:
         for i in bar:
-            i.status
+            i.status # Do this just to pre-calculate statuses
     
-    ISSUES_DF = pd.DataFrame([(i.number, i.owner, i.ok, i.status_oneline) for i in ISSUES], 
-                        columns=["number", "owner", "ok", "status_oneline"])
+    ISSUES_DF = pd.DataFrame([(i.number, i.owner, i.ok, i.status_oneline, i.branch) for i in ISSUES], 
+                        columns=["number", "owner", "ok", "status_oneline", "branch"])
     
     actual_submittors = [i.owner.lower() for i in ISSUES]
+    
+    if any(actual_submittors.count(x) >= 2 for x in actual_submittors):
+        import pdb; pdb.set_trace()
+        
     expected_submittors = set(g.lower() for g in ROSTER.github)
     
     for a in actual_submittors:
         if a not in expected_submittors:
             raise click.ClickException(f"Unknown submission received - {a}")
         
+    refresh_issues = False
+        
     for e in expected_submittors:
         if e not in actual_submittors and e not in github_skip:
-            click.confirm(f"No submission received for {e} - ok to continue?", default=True)
-            
+            e_real_name = ROSTER[ROSTER.github.map(str.lower) == e].name.item()
+            if click.prompt(f"No submission received for {e} ({e_real_name}) - did they submit on Brightspace?", default=True, type=bool):
+                if _possible_open_instructor_issue(e, project_id):
+                    actual_submittors.append(e)
+                    refresh_issues = True
+            else: 
+                click.echo(f"Not opening an issue on behalf of {e}.")
+                
+    
+    if refresh_issues:
+        ISSUES = IssueCollection().select_mp_or_unknown(project_id, ask=True)
+        
+        with click.progressbar(ISSUES, length = len(ISSUES), 
+                           show_pos=True,
+                           label="Re-checking Submissions",
+                           item_show_func=lambda r: r.owner if r else None) as bar:
+            for i in bar:
+                i.status # Do this just to pre-calculate statuses
+    
+    ISSUES_DF = pd.DataFrame([(i.number, i.owner, i.ok, i.status_oneline, i.branch) for i in ISSUES], 
+                        columns=["number", "owner", "ok", "status_oneline", "branch"])
+    
     if len(actual_submittors) < 2 * peer_count:
         raise click.ClickException("Too many peers required for given submission pool.")
     
     random.shuffle(actual_submittors)
+    n_submittors = len(actual_submittors)
         
-    if op.exists(PF_MAPPING_FILE):
+    if op.exists(PF_MAPPING_FILE) and op.getsize(PF_MAPPING_FILE):
         click.echo(f"Using existing mapping file from {PF_MAPPING_FILE}.")
     else:
         PEER_REVIEW_MAPPING = {}
-        
-        n_submittors = len(actual_submittors)
         
         for ix, a in enumerate(actual_submittors): 
             to_review = []
             for offset in range(1, peer_count + 1):
                 to_review.append(actual_submittors[(ix + offset) % n_submittors])
             
-        PEER_REVIEW_MAPPING[a] = to_review
+            PEER_REVIEW_MAPPING[a] = to_review
 
         with open(PF_MAPPING_FILE, "w") as f:
             f.write(json.dumps(PEER_REVIEW_MAPPING, indent=4))
@@ -2462,7 +2568,7 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip, lint
     with open(PF_MAPPING_FILE) as f:
         PEER_REVIEW_MAPPING = json.loads(f.read())
         
-    if op.exists(PF_STUDENT_FILE):
+    if op.exists(PF_STUDENT_FILE) and op.getsize(PF_STUDENT_FILE):
         click.echo(f"Using existing student file from {PF_STUDENT_FILE}.")
     else:
         YAML_OUT = {
@@ -2482,26 +2588,25 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip, lint
             assigned_issues = sorted([i.number for i in ISSUES if i.owner in to_review])
     
             # Encode using a Vernam cipher
-            vernam_code = vernam_encode(assigned_issues, student.secret, offset=0)
-            assert assigned_issues == vernam_encode(vernam_code, student.secret, offset=0)
+            vernam_code = vernam_encode(assigned_issues, student.secret, offset=project_id)
+            assert assigned_issues == vernam_encode(vernam_code, student.secret, offset=project_id)
             
             YAML_OUT["assignments"][student.github.lower()] = vernam_code
         
         with open(PF_STUDENT_FILE, "w") as f:
             f.write(yaml_dump(YAML_OUT, sort_keys=False))
     
-    
         click.echo(f"Student peer feedback assignment file saved to {PF_STUDENT_FILE}")
         
-    click.echo(f"If not already done, please upload {PF_STUDENT_FILE} to GitHub at https://github.com/{course_owner()}/{course_repo()} as 'pf_mp0{project_id}.yaml' and announce assignment to students")
+    click.echo(f"If not already done, please upload {PF_STUDENT_FILE} to GitHub at https://github.com/{course_owner()}/{course_repo()} as 'pf_mp{project_id:02}.yaml' and announce assignment to students")
     
     with open(PF_STUDENT_FILE, "r") as f:
         f_txt = f.read()
     
-    PF_STUDENT_URL = f"https://raw.githubusercontent.com/{course_owner()}/{course_repo()}/refs/heads/main/pf_mp0{project_id}.yaml"
+    PF_STUDENT_URL = f"https://raw.githubusercontent.com/{course_owner()}/{course_repo()}/refs/heads/main/pf_mp{project_id:02}.yaml"
     
     if not r.get(PF_STUDENT_URL).ok:
-        webbrowser.open(f"https://github.com/{course_owner()}/{course_repo()}/new/main?filename=pf_mp0{project_id}.yaml&value={quote_plus(f_txt)}")
+        webbrowser.open(f"https://github.com/{course_owner()}/{course_repo()}/new/main?filename=pf_mp{project_id:02}.yaml&value={quote_plus(f_txt)}")
     
     if dry_run: 
         return 0
@@ -2529,18 +2634,42 @@ def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip, lint
             issue.add_label('Peer Feedback Period')
 
 @cache
-def _peer_feedback_collect_file(project_id):
-    fname = op.join(course_dir(), f"mp0{project_id}", "COLLECTED_PEER_FEEDBACK.json")
+def _peer_feedback_dir(project_id):
+    pf_dir = op.join(course_dir(), f"mp{project_id:02}")
+    os.makedirs(pf_dir, exist_ok=True)
+    
+    return pf_dir
 
+@cache
+def _peer_feedback_mapping_file(project_id):
+    fname = op.join(_peer_feedback_dir(project_id), "pf_assignments.json")
+    
     if not op.exists(fname):
         Path(fname).touch(exist_ok=True)
 
     return fname
 
+@cache
+def _peer_feedback_student_file(project_id):
+    fname = op.join(_peer_feedback_dir(project_id), f"pf_mp{project_id:02}.yaml")
+    
+    if not op.exists(fname):
+        Path(fname).touch(exist_ok=True)
+
+    return fname
+
+@cache
+def _peer_feedback_file(project_id):
+    fname = op.join(_peer_feedback_dir(project_id), "ALL_PEER_FEEDBACK.json")
+    
+    if not op.exists(fname):
+        Path(fname).touch(exist_ok=True)
+
+    return fname
 
 @cache
 def _peer_feedback_meta_file(project_id):
-    fname = op.join(course_dir(), f"mp0{project_id}", "COLLECTED_META_REVIEW.json")
+    fname = op.join(course_dir(), f"mp{project_id:02}", "COLLECTED_META_REVIEW.json")
 
     if not op.exists(fname):
         Path(fname).touch(exist_ok=True)
@@ -2549,7 +2678,7 @@ def _peer_feedback_meta_file(project_id):
 
 @cache
 def grade_dir(project_id):
-    dirname = op.join(course_dir(), f"mp0{project_id}", "grades")
+    dirname = op.join(course_dir(), f"mp{project_id:02}", "grades")
 
     os.makedirs(dirname, exist_ok=True)
 
@@ -2557,7 +2686,7 @@ def grade_dir(project_id):
 
 @cache
 def meta_dir(project_id):
-    dirname = op.join(course_dir(), f"mp0{project_id}", "meta")
+    dirname = op.join(course_dir(), f"mp{project_id:02}", "meta")
 
     os.makedirs(dirname, exist_ok=True)
 

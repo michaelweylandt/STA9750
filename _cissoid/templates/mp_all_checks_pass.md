@@ -2,7 +2,7 @@ Hi @{{ gh }},
 
 Thank you for your submission to STA 9750. 
 
-Your submission for Mini-Project #0{{project_id}} has passed all automated checks:
+Your submission for Mini-Project #**0{{project_id}}** has passed all automated checks:
 
 {{check_output}}
 

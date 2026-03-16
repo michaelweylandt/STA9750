@@ -474,7 +474,7 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
 
     for(ix in seq_along(assigned_issues_encoded)){
         n_encoded <- assigned_issues_encoded[ix]
-        secret_char <- str_sub(secret, start=ix, ix)
+        secret_char <- str_sub(secret, start=ix+N, end=ix+N)
 
         n_decoded <- bitwXor(n_encoded, utf8ToInt(secret_char))
         assigned_issues_decoded[ix] <- n_decoded
@@ -514,6 +514,13 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
                           NROW(mp_rubric) + 1) |>
             set_names(c(mp_rubric$`Course Element`), "Extra Credit")
         INDIVIDUAL_FEEDBACK[["scores"]] <- new_scores
+        
+        AUTO_10_ELEMENTS <- read_html(mp_url) |> 
+          html_element("#mp_rubric_auto") |> 
+          html_text2() |> 
+          str_split(";") |> 
+          pluck(1)
+        
     } else {
         cat(glue("No rubric found for MP#0{N}, so only requesting overall comments.\nIf this seems incorrect, please abort and contact the instructor.\n"), "\n\n")
     }
@@ -561,9 +568,9 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
 
         if(askYesNo("Would you like me to open the source qmd for this submission", default = FALSE)){
             if(N == 0){
-                browseURL(glue("https://github.com/{issue_dfr |> pluck('owner')}/{course_repo}/blob/main/index.qmd"))
+                browseURL(glue("https://github.com/{issue_dfr |> pluck('owner')}/{course_repo}/blob/{issue_dfr |> pluck('branch')}/index.qmd"))
             } else {
-                browseURL(glue("https://github.com/{issue_dfr |> pluck('owner')}/{course_repo}/blob/main/mp0{N}.qmd"))
+                browseURL(glue("https://github.com/{issue_dfr |> pluck('owner')}/{course_repo}/blob/{issue_dfr |> pluck('branch')}/mp0{N}.qmd"))
             }
         }
 
@@ -580,6 +587,21 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
                 cat(glue("Rubric Element #{rubric_row} {rubric_element}"))
 
                 element_score <- -1
+                
+                if(all(!is.na(AUTO_10_ELEMENTS)) & (rubric_element %in% AUTO_10_ELEMENTS)){
+                  cat("\n")
+                  cat(glue("By default, a score of 10/10 is given for {rubric_element} on this assignment."))
+                  if(askYesNo("Should an automatic 10/10 be given? (Say 'no' if there are reasons a lower score should be assigned.) ")){
+                    element_score <- 10
+                    pluck(ALL_FEEDBACK, assignment_ix, "scores", rubric_element) <- list(
+                      score=element_score,
+                      comment="DEFAULT SCORE"
+                    )
+                    writeLines(as.yaml(ALL_FEEDBACK), outfile)
+                    
+                    next
+                  }
+                }
 
                 repeat{
                     element_score <- readline(glue("On a scale of 0 to 10, what score would you give this submission for {rubric_element}? "))
