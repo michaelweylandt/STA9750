@@ -301,18 +301,18 @@ For example, if we want to answer the question "Who played guitar in which bands
 using the `band_members` and `band_instruments` tables in the `dplyr` package,
 the join-design flowchart would go something like this: 
 
-1. I want to connect the `plays` column from `band_instruments` to the `band`
-   column of `band_members`. 
-2. The common feature ("key") connecting the `band_instruments` and `band_members`
-   table is the `name` column, which has the same name and consistent values in 
-   both tables. 
-3. a. I am fine dropping rows from the `band_instruments` table if I am unable
-      to determine what band someone was a part of. 
-   b. I am fine dropping rows from the `band_members` table if I am unable to
-      determine what instrument someone played. 
+1.  I want to connect the `plays` column from `band_instruments` to the `band`
+    column of `band_members`. 
+2.  The common feature ("key") connecting the `band_instruments` and `band_members`
+    table is the `name` column, which has the same name and consistent values in 
+    both tables. 
+3.  a. I am fine dropping rows from the `band_instruments` table if I am unable
+       to determine what band someone was a part of. 
+    b. I am fine dropping rows from the `band_members` table if I am unable to
+       determine what instrument someone played. 
       
-   These suggest I want to use an `inner_join`. 
-4. My candidate join is: 
+    These suggest I want to use an `inner_join`. 
+4.  My candidate join is: 
    
     ```{r}
     library(dplyr)
@@ -556,7 +556,7 @@ or a similar package to to present your results in an attractive
         drop_na() |>
         pivot_wider(names_from=body_mass, 
                     values_from=n) |>
-        gt() |>
+        gt(id="tab_penguin_cut_example") |> # ID argument not required
         cols_label(species="Species 🐧") |>
         tab_spanner(columns=2:7, 
                     "Body Mass (kg)") |>
@@ -597,7 +597,7 @@ penguins |>
     pivot_longer(-species, 
                  names_to="measure",
                  values_to="species_mean") |>
-    mutate(measure = case_match(measure, 
+    mutate(measure = recode_values(measure, 
         "bill_dep" ~ "Bill Depth (mm)", 
         "bill_len" ~ "Bill Length (mm)", 
         "body_mass" ~ "Body Mass (kg)", 
