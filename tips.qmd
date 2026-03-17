@@ -637,17 +637,23 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
         }
     }
 
-    assigned_issues_decoded <- assigned_issues_encoded
+    assigned_issues_decoded <- integer(length(assigned_issues_encoded))
 
     for(ix in seq_along(assigned_issues_encoded)){
-        n_encoded <- assigned_issues_encoded[ix]
+        n_encoded <- assigned_issues_encoded[[ix]]
         secret_char <- str_sub(secret, start=ix+N, end=ix+N)
 
-        n_decoded <- bitwXor(n_encoded, utf8ToInt(secret_char))
+        if(is.na(n_encoded) | (n_encoded == "NA")){
+          n_decoded <- NA_integer_
+        } else {
+          n_decoded <- bitwXor(n_encoded, utf8ToInt(secret_char))
+        }
+        
         assigned_issues_decoded[ix] <- n_decoded
     }
 
-    if(any(assigned_issues_decoded %not.in% pf_file$issue_status$number)){
+    assigned_issues_decoded_as_int <- na.omit(assigned_issues_decoded)
+    if(any(assigned_issues_decoded_as_int %not.in% pf_file$issue_status$number)){
         stop("Something went wrong in the decoding process.\n  Please check your secret phrase and try again.")
     }
 
@@ -696,9 +702,19 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
         set_names(paste0("peer_feedback_assignment_",
                          seq_along(assigned_issues_decoded)))
     ALL_FEEDBACK["evaluator"] <- github
+    
+    if(file.exists(outfile)){
+      if(askYesNo(glue("I found a partially completed peer feedback file at {outfile}. Should I delete that and start from scratch?"))){
+        unlink(outfile)
+      } else {
+        stop("Please contact the instructor and ask for support on resuming feedback in process.")
+      }
+    }
 
     for(assignment_ix in seq_along(assigned_issues_decoded)){
         issue_num <- assigned_issues_decoded[assignment_ix]
+        
+        if(is.na(issue_num)) next
 
         issue_dfr <- pf_file$issue_status |> filter(number == issue_num)
 
@@ -716,7 +732,7 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
         if(issue_dfr$ok){
             cat("- ✅ Submission passed all automated checks without problems.\n")
         } else {
-            cat("- ❌ Submission failed automated checks with the following message: {issue_dfr$issue_status}\n")
+            cat(glue("- ❌ Submission failed automated checks with the following message: {issue_dfr$status_oneline}\n"))
         }
 
         readline("Hit enter to begin peer feedback. ")
