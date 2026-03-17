@@ -401,109 +401,122 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
     if(!require("rvest")) install.packages("rvest"); library(rvest)
     if(!require("glue")) install.packages("glue"); library(glue)
     if(!require("httr2")) install.packages("httr2"); library(httr2)
-  
+    
     if(packageVersion("dplyr") < package_version("1.2.0")){
-      stop("This feedback script requires dplyr version 1.2.0 or later. Please run `update.packages()` to ensure you have the latest version of all packages.")
+        stop("This feedback script requires dplyr version 1.2.0 or later. Please run `update.packages()` to ensure you have the latest version of all packages.")
     }
-
+    
     `%not.in%` <- Negate(`%in%`)
-
+    
     if(missing(N)){
         repeat{
             N <- readline("Which Mini-Project peer feedback would you like to perform? [Control-C to abort] ")
+            
             if(N %in% c("0", "1", "2", "3", "4")){
                 N <- as.integer(N)
                 break
             }
         }
     }
-
+    
     if(N %not.in% 0:4){
         stop(glue("Unknown Mini-Project Number ({N}) - Peer Feedback aborted!"))
     }
-
+    
     variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
     course_repo  <- variables$course$repo
     course_short <- variables$course$short
-
+    
     if(basename(getwd()) != course_repo){
         #stop(glue("This function should be run in your {course_repo} project folder - abort!"))
     }
-
+    
     pf_file <- read_yaml(glue("https://raw.githubusercontent.com/michaelweylandt/{course_repo}/refs/heads/main/pf_mp0{N}.yaml"))
-
+    
     if(pf_file$mp_number != N){
         stop("Posted MP number does not match user submission - abort!")
     }
-
+    
     pf_file$issue_status <- pf_file |>
         pluck("issue_status") |>
         map(data.frame) |>
         bind_rows()
-
+    
     if(missing(github)){
         repeat{
             github <- readline("What is your GitHub ID? ")
             if(askYesNo(glue("Please confirm: is {github} your GitHub ID? "))) break
         }
     }
-
+    
     assigned_students <- names(pf_file$assignments)
-
+    
     if((github != tolower(github)) & (tolower(github) %in% assigned_students)){
         msg <- glue("I was unable to find peer feedback for {github}, but I found an assignment for {tolower(github)}. Is this you?")
         if(askYesNo(msg)){
             github <- tolower(github)
         }
     }
-
+    
     if(github %not.in% assigned_students){
         stop("I was unable to find a peer feedback assignment for you. If you believe you submitted the assignment on GitHub on time, please contact the instructor for support.")
     }
-
+    
     assigned_issues_encoded <- pf_file |> pluck("assignments", github)
-
+    
     if(length(assigned_issues_encoded) != pf_file$number_of_peers){
         stop(glue("I expected {pf_file$number_of_peers} peer feedback assignments, but found {len(assigned_issues_encoded)} instead - abort!"))
     }
-
+    
     if(missing(secret)){
         repeat{
             secret <- readline("What is your secret phrase? [Note that your secret phrase is case-sensitive] ")
             if(askYesNo(glue("Please confirm: is {secret} your secret phrase? "))) break
         }
     }
-
+    
     assigned_issues_decoded <- integer(length(assigned_issues_encoded))
-
+    
     for(ix in seq_along(assigned_issues_encoded)){
         n_encoded <- assigned_issues_encoded[[ix]]
         secret_char <- str_sub(secret, start=ix+N, end=ix+N)
-
+        
         if(is.na(n_encoded) | (n_encoded == "NA")){
-          n_decoded <- NA_integer_
+            n_decoded <- NA_integer_
         } else {
-          n_decoded <- bitwXor(n_encoded, utf8ToInt(secret_char))
+            n_decoded <- bitwXor(n_encoded, utf8ToInt(secret_char))
         }
         
-        assigned_issues_decoded[ix] <- n_decoded
+        assigned_issues_decoded[[ix]] <- n_decoded
     }
-
+    
     assigned_issues_decoded_as_int <- na.omit(assigned_issues_decoded)
     if(any(assigned_issues_decoded_as_int %not.in% pf_file$issue_status$number)){
         stop("Something went wrong in the decoding process.\n  Please check your secret phrase and try again.")
     }
-
+    
     outfile <- file.path(getwd(), glue("pf_mp0{N}_{github}.bspf"))
-
     mp_url <- glue("https://michael-weylandt.com/STA9750/mini/mini0{N}.html")
+    offer_edit <- FALSE
+    
+    if(file.exists(outfile)){
+        if(askYesNo(glue("I found a partially completed peer feedback file at {outfile}.\nShould I delete that and start from scratch?"))){
+            if(askYesNo("Are you sure you want to delete all of your prior feedback?\nThis cannot be undone. ")){
+                unlink(outfile)
+            }
 
+        } else {
+            cat("Ok! I will load your old feedback.\n")
+            offer_edit <- askYesNo("Would you like to go back to edit older comments?\n(If 'No', I will resume where you left off.)", default=FALSE)
+        }
+    }
+    
     if(N > 0){
         mp_rubric <- read_html(mp_url) |> html_element("#mp_rubric") |> html_table()
     } else {
         mp_rubric <- data.frame()
     }
-
+    
     INDIVIDUAL_FEEDBACK <- list(
         issue_number = NA_integer_,
         issue_owner = NA_character_,
@@ -517,7 +530,7 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
         scores = list(),
         mp_number = N
     )
-
+    
     if(NROW(mp_rubric) > 0){
         new_scores <- rep(list(list(score=NA_integer_,
                                     comment=NA_character_)),
@@ -526,58 +539,55 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
         INDIVIDUAL_FEEDBACK[["scores"]] <- new_scores
         
         AUTO_10_ELEMENTS <- read_html(mp_url) |> 
-          html_element("#mp_rubric_auto") |> 
-          html_text2() |> 
-          str_split(";") |> 
-          pluck(1)
+            html_element("#mp_rubric_auto") |> 
+            html_text2() |> 
+            str_split(";") |> 
+            pluck(1)
         
     } else {
         cat(glue("No rubric found for MP#0{N}, so only requesting overall comments.\nIf this seems incorrect, please abort and contact the instructor.\n"), "\n\n")
     }
-
-    ALL_FEEDBACK <- rep(list(INDIVIDUAL_FEEDBACK), pf_file$number_of_peers) |>
-        set_names(paste0("peer_feedback_assignment_",
-                         seq_along(assigned_issues_decoded)))
-    ALL_FEEDBACK["evaluator"] <- github
     
     if(file.exists(outfile)){
-      if(askYesNo(glue("I found a partially completed peer feedback file at {outfile}. Should I delete that and start from scratch?"))){
-        unlink(outfile)
-      } else {
-        stop("Please contact the instructor and ask for support on resuming feedback in process.")
-      }
+        ALL_FEEDBACK <- read_yaml(outfile)
+    } else {
+        ALL_FEEDBACK <- rep(list(INDIVIDUAL_FEEDBACK), pf_file$number_of_peers) |>
+            set_names(paste0("peer_feedback_assignment_",
+                             seq_along(assigned_issues_decoded)))
+        ALL_FEEDBACK["evaluator"] <- github
+    }
+    
+    
+    if(askYesNo("Would you like me to open the MP instructions for this submission?")){
+        browseURL(glue("https://michael-weylandt.com/STA9750/mini/mini0{N}.html"))
     }
 
     for(assignment_ix in seq_along(assigned_issues_decoded)){
         issue_num <- assigned_issues_decoded[assignment_ix]
         
         if(is.na(issue_num)) next
-
+        
         issue_dfr <- pf_file$issue_status |> filter(number == issue_num)
-
+        
         pluck(ALL_FEEDBACK, assignment_ix, "issue_number") <- issue_num
         pluck(ALL_FEEDBACK, assignment_ix, "issue_owner") <- issue_dfr |> pluck("owner")
         pluck(ALL_FEEDBACK, assignment_ix, "issue_ok") <- issue_dfr |> pluck("ok")
         pluck(ALL_FEEDBACK, assignment_ix, "issue_status") <- issue_dfr |> pluck("status_oneline")
-
+        
         cat(glue("Peer Feedback #0{assignment_ix} - Issue #{issue_num} ({issue_dfr |> pluck('owner')})"), "\n")
-
+        
         if(length(issue_dfr$ok) != 1){
-            browser()
+            stop("Multiple statuses identified - abort!")
         }
-
+        
         if(issue_dfr$ok){
             cat("- ✅ Submission passed all automated checks without problems.\n")
         } else {
             cat(glue("- ❌ Submission failed automated checks with the following message: {issue_dfr$status_oneline}\n"))
         }
-
+        
         readline("Hit enter to begin peer feedback. ")
-
-        if(askYesNo("Would you like me to open the MP instructions for this submission?", default = (assignment_ix == 1))){
-            browseURL(glue("https://michael-weylandt.com/STA9750/mini/mini0{N}.html"))
-        }
-
+        
         if(askYesNo("Would you like me to open the rendered HTML for this submission", default = TRUE)){
             if(N == 0){
                 browseURL(glue("https://{issue_dfr |> pluck('owner')}.github.io/{course_repo}/"))
@@ -585,7 +595,7 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
                 browseURL(glue("https://{issue_dfr |> pluck('owner')}.github.io/{course_repo}/mp0{N}.html"))
             }
         }
-
+        
         if(askYesNo("Would you like me to open the source qmd for this submission", default = FALSE)){
             if(N == 0){
                 browseURL(glue("https://github.com/{issue_dfr |> pluck('owner')}/{course_repo}/blob/{issue_dfr |> pluck('branch')}/index.qmd"))
@@ -593,41 +603,52 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
                 browseURL(glue("https://github.com/{issue_dfr |> pluck('owner')}/{course_repo}/blob/{issue_dfr |> pluck('branch')}/mp0{N}.qmd"))
             }
         }
-
+        
         if(askYesNo("Would you like me to open the GitHub issue for this submission", default = FALSE)){
             browseURL(glue("https://github.com/michaelweylandt/{course_repo}/issues/{issue_num}"))
         }
-
+        
         cat("Please review the submission carefully and return here to provide peer feedback comments.\n")
         readline("Hit enter to continue. ")
-
+        
         if(NROW(mp_rubric)){
             for(rubric_row in seq_len(NROW(mp_rubric))){
                 rubric_element <- mp_rubric[[rubric_row, "Course Element"]]
+                current_values <- pluck(ALL_FEEDBACK, assignment_ix, "scores", rubric_element)
+                
+                if(!is.na(current_values$comment)){
+                    if(!offer_edit) next
+                    
+                    cat(glue("You previously wrote:\n\n{current_values$comment}\n\nand gave a score of {current_values$score} for {rubric_element}.\n"))
+                    
+                    if(!askYesNo("Would you like to change your score or comment?", default=FALSE)){
+                        next
+                    }
+                }
+                
                 cat(glue("Rubric Element #{rubric_row} {rubric_element}"))
-
                 element_score <- -1
                 
                 if(all(!is.na(AUTO_10_ELEMENTS)) & (rubric_element %in% AUTO_10_ELEMENTS)){
-                  cat("\n")
-                  cat(glue("By default, a score of 10/10 is given for {rubric_element} on this assignment."))
-                  if(askYesNo("Should an automatic 10/10 be given? (Say 'no' if there are reasons a lower score should be assigned.) ")){
-                    element_score <- 10
-                    pluck(ALL_FEEDBACK, assignment_ix, "scores", rubric_element) <- list(
-                      score=element_score,
-                      comment="DEFAULT SCORE"
-                    )
-                    writeLines(as.yaml(ALL_FEEDBACK), outfile)
-                    
-                    next
-                  }
+                    cat("\n")
+                    cat(glue("By default, a score of 10/10 is given for {rubric_element} on this assignment."))
+                    if(askYesNo("Should an automatic 10/10 be given? (Say 'no' if there are reasons a lower score should be assigned.) ")){
+                        element_score <- 10
+                        pluck(ALL_FEEDBACK, assignment_ix, "scores", rubric_element) <- list(
+                            score=element_score,
+                            comment="DEFAULT SCORE"
+                        )
+                        writeLines(as.yaml(ALL_FEEDBACK), outfile)
+                        
+                        next
+                    }
                 }
-
+                
                 repeat{
                     element_score <- readline(glue("On a scale of 0 to 10, what score would you give this submission for {rubric_element}? "))
-
+                    
                     element_score <- as.numeric(element_score)
-
+                    
                     if(anyNA(element_score) | (element_score > 10) | (element_score < 0)){
                         cat("I'm sorry, I couldn't understand that score. Please try again.\n")
                     } else {
@@ -640,7 +661,7 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
                             element_score == 0 ~ NA,
                             .unmatched = "error"
                         )
-
+                        
                         if(anyNA(col_range_ix)){
                             if(askYesNo(glue("Please confirm that the submission should get a 0 for {rubric_element}. "), default=TRUE)){
                                 break
@@ -648,116 +669,177 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
                         } else {
                             cat(glue("A score of {element_score} corresponds to a range of {colnames(mp_rubric)[col_range_ix]}"),
                                 "\n",
-                                "with a description of:\n",
+                                "with a description of:\n\n",
                                 str_wrap(mp_rubric[[rubric_row,col_range_ix]]))
-
+                            
                             if(askYesNo(glue("Please confirm that the submission should get a {element_score} for {rubric_element}. "), default=TRUE)){
                                 break
                             }
                         }
-
+                        
                     }
                 }
-
+                
                 repeat{
                     score_comment <- readline("Why did you give that score? ")
-
+                    
                     if(nchar(score_comment)) break
                     cat("Sorry. I couldn't understand that. Try again.\n")
                 }
-
+                
                 pluck(ALL_FEEDBACK, assignment_ix, "scores", rubric_element) <- list(
                     score=element_score,
                     comment=score_comment)
-
-
+                
+                
                 writeLines(as.yaml(ALL_FEEDBACK), outfile)
             }
+            
+            request_ec <- TRUE
+            current_values <- pluck(ALL_FEEDBACK, assignment_ix, "scores", "Extra Credit")
+            
+            if(!is.na(current_values$comment)){
+                if(!offer_edit){request_ec <- FALSE}
+                
+                cat(glue("You previously wrote:\n\n{current_values$comment}\n\nand gave a score of {current_values$score} for Extra Credit.\n"))
+                
+                request_ec <- askYesNo("Would you like to change your score or comment?", default=FALSE)
+            }
+            
+            
+            if(request_ec){
+                readline("Please review the optional extra credit portions of the assignment. ")
+                
+                repeat{
+                    ec <- readline("How much extra credit should be assigned to this submission? ")
+                    
+                    ec_score <- as.numeric(ec)
+                    
+                    if(anyNA(ec_score) | (ec_score < 0)){
+                        cat("I'm sorry, I couldn't understand that score. Please try again.\n")
+                    } else {
+                        break
+                    }
+                }
+                
+                ec_comment <- readline(glue("Why are you awarding {ec_score} points of extra credit? "))
+                
+                pluck(ALL_FEEDBACK, assignment_ix, "scores", "Extra Credit") <- list(
+                    score=ec_score,
+                    comment=ec_comment)
+                
+                
+                writeLines(as.yaml(ALL_FEEDBACK), outfile)
+            }
+            
+            readline("Hit enter to continue to overall / big-picture comments. ")
+        }
+        
+        ### Positive Feedback
+        request_positive <- TRUE
+        current_positive <- pluck(ALL_FEEDBACK, assignment_ix, "overall_comments", "positive")
+        
+        if(!is.na(current_positive)){
+            if(!offer_edit){request_ec <- FALSE}
 
-            readline("Please review the optional extra credit portions of the assignment. ")
+            cat(glue("You previously wrote:\n\n{current_positive}\n\n"))
+
+            request_positive <- askYesNo("Would you like to change your comment?", default=FALSE)
+        }
+
+        if(request_positive){
+            positive_comments <- readline("What was one notable strength of the submission? ")
 
             repeat{
-                ec <- readline("How much extra credit should be assigned to this submission? ")
+                positive_txt <- readline("Are there any other strengths worth pointing out? [Leave blank to continue] ")
 
-                ec_score <- as.numeric(ec)
-
-                if(anyNA(ec_score) | (ec_score < 0)){
-                    cat("I'm sorry, I couldn't understand that score. Please try again.\n")
+                if(nchar(positive_txt)){
+                    positive_comments <- c(positive_comments, positive_txt)
                 } else {
                     break
                 }
             }
 
-            ec_comment <- readline(glue("Why are you awarding {ec_score} points of extra credit? "))
-
-            pluck(ALL_FEEDBACK, assignment_ix, "scores", "Extra Credit") <- list(
-                score=ec_score,
-                comment=ec_comment)
-
-
+            pluck(ALL_FEEDBACK, assignment_ix, "overall_comments", "positive") <- paste(positive_comments, collapse="\n")
+            
             writeLines(as.yaml(ALL_FEEDBACK), outfile)
-
-            readline("Hit enter to continue to overall / big-picture comments. ")
         }
-
-        positive_comments <- readline("What was one notable strength of the submission? ")
-
-        repeat{
-            positive_txt <- readline("Are there any other strengths worth pointing out? [Leave blank to continue] ")
-
-            if(nchar(positive_txt)){
-                positive_comments <- c(positive_comments, positive_txt)
-            } else {
-                break
+        
+        ## Negative Feedback
+        request_negative <- TRUE
+        current_negative <- pluck(ALL_FEEDBACK, assignment_ix, "overall_comments", "negative")
+        
+        if(!is.na(current_negative)){
+            if(!offer_edit){request_negative <- FALSE}
+            
+            cat(glue("You previously wrote:\n\n{current_negative}\n\n"))
+            
+            request_negative <- askYesNo("Would you like to change your comment?", default=FALSE)
+        }
+        
+        if(request_negative){
+            negative_comments <- readline("What was one area where the submission could be improved? ")
+            
+            repeat{
+                negative_txt <- readline("Are there any other areas that need to be improved? [Leave blank to continue] ")
+                
+                if(nchar(negative_txt)){
+                    negative_comments <- c(negative_comments, negative_txt)
+                } else {
+                    break
+                }
             }
+            
+            pluck(ALL_FEEDBACK, assignment_ix, "overall_comments", "negative") <- paste(negative_comments, collapse="\n")
+            
+            writeLines(as.yaml(ALL_FEEDBACK), outfile)
         }
-
-        negative_comments <- readline("What was one area where the submission could be improved? ")
-
-        repeat{
-            negative_txt <- readline("Are there any other areas that need to be improved? [Leave blank to continue] ")
-
-            if(nchar(negative_txt)){
-                negative_comments <- c(negative_comments, negative_txt)
-            } else {
-                break
+        
+        ## Advice Feedback
+        request_advice <- TRUE
+        current_advice <- pluck(ALL_FEEDBACK, assignment_ix, "overall_comments", "advice")
+        
+        if(!is.na(current_advice)){
+            if(!offer_edit){request_advice <- FALSE}
+            
+            cat(glue("You previously wrote:\n\n{current_advice}\n\n"))
+            
+            request_advice <- askYesNo("Would you like to change your comment?", default=FALSE)
+        }
+        
+        if(request_advice){
+            advice_comments <- readline("What concrete steps could be taken to improve the submission? ")
+            
+            repeat{
+                advice_txt <- readline("Do you have any additional advice for this classmate? [Leave blank to continue] ")
+                
+                if(nchar(advice_txt)){
+                    advice_comments <- c(advice_comments, advice_txt)
+                } else {
+                    break
+                }
             }
+            
+            pluck(ALL_FEEDBACK, assignment_ix, "overall_comments", "advice") <- paste(advice_comments, collapse="\n")
+            
+            writeLines(as.yaml(ALL_FEEDBACK), outfile)
         }
-
-        advice_comments <- readline("What concrete steps could be taken to improve the submission? ")
-
-        repeat{
-            advice_txt <- readline("Do you have any additional advice for this classmate? [Leave blank to continue] ")
-
-            if(nchar(advice_txt)){
-                advice_comments <- c(advice_comments, advice_txt)
-            } else {
-                break
-            }
-        }
-
-        pluck(ALL_FEEDBACK, assignment_ix, "overall_comments") <- list(
-            positive = paste(positive_comments, collapse="\n"),
-            negative = paste(negative_comments, collapse="\n"),
-            advice = paste(advice_comments, collapse="\n")
-        )
-
+        
         writeLines(as.yaml(ALL_FEEDBACK), outfile)
     }
-
+    
     cat("Thank you for your peer feedback!\n")
     cat(glue("Please submit the file {outfile}\non Brightspace to complete the peer feedback cycle"), "\n")
     cat("Do not upload this file to GitHub! Feel free to delete or move it\nafter loading to Brightspace and confirming your submission")
-
-
+    
     if(askYesNo("Would you like me to open the peer feedback file so you can make any final edits?", default=FALSE)){
         file.edit(outfile)
         readline("Make sure to save your edits before submission. ")
     }
-
+    
     readline("Hit enter to conclude peer feedback. ")
-
-    invisible(TRUE)
+    
+    invisible(outfile)
 }
 
 count_words <- function(url){
