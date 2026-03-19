@@ -3,6 +3,7 @@
 #| message: false
 #| warning: false
 library(glue)
+library(gt)
 library(rlang)
 library(yaml)
 library(purrr)
@@ -58,7 +59,8 @@ get_mp_skills <- function(N){
 }
 
 get_mp_assigned <- function(N){
-    read_csv("key_dates.csv") |> 
+    read_csv("key_dates.csv", 
+             show_col_types=FALSE) |> 
         filter(`Course Element` == "Mini-Projects", 
                `Item Number`== N, 
                str_detect(Details, "Released"), 
@@ -67,7 +69,8 @@ get_mp_assigned <- function(N){
 }
 
 get_mp_deadline <- function(N, as_date_obj = FALSE){
-    row <- read_csv("key_dates.csv") |> 
+    row <- read_csv("key_dates.csv", 
+                    show_col_types=FALSE) |> 
                 filter(`Course Element` == "Mini-Projects", 
                        `Item Number`== N, 
                        str_detect(Details, "Due"), 
@@ -81,7 +84,8 @@ get_mp_deadline <- function(N, as_date_obj = FALSE){
 }
 
 get_mp_pf_assigned <- function(N){
-    read_csv("key_dates.csv") |> 
+    read_csv("key_dates.csv", 
+             show_col_types=FALSE) |> 
         filter(`Course Element` == "Mini-Projects", 
                `Item Number`== N, 
                str_detect(Details, "Assigned"), 
@@ -92,7 +96,8 @@ get_mp_pf_assigned <- function(N){
 
 
 get_mp_pf_deadline <- function(N){
-    read_csv("key_dates.csv") |> 
+    read_csv("key_dates.csv", 
+             show_col_types=FALSE) |> 
         filter(`Course Element` == "Mini-Projects", 
                `Item Number`== N, 
                str_detect(Details, "Peer"), 
@@ -101,7 +106,8 @@ get_mp_pf_deadline <- function(N){
 }
 
 get_pa_deadline <- function(N){
-    read_csv("key_dates.csv") |> 
+    read_csv("key_dates.csv", 
+             show_col_types=FALSE) |> 
         filter(`Course Element` == "Pre-Assignments", 
                `Item Number`== N, 
                str_detect(Details, "Due"), 
@@ -153,7 +159,8 @@ get_project_due_date <- function(element = c("individual_report",
                                "peer_evaluation" ~ "Peer Evaluation", 
                                "proposal" ~ "Project Proposal")
     
-    read_csv("key_dates.csv") |> 
+    read_csv("key_dates.csv", 
+             show_col_types=FALSE) |> 
         filter(`Course Element` == "Course Project", 
                str_detect(Details, search_string)) |>
         pull(Date)
@@ -161,7 +168,7 @@ get_project_due_date <- function(element = c("individual_report",
 
 next_session <- session + 1
 
-DATES   <- read_csv("key_dates.csv")
+DATES   <- read_csv("key_dates.csv", show_col_types=FALSE)
 TODAY   <- DATES |> filter(`Course Element` == "Class Session", 
                            `Item Number` == session)
 
@@ -171,12 +178,19 @@ TODAY_TOPIC <- TODAY |>
 
 if(str_detect(TODAY_TOPIC, "Lecture")){
   lecture <- str_extract(TODAY_TOPIC, "^Lecture #(\\d{2}):", group=1) |> as.integer()
+  next_lecture <- lecture + 1
 } else {
   lecture <- NA
+  next_lecture <- NA
 }
 
-next_lecture <- lecture + 1
+ROSTER_FILE <- read_yaml("_teaching.yml") |>
+    pluck("gradedir") |>
+    file.path("roster.json")
 
+TEAMS_FILE <- read_yaml("_teaching.yml") |> 
+    pluck("gradedir") |> 
+    file.path("teams.json")
 
 PROJ_RELEASE <- DATES |> 
     filter(Details == "Course Project Description Released") |>
@@ -184,13 +198,6 @@ PROJ_RELEASE <- DATES |>
 
 ROSTERS <- get_project_due_date("team_formation")
 PROPOSALS <- get_project_due_date("proposal")
-
-library(jsonlite)
-library(yaml)
-
-ROSTER_FILE <- read_yaml("_teaching.yml") |>
-    pluck("gradedir") |>
-    file.path("roster.json")
 
 if(file.exists(ROSTER_FILE)){
     N_TEAMS <- ROSTER_FILE |> 
@@ -213,43 +220,38 @@ if(file.exists(ROSTER_FILE)){
 }
 
 set.seed(9750+session)
-library(yaml)
-library(jsonlite)
 
-TEAMS_FILE <- read_yaml("_teaching.yml") |> 
-  pluck("gradedir") |> 
-  file.path("teams.json")
+INITIALS <- ROSTER_FILE |> 
+    read_json(simplify=TRUE) |> 
+    filter(active) |>
+    mutate(name_split = str_split(name, " "), 
+           initials = map_chr(name_split, \(x) paste(str_sub(x, end=1), collapse=""))) |>
+    group_by(project_team) |>
+    summarize(initials = reduce(initials, \(x, y) paste(x, y, sep="+"))) |>
+    mutate(initials = str_remove_all(initials, "[^+[:alpha:]]"))
 
 if(file.exists(TEAMS_FILE) & file.info(TEAMS_FILE)$size > 0){
     TEAMS <- TEAMS_FILE |> 
-       read_json(simplify=TRUE) |> 
-      pull(name) |>
-      sample()
-    
-    if(all(TEAMS == "TBD")){
-      TEAMS <- ROSTER_FILE |> 
-        read_json(simplify=TRUE) |> 
-        mutate(name_split = str_split(name, " "), 
-               initials = map_chr(name_split, \(x) paste(str_sub(x, end=1), collapse=""))) |>
-        group_by(project_team) |>
-        summarize(initials = reduce(initials, \(x, y) paste(x, y, sep="+"))) |>
-        pull(initials) |>
-        str_remove_all("[^+[:alpha:]]") |>
-        sample()
-    }
+        read_json(simplify=TRUE) 
 } else {
-    TEAMS <- "TBD"
+    TEAMS <- data.frame(number = seq(NROW(INITIALS)), name="TBD")
 }
 
-BREAKOUT_TABLE <- data.frame(Team=TEAMS) |> 
-  mutate(Breakout = row_number()) |> 
-  select(Breakout, Team) |> 
-  knitr::kable(row.names = FALSE)
+TEAMS <- inner_join(TEAMS, INITIALS, join_by(number == project_team)) |>
+    slice_sample(prop=1)
 
-PRESENTATION_TABLE <- data.frame(Team=TEAMS) |> 
-  mutate(`Presentation Number` = row_number()) |> 
-  select(`Presentation Number`, Team) |> 
-  knitr::kable(row.names = FALSE, align="c")
+BREAKOUT_TABLE <- TEAMS |> 
+    mutate(breakout = row_number(), 
+           display = if_else(name == "TBD", 
+                             initials, 
+                             glue("{name} ({initials})"))) |>
+    select(breakout, display) |>
+    gt(id="team_room_assignments") |>
+    cols_label(breakout = if(is.na(lecture)) md("**Presentation Order**") else md("**Breakout Room**"), 
+               display = md("**Team**")) |>
+    cols_align(everything(), align="center") |>
+    tab_options(table.width = pct(100), 
+                table.font.size = pct(80))
 ```
 
 ## {{< var course.short >}} Week {{< meta session >}} 
@@ -270,18 +272,23 @@ url_full <- paste0(url_base, url_file)
 
 > [`r url_full`](`r url_full`)
 
-In-class activities (if any) can be found at: 
+```{r}
+#| echo: false
+#| results: "asis"
+if(!is.na(lecture)) cat("In-class activities can be found at: ")
+```
 
 ```{r}
 #| message: false
 #| echo: false
+#| results: "asis"
 url_base <- read_yaml("_variables.yml")$course$`web-url`
 url_file <- sprintf("labs/lab%02g.html", lecture)
 
 url_full <- paste0(url_base, url_file)
-```
 
-> [`r url_full`](`r url_full`)
+if(!is.na(lecture)) I(glue("> <{url_full}>"))
+```
 
 ## Upcoming TODO
 
@@ -291,7 +298,8 @@ Upcoming student responsibilities:
 #| message: false
 #| echo: false
 library(gt)
-read_csv("key_dates.csv") |>
+read_csv("key_dates.csv", 
+         show_col_types=FALSE) |>
     filter((`Responsible Party` == "Student") | (is.na(`Responsible Party`))) |>
     mutate(Time2 = Time |> str_replace("11:", "23:") |> str_replace("6:", "18:")) |>
     filter((Date > class_date) | 
@@ -304,7 +312,7 @@ read_csv("key_dates.csv") |>
     arrange(Date, Time2) |> 
     select(Date, Time, Details) |> 
     filter(Date <= class_date + 28) |>
-    gt() |>
+    gt(id=glue("schedule_table_session_{session}")) |>
     tab_options(table.width = pct(100), 
                 table.font.size = pct(80))
 ```
