@@ -144,21 +144,27 @@ get_mp_submitted <- function(N){
          n_need_work = N_NEED_WORK)
 }
 
-get_project_due_date <- function(element = c("individual_report", 
-                                             "group_report", 
-                                             "peer_evaluation", 
-                                             "team_formation", 
-                                             "proposal")){
-    
+get_project_due_date <- function(element = c("team-formation", 
+                                             "contract", 
+                                             "proposal", 
+                                             "check-in",
+                                             "mid-semester-peer",
+                                             "final-presentation",
+                                             "individual-report",
+                                             "group-report",
+                                             "final-peer")){
     element <- match.arg(element)
     
-    search_string = case_match(element, 
-                               "team_formation" ~ "Team Roster",
-                               "individual_report" ~ "Individual Report", 
-                               "group_report" ~ "Summary Report",
-                               "peer_evaluation" ~ "Peer Evaluation", 
-                               "proposal" ~ "Project Proposal")
-    
+    search_string = recode_values(element, 
+                                  "team-formation" ~ "Team Roster",
+                                  "contract" ~ "Team Contract",
+                                  "proposal" ~ "Project Proposal Slides",
+                                  "check-in" ~ "Check-In Slides",
+                                  "mid-semester-peer" ~ "Mid-Semester Teammate",
+                                  "final-presentation" ~ "Final Project Presentation Slides",
+                                  "individual-report" ~ "Individual Report",
+                                  "group-report" ~ "Summary Report",
+                                  "final-peer" ~ "Final Poject Teammate")
     read_csv("key_dates.csv", 
              show_col_types=FALSE) |> 
         filter(`Course Element` == "Course Project", 
@@ -196,7 +202,7 @@ PROJ_RELEASE <- DATES |>
     filter(Details == "Course Project Description Released") |>
     pull(Date)
 
-ROSTERS <- get_project_due_date("team_formation")
+ROSTERS <- get_project_due_date("team-formation")
 PROPOSALS <- get_project_due_date("proposal")
 
 if(file.exists(ROSTER_FILE)){
