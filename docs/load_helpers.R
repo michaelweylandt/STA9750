@@ -428,7 +428,7 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
     course_short <- variables$course$short
     
     if(basename(getwd()) != course_repo){
-        #stop(glue("This function should be run in your {course_repo} project folder - abort!"))
+        stop(glue("This function should be run in your {course_repo} project folder - abort!"))
     }
     
     pf_file <- read_yaml(glue("https://raw.githubusercontent.com/michaelweylandt/{course_repo}/refs/heads/main/pf_mp0{N}.yaml"))
@@ -742,7 +742,7 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
         if(!is.na(current_positive)){
             if(!offer_edit){request_ec <- FALSE}
 
-            cat(glue("You previously wrote:\n\n{current_positive}\n\n"))
+            cat(glue("For strengths, you previously wrote:\n\n{current_positive}\n\n"))
 
             request_positive <- askYesNo("Would you like to change your comment?", default=FALSE)
         }
@@ -772,7 +772,7 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
         if(!is.na(current_negative)){
             if(!offer_edit){request_negative <- FALSE}
             
-            cat(glue("You previously wrote:\n\n{current_negative}\n\n"))
+            cat(glue("For weaknesses, you previously wrote:\n\n{current_negative}\n\n"))
             
             request_negative <- askYesNo("Would you like to change your comment?", default=FALSE)
         }
@@ -802,7 +802,7 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
         if(!is.na(current_advice)){
             if(!offer_edit){request_advice <- FALSE}
             
-            cat(glue("You previously wrote:\n\n{current_advice}\n\n"))
+            cat(glue("For advice, you previously wrote:\n\n{current_advice}\n\n"))
             
             request_advice <- askYesNo("Would you like to change your comment?", default=FALSE)
         }
@@ -836,6 +836,322 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
         file.edit(outfile)
         readline("Make sure to save your edits before submission. ")
     }
+    
+    readline("Hit enter to conclude peer feedback. ")
+    
+    invisible(outfile)
+}
+
+project_peer_evals <- function(github = gitcreds::gitcreds_get()$username, cycle=c("mid", "final")){
+    if(!require("gitcreds")) install.packages("gitcreds")
+    if(!require("yaml")) install.packages("yaml"); library(yaml)
+    if(!require("gh")) install.packages("gh"); library(gh)
+    if(!require("tidyverse")) install.packages("tidyverse"); library(tidyverse)
+    if(!require("rvest")) install.packages("rvest"); library(rvest)
+    if(!require("glue")) install.packages("glue"); library(glue)
+    if(!require("httr2")) install.packages("httr2"); library(httr2)
+    
+    if(packageVersion("dplyr") < package_version("1.2.0")){
+        stop("This feedback script requires dplyr version 1.2.0 or later. Please run `update.packages()` to ensure you have the latest version of all packages.")
+    }
+    
+    cycle <- match.arg(cycle)
+    
+    safe_cycle = switch(cycle,
+                        mid="mid_semester",
+                        final="final")
+    
+    variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+    course_repo  <- variables$course$repo
+    course_short <- variables$course$short
+    
+    if(basename(getwd()) != course_repo){
+        stop(glue("This function should be run in your {course_repo} project folder - abort!"))
+    }
+    
+    team_file <- read_yaml(glue("https://raw.githubusercontent.com/michaelweylandt/{course_repo}/refs/heads/main/{safe_cycle}_peers.yaml"))
+    
+    if(missing(github)){
+        repeat{
+            github <- readline("What is your GitHub ID? ")
+            if(askYesNo(glue("Please confirm: is {github} your GitHub ID? "))) break
+        }
+    }
+
+    team_table <- imap(team_file, \(x, y) data.frame(.team=y, .github=x)) |> 
+        bind_rows()
+    
+    all_teams <- team_table |> pluck(".team") |> unique()
+    all_github <- team_table |> pluck(".github") |> unique()
+    
+    if((github != tolower(github)) & (tolower(github) %in% all_github)){
+        msg <- glue("I was unable to find peer feedback for {github}, but I found an assignment for {tolower(github)}. Is this you?")
+        if(askYesNo(msg)){
+            github <- tolower(github)
+        }
+    }
+    
+    `%not.in%` <- Negate(`%in%`)
+
+    if(github %not.in% all_github){
+        stop("I was unable to find a peer feedback assignment for you. If you believe you submitted the assignment on GitHub on time, please contact the instructor for support.")
+    }
+
+    team <- team_table |> filter(.github == github) |> pull(.team)
+
+    if(!askYesNo(glue("I think you are on team {team}. Is this correct?"))){
+        stop("Did not identify correct team. Aborting!")
+    }
+
+    team_other_github <- team_table |> 
+        filter(.team == team) |> 
+        filter_out(.github == github) |> 
+        pull(.github) |> 
+        sort()
+    
+    cat(glue("You are being asked to provide feedback on {length(team_other_github)} teammates:"), "\n")
+    cat(paste0("- ", seq_along(team_other_github), ". ", team_other_github), sep="\n")
+    
+    if(!askYesNo("Does this look correct?")){
+        stop("User error reported. Aborting!")
+    }
+    
+    outfile <- file.path(getwd(), glue("pf_{cycle}_{github}.bspf"))
+    offer_edit <- FALSE
+    
+    if(file.exists(outfile)){
+        if(askYesNo(glue("I found a partially completed peer feedback file at {outfile}.\nShould I delete that and start from scratch?"))){
+            if(askYesNo("Are you sure you want to delete all of your prior feedback?\nThis cannot be undone. ")){
+                unlink(outfile)
+            }
+            
+        } else {
+            cat("Ok! I will load your old feedback.\n")
+            offer_edit <- askYesNo("Would you like to go back to edit older comments?\n(If 'No', I will resume where you left off.)", default=FALSE)
+        }
+    }
+    
+    template <- "On a scale of 1 (lowest) to 5 (highest), how would you evaluate {teammate}'s {question}?"
+    
+    if(cycle == "mid"){
+        project_questions <- c(OQ = "Contribution(s) to Overarching Question Development", 
+                               SQ = "Contribution(s) to Specific Question Development", 
+                               DS = "Contribution(s) to Data Source Identification",
+                               RR = "Responsibility and Reliability as a Teammate",
+                               PR = "Contribution(s) to your Group Project Presentations (so far)")
+    } else if(cycle == "end"){
+        project_questions <- c(OQ = "Contribution(s) to Overarching Question Development", 
+                               SQ = "Contribution(s) to Specific Question Development", 
+                               DS = "Contribution(s) to Data Source Identification",
+                               DC = "Contribution(s) to Data Import and Data Cleaning",
+                               IN = "Contribution(s) to Integrating Findings from Individual SQs",
+                               IR = "Ability to complete their Individual Report on time and at an expected level of quality",
+                               FR = "Contribution(s) to Writing the Final Report",
+                               PR = "Contribution(s) to your Group Project Presentations", 
+                               HP = "Willingness to help others with technical challenges", 
+                               RR = "Responsibility and Reliability as a Teammate",)
+    } else {
+        stop(glue("Unknown cycle: {cycle} - abort!"))
+    }
+    
+    n_questions <- length(project_questions)
+    n_peers <- length(team_other_github)
+    
+    INDIVIDUAL_FEEDBACK <- list(
+        evaluator = github, 
+        teammate = NA_character_, 
+        n_questions = n_questions, 
+        questions = set_names(rep(list(NA_character_), n_questions), 
+                           names(project_questions)),
+        overall_comments = list(
+            positive = NA_character_,
+            negative = NA_character_,
+            advice = NA_character_, 
+            instructor = NA_character_
+        ),
+        cycle = cycle
+    )
+
+    if(file.exists(outfile)){
+        ALL_FEEDBACK <- read_yaml(outfile)
+    } else {
+        ALL_FEEDBACK <- rep(list(INDIVIDUAL_FEEDBACK), n_peers)
+        names(ALL_FEEDBACK) <- team_other_github
+        ALL_FEEDBACK["evaluator"] <- github
+    }
+    
+    for(teammate_ix in seq_along(team_other_github)){
+        teammate <- team_other_github[teammate_ix]
+        
+        if(!is.na(ALL_FEEDBACK[[teammate_ix]]$teammate)){
+            if((ALL_FEEDBACK[[teammate_ix]]$teammate) != teammate){
+                stop("BSPF File out of Alignment!")
+            }
+        }
+        
+        pluck(ALL_FEEDBACK, teammate_ix, "teammate") <- teammate
+        
+        readline(glue("Hit enter to begin peer feedback for {teammate}. "))
+        
+        for(q_ix in seq_along(project_questions)){
+            question <- project_questions[q_ix]
+            
+            q_old_answer <- pluck(ALL_FEEDBACK, teammate_ix, "questions", q_ix)
+            
+            if(!is.na(q_old_answer)){
+                cat(glue("You previously gave {teammate} a score of {q_old_answer} (of 5) for {question}."), "\n")
+                if(!askYesNo("Would you like to change the score you assigned?", default=FALSE)){
+                    next
+                }
+            }
+            
+            repeat {
+                cat(glue(template), "\n")
+                q_answer <- readline("Enter a number 1 to 5 (inclusive): ")
+                
+                q_answer <- as.integer(q_answer)
+                
+                if(is.na(q_answer)){
+                    cat("No comments here - you will have a chance to provide comments later. Trying again.\n")
+                } else if((q_answer < 1) | (q_answer > 5)){
+                    cat(glue("Your score must be between 1 and 5 - you gave a score of {q_answer}."), "\n")
+                } else {
+                    pluck(ALL_FEEDBACK, teammate_ix, "questions", q_ix) <- q_answer
+                    writeLines(as.yaml(ALL_FEEDBACK), outfile)
+                    break
+                }
+            }
+        }
+        
+        cat("Now it's time to give specific comments.\n")
+        
+        ### Positive Feedback
+        request_positive <- TRUE
+        current_positive <- pluck(ALL_FEEDBACK, teammate_ix, "overall_comments", "positive")
+        
+        if(!is.na(current_positive)){
+            if(!offer_edit){request_ec <- FALSE}
+            
+            cat(glue("For positive feedback, you previously wrote:\n\n{current_positive}\n\n"))
+            
+            request_positive <- askYesNo("Would you like to change your comment?", default=FALSE)
+        }
+        
+        if(request_positive){
+            positive_comments <- readline(glue("What is one notable strength of {teammate} as a teammate? "))
+            
+            repeat{
+                positive_txt <- readline("Are there any other strengths worth pointing out? [Leave blank to continue] ")
+                
+                if(nchar(positive_txt)){
+                    positive_comments <- c(positive_comments, positive_txt)
+                } else {
+                    break
+                }
+            }
+            
+            pluck(ALL_FEEDBACK, teammate_ix, "overall_comments", "positive") <- paste(positive_comments, collapse="\n")
+            
+            writeLines(as.yaml(ALL_FEEDBACK), outfile)
+        }
+        
+        ## Negative Feedback
+        request_negative <- TRUE
+        current_negative <- pluck(ALL_FEEDBACK, teammate_ix, "overall_comments", "negative")
+        
+        if(!is.na(current_negative)){
+            if(!offer_edit){request_negative <- FALSE}
+            
+            cat(glue("For negative feedback, you previously wrote:\n\n{current_negative}\n\n"))
+            
+            request_negative <- askYesNo("Would you like to change your comment?", default=FALSE)
+        }
+        
+        if(request_negative){
+            negative_comments <- readline(glue("What is the most challenging part of working with of {teammate} as a teammate? "))
+            
+            repeat{
+                negative_txt <- readline("Are there any other areas that need to be improved? [Leave blank to continue] ")
+                
+                if(nchar(negative_txt)){
+                    negative_comments <- c(negative_comments, negative_txt)
+                } else {
+                    break
+                }
+            }
+            
+            pluck(ALL_FEEDBACK, teammate_ix, "overall_comments", "negative") <- paste(negative_comments, collapse="\n")
+            
+            writeLines(as.yaml(ALL_FEEDBACK), outfile)
+        }
+        
+        ## Advice Feedback
+        request_advice <- TRUE
+        current_advice <- pluck(ALL_FEEDBACK, teammate_ix, "overall_comments", "advice")
+        
+        if(!is.na(current_advice)){
+            if(!offer_edit){request_advice <- FALSE}
+            
+            cat(glue("You previously gave the following advice:\n\n{current_advice}\n\n"))
+            
+            request_advice <- askYesNo("Would you like to change your comment?", default=FALSE)
+        }
+        
+        if(request_advice){
+            advice_comments <- readline(glue("What is one concrete step {teammate} could take to be a better a teammate? "))
+            
+            repeat{
+                advice_txt <- readline("Do you have any additional advice for this classmate? [Leave blank to continue] ")
+                
+                if(nchar(advice_txt)){
+                    advice_comments <- c(advice_comments, advice_txt)
+                } else {
+                    break
+                }
+            }
+            
+            pluck(ALL_FEEDBACK, teammate_ix, "overall_comments", "advice") <- paste(advice_comments, collapse="\n")
+            
+            writeLines(as.yaml(ALL_FEEDBACK), outfile)
+        }
+        
+        
+        ## Instructor Comment
+        request_instructor <- TRUE
+        current_instructor <- pluck(ALL_FEEDBACK, teammate_ix, "overall_comments", "instructor")
+        
+        if(!is.na(current_instructor)){
+            if(!offer_edit){request_instructor <- FALSE}
+            
+            cat(glue("You previously wrote the following confidential comments to the instructor:\n\n{current_advice}\n\n"))
+            
+            request_instructor <- askYesNo("Would you like to change your comment?", default=FALSE)
+        }
+        
+        if(request_instructor){
+            instructor_comments <- readline(glue("Do you have any other comments on {teammate} you would like to confidentially share with the instructor? "))
+            
+            repeat{
+                instructor_txt <- readline("Do you have any additional comments for this classmate? [Leave blank to continue] ")
+                
+                if(nchar(instructor_txt)){
+                    instructor_comments <- c(instructor_comments, instructor_txt)
+                } else {
+                    break
+                }
+            }
+            
+            pluck(ALL_FEEDBACK, teammate_ix, "overall_comments", "instructor") <- paste(instructor_comments, collapse="\n")
+            
+            writeLines(as.yaml(ALL_FEEDBACK), outfile)
+        }
+        
+        writeLines(as.yaml(ALL_FEEDBACK), outfile)
+    }
+    
+    cat("Thank you for your peer feedback!\n")
+    cat(glue("Please submit the file {outfile}\non Brightspace to complete the peer feedback cycle"), "\n")
+    cat("Do not upload this file to GitHub! Feel free to delete or move it\nafter loading to Brightspace and confirming your submission")
     
     readline("Hit enter to conclude peer feedback. ")
     
