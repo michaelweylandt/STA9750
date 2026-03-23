@@ -1,63 +1,57 @@
 ---
 mp_num: "03"
-mp_title: "TBD"
-mp_skills: "TBD"
-mp_application: "TBD"
-mp_rhetoric: "TBD"
-mp_max_ec: 4
+mp_title: "Who Goes There? US Internal Migration and Implications for Congressional Reapportionment"
+mp_skills: "Data Import, API Usage, File Parsing"
+mp_application: "Census Data, Migration Flows"
+mp_rhetoric: "Targeted Advertising, Political Action"
+mp_max_ec: 10
 filters: 
  - list-table
 aliases: 
   - "/miniprojects/mini03.html"
 ---
 
-```{r}
-#| echo: false
-#| warning: false
-#| message: false
-library(tidyverse)
-library(dplyr)
-DATES <- readr::read_csv("key_dates.csv") |>
-    rename(element=`Course Element`,
-           item=`Item Number`) |>
-    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
-                          TRUE ~ paste(Date, Time)))
-```
+{{< include _mpsetup.qmd >}}
 
-```{r}
-#| echo: false
-#| warning: false
-library(glue)
-mp_id <- as.integer(rmarkdown::metadata$mp_num)
-mp_id_s <- glue("MP #0{mp_id}")
-mp <-  DATES |> filter(element == "Mini-Projects", 
-                       item == mp_id)
-mp_file <- list(qmd=glue("`mp0{mp_id}.qmd`"), 
-                html=glue("`mp0{mp_id}.html`"),
-                html_long=glue("`docs/mp0{mp_id}.html`"))
-```
-
-### Due Dates
-
--   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
--   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
--   **Peer Feedback:**
-    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
-    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
-
-*Estimated Time to Complete: 13-15 Hours*
-
-*Estimated Time for Peer Feedback: 1 Hour*
-
-
-------------------------------------------------------------------------
 
 ## Introduction
 
-Welcome to Mini-Project #{{< meta mp_num >}}! TBD
+Welcome to Mini-Project #{{< meta mp_num >}}! In this mini-project, we will
+explore patterns of *internal migration* within the United States with an eye
+towards forecasting the size of state congressional delegations for the 2032 
+midterm elections. Our analysis will rely on 
+[Migration Flows](https://www.census.gov/topics/population/migration/guidance/migration-flows.html)
+data inferred from the 
+[American Community Survey (ACS)](https://en.wikipedia.org/wiki/American_Community_Survey), 
+the long-running premier national survey conducted by the US Census 
+Bureau.[^atus] Unlike the decadal census, which occurs once every ten years, the
+ACS is constantly collecting new data, giving a up-to-date picture of the 
+American public. ACS data is released across a range of granularities, from
+national averages to small census-block level estimates. High-level estimates, 
+*e.g.*, those for the country as a whole or individual states, are published on
+a year-by-year basis, in a data product often called "ACS-1" since they are
+derived from samples taken in a one-year window. In order to preserve respondent
+privacy and ensure statistical reliability at finer scales, ACS estimates for 
+smaller regions are published based on a rolling five-year window: these 
+estimates are known as "ACS-5".[^lookback] Larger regions are also available 
+from ACS-5 to avoid alignment issues, but these are a bit less useful to us. 
+
+[^lookback]: Specifically ACS-5 estimates are computed over a retrospective 
+(looking backwards) five year window: *e.g.*, the 2022 ACS-5 results are 
+obtained by combining survey responses from 2018 to 2022. 
+
+For this project, we will primarily make use of state-level ACS-1 flows for our
+demographic projections, but we will use metro-level ACS-5 to identify the 
+primary endpoints of those flows. We will combine these with other ACS data
+via the `tidycensus` package to (roughly) predict state populations in 2030. 
+These flows are estimated by asking respondents where they lived
+in the prior year, providing detailed data on population movement within the 
+United States.  
+
+[^atus]: The American Time Use Survey (ATUS) from [Mini-Project #02](./mini02.qmd)
+is a downstream product from the ACS.
 
 ### Student Responsibilities
-
 
 Recall our basic analytic workflow and table of student responsibilities:
 
@@ -70,11 +64,6 @@ particularly after our in-class discussion of Data Import.
 
 ### Rubric
 
-
-{{< var course.short >}} Mini-Projects are evaluated using *peer grading* with 
-*meta-review* by the course GTAs. The following basic rubric will be used for 
-all mini-projects:
-
 {{< include _rubric.qmd >}}
 
 At this point, you are responsible for the 'Data Preparation' portion of the
@@ -82,7 +71,6 @@ project, but I am still providing a set of basic EDA activities. Accordingly,
 reports completing all tasks described under [Data Integration and
 Exploration](#eda) below should receive an automatic 10/10 for the 
 'Exploratory Data Analysis' rubric element. 
-
 
 Taken together, you are only really responsible for these portions of the
 rubric in this assignment: 
@@ -100,33 +88,953 @@ Reports completing all key steps outlined below essentially start with
 
 {{< include _submission.qmd >}}
 
-{{< include _submission.qmd >}}
-
 ## Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}
+
+::: {.callout-caution title="Longest Mini-Project of the Semester"}
+
+**NB**: This is the *longest* mini-project of the semester.
+[Mini-Project #04](./mini04.qmd) is significantly shorter to give you sufficient
+time to complete your [course project](../project.qmd) successfully. Unlike
+the previous two mini-projects, you are responsible for data import and cleaning
+in this project. Though this isn't glamorous, this is the aspect of data analysis
+that typically requires the most time and effort and you should plan accordingly.
+
+:::
 
 ### Data Acquisition
 
-TBD
+When downloading data from a web-based resource, it is important to be a 
+*polite* and *responsible* user of that resource. Specifically, we want to
+avoid excessively and repeatedly re-downloading a file if it is not changing.
+Running a public data source is costly and downloading a file 1,000 times when
+you only need it once is simply abusing the good will of others. 
 
+We can ensure responsible usage by adopting a practice of *file caching*:
+
+- Create a "data directory" where data files relevant to the project can 
+  be stored
+- When attempting to load a data resource, first see if the relevant file is
+  in the data directory:
+  - If the file is in the data directory, simply read and return the contents of
+    that file to the user
+  - If the file is not in the data directory, download it into the data 
+    directory and save a permanent copy for later use before reading and 
+    returning the contents of the file to the user. 
+    
+This process of "saving" an intermediate result (data file) to avoid an expensive
+step (downloading) is known as *caching*. Here, in addition to reducing load on
+the data server, caching will also make your analysis faster (as you can avoid 
+download times) and allow you to work even when you don't have reliable internet
+access. 
+
+Review the data download code I provided you in [MP#01](./mini01.qmd##data-acquisition) 
+and [MP#02](./mini02.qmd##data-acquisition) to see how I implemented caching 
+there. You should adopt similar patterns for this assignment. 
+
+We will use three different data sources for this assignment: 
+
+- ACS-1 State-to-State Migration Flows
+- ACS-5 Metro-to-Metro Migration Flows
+- ACS-1 Baseline State Population Data
+
+The last of these will actually be the simplest, so we will start there. 
+
+#### State Population - Package Usage
+
+In order to make our predictions about how many residents each state will have
+in 2030, we need to know, as a baseline, how many residents that state has
+*presently*.[^presently] Additionally, we want to know how many children are
+being born in that state. While fertility is a complex and deeply-studied topic
+in demography, we will use a *very simple* model below that holds the natural
+growth rate constant across the whole country: that is, we assume families have
+(on average) the same number of kids in each state, life expectancies are the
+same in every state, and the age breakdown is the same in every state. See
+[Extra Credit #03](#ec03) below for opportunities to build a more 
+realistic analysis.
+
+Census data is very high-quality, but accessing it can be somewhat tricky The
+census reports data in the form of "tables" which have systematic, but difficult
+to interpret identifiers. We can access these using the `get_acs()` function 
+from the `tidycensus` package, which works like this: 
+
+```{r}
+#| message: false
+#| warning: false
+library(tidycensus)
+library(gt)
+
+ny_income <- get_acs(
+    c(median_household_income="B19013_001"), 
+    state="NY", 
+    geography="county", 
+    year=2018, 
+    survey="acs1"
+)
+```
+
+In this case, `B19013` is the table "Median Household Income in the Past 
+12 Months (in YYYY Inflation-Adjusted Dollars)" and the suffix "001" indicates
+that we want the first row of the table. Here, we asked for results from the
+2018 ACS-1 county-level estimates for New York State. After
+some basic formatting, we get the following results, which can be verified
+against the [Census Data Explorer
+website](https://data.census.gov/table?q=B19013&g=040XX00US36$0500000&y=2018):
+
+```{r}
+#| echo: false
+ht <- function(x, n=3){
+    rbind(head(x, n) |> mutate(.range="high"), 
+          tail(x, n) |> mutate(.range="low"))
+}
+ny_income |> 
+    select(-moe) |>
+    pivot_wider(id_cols=c(GEOID, NAME), 
+                names_from=variable, 
+                values_from=estimate) |>
+    arrange(desc(median_household_income)) |>
+    ht(5) |>
+    gt(id="tbl_income") |>
+    cols_hide(".range") |> 
+    tab_row_group(label="Lowest Median Household Income Counties", rows= .range == "low") |>
+    tab_row_group(label="Highest Median Household Income Counties", rows= .range == "high") |>
+    cols_label(median_household_income="Median Household Income") |>
+    fmt_currency(median_household_income, 
+                 currency="USD", 
+                 decimals=0)
+```
+
+Here, the `GEOID`, also known as the FIPS code, is a unique identifier used for
+different administrative units with the US (so states, counties, cities, *etc*
+all have distinct `GEOID`s).  Note that I'm only showing the top and bottom 5 
+counties here for brevity.
+
+Note also the use of a _named vector_ as the first argument to `get_acs()` lets
+us control the name the result is given in `R`. `get_acs()` has two additional
+features that will be useful: 
+
+- the ability to automatically download shapefile information associated with
+  each result; 
+- the ability to cache results automatically. 
+
+You will want to use both of these. 
+
+::: {.callout-tip title="Task 1: Data Acquisition - State Population and Birth Information"}
+
+Use the `get_acs()` function from the `tidycensus` package to download 
+state-level estimates of total population (`B01003_001`) for the years 2015 to
+2024. Additionally, use `get_acs()` to automatically download state shape 
+information and to appropriately cache your results locally. 
+
+Read the help page for `get_acs()` to identify the caching and shapefile download
+arguments. 
+
+You should not need to provide a census API key at this step. If you receive an
+**error** (not just a warning or message) indicating that an API key is required, 
+please contact the instructor.
+
+Once you have made your request, construct a tidy data frame with the following 
+columns:
+
+1) Total population
+2) State Name or Abbreviation
+3) Year
+
+:::
+
+[^presently]: As of the time of writing this assignment, the latest ACS data are
+2024, so interpret words like "current" or "present" to refer to 2024. If 2025
+data are available when you are working on this project, please use those 
+instead to make more accurate forecasts. 
+
+#### State-to-State Migration Flows - File Download
+
+Since our primary focus is in predicting future state populations, we will
+principally work with state-to-state migration flows. The Census Bureau provides
+Excel files with these data
+[here](https://www.census.gov/data/tables/time-series/demo/geographic-mobility/state-to-state-migration.html). 
+While convenient for manual use, this site actually has several of the challenges
+associated with complex file-based data exchange: 
+
+- The URLs of the individual files are not consistent
+- The formatting of files changes over time
+
+Unfortunately, there is rarely a 'simple' way of dealing with these problems and
+we will instead need to write code to handle different cases separately. When
+dealing with scenarios like this, a good first step is to decide what you want
+your final result to look like and to work backwards from there. While census
+provides us with quite a bit, the actual data we need from this data set is
+reasonably straightforward: 
+
+| state_current | state_1y | population | year_current | year_1y |
+|---------------|----------|------------|--------------|---------|
+| AL            | AL       | 4,960,560  | 2024         | 2023    |
+| AL            | AK       | 387        | 2024         | 2023    |
+| AL            | AL       | 4,920,737  | 2023         | 2022    |
+| AL            | AK       | 780        | 2023         | 2022    |
+
+Look at the 
+[2024](https://www2.census.gov/programs-surveys/demo/tables/geographic-mobility/2024/state-to-state-migration/State_to_State_Migration_Table_2024_T13.xlsx)
+and 
+[2023](https://www2.census.gov/programs-surveys/demo/tables/geographic-mobility/2023/state-to-state-migration/State_to_State_Migration_Table_2023_T13.xlsx) 
+files and confirm for yourself how I computed these numbers. 
+
+Earlier files in this series have different formats and, while they could be
+helpful for our analysis, we are only going to use 2023 and 2024 to keep the
+scope of this project tractable. 
+
+::: {.callout-tip title="Task 2: Data Acquisition - State-to-State Flows 2024"}
+
+Write a function `state_to_state_migration_2024()` which extracts state flows
+from the 2024 migration file and formats them as shown above. Your function
+should, at a minimum, 
+
+1) Create the directory `data/mp03` if it does not already exist. 
+   (See previous MPs for examples of how this is done.)
+   
+2) Check if the 2024 migration file is present in the `data/mp03` directory
+   and, if it is not, download it using the `download.file` function. 
+
+3) Read the file into `R` using the `read_excel()` function from the `readxl` 
+   package. (This package has two reader functions-`read_xls()` and 
+   `read_xlsx()`-and the wrapper function, `read_excel()` which will determine
+   which is appropriate for a given file. Unless you have a specific reason not 
+   to use it, `read_excel()` should be your default import function.)
+   
+   You actually will need to use this function twice, varying the `sheet` 
+   argument:
+   
+   i) One time, set `sheet="Table"` to get the actual state-to-state flows
+      from the first sheet of the `xlsx` file. 
+   ii) On a second time, use `sheet="Supplemental - Current Res"` so you can
+       get the "stationary" population. 
+       
+   In these, you may also find the `skip` function or the `range` argument to 
+   import only those rows and columns that will be useful to your analysis. 
+   
+   *Hint*: Often, Excel's "merged cells" are used as headers in complex data 
+   like this, but these are not easily brought into `R`. It is sometimes
+   useful to change the `col_names` argument to provide headers yourself 
+   rather than trying to read them from the data set. 
+   
+4) Manipulate the data into an appropriate format: 
+
+   i) For this data, the `"Table"` sheet requires fairly little work, but you 
+   will want to remove the "non-moving" rows as these have `X` values instead of 
+   actual numbers. 
+   
+   Additionally, there are some data irregularities in the `Table` sheet you 
+   will need to handle. For state-to-state pairs with very little migration, 
+   a value of `"N"` is given to indicate that there are not enough values to
+   preserve privacy. Use the `replace_values()` function from the `dplyr` 
+   package[^new] to replace `"N"` with `"0"` and then use the `as.integer()` 
+   function to ensure you have numeric values. 
+   
+   Finally, add the two year columns and make sure your data is in the format
+   given above. 
+   
+   ii) The `Supplemental` sheet only requires a bit more work. As before, use
+   `sheet`, `skip`, and `col_names` to get only what you need. A useful trick
+   here is to use `select()` to rename columns by position: *e.g.*, 
+   
+   ```{r}
+   library(dplyr)
+   penguins |> select(Species = 1, bill_length=3) |> head(5)
+   ```
+   
+   Add together two columns to get a "stayed within the state" total and 
+   manipulate everything else to ensure your data is in the format 
+   prescribed above.
+   
+5) Use the `rbind_rows()` function to combine the results from each sheet 
+   together into a single 2,500 ($=50 \times 50$)[^fifty] row data frame.  Note that the
+   `rbind_rows()` function combines two data sets rowwise (*i.e.*, stacks them
+   vertically) so you will need to make sure your data has consistent column
+   names and types before calling it. 
+   
+:::
+
+[^fifty]: This data includes `Abroad` or `Foreign` country as a "one year ago"
+destination, so you have $50 * (50 + 1 - 1) = 2500$ total rows, not 
+$50 * (50 - 1) = 2450$. 
+
+This analysis will be a bit tricky to figure out, but it shouldn't require that
+much code when you get all of the pieces in place. I did this in about 40 lines
+of reasonably clean code, so if you find yourself using more than 75, step back
+and reconsider. 
+
+As you are cleaning data like this, you should _constantly_ be printing output
+and comparing it to what you see when you look at the "raw" spreadsheets (keeping
+a copy open in Excel). This data is not quite small enough that you can check 
+each cell individually, but you can definitely "spot check" data as you work. 
+   
+[^new]: This function is new in `dplyr` 1.2.0, released in Februrary 2026. If you
+do not have this function, restart `R` and run `update.packages()` to ensure
+you have the latest versions. 
+
+Once you have read in the 2024 data file, it is time to read the 2023 data file.
+This is a bit trickier, but we can make it work. 
+
+::: {.callout-tip title="Task 3: Data Acquisition - State-to-State Flows 2023"}
+
+Write a function `state_to_state_migration_2023()` which extracts state flows
+from the 2023 migration file and formats them as shown above. Your function
+should, at a minimum, 
+
+1)  Create the directory `data/mp03` if it does not already exist. 
+    (See previous MPs for examples of how this is done.)
+   
+2)  Check if the 2023 migration file is present in the `data/mp03` directory
+    and, if it is not, download it using the `download.file()` function. 
+
+3)  Read the file into `R` using the `read_excel()` function from the `readxl` 
+    package. In this scenario, you will not need to supply the `sheet`
+    argument to `read_excel()` since everything we need is on the `"Table"` sheet. 
+   
+    Given the complexity of this data, I recommend using the `range` argument
+    to get _only_ those cells you need. I recommend using two different calls
+    to `read_excel()` to get this right: 
+   
+    i) First, read only the first 6 columns of the sheet and add together two 
+    columns to get the population that stayed within the state. Format your results
+    into the five columns specified above. 
+   
+    ii) Secondly, read in the bulk (columns J to DG) of the table to get the 
+    actual flows that we want to extract. The formatting of this sheet makes it
+    difficult to get the column names, so it will be useful to provide the
+    `col_names` argument directly. Thankfully, `R` gives us a built-in data vector
+    with the names of each state (`state.name`) that can be used here, like this: 
+   
+    ```{r}
+    #| eval: false
+    library(readxl)
+    states_with_dc <- c(state.name[1:8], 
+                        "District of Columbia", 
+                        state.name[9:50])
+                       
+    read_excel(..., # Fill in these dots
+               col_names=vctrs::vec_interleave(states_with_dc, NA)) |>
+        select(any_of(states_with_dc)) |>
+        mutate(state_to=states_with_dc) 
+    ```
+                    
+    After this second import, you will want to `pivot_longer()` this data into a 
+    format where each row is a pair of states. Finally, prepare this data for use
+    by: 
+   
+    i) Dropping any rows with DC
+    ii) Dropping any "within" rows (*e.g.*, (Texas, Texas)) since that value is
+        N/A and we get that data elsewhere. 
+    iii) Converting the numeric column to integer. 
+   
+4)  Combine the results of your two imports using `rbind_rows()` and confirm that
+    you have a 2,500 row 5 column data set as before.[^fifty_two]
+
+:::
+
+[^fifty_two]: For consistency with the prior table, use the total residents
+previously living abroad (sum of Puerto Rico, U.S. Island Area, and Foreign
+Country) from column DH as your `abroad` factor. 
+
+::: {.callout-tip title="Task 4: Data Acquisition - Combined State-to-State Flows"}
+
+Write a function `state_to_state_migration` which invokes the two functions
+you wrote above and uses `rbind_rows()` to create a 5,000 row table of state to
+state migration over the previous two years. Confirm that your results match
+the example rows shown above. 
+
+:::
+
+::: {.callout-caution title="Do Not Use `tidycensus` for Migration Flows"}
+
+It is possible to get migration flows data using the `tidycensus` package: see
+documentation [here](https://walker-data.com/tidycensus/articles/other-datasets.html#migration-flows). 
+
+**Do not use `tidycensus` to access this data.** You must use generic tools
+like the `download.file()` function or the `httr2` (not `httr`) package. 
+
+The point of this portion is to practice getting data for which an easy wrapper
+is not available. Use of `tidycensus` to access migration data will receive an
+automatic 0 for the "Data Preparation" portion of this mini-project and 
+significant penalization on the "Project Skeleton" portion. 
+
+You may however use `tidycensus` to cross-check your results: *i.e.*, to 
+see if the data you acquire directly matches values given by `tidycensus`.
+
+:::
+
+#### Metro-to-Metro Migration Flows - API Usage
+
+While we can complete our analysis using the state-level data acquired above, 
+understanding movement between metro areas (cities) will be useful in gaining a
+deeper understanding of migration patterns (*e.g.*, many people move from 
+other states to NYS, but almost all of those move to NYC and suburbs, not to 
+Albany). For this step, we will use a census API rather than reading formatted
+data files. As you will see, the API is typically much easier to parse in `R` 
+than working directly with data files. 
+
+The latest metro-to-metro migration flows available from the API are those
+from the 2016-2020 ACS-5 window, and can be found
+[here](https://api.census.gov/data/2020/acs/flows.html). Review that link and
+look at the example API calls.  
+
+::: {.callout-tip title="Task 5: Data Acquisition - Metro-to-Metro Migration Flows"}
+
+Write a function `metro_to_metro_migration` to get city-level migration flows
+from the Census API. Your function should, at a minimum, 
+
+1)  Create the directory `data/mp03` if it does not already exist. 
+    (See previous MPs for examples of how this is done.)
+   
+2)  Check if the 2023 migration file is present in the `data/mp03` directory
+    and, if it is not, make an API request and save the resulting JSON file using
+    the `download.file()` function. 
+   
+    Determine the URL of the API request using the example API calls linked above.
+    Your request should request data at the 
+    [metropolitan/micropolitan statistical
+    area](https://en.wikipedia.org/wiki/Metropolitan_statistical_area) level for
+    the following fields: 
+   
+    - MOVEDIN: The number of people who moved **into** `FULL1` **from** `FULL2`
+    - MOVEDOUT The number of people who moved **into** `FULL2` **from** `FULL1`
+    - FULL1_NAME: An MSA Name
+    - FULL2_NAME: An MSA Name
+   
+3)  Read the saved JSON file using the `read_json()` function from the `jsonlite`
+    library. 
+
+4)  The census API response isn't formatted quite properly, so `read_json()` will
+    interpret the first row of the response as data instead of column names. This
+    code snippet can be used to move the first row into column names and do some
+    basic type clean-up: 
+   
+    ```{r}
+    #| message: false
+    library(tidyverse)
+    library(jsonlite)
+    move_row_to_colnames <- function(X, row = 1){
+        X <- as_tibble(X)
+        Xrow <- X[row,]
+        
+        X <- X[-row,]
+        
+        colnames(X) <- Xrow
+        
+        readr::type_convert(X)
+    }
+    ```
+    
+    Feel free to use it in your data preparation. 
+5)  Simplify column names and drop unneeded columns. 
+6)  Use the following mutate command to pull out the (principal) state
+    for a metro area. For metro areas contained within a single state, *e.g.*, 
+    Los Angeles/Long Beach, this will just pull that one state (`CA`); for metro
+    areas spread across multiple states (*e.g.*, "New York-Newark-Jersey City,
+    NY-NJ-PA Metro Area") this will pull the first which I'm assuming is the
+    largest: 
+    
+    ```{r}
+    pull_state_from_metro <- function(metro_name){
+      str_extract(metro_name, ".*, (\\S{2})[-[:alpha:]]* Metro Area", group=1)
+    }
+    ```
+    
+    You can use it as follows: 
+    
+    ```{r}
+    example_metros <- c(
+      "Los Angeles-Long Beach-Anaheim, CA Metro Area", 
+      "Dallas-Fort Worth-Arlington, TX Metro Area", 
+      "Riverside-San Bernardino-Ontario, CA Metro Area", 
+      "Atlanta-Sandy Springs-Alpharetta, GA Metro Area",
+      "Chicago-Naperville-Elgin, IL-IN-WI Metro Area", 
+      "New York-Newark-Jersey City, NY-NJ-PA Metro Area", 
+      "Outside Metro Area within U.S. or Puerto Rico", 
+      "Houston-The Woodlands-Sugar Land, TX Metro Area", 
+      "Washington-Arlington-Alexandria, DC-VA-MD-WV Metro Area", 
+      "San Jose-Sunnyvale-Santa Clara, CA Metro Area"
+    )
+    
+    data.frame(metro = example_metros) |> 
+      mutate(metro_state = pull_state_from_metro(metro)) |> 
+      gt(id="tbl_metro_states") |> 
+      cols_label(metro="Metropolitan Statistical Area", 
+                 metro_state="Primary State")
+    ```
+:::
+
+::: {.callout-caution title="Do Not Use `tidycensus` for Migration Flows"}
+
+It is possible to get migration flows data using the `tidycensus` package: see
+documentation [here](https://walker-data.com/tidycensus/articles/other-datasets.html#migration-flows). 
+
+**Do not use `tidycensus` to access this data.** You must use generic tools
+like the `download.file()` function or the `httr2` (not `httr`) package. 
+
+The point of this portion is to practice getting data for which an easy wrapper
+is not available. Use of `tidycensus` to access migration data will receive an
+automatic 0 for the "Data Preparation" portion of this mini-project and 
+significant penalization on the "Project Skeleton" portion. 
+
+You may however use `tidycensus` to cross-check your results: *i.e.*, to 
+see if the data you acquire directly matches values given by `tidycensus`.
+
+:::
 
 ### Data Cleaning and Preparation 
 
-TBD
+You should have completed your data cleaning as part of the 
+import steps above. While it is generally good to "spot check" data for accuracy,
+in this case we can trust the Census Bureau and move immediately to EDA, only 
+performing additional checks if issues are identified. 
 
 ### Data Integration and Initial Exploration {#eda}
 
-TBD
+::: {.callout-tip title="Task 6: Exploratory Data Analysis"}
 
-### Final Deliverable: TBD
+Answer the following questions to perform your Exploratory Data Analysis of the
+various data sets used in this project. For each question, answer using inline
+values, a table, or a graphic as you feel is most effective. Note that you
+will need to determine which data are best suited to answer each question: some
+questions might require multiple data sets to answer fully. 
 
-TBD
+01. Which states have had the highest net population growth rates over the 
+    past decade? 
+02. If you meet someone who moved to New York State in the last year, what are
+    the most likely states they moved from? If one of your friends announces they
+    are moving out of the state, where are they most likely to move? 
+03. If you meet someone who moved to New York City in the last year, what are
+    the most likely metro areas they moved from? If one of your friends announces
+    they are moving out of the city, where are they most likely to move?
+
+04. Which states have had the highest amounts of in-migration and 
+    out-migration? Furthermore, which states have had the highest amount of
+    net migration? 
+   
+    To get total migration in a direction, add up the total migration in that
+    direction: *e.g.*, the total in-migration to Alabama is the sum of people
+    who live in Alabama in 2024 but lived elsewhere in 2023 (this is a sum over
+    49 other states). 
+   
+    Net migration is simply total in-migration minus total out-migration.
+   
+05. Which metro areas have had the highest amounts of total in-migration and 
+    out-migration? Furthermore, which metro areas have had the highest amount of
+    net migration? 
+   
+06. Which states have the highest fraction of residents who lived there last year?
+    (That is, which states have the lowest proportional total in-migration?)
+   
+07. Which state has the highest fraction of its population growth attributable
+    to net internal migration? That is, determine the total population growth of 
+    each state and see what fraction of it corresponds to net migration (as 
+    opposed to deaths, births, or international migration).
+   
+These final questions are specific to the state you are focusing on (see final
+deliverable below for more). 
+
+08. Which state had the highest amount of migration into your state? Of the
+    people who moved out of your state, what was the most popular destination
+    state? 
+   
+09. What is the largest metropolitan area in your state? (You can answer this
+    just using background knowledge; you do not have to use Census data here.)
+    
+    Which metro area, not located in your state, has the highest amount of 
+    migration into your state's largest metro? To which metro area outside of
+    your state do the most residents of your largest metro area move? 
+
+10. Are there any metro areas that have a particularly high connection to your
+    state's largest metro? (*E.g.*, NYCers were over 15% of people moving
+    into the Miami Metro area.)
+
+:::
+
+### Final Deliverable: Ensuring State Political Power in 2032
+
+You are a policy analyst working for the governor of a state (possibly,
+but not necessarily, New York State). In light of recent news stories around
+redistricting, the governor has asked you to look ahead to the 2030 decennial 
+census and the corresponding 2032 apportionment and redistricting cycle. 
+
+Under the US Constitution (Article 1, Section 2, Clause 3), seats in the House 
+of Representatives are allocated to the states on the basis of state population.
+In particular, 
+
+> Representatives and direct Taxes shall be apportioned among the several States 
+  which may be included within this Union, according to their respective Numbers
+  [...]. The actual Enumeration shall be made [...] within every subsequent Term 
+  of ten Years, in such Manner as they shall by Law direct. 
+> The Number of Representatives shall not exceed one for every thirty Thousand,
+  but each State shall have at Least one Representative.
+  
+As such, after each decennial (every 10 year) census, the Congress had to pass
+a new bill determining exactly how many seats each state was granted.[^apport]
+Because this process became quite contentious, Congress passed the *Permanent
+Apportionment Act of 1929* which fixed the size of the House of Representatives
+at 435.[^size] Given this fixed cap, states whose population is growing faster
+than others are predicted to gain more congressional seats, while states whose
+population is growing more slowly (or even shrinking) are expected to lose seats.
+Accordingly, estimates of state populations as of 2030 are quite politically
+interesting.[^timing]
+
+You have been tasked with i) estimating your state's population in 2030; ii)
+estimating your state's congressional apportionment as of 2032, based on this
+population; and iii) helping to design a marketing campaign to encourage more
+migration to your state.
+
+[^size]: An interesting, but somewhat obscure, idea for increasing the
+representativeness of the House of Representative (and, by extension, the
+electoral college) is to increase this limit from 435 to something much higher.
+See *e.g.*, {{< video https://www.youtube.com/watch?v=KhQGHY44XPM >}} from the
+political left or {{< video https://www.youtube.com/watch?v=EpYPQtwXUCQ >}} from
+the political right. You can explore this possibility in more detail in 
+[Extra Credit #01](#ec01) below. 
+
+[^timing]: Due to the timing of the census, the federal election two years after
+a census is typically the first to use this updated apportionment. (So, *e.g.*, 
+results of the 2000 census were first used to determine parameters of the 2002
+election.)
+
+[^apport]: This is the process of (re-)apportionment, or determining the total
+number of seats given to each state. After apportionment, that state determines
+how those seats are distributed within its boundaries ("redistricting"), via
+state legislative action, independent commission, judicial decree, *etc.* 
+
+Let's begin by constructing estimates of 2030 populations. We can use a very
+simple population forecast model: 
+
+$$P_{i}^{(t+1)} = P_i^{(t)} (1 + g_i^{(t)}) + \sum_{j} m_{j \to i} \sqrt{P^{(t)}_iP^{(t)}_j}$$
+
+where 
+
+- $P_i^{(t)}$ is the population of region $i$ in year $t$
+- $P_i^{(t+1)}$ is the population of region $i$ in year $t+1$
+- $g_i$ is the natural population growth rate (births and deaths) within 
+  region $i$
+- $m_{i \to j}$ is the migration rate (as a percent of population) from region
+  $i$ to region $j$
+  
+This model is rather simple - notably, it ignores age and cohort effects - but
+it's good enough for us to get started. To simplify this further, we're going to
+assumes that the natural population growth rate is constant across states
+($g_i = \overline{g}$ for all $i$). While this expression looks a bit complex,
+it is linear in both of the unknown parameters $g$ and $m_{i \to j}$. We can 
+estimate this in two steps: 
+
+1)  Compute $\overline{g}$ for the country as a whole as: 
+    $$\overline{g} = \frac{P^{(t+1)} - M^{(t)}}{P^{(t)}} - 1 = \frac{P^{(t+1)} - P^{(t)} - M^{(t)}}{P^{(t)}}$$
+    where $M^{(t)}$ is the total net migration (all sources) into region the
+    country between year $t$ and year $t+1$. 
+    
+2)  Compute $m_{i \to j}$ for each state pair as
+
+So, for example, if we have three regions (A, B, C) with the following 
+population data: 
+
+```{r}
+#| echo: false
+library(gt)
+pop_example <- tribble(
+    ~region, ~pop_y2, ~pop_y1_a, ~pop_y1_b, ~pop_y1_c, ~pop_y1_d, 
+        "A",    1100,      1000,         0,         0,        50,
+        "B",    1500,        25,      1250,         0,        20,
+        "C",    2000,        25,         0,      1975,        50
+) |>
+  mutate(pop_y1 = rowSums(across(starts_with("pop_y1"))))
+
+pop_example |> 
+    gt(id="tbl_pop_example",
+       rowname_col="region") |>
+    cols_label(region = "Region", 
+               pop_y2 = "Total Population (Year 2)", 
+               pop_y1_a = "Previously in Region A",
+               pop_y1_b = "Previously in Region B",
+               pop_y1_c = "Previously in Region C", 
+               pop_y1_d = "Previously Living Abroad", 
+               pop_y1 = "Total Population (Year 1)") |>
+    cols_move("pop_y1", "pop_y2") |> 
+    tab_spanner("Location in Year 1", 
+                columns=starts_with("pop_y1_")) |> 
+    grand_summary_rows(fns = list("Total (Nationwide)" ~ sum(.)))
+```
+
+From these, we compute the following key statistics: 
+
+- Total Population in Year 2: $P^{(2)} = 4600$
+- Total Population in Year 1: $P^{(1)} = 4275$
+- In-Migration: $120$[^outmigration]
+
+[^outmigration]: You might ask about *out-migration* (leaving the country) in
+this data. As a general rule, we do not get out-migration from US Census data 
+because out-migrants are, by definition, no longer within the US. For our 
+purposes, we are simply treating "out-migration" as a part of the death effect
+in the natural growth rate. After all, what is death but moving to the great
+census tract in the sky? (*Cf.*, my childhood dog who moved to a nice 
+farm upstate.)
+
+From these, we see that 
+
+$$\overline{g} = \frac{4600 - 4275 - 120}{4275} \approx 4.8\%$$
+
+so this population is growing at a *very* healthy clip. (For reference, the 
+actual US growth rate has never surpassed 1\% in the past 25 years. See
+[this Census news 
+release](https://www.census.gov/library/stories/2024/12/population-estimates.html).)
+
+Next, we want to determine the migration factors $m_{j \to i}$ for each pair
+of regions: 
+
+$$m_{j \to i} = M_{j \to i}^{(t)} / \sqrt{P_i^{(t)}P_j^{(t)}}$$
+
+This model assumes that the number of people who move from region $j$ to region
+$i$ depends on both the population in region $j$ and region $i$, so as $j$ 
+becomes larger it has more out-migration and as $i$ becomes bigger, it has more
+in-migration. This is not terribly realistic, but it will do for our purposes. 
+
+Applying this calculation to our data, we get the following migration factors: 
+
+- $m_{B \to A} = m_{C \to A} = m_{C \to B} =  m_{B \to C} = 0$
+- $m_{A \to B} = 25 / \sqrt{1000 * 25} = 0.16$
+- $m_{A \to C} = 25 / \sqrt{1000 * 25} = 0.16$
+
+From here, we can uses these to compute population projections for Year 3: 
+
+$$P_{A}^{(3)} = P_{A}^{(2)}(1 + \overline{g}) + \sum_{j \in \{B, C\}}m_{j \to A}\sqrt{P_{A}^{(t)}P_j^{(2)}} = 1100 * (1 + 0.048) + \sum_{j \in \{B, C\}} 0 * \sqrt{1100 * P_j^{(2)}} = 1153$$
+
+
+$$P_{B}^{(3)} = P_{B}^{(2)}(1 + \overline{g}) + \sum_{j \in \{A, C\}}m_{j \to B}\sqrt{P_{B}^{(t)}P_j^{(2)}} = 1500 * (1 + 0.048) + 0.16 * \sqrt{1500 * 1100} = 1778$$
+
+
+$$P_{C}^{(3)} = P_{C}^{(2)}(1 + \overline{g}) + \sum_{j \in \{A, B\}}m_{j \to C}\sqrt{P_{C}^{(t)}P_j^{(2)}} = 2000 * (1 + 0.048) + 0.16 * \sqrt{2000 * 1100} = 2333$$
+If we wanted to predict further ahead to Year 4, we would simply repeat this 
+calculation using $P^{(3)}$ as inputs, holding $\overline{g}$ and $m_{j \to i}$
+constant. 
+
+::: {.callout-tip title="Task 7: Population Projections"}
+
+Fit the above model to the US and use it to make population predictions for
+2030. Because we have two data sets (migration flows 2023 and 2024), let's fit 
+our parameters twice and average them to improve the accuracy of our model. 
+
+1) First, for 2024, use the migration flows data to see how many people were 
+   living outside the US in the previous year (2023) to determine $M^{(2023)}$.
+2) Using the national population $\overline{P}^{(2023)}$ and 
+   $\overline{P}^{(2024)}$, as well as $M^{(2023)}$, determine 
+   $\overline{g}^{(2023)}$. 
+3) Using the migration flows data and the per-state populations in 2023 and 2024, 
+   estimate $m_{j \to i}^{(2023)}$ for 2,450 ($=50 \times (50 - 1)$) state pairs.
+4) Repeat Steps 1-3 for 2022 to 2023. 
+5) Get parameter estimates by averaging over each of the previous two years, 
+   *e.g.*, $\overline{g} = \frac{\overline{g}^{(2023)} + \overline{g}^{(2024)}}{2}$.
+6) Using your two year estimates, predict per-state populations for 2025, 2026, 
+   2027, 2028, 2029, and finally 2030. 
+   
+A word of warning: you will compute approximately 7,650 numbers in this
+calculation. ($2,451 * 3$ parameters and 300 future populations.) Even though
+none of these are too hard to compute, that is still quite a lot of bookkeeping. 
+Think *carefully* about how you want to organize your calculations. You will
+want to use a combination of `group_by` calculations and `join`s to make this
+work. If you find yourself defining scalar variables outside of data frames, you
+are almost certainly doing down a difficult path. 
+
+:::
+
+At this point, you have (estimates) for the 2030 population of each state. We 
+will use these to estimate congressional apportionments for the 2032 election. 
+In the US, this is done using the [Huntington-Hill method](https://en.wikipedia.org/wiki/Huntington%E2%80%93Hill_method). The 
+Wikipedia entry is reasonably clear, but I will also demonstrate how this was done
+for the 2020 reapportionment, *a.k.a*, the apportionment currently in effect.
+
+```{r}
+#| warning: false
+#| message: false
+library(fs)
+library(tidyverse)
+library(gt)
+library(readxl)
+
+# CA has 52 districts, so if we put in a hard max of 100 we're safe
+MAX_DISTRICTS <- 100 
+# Fixed per Reapportionment Act of 1929
+N_DISTRICTS <- 435
+
+data_mp03 <- fs::path("data", "mp03")
+data_file <- fs::path(data_mp03, "apportionment-2020-tableA.xlsx")
+if(!fs::dir_exists(data_mp03)) fs::dir_create(data_mp03, recurse=TRUE)
+    
+if(!fs::file_exists(data_file)){
+    download.file("https://www2.census.gov/programs-surveys/decennial/2020/data/apportionment/apportionment-2020-tableA.xlsx", 
+                  destfile=data_file)
+}    
+
+data_file |> 
+    read_excel(skip=4) |> 
+    select(state=1, 
+           population=2) |> 
+    filter_out(state %in%  c("District of Columbia", "U.S. Total")) |> 
+    expand_grid(cd=seq(0, MAX_DISTRICTS)) |> 
+    mutate(hh_den = sqrt(cd * (cd+1)),
+           population=as.integer(population),
+           hh_weight = population / hh_den) |> 
+    slice_max(hh_weight, n=N_DISTRICTS) |> 
+    group_by(state) |> 
+    summarize(population = first(population), 
+              n_districts = n()) |> 
+    mutate(pop_per_district = population / n_districts) |> 
+    arrange(desc(n_districts), desc(population), state) |> 
+    gt(id="tbl_2020_apportionment",
+       rowname_col="state") |> 
+    cols_label(state=md("State"), 
+               population="Apportionment Population", 
+               n_districts="Number of Congressional Districts", 
+               pop_per_district="Approximate Population per District") |> 
+    fmt_integer(c(population, pop_per_district)) |> 
+    data_color(columns=pop_per_district, 
+               palette="PuOr") |>
+    grand_summary_rows(columns=c(population, n_districts), 
+                       fn=list("Total" ~ sum(.)), 
+                       fmt = ~ fmt_integer(.)) |> 
+    tab_header("Congressional Apportionments from the 2020 Census") |> 
+    tab_source_note(md("Apportionments computed using the 
+[Huntington-Hill Method](https://en.wikipedia.org/wiki/Huntington%E2%80%93Hill_method).
+Data from the US Census Bureau 
+[Reapportionment Table A](https://www2.census.gov/programs-surveys/decennial/2020/data/apportionment/apportionment-2020-tableA.xlsx)
+(Resident Population + Assigned Overseas Population).")) |> 
+    tab_footnote(
+        locations=cells_column_labels(pop_per_district),
+        "Colors indicate population per congressional representative, ranging from
+almost 1 million residents per representative (DE, purple) to just over 540 thousand 
+per representative (Montana, brown)."
+    )
+```
+
+Note that this analysis uses the so-called *Apportionment Population* which
+includes 'actual' residents as well as assigned overseas populations (*e.g.*, 
+mapping active duty military back to their home states). You do not need to 
+follow this subtlety in your analysis. 
+
+::: {.callout-tip title="Task 8: Reapportionment"}
+
+Apply the Huntington-Hill method to your population forecasts in order to 
+estimate the number of congressional districts your state will have *as of* 
+the 2030 redistricting cycle. 
+
+:::
+
+We are now finally ready for our final deliverable. 
+
+::: {.callout-tip title="Task 9: Developing an Advertising Strategy to Induce Internal Migration and Increase State Political Power"}
+
+Your boss, the governor, wants to increase the number of congressional
+seats your state has following the next census. To do so, you have been 
+charged with developing an advertising strategy to convince more people
+to move to your state. Using your analysis up to this point (and any additional
+analysis you find helpful), develop a proposal for a new state advertising 
+strategy. This strategy should: 
+
+i) Target common sources of migration *into* your state and its major metro
+   areas in an attempt to increase *in-migration*. 
+ii) Target common destinations of migration *out of* your state and its major
+    metro areas in an attempt to convince people to move back. 
+    
+For additional value, you might want to target metro areas in states that are
+near the low end of the population per resident statistic. If their population
+drops much lower, they might loose a congressional seat and you might hope to 
+take it. *E.g.*, in the 2020 apportionment shown above, Montana has just an 
+apportionment population just over 1 million and two congressional seats. If 
+just 10,000 Montanans were to move to New York, NY would gain an additional seat
+(going to 27) and Montana would have only one seat.[^ny_gain]
+
+To help 'size' your advertising campaign - and to get legislative support to pay
+for it - estimate how much you would internal migration you would need to net
+an additional congressional representative. (You do not need to do this 
+analytically, rough numbers will suffice.) 
+
+Finally, write up a proposal for your advertisements including: 
+
+i) Where you want to advertise (see, at least, the two target metros above)
+ii) How much migration you are hoping to induce
+iii) A new slogan or marketing pitch for your state.[^fl]
+
+:::
+
+[^ny_gain]: In 2020, NY could have actually gained an extra seat with just a few
+hundred Montanans, but that seat would have come from Minnesota, not Montana. 
+The apportionment algorithm is not entirely intuitive under small perturbations.
+
+[^fl]: *E.g.*, if you were trying to draw New Yorkers who retired to Florida 
+back into the state, a slogan of "At least we keep our gators in the sewers"
+might be appropriate. 
 
 {{< include _aidisclosure.qmd >}}
 
-
 {{< include _echeader.qmd >}}
 
-TBD
+### Extra Credit Opportunity #01: Expanding the House {#ec01}
+
+The (relatively) small size of the US House of Representatives is often cited
+as a cause of many systemic problems in US politics. For up to two points, 
+write a brief 3 paragraph argument for upsizing the House focusing on i) 
+equilibration of population per representative across states; and ii) the
+additional (relative) power gained by your state in a larger House. You may
+assume that the basic contours of the system remain unchanged (minimum one
+representative per state, the Huntington-Hill allocation) and that only the 
+number 435 is up for debate. 
+
+### Extra Credit Opportunity #02: Spatial Visualizations {#ec02}
+
+When analyzing data like this, *maps* and other data visualizations can be 
+very helpful. For up to three points, add additional visualizations to your
+analysis. You should include:
+
+1) two maps
+2) one chord diagram.[^help]
+
+The `geometry=TRUE` argument to `tidycensus` functions will be *very* helpful 
+to you here. 
+
+If you omit the chord diagram, but have at least two maps, you can only get up
+to two points here. 
+
+[^help]: The `ggraph` package, especially the linear layout with `circular=TRUE`
+might be helpful, as well as [this page](https://www.data-to-viz.com/graph/chord.html)
+from the R Graph Gallery. 
+
+### Extra Credit Opportunity #03: More Realistic Growth Models {#ec03}
+
+The population growth model described above is rather limited and assumes
+a lot of temporal and cross-sectional (between state) homogeneity. For up to
+four points, build a more realistic growth model that takes additional
+demographic data into account. 
+
+For one point, fit a different growth factor $g$ for each state instead of a
+national growth factor. 
+
+For up to two more points beyond that, further modify your model to take advantage
+of additional census variables. There are many ways that you might choose to 
+modify this model, but some possibilities include: 
+
+i) Forecasting on smaller levels than the state level (*e.g.*, county or after
+   dividing into a rural/urban split)
+ii) Using demographic variables (especially age) to forecast how growth and
+    death rates will change. (Younger populations have more children.)
+    
+For one more point, use a longer history to improve estimation of long-run 
+growth parameters. This may involve parsing more data files. 
+
+### Extra Credit Opportunity #04: Model Validation {#ec04}
+
+Finally, for up to four points, evaluate the performance of your population 
+forecast model _retrospectively_. *E.g.*, if you had used the same model in 
+2020, how well would it have predicted populations in 2022 to 2025? There 
+are many ways you can go with this, but at a minimum, you should 
+
+i) Make at least one additional set of predictions based on historical data
+ii) Compare the accuracy of those predictions with the realized values on a 
+    one-year, two-year, and three-year horizon. 
+iii) Use that error estimate to put some sort of margin of error on your 2030
+     population predictions. 
 
 {{< include _footer.qmd >}}
 
