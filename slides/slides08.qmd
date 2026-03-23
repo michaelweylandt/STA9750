@@ -1,14 +1,18 @@
 ---
 session: "`r session <- 8; session`"
-last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
+last_updated: "`r last_updated <- Sys.Date(); 
+                  last_updated |> format('%Y-%m-%d')`"
 class_date:
   "`r library(tidyverse);
     class_date <- read_csv('key_dates.csv', name_repair='universal') |>
     filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
-format: revealjs
+    pull(Date); class_date |> format('%A %Y-%m-%d')`"
+format: 
+  revealjs:
+    echo: true
 ---
+
 
 {{< include _setup.qmd >}}
 
@@ -20,412 +24,785 @@ Today: `r TODAY_TOPIC`
 
 ::: {.smaller}
 
-- Communicating Results (`quarto`)  ✅
-- `R` Basics  ✅
-- Data Manipulation in `R`  ✅
-- Data Visualization in `R`  ⬅️
-  - Static Plots  ✅
-  - Interactivity, Maps, Animated Plots  ⬅️
-- Getting Data into `R`
-- Statistical Modeling in `R`
+- Team Formation ✅
+- Project Proposals ✅
+- Check-In Presentations  ⬅️
+  - Mid-Semester Peer Evaluations
+- Final Presentations
+- Final Reports
+  - Individual Technical Report
+  - Group Summary Report
+  - Final Peer Evaluations
 
 :::
 
-# Today
+## After Proposals
 
-## Today
+Introduction to `SQL` and Databases - 100% Optional
 
-- Course Administration
-- Warm-Up Exercises
-- Advanced `ggplot2`
-- PA#08 FAQs
-- Wrap-Up
-  - Life Tip of the Day
-  
-# Course Administration
+- If you've taken DB courses already, won't add much. 
+- SQL is a common *lingua franca* of data science
+- Useful in interviews
 
-## GTA 
-  
-Charles Ramirez is our GTA
+## Schedule Notes
 
-- Wednesday Office Hours at 6pm
-- Working on Meta-Review
+Upcoming schedule is a bit confusing:
+
+::: {.incremental}
+
+- Today: Mid-Semester Check-In Presentations
+- Two Weeks of Spring Break (April 2 and 9)
+  - MP#02 due over Spring Break
+  - MP#02 Peer Feedback due over Spring Break
+  - MP#03 Assigned
+- April 16: Data Import Part 1 
+- **Tuesday** April 21: Make-Up Class (Advanced Plotting)
+- April 23: Data Import Part 2
+
+:::
 
 ## Mini-Project #02
 
 [MP#02](../mini/mini02.html) - `r get_mp_title(2)`
 
-::: {.small}
 
 **Due `r get_mp_deadline(2)`**
+
+::: {.small}
 
 -   GitHub post (used for peer feedback) AND Brightspace
 -   Start early to avoid Git issues
 
 :::
 
-. . .
+. . . 
 
-::: {.smaller}
+Use Piazza for questions over Spring Break (no Office Hours)
 
-Pay attention to [the rubric](../mini/mini02.html#rubric)
+## Mini-Project #02
 
--   Writing and presentation are about 50% of your grade
--   Evaluated on *rigor* and *thoughtfulness*
--   Use what you learned from MP#01
+Topic: 
 
-:::
+- ATUS Analysis of "People Like You"
 
 . . . 
 
-::: {.small}
+Skills: 
 
-Rubric updated to clarify opportunities for and limits to extra credit
-
-:::
+- Joining tables
+- Elementary visualization
+- Survey Weights
 
 ## Mini-Project #03
 
-[MP#03](../mini/mini03.html) now posted. **Due `r get_mp_deadline(3)`**
+[MP#03](../mini/mini03.html) - `r get_mp_title(3)`
 
-`r get_mp_title(3)`
+**Due `r get_mp_deadline(3)`**
 
 . . . 
 
-Topics covered: 
+Analysis of *US internal migration*
+
+- Who moves between states? 
+- Predict populations as of 2030 
+- Implications for Congress
+
+## Mini-Project #03
+
+Topics Covered: 
+
+::: {.incremental}
+
+- Using API Wrapper Packages
+- Using APIs Directly
+- Downloading and Parsing Files
+- Cleaning and standardizing inputs
+- Complex `group_by` structures
+
+:::
+
+. . . 
+
+**Warning**: This is the *longest* MP. Plan accordingly!
+
+# Check-In Presentations
+
+## Check-In Presentations
+
+Today: Mid-Semester Check-In Presentations ([Official Description](../project.qmd#mid-semester-check-in-presentations))
+
+I'm looking for: 
 
 ::: {.incremental .smaller}
 
-- Data Import
-  - One static file
-  - One API call
-- Spatial Data
-  - Very basic spatial joins
-  - Spatial visualizations (maps!)
-  
-:::
-
-Comapre to [NYC Tree Map](https://tree-map.nycgovparks.org/tree-map/)
-
-
-## Grading in Progress
-
-I owe you: 
-
-- Project Proposal Feedback
-- MP#01 Meta-Review Grades
-- (Selected) MP#01 Regrades 
-
-
-## Pre-Assignments
-
-Brightspace:
-
--   Reading, typically on course website
--   Brightspace auto-grades for completion
-
-Next PA is due **`r get_pa_deadline(next_session)`**: 
-
-- Quick: what are files? How do we read them into `R`?
-
-## Course Support
-
--   Synchronous
-    -   MW Office Hours 2x / week: **Tuesdays + Thursdays 5pm**
-        - Rest of Semester except Thanksgiving (Nov 27th)
-    - GTA Office Hours: **Wednesdays at 6pm**
--   Asynchronous: Piazza ($<20$ minute *average* response time)
-
-
-## Continual Improvement
-
-I maintain a
-[TODO file](https://github.com/michaelweylandt/STA9750/blob/main/TODO.md) 
-with ideas of things I want to improve for next cohort. 
-
-Suggestions welcome. 
-
-. . . 
-
-Every semester, I create new mini-projects. Ideas and suggestions very
-welcome
-
-- Topics and data sets are both great
-
-## Future Mini-Projects
-
-- MP#04: 
-  - Deadline: `r get_mp_deadline(4)`
-  - Topic: BLS Monthly Employment Reports
-
-## Course Project
-
-[Course Project](../project.html) should be your *main focus* 
-for rest of course
-
-- But you still need to do mini-projects and pre-assignments(!)
-
-# Proud of You! 
-
-## Proud of You
-
-A personal note, if you allow me: 
-
-. . . 
-
-> I'm teaching an alternate version of STA 9750 this semester (different degree
-> program, different curricular goals). The quality of your analyses and 
-> presentation(even on MP#01) is night and day. I hope you are proud of the work
-> you are doing - I know I am. 
-
-. . . 
-
-::: {.small}
-
-> Your effort is not unnoticed - I know this class starts
-> "pedal-to-the-metal" but hopefully you've seen just 
-> how powerful these tools `R`. 
+- Finalized _overarching question_
+- Locking in on _specific questions_
+- Evaluation of _relevant_ data sources
+  - Anticipated data or statistical challenges
+- Engagement with _existing literature_
+- 6 minutes
 
 :::
 
 . . . 
 
-::: {.small}
+Mainly, I want to see that you will be able to _succeed_ 
 
-> More than that - I appreciate your good attitude and willingness to
-> share your frustrations and triumphs. Reading comments, even if I don't respond, is uplifting. 
 
-:::
+## Peer Evaluations
 
-# Review Exercise
-
-## SSA Registered Births
-
-Time series data of babies born and registered with the 
-Social Security Administration (previously in Lab #05)
-
-. . . 
+After today, you will be able to upload (anonymous) evaluations of your
+project teammates: 
 
 ```{r}
-#| echo: false
-
-if(!file.exists("births.csv")){
-    download.file("https://raw.githubusercontent.com/michaelweylandt/STA9750/main/births.csv", 
-                  destfile="births.csv")
-}
-library(readr)
-library(dplyr)
-
-births <- read_csv("births.csv")
-glimpse(births)
+#| eval: false
+source("https://michael-weylandt.com/STA9750/load_helpers.R")
+project_peer_evals(cycle="mid")
 ```
 
-## SSA Registered Births
+Upload result `bspf` file to Brightspace by `r get_project_due_date("mid-semester-peer")`. 
 
-Practice visualization: 
+I will collate and summarize feedback and assign scores. 
 
-1. Are there months with more births?
-2. Are there days of the week with more births? 
-3. Is there a long-term trend in births?
+## On to the Show!
 
-See [Lab #08](../labs/lab08.html#review) for details.
-
-## Breakout Rooms {.scrollable}
-
-::: {.smaller}
+Presentation Order:
 
 ```{r}
 #| echo: false
 BREAKOUT_TABLE
 ```
 
-:::
-
-# Advanced `ggplot2`
-
-## Spatial Data
-
-Maps are more interesting than you think!
-
-- The world isn't flat!
-
-. . . 
-
-This can get *intense*, but we will get by with simple features (`sf`)
-
-[Spatial Data in Lab #08](https://michael-weylandt.com/STA9750/labs/lab08.html#maps)
-
-## WGS 84
-
-[WGS 84](https://en.wikipedia.org/wiki/World_Geodetic_System#WGS_84) is a 
-robust and widely-used way of creating maps from 3D coordinates
-
-. . . 
-
-Not universal!
-
-{{< video https://www.youtube.com/watch?v=L9Di-UVC-_4 width="40%" height="200px" >}}
-
-## Interactive Tooling
-
-## Animated Graphics
-
-`gganimate` is the *de facto* standard for animated `ggplot2`: 
-
-- Make a bunch of `png` files
-- Combine into a `gif`
-
-. . . 
-
-Most commonly: `+transition_time(VARIABLE)`
-
-See [Getting Started](https://gganimate.com/reference/transition_filter.html) 
-for more
-
-## Animated Graphics
-
-When it works, `gganimate` is great
-
-- PITA when external software is busted
-
-. . . 
-
-Alternatives: 
-
-- Facet plots
-- Split facets over pages and scroll quickly: `ggforce::facet_wrap_paginate`
-- Interactivity with autoplay
-
-# PA#08 FAQs
-
-
-## ggplot2 & Pie Charts
-
-Why do Pie Charts have a bad reputation?
-
-- Use of _area_ and _angle_ over _length_: less accurate perception
-- Depends on `fill` to convey category - limited categories
-
-. . . 
-
-But honestly - "insider smugness"  and hate of `Excel`
-
-
-## ggplot2 Plot Type Choice
-
-For me: 
-
-- Exploratory mode: 
-  - Simple: line, scatter, bar, frequency
-- Publication mode:
-  - Very context specific
-
-## ggplot2 Font Sizing
-
-Theme machinery!
-
-```{r}
-ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width)) + 
-    geom_point() + theme(axis.text = element_text(size=24))
-```
-
-## Overplotting / ScatterBlobs
-
-Student asked about "scatterblobs" - typo(?) but I love it!
-
-. . . 
-
-- Density based plotting: hexbins, histograms, rugplots
-- Data reduction: summarization or sub-sampling
-
-## Optimizing ggplot2 Performance
-
-Active project of `ggplot2` team - not much you can do
-
-*Practical advice*: plot less (see previous slide)
-
-## ggplot2 Beyond Scatter and Line
-
-Some favorite semi-advanced plot types: 
-
-- Violin plots: combination of boxplot and histogram
-- Ridgelines
-- Beeswarms
-
-_Deep_ rabbit hole
-
-## ggplot2 + High-Dimensional Data
-
-High-dimensional data: measure many variables per observation ("wide")
-
-High-dimensional data is _hard_ to visualize
-
-. . . 
-
-Approaches: 
-
-- Pair plots for "moderate" HDD
-- PCA (or similar dimension reduction. Take 9890!)
-
-
-## Custom ggplot2 Theme
-
-```{r}
-my_theme <- theme_bw() + theme(panel.background = element_rect(fill = 'lightblue'))
-ggplot(iris, aes(x=Sepal.Length, y = Sepal.Width)) + geom_point() + my_theme
-```
-
-Advanced: 
-
-- `theme_set()` - change `ggplot2` defaults
-- `.Rprofile` - set code to run every time you start `R`
-
-## ggplot2 - When Not to Use 
-
-`ggplot2` is designed to make good statistical graphics. Sub-par for: 
-
-- Advanced interactivity
-- _Really_ big data
-- Hardcore customization / "infographics"
-
-## `git` WTF
-
-Reference: [Happy Git with R](https://happygitwithr.com/)
-
 # Wrap-Up
 
-## Review
+## Next Steps
 
-Advanced `ggplot2`: 
+Now you should have your questions and data finalized 
 
-- `ggplot2` as a platform for powerful extensions
-- Spatial data: `sf`
-- Interactivity: `ggplotly`, `shiny`
-- Animation: `gganimate`
+Time to begin the actual analysis
 
-## Upcoming Work
+. . . 
 
-Upcoming work from [course calendar](../index.qmd#calendar)
+Starting next class (mid-April): getting data into `R`
+
+## Recommended Workflow
+
+If using a shared folder or Git repository: 
+
+- `data`
+- `team_member01`
+- `team_member02`
+- `team_member03`
+
+If you only read (never write) to other people's stuff, no Git issues. 
+
+. . . 
+
+Shared `git` is not required - Dropbox, Google Drive also work
+
+## Final Deliverables
+
+Final Deliverables: 
 
 ::: {.incremental}
 
-- [Pre-Assignment #0`r session+1`](../pre/pa07.html) due `r get_pa_deadline(session+1)`
-- [Mini-Project #02](../mini/mini02.html) due on `r get_mp_deadline(2)`
+- Final Presentations: `r get_project_due_date("final-presentation")`
+- Individual Technical Report: `r get_project_due_date("individual-report")`
+- Group Summary Report: `r get_project_due_date("group-report")`
 
 :::
 
 . . . 
 
-Topics for the next three weeks:
+I've moved presentaitons forward a week this semester to give you two
+weeks to write final reports. Feedback on this decision welcome!
 
-- Reading 'clean data' into `R`
-- Reading and parsing HTML
-- Parsing messy (text) data
-
-{{< include ../advice/sorting_dates.qmd >}}
+{{< include ../advice/interview_tips.qmd >}}
 
 ## Musical Treat
 
 </br>
 
 {{< video https://www.youtube.com/watch?v=vb-_qqmOcCI width="80%" height="400px">}}
+
+
+# Enrichment Material: SQL
+
+## SQL
+
+*S*tructured *Q*uery *L*anguage (ISO 9075)
+
+::: {.incremental}
+
+- Standard language for interacting with _Relational Database 
+  Management Systems_ (RDMS)
+- Divided into three main sub-languages: 
+  - Data Manipulation Language (DML)
+  - Data Declaration Language (DDL)
+  - Data Control Language (DCL)
+- *Declarative*, not *Imperative* Programming
+
+:::
+
+## SQL Languages
+
+Data Definition Language (DDL)
+
+::: {.small}
+
+- "Design" language for DB
+- What tables are present? What types are the columns? What relationships (keys)
+  are enforced? 
+  
+:::
+
+. . . 
+
+Data Manipulation Language (DML)
+
+::: {.small}
+
+- "User" interaction with DB: queries, adding, changing, deleting data
+- `SELECT`, `GROUP BY`, `WHERE`, `HAVING`, `JOIN`, *etc.*
+- Roughly coextensive with `dplyr`
+
+:::
+
+
+
+. . . 
+
+Data Control Language (DCL)
+
+::: {.small}
+
+- "Security" language for DB
+- What permissions do different users have? 
+
+:::
+
+## RDMS
+
+Relational Database Management System (RDMS)
+
+::: {.incremental}
+
+- Data management server for complex environments
+- _Relational_ tabular data structures
+- Manipulated using SQL
+  - Common SQL Standard + _Many_ RDMS-specific extensions
+- ACID Guarantees
+
+:::
+
+## DDL 
+
+RDMS has a fixed number of _tables_ (roughly `data.frame`s). DDL specifies
+
+- Column names and type
+- Can values be left blank (nullability)?
+- Identifiers (Primary Keys)
+- Constraints (non-negative, `a < b`, *etc.*)
+- Relationships to other tables (Foreign Keys)
+
+## DDL 
+
+Basic command is the `CREATE TABLE` statement.
+
+```{sql}
+#| eval: false
+CREATE TABLE table_name (
+  column_name1 TYPE1 PRIMARY KEY -- <- Guaranteed Unique and not blank
+  column_name2 TYPE2 NOT NULL -- <- Can't be left blank
+  column_name3 TYPE3 -- <- Can be blank
+  column_name4 TYPE4 DEFAULT 0 -- <- Has default value
+);
+```
+
+`TYPE` can be `INTEGER`, `DECIMAL`, `CHAR`, `VARCHAR`, `DATE`, 
+`TIMESTAMP` and more
+
+## DDL 
+
+Our beloved `penguins`: 
+
+```{sql}
+#| eval: false
+CREATE TABLE penguins (
+  species VARCHAR(9) NOT NULL, -- Name of up to 9 characters
+  island  VARCHAR(9) NOT NULL, -- Also can't be left blank
+  bill_len NUMERIC,
+  bill_dep NUMERIC,
+  flipper_len INTEGER,
+  body_mass INTEGER, 
+  sex VARCHAR(6), -- Name of 6 (female) but also allow missing
+  year INTEGER NOT NULL
+);
+```
+
+Compare: 
+
+```{r}
+glimpse(penguins)
+```
+
+## DDL 
+
+We can add a _constraint_ so the year is 2007-2009: 
+
+```{sql}
+#| eval: false
+CREATE TABLE penguins (
+  species VARCHAR(9) NOT NULL, -- Name of up to 9 characters
+  island  VARCHAR(9) NOT NULL, -- Also can't be left blank
+  bill_len NUMERIC,
+  bill_dep NUMERIC,
+  flipper_len INTEGER,
+  body_mass INTEGER, 
+  sex VARCHAR(6), -- Name of 6 (female) but also allow missing
+  year INTEGER NOT NULL CHECK (year > 2006 AND year < 2010)
+);
+```
+
+## DDL 
+
+Constraints for categorical variables (`R` `factor`s) can be tricky. 
+Create a _normalized_ set of tables: 
+
+::: {.smaller}
+
+| Sex ID | Name   | 
+|--------|--------|
+| 1      | Female |
+| 2      | Male   |
+
+| Penguin ID | Sex ID | Weight |
+|------------|--------|--------|
+|       1    |     1  |   4000 |
+|       2    |     1  |   3500 |
+|       3    |     2  |   5000 |
+
+:::
+
+. . . 
+
+We want to make sure each `Sex ID` in table 2 matches a row of the first table
+
+## DDL 
+
+Constraints for categorical variables (`R` `factor`s) can be tricky. 
+Create a _normalized_ set of tables: 
+
+```{sql}
+#| eval: false
+CREATE TABLE sex (
+  sex_id INTEGER PRIMARY KEY, 
+  sex_name VARCHAR(6) NOT NULL
+)
+
+CREATE TABLE penguins (
+  species VARCHAR(9) NOT NULL, -- Name of up to 9 characters
+  island  VARCHAR(9) NOT NULL, -- Also can't be left blank
+  bill_len NUMERIC,
+  bill_dep NUMERIC,
+  flipper_len INTEGER,
+  body_mass INTEGER, 
+  sex_id INTEGER, 
+  year INTEGER NOT NULL CHECK (year > 2006 AND year < 2010), 
+  FOREIGN KEY (sex_id) REFERENCES sex(sex_id)
+);
+```
+
+## DDL Normalization
+
+Normalization: 
+
+1) Increases integrity via constraints
+2) Reduces redundancy (need to change value in 1 place only)
+3) Slight performance benefits
+
+. . . 
+
+More `JOIN` work in `SQL` than in `dplyr`
+
+. . . 
+
+Proper table design is a science and an art
+
+## DML 
+
+**Data Manipulation Language** is for DB users. 
+
+- Close parallels to `dplyr`
+- Compare: 
+
+```{r}
+#| eval: false
+penguins
+```
+
+*vs.*
+
+```{sql}
+#| eval: false
+SELECT * FROM penguins; 
+```
+
+`SELECT *` means _all columns_ which matches `R`'s default
+
+## DML 
+
+**Data Manipulation Language** is for DB users. 
+
+- Close parallels to `dplyr`
+- Compare: 
+
+```{r}
+#| eval: false
+penguins |> select(species, island, bill_dep)
+```
+
+*vs.*
+
+```{sql}
+#| eval: false
+SELECT species, island, bill_dep FROM penguins; 
+```
+
+## DML 
+
+**Data Manipulation Language** is for DB users. 
+
+- Close parallels to `dplyr`
+- Compare: 
+
+```{r}
+#| eval: false
+penguins |> select(species, island, bill_dep) |> filter(bill_dep > 20)
+```
+
+*vs.*
+
+```{sql}
+#| eval: false
+SELECT species, island, bill_dep FROM penguins WHERE bill_dep > 20; 
+```
+
+## DML 
+
+Note that
+
+```{r}
+#| eval: false
+penguins |> filter(bill_dep > 20) |> select(species, island, bill_dep)
+```
+
+and 
+
+```{r}
+#| eval: false
+penguins |> select(species, island, bill_dep) |> filter(bill_dep > 20)
+```
+
+are both 
+
+```{sql}
+#| eval: false
+SELECT species, island, bill_dep FROM penguins WHERE bill_dep > 20; 
+```
+
+. . . 
+
+Why? 
+
+. . . 
+
+They *commute* -- same result in either order
+
+## DML 
+
+- `R` is an *imperative* paradigm - you say _what to do_
+- `SQL` is a *declarative* paradigm - you say _what you want_ 
+
+. . . 
+
+Declarative paradigms let the server figure out the _best_ way to compute, but
+are more restrictive
+
+. . . 
+
+For a well-defined paradigm like SQL, _much_ work has gone into query optimization
+
+## DML 
+
+- Compare: 
+
+```{r}
+#| eval: false
+penguins |> group_by(species) |> summarize(mean_mass = mean(body_mass, na.rm=TRUE))
+```
+
+*vs.*
+
+```{sql}
+#| eval: false
+SELECT species, AVERAGE(body_mass) FROM penguins GROUP BY species;
+```
+
+`summarize()` is implicit in `SELECT` clause when we have a `GROUP BY`
+
+## DML 
+
+But:
+
+```{r}
+#| eval: false
+penguins |> 
+  group_by(species) |> 
+  summarize(mean_mass = mean(body_mass, na.rm=TRUE)) |>
+  filter(mean_mass > 4000)
+```
+
+is 
+
+```{sql}
+#| eval: false
+SELECT species, AVERAGE(body_mass) AS avg_mass FROM penguins 
+  GROUP BY species HAVING avg_mass > 4000;
+```
+
+. . . 
+
+Why not `WHERE` again? 
+
+## DML 
+
+In `SQL`:
+
+  - `WHERE` happens before a `GROUP BY`; and 
+  - `HAVING` happens after a `GROUP BY`
+  
+. . . 
+  
+In `R`: 
+
+  - Ordering of `summarize()` and `filter` controls execution order
+  
+. . . 
+
+Because `SQL` is _declarative_, we need different words to encode filtering at different stages (pre/post-grouping)
+  
+## ACID Guarantees
+
+Most RDMSs provide a set of four `ACID` guarantees: 
+
+::: {.incremental}
+
+- **Atomicity**: Changes occur all-or-nothing
+  - *E.g.*: Add charge to customer's account + schedule item for shipping
+- **Consistency**: DDL Constraints are always valid
+  - *E.g.*: Can't create a user without having an email on file
+- **Isolation**: Two different users don't "step on each other's toes"
+  - *E.g.*: If I'm updating prices while you are checking out, you get your original price
+- **Durability**: When a change is complete, it is guaranteed to be saved to disk
+
+:::
+
+## Getting Started with RDMS
+
+Easiest RDMS to use is `SQLite`
+
+- Most ubiquitous DB in the world (by a long-shot)
+- Already installed on your computer (many times over!)
+- Access directly through `sqlite3` or `sqlite3.exe` 
+- Access from `R` with `RSQLite` package
+
+. . . 
+
+[Excellent documentation](https://sqlite.org/lang.html)
+
+## dbplyr
+
+Can use `dbplyr` (extra `b`!) to put `dplyr`-UX on DB
+
+*E.g.*
+
+```{r}
+library(dbplyr)
+my_db <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+copy_to(my_db, penguins) # Copy penguins data into a temporary SQLite DB
+```
+
+
+## dbplyr
+
+```{r}
+penguins_db <- tbl(my_db, "penguins") # Connect to my_db and load penguins table
+penguins_db
+```
+
+
+## dbplyr
+
+```{r}
+penguins_db |> 
+  group_by(species) |> 
+  summarize(mean_mass = mean(body_mass, na.rm=TRUE)) |> 
+  show_query()
+```
+
+Extra step - `show_query` to see SQL or `collect()` to run in DB:
+
+```{r}
+penguins_db |> 
+  group_by(species) |> 
+  summarize(mean_mass = mean(body_mass, na.rm=TRUE)) |> 
+  collect()
+```
+
+## dbplyr
+
+::: {.smaller}
+
+```{r}
+penguins_db |> 
+  filter(body_mass > 4000) |>
+  group_by(species) |> 
+  summarize(mean_mass = mean(body_mass, na.rm=TRUE)) |> 
+  show_query()
+```
+Compared to: 
+
+```{r}
+penguins_db |> 
+  group_by(species) |> 
+  summarize(mean_mass = mean(body_mass, na.rm=TRUE)) |> 
+  filter(mean_mass > 4000) |>
+  show_query()
+```
+
+Not the best SQL, but RDMS can make quick work of it
+
+:::
+
+## dbplyr {.scrollable}
+
+A more substantial example: 
+
+::: {.smaller}
+```{r}
+library(dbplyr)
+baseball_db <- lahman_sqlite()
+```
+:::
+
+## dbplyr {.scrollable}
+
+A more substantial example: 
+
+::: {.smaller}
+
+```{r}
+#| eval: false
+library(dbplyr)
+baseball_db <- lahman_sqlite()
+```
+
+```{r}
+#| echo: false
+#| eval: true
+cat(system2("sqlite3", c(baseball_db@dbname, ".schema"), stdout=TRUE), sep="\n")
+```
+:::
+
+
+
+## dbplyr {.scrollable}
+
+List the 5 modern-era managers with the highest winning percentages. (Define
+modern-era as managed over 1000 games post 1920.)
+
+::: {.smaller}
+
+```{r}
+managers <- tbl(baseball_db, "Managers")
+people   <- tbl(baseball_db, "People")
+
+managers |> 
+    filter(yearID >= 1920) |> 
+    group_by(playerID) |> 
+    summarize(W = sum(W, na.rm=TRUE),
+              L = sum(L, na.rm=TRUE)) |> 
+    mutate(G = W + L, 
+           record = W / (G + 0.0)) |>  # + 0.0 forces to work with decimals, not ints
+    filter(G > 1000) |> 
+    inner_join(people, 
+               join_by(playerID == playerID)) |> 
+    slice_max(record, n=5) |> 
+    mutate(name = paste(nameGiven, nameLast)) |> 
+    select(name, W, L, G, record) |>
+    show_query()
+```
+
+:::
+
+## dbplyr {.scrollable}
+
+Add `|> explain()` to see the DB internal _query plan_:
+
+::: {.smaller}
+
+```{r}
+managers <- tbl(baseball_db, "Managers")
+people   <- tbl(baseball_db, "People")
+
+managers |> 
+    filter(yearID >= 1920) |> 
+    group_by(playerID) |> 
+    summarize(W = sum(W, na.rm=TRUE),
+              L = sum(L, na.rm=TRUE)) |> 
+    mutate(G = W + L, 
+           record = W / (G + 0.0)) |>  # + 0.0 forces to work with decimals, not ints
+    filter(G > 1000) |> 
+    inner_join(people, 
+               join_by(playerID == playerID)) |> 
+    slice_max(record, n=5) |> 
+    mutate(name = paste(nameGiven, nameLast)) |> 
+    select(name, W, L, G, record) |>
+    explain() # 
+```
+
+:::
+
+Beyond this class to interpret, but in general use of `INDEX` yields 
+good performance. Take DB classes for _much more_
+
+
+## dbplyr {.scrollable}
+
+List the 5 modern-era managers with the highest winning percentages. (Define
+modern-era as managed over 1000 games post 1920.)
+
+::: {.smaller}
+
+```{r}
+managers <- tbl(baseball_db, "Managers")
+people   <- tbl(baseball_db, "People")
+
+managers |> 
+    filter(yearID >= 1920) |> 
+    group_by(playerID) |> 
+    summarize(W = sum(W, na.rm=TRUE),
+              L = sum(L, na.rm=TRUE)) |> 
+    mutate(G = W + L, 
+           record = W / (G + 0.0)) |>  # + 0.0 forces to work with decimals, not ints
+    filter(G > 1000) |> 
+    inner_join(people, 
+               join_by(playerID == playerID)) |> 
+    slice_max(record, n=5) |> 
+    mutate(name = paste(nameGiven, nameLast)) |> 
+    select(name, W, L, G, record) |>
+    collect()
+```
+
+:::
