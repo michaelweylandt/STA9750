@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Standard Library
+import zipfile
 from collections import defaultdict, namedtuple
 from enum import IntEnum
 from functools import cache, cached_property
@@ -21,7 +22,7 @@ from urllib.parse import urljoin, quote_plus
 import webbrowser
 from copy import deepcopy as dcopy
 from pprint import pformat
-from textwrap import dedent
+from textwrap import dedent, wrap
 
 # PyPI Modules - Nothing here is too exotic, so not worrying about
 # environment management / versioning for now
@@ -34,6 +35,7 @@ import requests as r
 from requests.compat import urljoin, quote, quote_plus
 from yaml import safe_load as yaml_load
 from yaml import dump as yaml_dump
+from yaml.scanner import ScannerError
 from pandas.api.types import is_list_like
 
 @cache
@@ -86,7 +88,7 @@ def vernam_encode(nums, secret, offset=0):
     if len(secret) < len(nums) + offset:
         raise click.ClickException("Secret is too short!")
 
-    return [n ^ ord(s) for n, s in zip(nums, secret[offset:])]
+    return [n ^ ord(s) if isinstance(n, int) else "NA" for n, s in zip(nums, secret[offset:])]
 
 class IssueStatus(IntEnum):
     NO_ISSUE = 1
@@ -723,101 +725,286 @@ class Comment(object):
             "ctime": self.ctime, 
             "url": self.url
         }
-
-
-class PeerFeedback:
-    _template_url = f"{course_site()}/miniprojects.html"
+        
+def parse_brightspace_file(fname):
+    zip_f = zipfile.ZipFile(fname)
     
-    resp = r.get(_template_url)
+    for zip_content in zip_f.infolist():
+        with zip_f.open(zip_content) as f:
+            pf_raw = yaml.safe_load(f)
+            
+        import pdb; pdb.set_trace()
+
+class PeerFeedback(object):
+    def __init__(self, *, submittor, evaluator, mp_num, issue_number, issue_ok, issue_status, comments, scores):
+        self._submittor = submittor
+        self._evaluator = evaluator
+        self._mp_num = mp_num
+        self._issue_num = issue_number
+        self._issue_ok = issue_ok
+        self._issue_status = issue_status
         
-    if not resp.ok:
-        raise click.ClickException("Could not download peer feedback template")
+        self._overall_comments = comments
+        self._scores = scores
         
-    template = BS(resp.text, features="lxml").\
-        find(id="peer-feedback-template").\
-        text.strip()
+    @classmethod
+    def from_dict(cls, d):
+        get_optional_under = lambda d, k: d[k] if k in d else d["_" + k]
+
+        if "issue_owner" in d:
+            submittor = d["issue_owner"]
+        else: 
+            submittor = get_optional_under(d, "submittor")
+            
+        if "_issue_num" in d:
+            issue_number = d["_issue_num"]
+        else: 
+            issue_number = get_optional_under(d, "issue_number")
+            
+        if "_mp_num" in d:
+            mp_num = d["_mp_num"]
+        else: 
+            mp_num = get_optional_under(d, "mp_number")
+            
+        return cls(submittor = submittor, 
+                   evaluator = get_optional_under(d, "evaluator"),
+                   comments = get_optional_under(d, "overall_comments"), 
+                   scores = get_optional_under(d, "scores"), 
+                   issue_number = issue_number,
+                   issue_ok = get_optional_under(d,"issue_ok"), 
+                   issue_status = get_optional_under(d,"issue_status"), 
+                   mp_num = mp_num,
+                )
+        
+    def load_from_file(self, fname):
+        pass
     
-    template = re.sub("\s*\n", "\\\\s*\n", template).\
-        replace("OPTIONAL TEXT", "(.*)").\
-        replace("NN", "(\\d+)(?:/10)?").\
-        replace("TEXT TEXT TEXT", "(.*)")
+    def load_from_bspf(self, fname):
+        pass
         
-    def __init__(self, submittor, evaluator, project_id):
-        self.submittor  = submittor
-        self.evaluator  = evaluator
-        self.project_id = project_id
-        
-        self._posts     = None
-        self._file      = None
-        self._issue_num = None
-        self._template = None
-        self._status = None
-        self._scores = None
-        
+    @classmethod
+    def parse_pf_file(cls, fname):
+        pass
+    
+    @classmethod
+    def parse_brightspace_export(cls, dirname):
+        "Parse"
         
     @property
-    def assign_dir(self):
-        return op.join(
-            course_dir(), 
-            f"mp0{self.project_id}", 
-            "assignments"
-        )
-        
+    def issue(self):
+        return Issue.from_gh_api(self.issue_num)
+    
     @property
     def issue_num(self):
-        if self._issue_num is None:
-            for fname in os.listdir(self.assign_dir):
-                if match := re.match(f"{self.submittor}_issue(\d+).md", fname):
-                    self._issue_num = int(match.group(1))
-            
         return self._issue_num
+    
+    @property
+    def submittor(self):
+        return self._submittor
+    
+    @property
+    def evaluator(self):
+        return self._evaluator
+    
+    @property
+    def comments(self):
+        return self._overall_comments
+    
+    @property
+    def scores(self):
+        return self._scores
+    
+    @property
+    def issue_status(self):
+        return self._issue_status
+    
+    @property
+    def issue_ok(self):
+        return self._issue_ok
+    
+_pfa = namedtuple("PeerFeedbackTuple", ["submittor", "evaluator", "issue_num"])
+
+class PeerFeedbackAssignment(object):
+    def __init__(self, mp_num):
+        self.mp_num = mp_num
         
-    @property 
-    def file(self):
-        if self._file is None:
-            self._file = op.join(latest_issues_dir(), f"issue{self.issue_num:03g}.json")
-        return self._file
-    
+        self._assignments = None
+        self._number_of_peers = None
+        self._number_of_submissions = None
+        self._submittors = None
+        self._assignments = None
+        
+    def __len__(self):
+        if self._assignments is not None:
+            return len(self._assignments)
+        else:
+            import pdb; pdb.set_trace()
+            
+    def __iter__(self):
+        if self._assignments is not None:
+            return iter(self._assignments)
+        else:
+            import pdb; pdb.set_trace()
+            
     @property
-    def posts(self):
-        if self._posts is None:
-            with open(self.file, "r") as f:
-                issue_contents = json.loads(f.read())
+    def submittors(self):
+        if self._submittors:
+            return self._submittors
+        else: 
+            import pdb; pdb.set_trace()
+            
+    @property
+    def evaluators(self):
+        return self.submittors
+        
+    def load_from_yaml(self, yaml_file):
+        with open(yaml_file) as f:
+            yaml_info = yaml_load(f.read())
+            
+        assert yaml_info["mp_number"] == self.mp_num
+        
+        self._number_of_peers = yaml_info["number_of_peers"]
+        self._number_of_submissions = yaml_info["number_of_submissions"]
+        
+        self._submittors = set(yaml_info["assignments"].keys())
+        
+        assignments = []
+        ROSTER = current_roster(include_inactive=False)
+        
+        for evaluator in self._submittors:
+            encoded_issues = yaml_info["assignments"][evaluator]
+            student = ROSTER[ROSTER.github.map(str.lower) == evaluator]
+            assigned_issues = vernam_encode(encoded_issues, student.secret.item(), offset=self.mp_num)
+            
+            for a in assigned_issues: 
+                a_issue = [d for d in yaml_info["issue_status"] if d["number"] == a]
                 
-            self._posts = "\n".join(c["text"] for c in issue_contents["comments"] if c["commenter"] == self.evaluator)
+                if len(a_issue) != 1:
+                    import pdb; pdb.set_trace()
+                    
+                submittor = a_issue[0]["owner"]
+                assignments.append(_pfa(submittor, evaluator, a))
+                
+        self._assignments = assignments
+        
+class PeerFeedbackCollection(object):
+    def __init__(self, mp_num):
+        self.mp_num = mp_num
+        self._collected_feedback = []
+        self._assignments = None
+        
+    def load_from_zip(self, zip_fname):
+        zip_f = zipfile.ZipFile(op.realpath(op.expanduser(zip_fname)))
+        for submission in zip_f.infolist():
+            if not submission.filename.endswith("bspf"):
+                continue 
             
-        return self._posts
+            with zip_f.open(submission) as f:
+                try:
+                    pf_yaml_raw = yaml_load(f)
+                except ScannerError as SE: 
+                    click.echo(f"Failed to parse YAML with message {str(SE)}")
+                    click.confirm("Would you like to try to fix this manually?", abort=True)
+                    f.seek(0)
+                    yaml_txt_problem = f.read().decode()
+                    
+                    yaml_txt_fixed = click.edit(text=yaml_txt_problem, editor="/usr/bin/nano")
+                    
+                    if not yaml_txt_fixed: 
+                        raise click.ClickException("No changes performed")
+                    
+                    pf_yaml_raw = yaml_load(yaml_txt_fixed)
+                    
+                try:
+                    evaluator = pf_yaml_raw["evaluator"]
+                except TypeError: 
+                    import pdb; pdb.set_trace()
+                evaluator_subs = [evaluator in n for n in zip_f.namelist()]
+                
+                if sum(evaluator_subs) > 1:
+                    import pdb; pdb.set_trace()
+                
+                for k, v in pf_yaml_raw.items():
+                    if k == "evaluator":
+                        continue
+                        
+                    v["evaluator"] = evaluator
+                    peer_comment = PeerFeedback.from_dict(v)
+                    
+                    self._collected_feedback.append(peer_comment)
+                    
+        return self
     
-    @property 
-    def status(self):
-        if self._status is None:
-            if not self.posts: 
-                self._status = "NOT SUBMITTED"
-            else: 
-                if re.match(self.template, self.posts, flags=re.DOTALL):
-                    self._status = "PROPERLY FORMATTED"
-                else: 
-                    self._status = "IMPROPERLY FORMATTED"
+    def load_from_json(self, json_fname):
+        if not op.exists(json_fname):
+            raise click.ClickException(f"The file {json_fname} does not exist. Do you need to run `peer collect` first?")
+        
+        if not op.getsize(json_fname):
+            raise click.ClickException(f"The file {json_fname} appears to be empty. Do you need to run `peer collect` first?")
+        
+        with open(json_fname) as f:
+            json_dicts = json.loads(f.read())
             
-        return self._status
+        for d in json_dicts["collected_feedback"]:
+            self._collected_feedback.append(PeerFeedback.from_dict(d))
+            
+        if "assignment" in json_dicts:
+            self._assignment = json_dicts["assignment"]
+            
+        return self
+    
+    def load_assignments_from_yaml(self, assignment_file):
+        self._assignments = PeerFeedbackAssignment(self.mp_num)
+        self._assignments.load_from_yaml(assignment_file)
+        
+    @property
+    def assignments(self):
+        if self._assignments:
+            return self._assignments
+        else: 
+            import pdb; pdb.set_trace()
+        
+    def to_json(self):
+        return json.dumps({
+            "mp_num": self.mp_num, 
+            "collected_feedback": [f.__dict__ for f in self._collected_feedback],
+            "assignments": self._assignments
+        }, indent=2)
+        
+    def __iter__(self):
+        return self._collected_feedback.__iter__()
     
     @property
-    def missing(self):
-        return self.status == "NOT SUBMITTED"
+    def issue_nums(self):
+        return set(f.issue_num for f in self._collected_feedback)
     
     @property
-    def improper(self):
-        return self.status == "IMPROPERLY FORMATTED"
+    def issues(self):
+        for i in self.issue_nums:
+            yield Issue.from_gh_api(i)
+            
+    def get_feedback_for(self, submittor):
+        return [f for f in self._collected_feedback if f.submittor.lower() == submittor.lower()]
     
-    @property
-    def ok(self):
-        return self.status == "PROPERLY FORMATTED"
+    def get_feedback(self, *, submittor, evaluator):
+        potential = self.get_feedback_for(submittor)
+        actual = [p for p in potential if p.evaluator.lower() == evaluator.lower()]
+        
+        if len(actual) == 1:
+            return actual[0]
+        elif len(actual) == 0:
+            return
+        else:
+            import pdb; pdb.set_trace()
+
+PeerFeedbackComment = namedtuple("PeerFeedbackComment", 
+    ["score", "comment", "properly_formatted"])
 
 # FIXME: This technically isn't sufficient for arbitrary URLs, but it
 # seems to cover the whole GitHub API, which is enough for us.
 URL_REGEX = "http[A-Za-z0-9:/\\.\\-_]+"
 
-SCORES_STR = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+SCORES_STR = [str(_) for _ in range(21)]
 
 def is_nan(x):
     if type(x) == float:
@@ -827,7 +1014,7 @@ def is_nan(x):
 
 
 def str_simplify(x):
-    return re.sub("\\s+", " ", x.replace(" +", " ").lower())
+    return re.sub("\\s+", " ", x.replace(" +", " ").lower()).strip()
 
 
 def vecho(*args, **kwargs):
@@ -910,14 +1097,27 @@ def _gh(path, method="get", **kwargs):
     fullpath = "https://api.github.com/" + path
     
     if method == "get":
-        return r.get(fullpath, headers=headers).json()
+        resp = r.get(fullpath, headers=headers)
     elif method == "post":
-        return r.post(fullpath, headers=headers, data=json.dumps(kwargs))
+        resp =  r.post(fullpath, headers=headers, data=json.dumps(kwargs))
     elif method == "put":
-        return r.post(fullpath, headers=headers, data=json.dumps(kwargs))
+        resp = r.put(fullpath, headers=headers, data=json.dumps(kwargs))
+    elif method == "patch":
+        resp = r.post(fullpath, headers=headers, data=json.dumps(kwargs))
+    elif method == "delete":
+        resp = r.delete(fullpath, headers=headers, data=json.dumps(kwargs))
     else: 
         raise click.ClickException("Unknown HTTP Verb in _gh() call")
 
+    if resp.ok:
+        ## FIXME? This is somewhat weird!
+        if method == "get":
+            return resp.json()
+        else: 
+            return resp
+    else: 
+        click.echo(f"Failed to get successful response from GitHub API - {method.upper()} {fullpath}")
+        import pdb; pdb.set_trace()
 
 @cache
 def gh_list_issues(owner=None):
@@ -1152,7 +1352,22 @@ def current_teams():
 @click.option(
     "-G",
    "grep_flag",
-   help="If provided, grep all fields (case insensitive) to subset roster"
+   help="If provided, grep all fields (case insensitive) to subset roster. If given multiple times, the union of results will be printed.", 
+   multiple = True
+)
+@click.option(
+    "--GREP-AND",
+    "grep_and",
+    help="If given, return the intersection instead of the union of `-G` flag results.",
+    default=False,
+    is_flag=True
+)
+@click.option(
+    "--GREP-INVERT",
+    "grep_invert",
+    help="If given, return complement of the usual grep result.",
+    default=False,
+    is_flag=True
 )
 @click.option(
     "--EMAIL",
@@ -1161,8 +1376,15 @@ def current_teams():
     is_flag=True,
     default=False
 )
+@click.option(
+    "--EMAIL-BCC", 
+    "email_bcc", 
+    help="Send email as BCC (if not supplied, send using To field)",
+    is_flag=True, 
+    default=False
+)
 def roster_list(include_inactive, include_emplid, include_secret, 
-                github, grep_flag, send_email):
+                github, grep_flag, grep_and, grep_invert, send_email, email_bcc):
     """Print current course roster"""
     
     if github and grep_flag: 
@@ -1209,12 +1431,23 @@ def roster_list(include_inactive, include_emplid, include_secret,
         full_roster = full_roster.loc[full_roster["GitHub ID"].isin(github),:]
         
     if grep_flag: 
-        gh_re_flag = full_roster["GitHub ID"].str.contains(grep_flag, flags = re.IGNORECASE)
-        nm_re_flag = full_roster["Student Name"].str.contains(grep_flag, flags = re.IGNORECASE)
-        tm_re_flag = full_roster["Project Team Name"].str.contains(grep_flag, flags = re.IGNORECASE)
+        all_re_flag = pd.Series([grep_and for _ in range(full_roster.shape[0])])
         
-        all_re_flag = gh_re_flag | nm_re_flag | tm_re_flag
+        for gf in grep_flag: 
+            gh_re_flag = full_roster["GitHub ID"].str.contains(gf, flags = re.IGNORECASE)
+            nm_re_flag = full_roster["Student Name"].str.contains(gf, flags = re.IGNORECASE)
+            tm_re_flag = full_roster["Project Team Name"].str.contains(gf, flags = re.IGNORECASE)
         
+            gf_re_flag = gh_re_flag | nm_re_flag | tm_re_flag
+            
+            if grep_and:
+                all_re_flag = all_re_flag & gf_re_flag
+            else:
+                all_re_flag = all_re_flag | gf_re_flag
+                
+        if grep_invert:
+            all_re_flag = ~ all_re_flag
+                
         full_roster = full_roster.loc[all_re_flag,:]
     
     if github or grep_flag: 
@@ -1223,10 +1456,16 @@ def roster_list(include_inactive, include_emplid, include_secret,
         list_str = "registered"
     
     if send_email:
-        open_email(
-            subject=f"STA 9750 ",
-            to=full_roster["Student Email"].to_list(),
-        )
+        if email_bcc:
+            open_email(
+                subject=f"STA 9750 ",
+                bcc=full_roster["Student Email"].to_list(),
+            )
+        else: 
+            open_email(
+                subject=f"STA 9750 ",
+                to=full_roster["Student Email"].to_list(),
+            )
     else:
         click.echo(full_roster.to_markdown(index=True))
 
@@ -1800,7 +2039,7 @@ def project_list():
 @project.command(name="grade")
 @click.option(
     "--element",
-    type=click.Choice(["Proposal", "Check-In", "Final", "Summary-Report"], case_sensitive=False),
+    type=click.Choice(["Contract","Proposal", "Check-In", "Final", "Summary-Report"], case_sensitive=False),
     help="Which project element to assign grades for?",
     prompt="Which project element should grades be assigned for?",
 )
@@ -1817,13 +2056,23 @@ def project_grade(element, number, skip_email):
     TEAMS = current_teams()
     N_TEAMS, _ = TEAMS.shape
 
+    feedback_dir = op.join(course_dir(), element.lower())
+    os.makedirs(feedback_dir, exist_ok=True)
+
     if number > N_TEAMS or number < 0:
         raise click.ClickException("Invalid team number provided.")
 
     if number == 0:
         click.echo("The current teams are:")
         for row in TEAMS.itertuples():
-            click.echo(f"Team Number {row.number} - {row.name}")
+            feedback_file = op.join(feedback_dir, f"team_{row.number:02}.txt")
+            
+            if op.exists(feedback_file):
+                status = "DONE"
+            else: 
+                status = "TODO"
+            
+            click.echo(f"Team Number {row.number} - {row.name} ({status})")
 
         number = click.prompt(
             "Which team would you like to provide feedback to?",
@@ -1848,14 +2097,11 @@ def project_grade(element, number, skip_email):
             f"{row.name} (GH: {row.github}; EMAIL: {row.email}) - {row.team_name}"
         )
 
-    feedback_dir = op.join(course_dir(), element.lower())
-    os.makedirs(feedback_dir, exist_ok=True)
-
-    feedback_file = op.join(feedback_dir, f"team_{number}.txt")
+    feedback_file = op.join(feedback_dir, f"team_{number:02}.txt")
 
     if op.exists(feedback_file):
         new_feedback = click.confirm(
-            f"Feedback already found for Team {number}. Are you sure you want to overwrite?"
+            f"Feedback already found for Team {number:02}. Are you sure you want to overwrite?"
         )
     else:
         new_feedback = True
@@ -1866,10 +2112,12 @@ def project_grade(element, number, skip_email):
             autoescape=select_autoescape(),
         )
 
-        TEMPLATE = TEMPLATES.get_template(f"project_{element.lower()}.md")
+        TEMPLATE = TEMPLATES.get_template(f"project_{element.lower().replace('-', '_')}.md")
         
         if element == "Summary-Report":
             report_url = click.prompt("What URL was used for the graded report?")
+            
+            
         else: 
             report_url = None
 
@@ -1899,10 +2147,10 @@ def project_grade(element, number, skip_email):
     if element.lower() not in ALL_GRADES:
         ALL_GRADES[element.lower()] = dict()
 
-    ALL_GRADES[element.lower()][number] = total
+    ALL_GRADES[element.lower()][f"{number:02}"] = total
 
     with open(team_grades_file(), "w") as f:
-        f.write(json.dumps(ALL_GRADES, indent=2))
+        f.write(json.dumps(ALL_GRADES, indent=2, sort_keys=True))
 
     if skip_email:
         return 0
@@ -1913,6 +2161,74 @@ def project_grade(element, number, skip_email):
         body=FEEDBACK_TXT,
     )
 
+
+@project.group(name="peer")
+def project_peer():
+    """Commands for the project peer feedback cycle."""
+    
+@project_peer.command(name="upload")
+@click.option(
+    "--cycle",
+    type=click.Choice(["Mid-Semester", "Final"], case_sensitive=False),
+    help="Which peer evaluation cycle to upload the assignment file for?",
+    prompt="Which peer evaluation cycle to upload the assignment file for?",
+)
+def project_peer_upload(cycle):
+    "Create the project peer feedback assignment file and upload to GitHub"
+    ROSTER = current_roster()
+    TEAMS = current_teams()
+    BIG_ROSTER = pd.merge(
+        ROSTER,
+        TEAMS.rename(columns={"name": "team_name"}),
+        how="left",
+        left_on="project_team",
+        right_on="number",
+    )
+    
+    TEAMS = BIG_ROSTER.team_name.unique().tolist()
+    
+    TEAM_OUT = {}
+    
+    for team in TEAMS:
+        TEAM_OUT[team] = BIG_ROSTER[BIG_ROSTER.team_name == team].github.map(str.lower).tolist()
+        
+    safe_cycle = cycle.lower().replace('-', '_')
+    TEAM_FILE = op.join(course_dir(), f"{safe_cycle}_peers.yaml")
+
+    with open(TEAM_FILE, "w") as f:
+        f.write(yaml_dump(TEAM_OUT, sort_keys=False))
+    
+    with open(TEAM_FILE) as f:
+        TEAM_FILE_TEXT = f.read()
+
+    click.echo(f"If not already done, please upload {TEAM_FILE} to GitHub at https://github.com/{course_owner()}/{course_repo()} as '{safe_cycle}_peers.yaml' and announce upload to students.")
+
+    TEAM_FILE_URL = f"https://raw.githubusercontent.com/{course_owner()}/{course_repo()}/refs/heads/main/{safe_cycle}_peers.yaml"
+
+    if not r.get(TEAM_FILE_URL).ok:
+        webbrowser.open(f"https://github.com/{course_owner()}/{course_repo()}/new/main?filename={safe_cycle}_peers.yaml&value={quote_plus(TEAM_FILE_TEXT)}")
+        
+@project_peer.command(name="collect")
+@click.option(
+    "--cycle",
+    type=click.Choice(["Mid-Semester", "Final"], case_sensitive=False),
+    help="Which peer evaluation cycle to upload the assignment file for?",
+    prompt="Which peer evaluation cycle to upload the assignment file for?",
+)
+def project_peer_collect(cycle):
+    """Extract and standardize peer feedback from Brightspace export"""
+    raise NotImplementedError
+
+@project_peer.command(name="grade")
+@click.option(
+    "--cycle",
+    type=click.Choice(["Mid-Semester", "Final"], case_sensitive=False),
+    help="Which peer evaluation cycle to upload the assignment file for?",
+    prompt="Which peer evaluation cycle to upload the assignment file for?",
+)
+def project_peer_grade(cycle):
+    """Review and grade peer feedback"""
+    raise NotImplementedError
 
 @project.command(name="report")
 @click.option(
@@ -2415,7 +2731,7 @@ def _possible_open_instructor_issue(github_id, project_id):
     
 
 @mini.group(name="peer")
-def peer():
+def mini_peer():
     """Assign, collect, and evaluate peer feedback
 
     These functions can be used to administer the peer feedback cycle for each
@@ -2423,7 +2739,7 @@ def peer():
 
     - Assign: Review all submission issues"""
 
-@peer.command(name="assign")
+@mini_peer.command(name="assign")
 @click.option(
     "-N",
     "--number",
@@ -2461,7 +2777,7 @@ def peer():
     is_flag=True,
     help="Skip linting student submissions"
 )
-def peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip, lint):
+def mini_peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip, lint):
     """Assign Mini-Project Peer Feedback
 
     This command does several things:
@@ -2692,7 +3008,7 @@ def meta_dir(project_id):
 
     return dirname
 
-@peer.command(name="verify")
+@mini_peer.command(name="list")
 @click.option(
     "-N",
     "--number",
@@ -2701,376 +3017,122 @@ def meta_dir(project_id):
     prompt="Which mini-project to collect peer feedback for?",
     type=click.IntRange(min=0, max=4),
 )
+def mini_peer_list(project_id):
+    gh_url = f'https://raw.githubusercontent.com/{course_owner()}/{course_repo()}/refs/heads/main/pf_mp{project_id:02}.yaml'
+    resp = r.get(gh_url)
+    
+    if not resp.ok:
+        raise click.ClickException("Could not access {gh_url} to get peer feeback file.")
+    
+    pf_assignments = yaml_load(resp.text)
+    
+    ROSTER = current_roster()
+    
+    _gh_to_name = lambda gh: ROSTER[ROSTER.github.map(str.lower) == gh].name.item()
+    
+    for gh, assigned_issues_encoded in pf_assignments["assignments"].items():
+        student = ROSTER[ROSTER.github.map(str.lower) == gh]
+        real_name = student.name.item()
+        
+        n_dropped_assignments = 0
+        
+        assigned_issues_decoded = vernam_encode(assigned_issues_encoded, student.secret.item(), offset=project_id)
+        assigned_issues = [i for i in pf_assignments["issue_status"] if i["number"] in assigned_issues_decoded]
+        
+        click.echo(f"{gh} ({real_name}) has been assinged to review {len(assigned_issues)} MP#{project_id:02} submissions:")
+        
+        for ix, (n_encoded, n_decoded) in enumerate(zip(assigned_issues_encoded, assigned_issues_decoded), start=1):
+            if n_encoded == "NA":
+                n_dropped_assignments += 1
+                continue
+            
+            issue = [i for i in pf_assignments["issue_status"] if i["number"] == n_decoded]
+            
+            if len(issue) != 1:
+                import pdb; pdb.set_trace()
+                
+            issue = issue[-1]
+            
+            click.echo(f"- {ix}. Issue Number #{issue['number']:02} of {issue['owner']} ({_gh_to_name(issue['owner'])}). Status: {issue['status_oneline']}. (Encoded as {n_encoded})")
+            
+        if n_dropped_assignments:
+            click.echo(f"- Additionally {n_dropped_assignments} peer feedback assignment{'s were' if n_dropped_assignments > 1 else ' was'} removed.")
+            
+        click.echo("")
+
+@mini_peer.command(name="collect")
 @click.option(
-    "--use-existing",
-    "rearchive",
-    is_flag=True,
-    default=True,
-    help="Skip archiving and use cached issue comments",
+    "-N",
+    "--number",
+    "project_id",
+    help="Mini-project to process peer feedback",
+    prompt="Which mini-project to collect peer feedback for?",
+    type=click.IntRange(min=0, max=4),
 )
+@click.argument('brightspace_file', default=None, type=click.Path(), required=False)
 @click.option(
     "--dry-run", "dry_run", help="Skip posting to GitHub", default=False, is_flag=True
 )
-def peer_verify(project_id, rearchive, dry_run):
-    """Confirm peer feedback has been appropriately formatted
-    
-    Check peer feedback comments for formatting and post to GitHub"""
-    if rearchive:
-        _mini_archive(project_id, [], skip_pdf=True, archive_submissions=False)
-        
-    PF_MAPPING = _peer_assignment_mapping(project_id)
-    PF_ASSIGNMENT_DIR = op.join(course_dir(), f"mp0{project_id}", "assignments")
-    
-    PF_ASSIGNMENT_FILES = [op.join(PF_ASSIGNMENT_DIR, fname) for fname in os.listdir(PF_ASSIGNMENT_DIR)]
-    
-    PF_ASSIGNMENT_COMMENTER = {}
-    PF_ASSIGNMENT_COMMENTEE = {}
-    
-    ALL_PF = []
-    PF_BY_EVALUATOR = defaultdict(list)
-    
-    for pf_file in os.listdir(PF_ASSIGNMENT_DIR):
-        submittor, issue_num = re.match('(.*)_issue(\d+).md', pf_file).groups()
-
-        with open(op.join(PF_ASSIGNMENT_DIR, pf_file), "r") as f:
-            pf_text = f.read()
-
-        potential_evaluators = PF_MAPPING[submittor]
-
-        for evaluator in potential_evaluators:
-            if evaluator in pf_text:
-                pf = PeerFeedback(submittor, evaluator, project_id)
-                ALL_PF.append(pf)
-                PF_BY_EVALUATOR[evaluator].append(pf)
-    
-    STUDENTS_COMPLETED = [k for k, V in PF_BY_EVALUATOR.items() if all(v.ok for v in V)]
-    STUDENTS_ALL_MISSING = [k for k, V in PF_BY_EVALUATOR.items() if all(v.missing for v in V)]
-    
-    STUDENTS_UNIFORM = STUDENTS_COMPLETED + STUDENTS_ALL_MISSING
-
-    click.echo("--------")    
-    if STUDENTS_COMPLETED: 
-        click.echo(f"The following {len(STUDENTS_COMPLETED)} students have completed all peer feedback properly:")
-        for ix, s in enumerate(STUDENTS_COMPLETED, start=1):
-            click.echo(f"- {ix:02g}. {s}")
-        click.echo("--------")
-        
-    if STUDENTS_ALL_MISSING:
-        click.echo(f"The following {len(STUDENTS_ALL_MISSING)} students not started peer feedback:")
-        for ix, s in enumerate(STUDENTS_ALL_MISSING, start=1):
-            click.echo(f"- {ix:02g}. {s}")
-        click.echo("--------")
-        
-    if len(STUDENTS_UNIFORM) != len(PF_BY_EVALUATOR):
-        click.echo(f"The following {len(PF_BY_EVALUATOR) - len(STUDENTS_UNIFORM)} students have additional work to do:")
-        
-    for student, feedbacks in PF_BY_EVALUATOR.items():
-        if student not in STUDENTS_UNIFORM: 
-            proper_submittors   = [" [✓] " + f.submittor for f in feedbacks if f.ok]
-            missing_submittors  = [" [M] " + f.submittor for f in feedbacks if f.missing]
-            improper_submittors = [" [✗] " + f.submittor for f in feedbacks if f.improper]
- 
-            status_string = "".join(missing_submittors + improper_submittors + proper_submittors)
-            
-            n_ok = len(proper_submittors)
-            n_all = len(feedbacks)
-            click.echo(f"- {student} ({n_all - n_ok}/{n_all}):{status_string}")
-            
-    if len(STUDENTS_UNIFORM) != len(PF_BY_EVALUATOR):
-        click.echo(" [✓] = Submitted with proper formatting")
-        click.echo(" [✗] = Submitted with improper formatting")
-        click.echo(" [M] = Missing submission")
-        
-    click.echo("---------")
-    
-    if dry_run: 
-        return
-    
-    click.echo("GIT HUB POSTING NOT YET IMPLEMENTED")
-    raise click.Abort()
-    
-@peer.command(name="collect")
-@click.option(
-    "-N",
-    "--number",
-    "project_id",
-    help="Mini-project to process peer feedback",
-    prompt="Which mini-project to collect peer feedback for?",
-    type=click.IntRange(min=0, max=4),
-)
-@click.option(
-    "--use-existing",
-    "rearchive",
-    is_flag=True,
-    default=True,
-    help="Skip archiving and use cached issue comments",
-)
-@click.option("--skip-pdf", is_flag=True, default=False, help="Skip PDF archiving")
 @click.option(
     "-F",
     "--force",
     is_flag=True,
     default=False,
-    help="Force re-evaluation of peer feedback.",
+    help="Force re-extraction of peer feedback."
 )
-@click.option(
-    "-g",
-    "--github",
-    multiple=True,
-    help="GitHub ID to archive. Can be given multiple times. If blank, all active students in roster.",
-)
-def peer_collect(project_id, rearchive, skip_pdf, force, github):
+def mini_peer_collect(brightspace_file, project_id, dry_run, force):
     """Collect all peer feedback in a standardized format
-
-    After the peer feedback window ends, this function will parse all GH
-    issue comments to collect students' peer feedback. In theory, this is
-    fully automatable, but students are bad at following instruction so this
-    function will prompt for clarification repeatedly as it runs. This function
-    saves its output as it goes so it is safe to terminate mid-execution and
-    resume later. Run with '--force' to force regrading from the beginning.
-
-    TODO: Add support for the -g flag to only process certain students."""
-    if rearchive:
-        _mini_archive(project_id, [], skip_pdf)
-
-    ROSTER = current_roster()
-    ALL_STUDENTS = set(ROSTER["github"])
-    PF_MAPPING = _peer_assignment_mapping(project_id)
-
-    PEER_FEEDBACK_SKELETON = {
-        "scores": {
-            "Written Communication": nan,
-            "Project Skeleton": nan,
-            "Formatting & Display": nan,
-            "Code Quality": nan,
-            "Data Preparation": nan,
-            "Extra Credit": nan,
-        },
-        "comments": {
-            "Written Communication": nan,
-            "Project Skeleton": nan,
-            "Formatting & Display": nan,
-            "Code Quality": nan,
-            "Data Preparation": nan,
-            "Extra Credit": nan,
-        },
-        "posts": nan,
-        "formatted_properly": nan,
-    }
-
-    pf_file = _peer_feedback_collect_file(project_id)
-
-    with open(pf_file, "r") as f:
-        try:
-            ALL_PEER_FEEDBACK = json.loads(f.read())
-            
-            if not ALL_PEER_FEEDBACK:
-                raise ValueError # Bail to make new feedback file
-        except ValueError:
-            ALL_PEER_FEEDBACK = {
-                s: {vv: dcopy(PEER_FEEDBACK_SKELETON) for vv in v}
-                for s, v in PF_MAPPING.items()
-            }
-
-    ALL_ISSUES_CONTENTS = load_issues()
     
-    if not github: 
-        STUDENT_LIST = ALL_PEER_FEEDBACK.keys()
-    else: 
-        STUDENT_LIST = github
-
-    for student in STUDENT_LIST:
-        if "issue_num" in ALL_PEER_FEEDBACK[student]:
-            if not force:
-                continue
-
-        STUDENT_ISSUES = [
-            c for c in ALL_ISSUES_CONTENTS if student.lower() in c["title"].lower()
-        ]
-        STUDENT_ISSUES.sort(key=lambda c: c["number"])
-
-        num_str = f"#0{project_id}"
-
-        RELEVANT_ISSUES = [s for s in STUDENT_ISSUES if num_str in s["title"]]
-
-        if not RELEVANT_ISSUES:
-            click.echo(
-                f"I could not find an issue for {student} with '{num_str}' in the title."
-            )
-            click.echo("Please select the relevant issue from the choices below.")
-            click.echo("If you want to see all issues, press 0.")
-
-            for s in STUDENT_ISSUES:
-                click.echo(f"- {s['number']}. Title: {s['title']}")
-
-            issue_num = click.prompt(
-                "Select the issue to use or press 0.",
-                type=click.Choice([str(s["number"]) for s in STUDENT_ISSUES] + ["0"]),
-            )
-
-            try:
-                issue_num = int(issue_num)
-            except ValueError:
-                click.echo(
-                    "I could not interpret your input as an issue number. Interpreting as 0."
-                )
-                issue_num = 0
-
-            if issue_num:
-                KEY_ISSUE = [r for r in STUDENT_ISSUES if r["number"] == issue_num][0]
-            else:
-                click.echo(
-                    "Please select from all issues. If no issue is appropriate, press 0."
-                )
-                for i in ALL_ISSUES_CONTENTS:
-                    click.echo(f"- {i['number']}. Title: {i['title']}")
-
-                issue_num = click.prompt(
-                    "Select the issue to use or press 0.",
-                    type=click.Choice(
-                        [str(i["number"]) for i in ALL_ISSUES_CONTENTS] + ["0"]
-                    ),
-                )
-
-                try:
-                    issue_num = int(issue_num)
-                except ValueError:
-                    click.echo(
-                        "I could not interpret your input as an issue number. Interpreting as 0."
-                    )
-                    issue_num = 0
-
-            if not issue_num:
-                continue  # Go to next student
-
-            KEY_ISSUE = [i for i in ALL_ISSUES_CONTENTS if i["number"] == issue_num][0]
-
-        elif len(RELEVANT_ISSUES) > 1:
-            click.echo(
-                f"I found multiple issue for {student} with '{num_str}' in the title."
-            )
-            click.echo("Please select the relevant issue from the choices below.")
-
-            for r in RELEVANT_ISSUES:
-                click.echo(f"- {r['number']}. Title: {r['title']}")
-
-            issue_num = click.prompt(
-                "Select the issue to use.",
-                type=click.Choice([str(r["number"]) for r in RELEVANT_ISSUES]),
-            )
-
-            try:
-                issue_num = int(issue_num)
-            except ValueError:
-                raise click.ClickException("I could not interpret your input as an issue number")
-
-            KEY_ISSUE = [r for r in RELEVANT_ISSUES if r["number"] == issue_num][0]
-        else:
-            KEY_ISSUE = RELEVANT_ISSUES[0]
-            
-        EVALUATORS = ALL_STUDENTS.intersection(ALL_PEER_FEEDBACK[student].keys())
-
-        for evaluator in EVALUATORS:
-            current_posts = ALL_PEER_FEEDBACK[student][evaluator]["posts"]
-            has_posts = current_posts and not is_nan(current_posts)
-            
-            if has_posts and not force:
-                continue
-
-            POSTS = "\n----NEW POST----\n".join(
-                [
-                    text
-                    for author, text in KEY_ISSUE["comments"]
-                    if author.lower() == evaluator.lower()
-                ]
-            )
-
-            if not POSTS:
-                ALL_PEER_FEEDBACK[student][evaluator]["posts"] = POSTS
-                continue
-
-            ALL_FORMATTING = True
-            for k in ALL_PEER_FEEDBACK[student][evaluator]["scores"].keys():
-                pattern = k + "[:][ ]+(\\d{1,2})"
-                match = re.search(pattern, POSTS)
-
-                if match is not None:
-                    try:
-                        score = int(match.group(1))
-                    except ValueError:
-                        ALL_FORMATTING = False
-                        click.clear()
-                        click.echo(f"I was unable to locate a score for '{k}'")
-                        click.echo(
-                            f"What score should be given to {student}, based on these comments:\n----"
-                        )
-                        click.echo(POSTS)
-                        click.echo("----\n")
-                        score = click.prompt(
-                            f"Enter a score 0-10 for '{k}' or leave blank to keep NaN",
-                            type=int,
-                            default=-1,
-                        )
-
-                        if score < 0:
-                            score = nan
-
-                else:
-                    ALL_FORMATTING = False
-                    click.clear()
-                    click.echo(f"I was unable to locate a score for '{k}'")
-                    click.echo(
-                        f"What score should be given to {student}, based on these comments:\n----"
-                    )
-                    click.echo(POSTS)
-                    click.echo("----\n")
-                    score = click.prompt(
-                        f"Enter a score 0-10 for '{k}' or leave blank to keep NaN",
-                        type=int,
-                        default=nan,
-                    )
-
-                ALL_PEER_FEEDBACK[student][evaluator]["scores"][k] = score
-
-            for k in ALL_PEER_FEEDBACK[student][evaluator]["comments"].keys():
-                pattern = k + "[ \n]+(.*)[\n]?"
-                match = re.search(pattern, POSTS)
-
-                if match is not None:
-                    comment = match.group(1)
-                else:
-                    ALL_FORMATTING = False
-                    HEADER = f"""
-                    I was unable to extract comments for '{k}'. Please edit
-                    this file and leave only the comments on that topic.\n------\n"""
-                    SOURCE = HEADER + POSTS
-                    comment = click.edit(text=SOURCE, editor="/usr/bin/nano")
-
-                    if not comment:
-                        comment = ""
-
-                ALL_PEER_FEEDBACK[student][evaluator]["comments"][k] = comment.strip()
-
-            ALL_PEER_FEEDBACK[student][evaluator]["formatted_properly"] = ALL_FORMATTING
-            ALL_PEER_FEEDBACK[student][evaluator]["posts"] = POSTS
-
-            with open(pf_file, "w") as f:
-                f.write(json.dumps(ALL_PEER_FEEDBACK, indent=2))
-
-        # Save the issue number for later just in case
-        ALL_PEER_FEEDBACK[student]["issue_num"] = KEY_ISSUE["number"]
-        ALL_PEER_FEEDBACK[student]["submission_penalty"] = (
-            "INSTRUCTOR" in KEY_ISSUE["title"]
-        )
-
-    with open(pf_file, "w") as f:
-        f.write(json.dumps(ALL_PEER_FEEDBACK, indent=2))
-
-    click.echo(f"All peer feedback processed for MP#0{project_id}")
+    After the peer feedback window ends, this function will parse all student
+    peer feedback files as submitted in 'bspf' files on Brightspace. Starting
+    Spring 2026, the use of a script to create a BSPF file seems to have smoothed
+    things out so this can be run as a 'one shot'. This command takes the zip
+    file (straight from Brightspace, not modified or unzipped) as input and puts
+    everything into a suitable archival location. 
+    
+    After running this command, run `mini peer grade` to compute student grades
+    and `mini peer meta` to provide meta-review comments."""
+    
+    mp_dir = Path(course_dir(), f"mp{project_id:02}")
+    
+    if brightspace_file is None:
+        possible_zips = list(mp_dir.glob("*zip"))
+        
+        if len(possible_zips) != 1: 
+            raise click.ClickException("Could not identify Brightspace Export file")
+        
+        brightspace_file = possible_zips[0]
+        click.confirm(f"Using {brightspace_file} to extract peer feedback. Confirm? ", abort=True)
+    
+    all_peer_feedback = PeerFeedbackCollection(mp_num=project_id).load_from_zip(brightspace_file)
+    
+    peer_feedback_fname = _peer_feedback_file(project_id)
+    
+    if op.exists(peer_feedback_fname) and op.getsize(peer_feedback_fname) and not force:
+        raise click.ClickException(f"Peer feedback file already present at {peer_feedback_fname}!")
+    
+    with open(peer_feedback_fname, "w") as f:
+        f.write(all_peer_feedback.to_json())
+    
+    click.echo(f"All peer feedback loaded for MP#{project_id:02}")
     click.echo("You may now run 'peer grade' to compute actual grades")
 
+    if dry_run: 
+        return 0
+    
+    click.echo("Updating labels and closing issues")
+    
+    mp_issues = all_peer_feedback.issues
+    
+    with click.progressbar(mp_issues, show_pos=True, label="Closing Issues", length=len(all_peer_feedback.issue_nums),
+                           item_show_func=lambda r: r.owner if r else None) as bar:
+        for i in bar:
+            i.add_label("Peer Feedback Complete")
+            i.remove_label("Peer Feedback Period")
+            i.close()
+    
 
-@peer.command(name="grade")
+@mini_peer.command(name="grade")
 @click.option(
     "-N",
     "--number",
@@ -3082,120 +3144,183 @@ def peer_collect(project_id, rearchive, skip_pdf, force, github):
 @click.option(
     "--max-extra-credit", 
     help="Cap extra credit at certain amount; set to 0 for no cap.",
-    prompt="What amount should extra credit be capped at? Set 0 for no cap.",
+    prompt="What amount should extra credit be capped at? [Set 0 for no limit] ",
     type=click.IntRange(min=0, max=10),
+    default=0
 )
-def peer_grade(project_id, max_extra_credit):
+@click.option(
+    "-F",
+    "--force",
+    is_flag=True,
+    default=False,
+    help="Force re-evaluation of peer feedback."
+)
+@click.option(
+    "--skip-instructor",
+    is_flag=True,
+    default=False,
+    help="Skip instructor comments. Only do this for speed."
+)
+def mini_peer_grade(project_id, max_extra_credit, force, skip_instructor):
     """Consolidate collected peer feedback to assign grades
 
     After running 'collect', this function will parse the peer feedback
     comments and create text files summarizing feedback for each student.
     The instructor must then upload these to Brightspace to return them
     to the students. This function is very fast and can be safely re-run."""
-    pf_file = _peer_feedback_collect_file(project_id)
+    all_peer_feedback = PeerFeedbackCollection(project_id)
+    all_peer_feedback.load_from_json(_peer_feedback_file(project_id))
+    
+    with open(_peer_feedback_mapping_file(project_id)) as f_peer:
+        peer_feedback_mapping = json.loads(f_peer.read())
+        
+    submittors = peer_feedback_mapping.keys()
+    n_assigned = max([len(v) for v in peer_feedback_mapping.values()])
+    
+    ROSTER = current_roster(include_inactive=False)
+    
+    templates = Environment(
+        loader=FileSystemLoader("_cissoid/templates"), 
+        autoescape=select_autoescape()
+    )
+    
+    bs_template = templates.get_template("pf_grade_for_brightspace.md")
+    instructor_template = templates.get_template("pf_grade_instructor_prompt.md")
+    
+    for n_student, submittor in enumerate(submittors, start=1):
+        real_name = ROSTER[ROSTER["github"].map(str.lower) == submittor]["name"].item()
+        # Use the roster version to ensure we get preferred capitalization
+        gh = ROSTER[ROSTER["github"].map(str.lower) == submittor]["github"].item()
+        safe_name = real_name.lower().replace(" ", "_")
+        
+        grade_file = op.join(grade_dir(project_id), f"{safe_name}.txt")
 
-    ROSTER = current_roster()
-
-    with open(pf_file, "r") as f:
+        if op.exists(grade_file) and not force:
+            continue
+        
         try:
-            ALL_PEER_FEEDBACK = json.loads(f.read() or '{}')
-        except ValueError:
-            raise click.ClickException("Feedback file appears to be empty. Run 'peer collect' first.")
-
-    template = Environment(
-        loader=FileSystemLoader("_cissoid/templates"), autoescape=select_autoescape()
-    ).get_template("pf_grade_for_brightspace.md")
-
-    with click.progressbar(ALL_PEER_FEEDBACK.items()) as bar:
-        for student, feedback in bar:
-            real_name = ROSTER[ROSTER["github"] == student]["name"].item()
-            safe_name = real_name.lower().replace(" ", "_")
-            evaluators = [e for e in feedback.keys()]
-
-            try:
-                penalty = feedback["submission_penalty"]
-            except KeyError:
-                penalty = click.confirm(
-                    f"Should a submission penalty be applied to {student} on MP#0{project_id}?"
-                )
-
-            try:
-                issue_num = feedback["issue_num"]
-            except KeyError:
-                click.echo(
-                    f"I somehow lost the issue number for {student} on MP#0{project_id}."
-                )
-                issue_num = click.prompt("What issue number should I use?", type=int)
-
-            CATEGORIES = [
-                "Written Communication",
-                "Project Skeleton",
-                "Formatting & Display",
-                "Code Quality",
-                "Data Preparation",
-                "Extra Credit",
-            ]
-
-            SCORE_DICT = {c: [] for c in CATEGORIES}
-            COMMENTS_DICT = {c: [] for c in CATEGORIES}
-
-            for evaluator in evaluators:
-                if evaluator in ["submission_penalty", "issue_num"]:
-                    continue
-                
-                e_feedback = feedback[evaluator]
-
-                for c in CATEGORIES:
-                    try:
-                        e_feedback["scores"][c]
-                    except TypeError:
-                        import pdb; pdb.set_trace()
-
-                    if is_nan(e_feedback["scores"][c]):
-                        continue
-                    
-                    score = e_feedback["scores"][c]
-                    comment = e_feedback["comments"][c]
-                    
-                    if max_extra_credit and c == "Extra Credit":
-                        score = min(score, max_extra_credit)
-
-                    SCORE_DICT[c].append(score)
-                    COMMENTS_DICT[c].append((evaluator, comment))
-
-            try:
-                SCORES = {k: median(v) if v else nan for k, v in SCORE_DICT.items()}
-                TOTAL = sum(SCORES.values())
-            except:
+            first_feedback = all_peer_feedback.get_feedback_for(submittor)[0]
+            issue_ok = first_feedback.issue_ok
+            issue_status = first_feedback.issue_status
+            issue_num = first_feedback.issue_num
+        except IndexError: 
+            click.echo(f"I found no peer feedback for {submittor}.")
+            if click.confirm("Should this person be assigned an automatic 0?"):
+                with open(grade_file, "w") as f_zero:
+                    f_zero.write("Automatic 0. No submission or submission removed upon student request.")
+            else:
                 import pdb; pdb.set_trace()
 
-            if penalty:
-                TOTAL = TOTAL - 5
+        feedback = all_peer_feedback.get_feedback_for(submittor)
+        
+        comments = {}
+        scores   = {}
+        
+        for ix, f in enumerate(feedback, start = 1):
+            if f.comments: 
+                for k, v in f.comments.items(): 
+                    if k not in comments: 
+                        comments[k] = {}
+                    comments[k][f"Peer Reviewer {ix}"] = v
+                
+            if f.scores:
+                for k, v in f.scores.items():
+                    if k not in scores:
+                        scores[k] = {}
+                    scores[k][f"Peer Reviewer {ix}"] = v
+                
+        if scores:
+            overall_score = {}
+            
+            for s in scores.keys():
+                peer_scores = [v["score"] for v in scores[s].values()]
+                overall_score[s] = median(peer_scores)
+            overall_score["Total"] = sum(overall_score.values())
+            
+            if not issue_ok:
+                click.echo(f"{submittor}'s submission did not pass automated checks with a message of {issue_status}.")
+                if click.confirm("Would you like me to open the associated submission?"):
+                    if project_id:
+                        webbrowser.open(f"https://{submittor}.github.io/{course_repo()}/mp{project_id:02}.html")
+                    else:
+                        webbrowser.open(f"https://{submittor}.github.io/{course_repo()}/")
+                        
+                    webbrowser.open(f"https://github.com/{course_owner()}/{course_repo()}/issues/{issue_num}")
+                    webbrowser.open(f"https://github.com/{submittor}/{course_repo()}")
+                    
+                check_penalty = click.prompt("How much penalty should be applied?", 
+                                             type=click.IntRange(0, 10), default=5)
+                                             
+                overall_score["Total"] -= check_penalty
+                bs_penalty = 0
+            else:
+                check_penalty = 0
+                bs_penalty = 0
+        else:
+            overall_score = None
+            check_penalty = False
+            bs_penalty = False
+            
+        if skip_instructor:
+            instructor_comment = None
+        else:
+            progress = f'{(n_student - 1) / len(submittors):.1%}'
 
-            if TOTAL < 0:
-                TOTAL = 0
-
-            grade_text = template.render(
-                project_id=project_id,
-                categories=CATEGORIES,
-                scores=SCORES,
-                scores_dict=SCORE_DICT,
-                comments=COMMENTS_DICT,
-                name=real_name,
-                total=TOTAL,
-                penalty=penalty,
-                course_repo = course_repo(),
-                course_dir=course_dir(),
-                issue_num=issue_num,
+            instructor_prompt = instructor_template.render(
+                comments=comments,
+                overall_score=overall_score,
+                scores=scores, 
+                issue_ok=f.issue_ok, 
+                issue_status=f.issue_status,
+                n_student=n_student,
+                total_students=len(submittors),
+                progress=progress
             )
+            
+            instructor_prompt = ("\n".join(["## " + l for l in instructor_prompt.split("\n") if l]))
+            
+            click.echo(f"Opening MP submission for {submittor}")
+            
+            if project_id:
+                webbrowser.open(f"https://{submittor}.github.io/{course_repo()}/mp{project_id:02}.html")
+            else:
+                webbrowser.open(f"https://{submittor}.github.io/{course_repo()}/")
+                
+            instructor_comment = click.edit(text=instructor_prompt, editor="/usr/bin/nano")
+            
+            if instructor_comment:
+                instructor_comment = instructor_comment.split("\n")
+                instructor_comment = [l for l in instructor_comment if l and not l.startswith("## ")]
+                instructor_comment = "\n".join(wrap("\n".join(instructor_comment)))
+                
+            click.confirm("Would you like to continue?", abort=True)
+            
+        grade_text = bs_template.render(
+                project_id=project_id,
+                gh=gh,
+                scores=scores,
+                comments=comments,
+                name=real_name,
+                overall_score=overall_score,
+                bs_penalty=bs_penalty,
+                check_penalty=check_penalty, 
+                n_reviewers=len(feedback), 
+                n_assigned=n_assigned, 
+                instructor_comment=instructor_comment
+            )
+            
+        # FIXME: I don't understand Jinja's whitespace rules, so just clean it directly
+        grade_text = re.sub(r'\n\s*\n', '\n\n', grade_text)
 
-            grade_file = op.join(grade_dir(project_id), f"{safe_name}.txt")
+        with open(grade_file, "w") as f_out:
+            f_out.write(grade_text)
+            
+    click.echo("Student grade files complete. Please upload to Brightspace:")
+    click.echo(grade_dir(project_id))
+    click.launch(grade_dir(project_id))
 
-            with open(grade_file, "w") as f:
-                f.write(grade_text)
 
-
-@peer.command(name="meta")
+@mini_peer.command(name="meta")
 @click.option(
     "-N",
     "--number",
@@ -3223,7 +3348,7 @@ def peer_grade(project_id, max_extra_credit):
     default=False,
     help="Force re-evaluation of peer feedback."
 )
-def peer_meta(project_id, rearchive, skip_pdf, force):
+def mini_peer_meta(project_id, rearchive, skip_pdf, force):
     """Provide a Meta-Review of Peer-Feedback
 
     After collecting peer feedback, the course staff (instructor or TAs)
@@ -3382,8 +3507,7 @@ def peer_meta(project_id, rearchive, skip_pdf, force):
 
     click.echo(f"Meta review files written to {meta_dir(project_id)} can now be loaded to Brightspace.")
 
-
-
+     
 @course_manager.group()
 def notify():
     """Helper functions to create reminder emails
@@ -3414,39 +3538,8 @@ def notify_no_team():
     open_email(
         subject="STA 9750 - No Team Registered",
         bcc=BCC,
-        body="Hello,\n\nIf you are receiving this email, it means I have not yet registered you on a team for your STA 9750 course project.\n\nPlease register a team with the instructor as soon as possible. See https://michael-weylandt.com/STA9750/project.html for details.",
+        body="\nHello,\n\nIf you are receiving this email, it means I have not yet registered you on a team for your STA 9750 course project.\n\nPlease register a team with the instructor as soon as possible. See https://michael-weylandt.com/STA9750/project.html for details.",
     )
-
-
-@notify.command(name="pf-assigned")
-@click.option(
-    "-N",
-    "--number",
-    "project_id",
-    prompt="Which mini-project to notify peer feedback for?",
-    type=click.IntRange(min=0, max=4),
-)
-def notify_pf_assigned(project_id):
-    PF_MAPPING = get_pf_mapping(project_id)
-
-    template = Environment(
-        loader=FileSystemLoader("_cissoid/templates"), autoescape=select_autoescape()
-    ).get_template("pf_assignment_email.md")
-
-    for k, assignments in PF_MAPPING.items():
-        name, github, email = k
-
-        body = template.render(
-            name=name, gh=github, project_id=project_id, assignments=assignments
-        )
-
-        open_email(
-            to=email,
-            body=body,
-            flag_auto=False,
-            subject=f"STA9750 MP#0{project_id} Peer Feedback Assignments for {github}",
-        )
-
 
 if __name__ == "__main__":
     course_manager()
