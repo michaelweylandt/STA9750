@@ -1,9 +1,10 @@
 
+$$\newcommand{\P}{\mathbb{P}} \newcommand{\E}{\mathbb{E}} \newcommand{\R}{\mathbb{R}}$$
+
 ```{r}
 #| echo: false
 #| message: false
 #| warning: false
-
 library <- function(pkg){
     options(repos = c(CRAN = "https://cloud.r-project.org"))
     
@@ -34,6 +35,38 @@ mp <-  DATES |> filter(element == "Mini-Projects",
 mp_file <- list(qmd=glue("`mp{sprintf('%02g', mp_id)}.qmd`"), 
                 html=glue("`mp{sprintf('%02g', mp_id)}.html`"),
                 html_long=glue("`docs/mp{sprintf('%02g', mp_id)}.html`"))
+```
+
+```{r}
+#| echo: false
+#| message: false
+library(yaml)
+get_mp_yaml <- function(N){
+    fname <- glue("mini/mini0{N}.qmd")
+    lines <- readLines(fname, n=30)
+    lines_header <- which(lines == "---")
+    lines_start <- min(lines_header) + 1
+    lines_end <- max(lines_header) - 1
+    
+    lines_range <- seq(lines_start, lines_end)
+    
+    lines_yaml <- lines[lines_range]
+    
+    yaml.load(lines_yaml)
+}
+
+get_mp_skills <- function(N){
+    get_mp_yaml(N)$mp_skills
+}
+
+get_mp_rhetoric <- function(N){
+    get_mp_yaml(N)$mp_rhetoric
+}
+
+
+get_mp_application <- function(N){
+    get_mp_yaml(N)$mp_application
+}
 ```
 
 ### Due Dates

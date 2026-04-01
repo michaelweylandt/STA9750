@@ -1,62 +1,22 @@
 ---
 mp_num: "04"
-mp_title: "TBD"
-mp_skills: "TBD"
-mp_application: "TBD"
-mp_rhetoric: "TBD"
-mp_max_ec: 4
+mp_title: "Going for the Gold"
+mp_skills: "Web Scraping, Data Cleaning, Forecasting"
+mp_application: "Sports Analytics"
+mp_rhetoric: "Popular Media, Fundraising Pitch"
+mp_max_ec: 7
 filters: 
  - list-table
 aliases: 
   - "/miniprojects/mini04.html"
 ---
 
-$$\newcommand{\P}{\mathbb{P}} \newcommand{\E}{\mathbb{E}}$$
 
-```{r}
-#| echo: false
-#| warning: false
-#| message: false
-library(tidyverse)
-library(dplyr)
-DATES <- readr::read_csv("key_dates.csv") |>
-    rename(element=`Course Element`,
-           item=`Item Number`) |>
-    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
-                          TRUE ~ paste(Date, Time)))
-```
-
-```{r}
-#| echo: false
-#| warning: false
-library(glue)
-mp_id <- as.integer(rmarkdown::metadata$mp_num)
-mp_id_s <- glue("MP #0{mp_id}")
-mp <-  DATES |> filter(element == "Mini-Projects", 
-                       item == mp_id)
-mp_file <- list(qmd=glue("`mp0{mp_id}.qmd`"), 
-                html=glue("`mp0{mp_id}.html`"),
-                html_long=glue("`docs/mp0{mp_id}.html`"))
-```
-
-### Due Dates
-
--   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
--   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
--   **Peer Feedback:**
-    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
-    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
-
-
-*Estimated Time to Complete: 13-15 Hours*
-
-*Estimated Time for Peer Feedback: 1 Hour*
-
-------------------------------------------------------------------------
+{{< include _mpsetup.qmd >}}
 
 ## Introduction
 
-Welcome to Mini-Project #{{< meta mp_num >}}! TBD
+Welcome to Mini-Project #{{< meta mp_num >}}!
 
 This project will bring together all of the skills you have
 developed in this course: 
@@ -69,7 +29,8 @@ developed in this course:
 - Statistical analysis and inference (`infer` or `stats`)
 - Communicating your findings using web-based reproducible research tools (Quarto)
 
-TBD
+You will use these skills to deliver a very early prediction of Team USA's 
+medal haul from the upcoming *2028 Los Angeles Summer Olympics*. 
 
 Note that, compared to previous mini-projects, the scope of this project
 is a bit smaller: in light of this, and the more advanced skills you have
@@ -84,10 +45,26 @@ your out-of-class hours on your [Course Project](../project.html).
 This mini-project completes our whirlwind tour of several different
 forms of data-driven writing: 
 
-TBD
+- MP01: `r get_mp_rhetoric(1)`
+- MP02: `r get_mp_rhetoric(2)`
+- MP03: `r get_mp_rhetoric(3)`
+- MP04: `r get_mp_rhetoric(4)`
 
+Within these projects, you have developed and showcased a diverse array
+of skills: 
 
-You have applied your skills to a wide range of topics, including TBD.
+- MP01: `r get_mp_skills(1)`
+- MP02: `r get_mp_skills(2)`
+- MP03: `r get_mp_skills(3)`
+- MP04: `r get_mp_skills(4)`
+
+The skills you have developed are powerful and flexible and can be used across
+a variety of application areas: 
+
+- MP01: `r get_mp_application(1)`
+- MP02: `r get_mp_application(2)`
+- MP03: `r get_mp_application(3)`
+- MP04: `r get_mp_application(4)`
 
 There are, of course, many other ways that data can be used to generate and
 communicate insights and many other topics where your skills can be applied, but
@@ -119,10 +96,6 @@ on all aspects of this project.
 
 ### Rubric
 
-{{< var course.short >}} Mini-Projects are evaluated using *peer grading* with 
-*meta-review* by the course GTAs. The following basic rubric will be used for 
-all mini-projects:
-
 {{< include _rubric.qmd >}}
 
 For this mini-project, students are responsible for **all elements** of the 
@@ -132,12 +105,404 @@ analysis and will be evaluated on all rubric elements.
 
 ## Mini-Project #{{< meta mp_num >}}: {{< meta mp_title >}}
 
+With the 2026 Winter Olympics complete, the world is now preparing for the 
+2028 Summer Olympics, to be held in Los Angeles, California.[^la_prep] At the
+same time, sports betting--and indeed, gambling on essentially *everything*--seems
+to be an ever-more common society phenomenon.[^gambling] As such, serious money
+is likely to be wagered on Team USA's performance in the 2028 Olympics. Your 
+task in this final mini-project is to build a (relatively simple) model to
+predict the total amount of gold medals Team USA is likely to win in 2028. 
+
+Your model will need to consider *at least* three factors. For extra credit, you
+will be able to consider other factors to build a (hopefully!) more accurate
+forecast; [see below]{#extra_credit} for more. Your model needs to incorporate
+three primary effects:
+
+A)  The baseline performance of Team USA. As a large and rich nation that spans
+    several different different climates (sun and snow), the United States have 
+    long performed well in both winter and summer olympics. 
+B)  The Host Nation effect. Most analyses suggest that the host nation 
+    overperforms relative to its performance in the Olympiad immediately before
+    or afterwards. The reasons for this are not entirely clear: they seem to be
+    some combination of: 
+    
+    i) the psychological benefits of having more supporters in the stands (the
+       "home turf" effect); 
+    ii) the benefit of receiving automatic qualification to *every* event. The
+        host nation is basically guaranteed to have at least one athelete 
+        qualify in every event. (The specifics vary by sport.) Given that these
+        "automatic qualifiers" have to compete against athletes who qualify
+        based on their strong performance in non-Olympic international competition,
+        the impact of this factor is likely small, but there are lots of small
+        events and every extra entry increases the probability of a 'fluke' 
+        victory. 
+    iii) the pre-competition enthusiasm for the games leading to more national
+         support and interest in Olympic competition. 
+         
+    (Note that [some authors](https://doi.org/10.1038/s41598-022-27259-8) 
+    dispute whether a host nation benefit exists at all.)
+    
+C)  The new sport effect. The host nation is able to introduce up to six new 
+    sports to the Olympics. Given that these have to be sports that are not 
+    already included in the "standard" Olympic schedule, these sports are often
+    (relatively) niche events that are particularly popular in the host nation. 
+    As such, the host nation is often expected to perform well in these sports. 
+    
+    In the 2020 Olympics (actually held in 2021), Japan introduced several 
+    sports, including Karate in which Japanese atheletes won five of twelve 
+    possible gold medals and baseball/softball in which the Japanese won both
+    gold medals. The 2024 Paris Olympics introduced the (seemingly short-lived) 
+    Olympic Breaking competition to [mixed
+    reviews](https://www.youtube.com/watch?v=T8q1d4LZb1Y). The 2028 
+    Olympics are (re-)introducing baseball/softball, cricket, flag football, 
+    lacrosse, and squash. While the US is not known as a cricket powerhouse, it 
+    is expected to be quite strong in the other sports. 
+    
+To determine the medal impact of these three factors, you will perform a series
+of statistical analyses intended to estimate confidence intervals for each
+effect. Before we can do so, however, it's time to acquire some data. 
+
+[^la_prep]: The degree to which LA is itself preparing for the 2028 Olympics is
+[rather more complicated](https://en.wikipedia.org/wiki/Twenty-eight_by_%2728).
+
+[^gambling]: For the legal and societal preconditions of this trend, see [this
+article](https://bclawreview.bc.edu/articles/10.70167/DDAX4275) from the 
+Boston College Law Review. 
+
 ### Data Acquisition
 
-TBD 
+The [Olympedia](https://www.olympedia.org/) website contains detailed records
+of all modern Olympic games. You will use *web-scraping* techniques to extract
+the following information: 
+
+- Modern Olympic Games: for both modern[^modern] summer and winter Olympics, 
+  extract the following from <https://www.olympedia.org/editions>: 
+  
+  - The year in which the Olympics were held
+  - the Olympiad ID for that games (*e.g.*, Chamonix 1924 was the 1st Winter 
+    Olympiad while Paris 1924 was the 8th Summer Olympiad)
+    
+    Note that Olympiads are traditionally written using Roman numerals. The
+    following `R` snippet may be useful in translating these back to more
+    standard (decimal) integers. 
+    
+    ```{r}
+    olympiad_ids <- c("I", "III", "IV", "V", "VI", "XII", "XXV")
+    roman_to_integer <- function(x){
+        setNames(as.integer(as.roman(olympiad_ids)), x)  
+    }
+    roman_to_integer(olympiad_ids)
+    ```
+    
+  - The Olympedia internal ID for that games; Olympedia refers to these as
+    "editions". 
+  - The host nation for that games. Do this by parsing the URL associated
+    with the flag in the `Country` column. *E.g.*, the Greek flag used to
+    identify the 1896 Olympics is loaded from the URL
+    `https://olympedia-flags.s3.eu-central-1.amazonaws.com/GRE.png`; by parsing
+    the three letter country code (`GRE`), we can identify this as Greece. 
+    
+    Note that, since you want to extract some information from the URLs in the
+    table, not just the text of the table, you will need to use more than just
+    `rvest::html_table()`.
+- For each games, identify the table of medal disciplines (sports) at that games.
+  *E.g*. at the 1896 Paris Olympics, [we can see
+  that](https://www.olympedia.org/editions/1) 10 medal disciplines were 
+  represented. For each of these, extract a link to the relevant page, *e.g.*,
+  <https://www.olympedia.org/editions/1/sports/ATH> for Athletics. 
+- For each medal discipline + edition combination, extract the medal table. 
+
+**NB**: Olympedia is a free resource, made available at the expense of a small
+group of dedicated volunteers, and we do not want to abuse it. One way to
+avoid abusing their servers is to only download pages one; we can save
+a copy of the page locally the first time we access it and use that instead of 
+accessing the URL repeatedly. The following code will do this for you: 
+
+```{r}
+#| message: false
+library(rvest)
+
+slow_download <- purrr::slowly(download.file, purrr::rate_delay(pause=5))
+
+read_olympedia <- function(url, ...){
+    if(stringr::str_starts(url, "/")) url <- stringr::str_remove(url, "/")
+    cache_dir <- fs::path("data", "mp04", "olympedia_cache")
+    if(!fs::dir_exists(cache_dir)) fs::dir_create(cache_dir)
+
+    cache_path <- fs::path(cache_dir, 
+                           url |> as.character() |> stringr::str_replace_all("/", "_"))
+    if(!fs::file_exists(cache_path)){
+        src_url <- paste0("https://www.olympedia.org/", url)
+        slow_download(src_url, cache_path, mode="wb")
+    }
+    rvest::read_html(cache_path)
+}
+```
+
+Use this code to avoid taxing Olympedia's servers. If you access the site too
+often or too quickly, you will be automatically blocked for a short period. 
+If this happens to you, take a short break and come back to it later. To use
+this function, simply pass the *path* part of the URL and the hostname will be
+appended automatically; *e.g.*, to read the contents of
+`https://www.olympedia.org/editions` into `R`, you would simply run
+`read_olympedia("editions")`. Note that this function is designed to be slow
+the first time you access a site (`pause=5` indicating that it won't hit
+Olympedia more than once every 5 seconds) but it will be faster each subsequent
+time since the HTML is now cached on your computer.
+    
+::: {.callout-tip title="Task 1: Acquire Olympedia Data"}
+
+Using the user provided function above, download all necessary Olympedia data.
+Once your have acquired all of the relevant pages and parsed them into a single
+data frame, combine all of your results into a single tidy table. With this data 
+in hand, you should have everything you need to create a table like this: 
+
+```{r}
+#| echo: false
+#| message: false
+library(gt)
+library(necountries)
+
+# Use a random selected subset of rows for presentation purposes
+# If you are a student viewing this code, don't use the whole data set, not
+# just a subset!
+
+olympic_sample <- 
+structure(list(edition_id = c(2L, 3L, 2L, 2L, 2L, 2L, 2L, 1L, 
+1L, 1L, 1L, 2L, 1L, 3L, 2L, 2L, 2L, 2L, 3L, 2L, 3L, 1L, 2L, 2L, 
+3L), edition_roman = structure(c(2L, 3L, 2L, 2L, 2L, 2L, 2L, 
+1L, 1L, 1L, 1L, 2L, 1L, 3L, 2L, 2L, 2L, 2L, 3L, 2L, 3L, 1L, 2L, 
+2L, 3L), class = "roman"), edition_url = c("/editions/2", "/editions/3", 
+"/editions/2", "/editions/2", "/editions/2", "/editions/2", "/editions/2", 
+"/editions/1", "/editions/1", "/editions/1", "/editions/1", "/editions/2", 
+"/editions/1", "/editions/3", "/editions/2", "/editions/2", "/editions/2", 
+"/editions/2", "/editions/3", "/editions/2", "/editions/3", "/editions/1", 
+"/editions/2", "/editions/2", "/editions/3"), year = c(1900L, 
+1904L, 1900L, 1900L, 1900L, 1900L, 1900L, 1896L, 1896L, 1896L, 
+1896L, 1900L, 1896L, 1904L, 1900L, 1900L, 1900L, 1900L, 1904L, 
+1900L, 1904L, 1896L, 1900L, 1900L, 1904L), city = c("Paris", 
+"St. Louis", "Paris", "Paris", "Paris", "Paris", "Paris", "Athina", 
+"Athina", "Athina", "Athina", "Paris", "Athina", "St. Louis", 
+"Paris", "Paris", "Paris", "Paris", "St. Louis", "Paris", "St. Louis", 
+"Athina", "Paris", "Paris", "St. Louis"), host_country_iso = c("FRA", 
+"USA", "FRA", "FRA", "FRA", "FRA", "FRA", "GRE", "GRE", "GRE", 
+"GRE", "FRA", "GRE", "USA", "FRA", "FRA", "FRA", "FRA", "USA", 
+"FRA", "USA", "GRE", "FRA", "FRA", "USA"), season = c("Summer", 
+"Summer", "Summer", "Summer", "Summer", "Summer", "Summer", "Summer", 
+"Summer", "Summer", "Summer", "Summer", "Summer", "Summer", "Summer", 
+"Summer", "Summer", "Summer", "Summer", "Summer", "Summer", "Summer", 
+"Summer", "Summer", "Summer"), discipline_name = c("Rowing", 
+"Golf", "Swimming", "Swimming", "Equestrian Dressage", "Sailing", 
+"Cycling Track", "Fencing", "Athletics", "Wrestling", "Athletics", 
+"Rugby", "Athletics", "Swimming", "Equestrian Driving", "Athletics", 
+"Athletics", "Cycling Track", "Tug-Of-War", "Water Polo", "Artistic Gymnastics", 
+"Shooting", "Golf", "Tennis", "Weightlifting"), discipline_url = c("/editions/2/sports/ROW", 
+"/editions/3/sports/GLF", "/editions/2/sports/SWM", "/editions/2/sports/SWM", 
+"/editions/2/sports/EDR", "/editions/2/sports/SAL", "/editions/2/sports/CTR", 
+"/editions/1/sports/FEN", "/editions/1/sports/ATH", "/editions/1/sports/WRE", 
+"/editions/1/sports/ATH", "/editions/2/sports/RGB", "/editions/1/sports/ATH", 
+"/editions/3/sports/SWM", "/editions/2/sports/EDV", "/editions/2/sports/ATH", 
+"/editions/2/sports/ATH", "/editions/2/sports/CTR", "/editions/3/sports/TOW", 
+"/editions/2/sports/WPO", "/editions/3/sports/GAR", "/editions/1/sports/SHO", 
+"/editions/2/sports/GLF", "/editions/2/sports/TEN", "/editions/3/sports/WLF"
+), competitor_country = c("Germany", "Canada", "Denmark", "Great Britain", 
+"France", "France", "Germany", "Denmark", "Germany", "Germany", 
+"Australia", "Germany", "Great Britain", "Hungary", "Belgium", 
+"Hungary", "France", "France", "United States", "Great Britain", 
+"Germany", "United States", "United States", "Great Britain", 
+"Greece"), competitor_iso = c("GER", "CAN", "DEN", "GBR", "FRA", 
+"FRA", "GER", "DEN", "GER", "GER", "AUS", "GER", "GBR", "HUN", 
+"BEL", "HUN", "FRA", "FRA", "USA", "GBR", "GER", "USA", "USA", 
+"GBR", "GRE"), Gold = c(1L, 1L, 0L, 4L, 1L, 7L, 0L, 0L, 0L, 1L, 
+2L, 0L, 0L, 2L, 1L, 1L, 1L, 2L, 1L, 1L, 1L, 2L, 2L, 4L, 1L), 
+    Silver = c(0L, 0L, 0L, 0L, 1L, 9L, 1L, 0L, 1L, 0L, 0L, 1L, 
+    1L, 1L, 0L, 0L, 4L, 2L, 1L, 0L, 1L, 1L, 0L, 1L, 0L), Bronze = c(2L, 
+    0L, 1L, 1L, 1L, 10L, 0L, 1L, 0L, 0L, 0L, 0L, 1L, 1L, 0L, 
+    1L, 2L, 2L, 1L, 0L, 2L, 0L, 0L, 3L, 0L), Total = c(3L, 1L, 
+    1L, 5L, 3L, 26L, 1L, 1L, 1L, 1L, 2L, 1L, 2L, 4L, 1L, 2L, 
+    7L, 6L, 3L, 1L, 4L, 3L, 2L, 8L, 1L)), row.names = c(NA, -25L
+), class = c("tbl_df", "tbl", "data.frame"))
+
+clean_countries <- necountries::countries() |> 
+    as_tibble() |> 
+    select(iso2, iso3) |> 
+    mutate(iso3 = replace_values(iso3, 
+                          "GRC" ~ "GRE", 
+                          "DEU" ~ "GER", 
+                          "DNK" ~ "DEN"))
+
+olympic_sample |> 
+    slice_sample(n=5) |> 
+    mutate(host_country_iso = replace_values(host_country_iso, 
+                                             from=clean_countries$iso3, 
+                                             to=clean_countries$iso2), 
+           competitor_iso = replace_values(competitor_iso, 
+                                             from=clean_countries$iso3, 
+                                             to=clean_countries$iso2), 
+           edition_url = paste0("https://www.olympedia.org", edition_url), 
+           discipline_url = paste0("https://www.olympedia.org", discipline_url)) |>
+    arrange(year, desc(season), discipline_name, desc(Total)) |>
+    gt(id="tbl_olympic_example") |> 
+    cols_hide(c(edition_id)) |>
+    fmt_flag(c(competitor_iso, host_country_iso)) |>
+    fmt_url(c(edition_url, discipline_url), 
+            label="(Details)") |>
+    cols_label(edition_roman="Games", 
+               competitor_country="Competitor",
+               discipline_name="Discipline") |> 
+    cols_merge(c(edition_roman, season, year, city, edition_url, host_country_iso), 
+               pattern="{2} Games of the {1} Olympiad ({3} {4} {6}) {5}") |>
+    cols_merge(c(competitor_country, competitor_iso), 
+               pattern="{1} ({2})") |>
+    cols_merge(c(discipline_name, discipline_url)) |>
+    tab_spanner("Medal Count", 
+                c(Gold, Silver, Bronze, Total)) |> 
+    tab_source_note("Data from Olympedia. 5 randomly selected rows - not the full data set.") |> 
+    tab_header("Olympic Medal Results by Discipline")
+```
+
+Note that you do not need to actually make a table like this - just check that
+you have everything you would need to make this table. 
+
+*Hint:* See the source code for this Mini-Project on GitHub to see how I 
+formatted this table. You do not need to use the same column names I did, but
+you are always encouraged to use syntactic (valid `R`) names to make your code
+easier to read and write. 
+
+:::
+
+Some general tips: 
+
+- This is a difficult scraping exercise, but don't go overboard. I did this
+  whole thing in about 80 lines of clear well-formatted code (not including
+  `read_olympedia` above). If you find yourself needing more than 200 lines of
+  code to read everything, reconsider your strategy. 
+- Make sure to `DRY` your code. Write a function to parse a page and extract the
+  relevant data; since the pages are formatted consistently, this will be far
+  easier than copy-and-pasting the same code over and over. 
+  
+  If your function takes in a `URL` and parses the results, but is not vectorized,
+  remember that you can use the *functional* idiom: 
+  
+  ```{r}
+  #| eval: false
+  library(tidyverse)
+  ... |>
+    mutate(results = map(url, read_results_page))
+  ```
+  
+  To apply `read_results_page` to each URL in sequence. If the result of
+  `read_results_page` is a tidy `data.frame`, the `results` column will be a
+  "list column", which is not something we have used in class. Use 
+  `tidyr::unnest()` to convert it to a more standard tabular format. 
+  So the whole idiom would be
+  something like: 
+  
+  ```{r}
+  #| eval: false
+  library(tidyverse)
+  ... |>
+    mutate(results = map(url, read_results_page)) |>
+    unnest(results)
+  ```
+- If you want to pull out a specific column of a table, consider using a CSS
+  selector like `tr > td:nth-of-type(3)`: this will pull the third `td` within
+  each `tr`. Because each `tr` is a **t**able **r**ow and each `td` is a 
+  **t**able **d**atum or cell, this gives the third cell of each row, *i.e.*, the
+  third column. 
+- For some pages, you might want to get the first table after a section header
+  with a specific text. This cannot be done with simple CSS selectors, but 
+  an `xpath` selector will suffice here. *E.g.*, 
+  
+  ```{r}
+  #| eval: false
+  ... |> 
+     html_element(xpath = "//h1[normalize-space() = 'Section Header']/following-sibling::table[3]") |>
+     html_table()
+  ```
+  
+  This will look for an `h1` header element whose text reads `Section Header`;
+  once it finds it, it will get the third `table` that follows and convert it
+  to a table using our trusty `html_table()` function. Modify this example as 
+  needed to work with Olympedia. 
+  
+[^modern]: For this assignment, we are of course only looking at the *modern*
+Olympics that resumed in 1896. We will not look at the ancient (pre-fall of 
+the Roman Empire) Olympics. Note that, while the Summer Olympics resumed in
+1896, the first modern Winter Olympics were only held starting in 1924 and 
+the Winter Olympics have only been "off-cycle" from the Summer Olympics starting
+with the 1994 Lillehammer games. Additionally, note that certain Olympics were 
+not held during WWI and WWII. Finally, we will only focus on "mainline" Summer
+and Winter Olympics and will ignore the 1956 Equestrian Olympics and similar
+events. 
+
+::: {.callout-caution title="Use Olympedia Only"}
+
+You **must** use Olympedia as your data source for this mini-project. While
+Olympic results are found on many websites, including Wikipedia, the point of
+this Mini-Project is to practice scraping a *new* website you have not previously
+used. (We discuss scraping tables from Wikipedia in class.)
+
+Submissions that acquire data from alternate sources will be penalized 
+**heavily.**
+
+:::
+
+
+::: {.callout-tip title="Task 2: Standardize and Clean Countries"}
+
+Note that Olympedia often uses a three-letter code for each country, but these
+do not always correspond with the [three letter ISO country
+codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3), *e.g.*, `GRC` vs `GRE`
+for Greece. You will need to identify and fix these mismatches (see below). The
+`replace_values()` function from (recent versions of) the `dplyr` package will 
+be helpful to do these replacements and the `anti_join()` operator will be useful 
+in finding where they are needed.
+
+Furthermore, at least one code, `URS` for the Soviet Union (USSR), is no longer
+applicable. For simplicity, we are going to replace `URS` with `RUS` (Russia) to
+ensure continuity of our analysis, though this choice is not geopolitically
+un-fraught.
+
+Given the spatial structure of this data, we will want to augment it with `sf`
+data for geospatial visualization. The `countries()` function from the 
+`necountries` package returns an `sf` data frame of 199 countries that contains
+their two- and three-digit country codes, their name, and `geometry` column that
+can be used to visualize them on a map. 
+
+Join your Olympedia data to this object. (This is where you will start running
+into pain from the mismatch between Olympedia's three-digit codes and the official
+ISO codes.) Design your join to identify country codes not present in the
+`countries()` data frame and, where possible, perform 'spot fixes' to 
+standardize these onto countries present in the data set. (*E.g.*, the `URS` to
+`RUS` standardization described above.)
+
+Once your data is standardized, create at least one geospatial data 
+visualization of this data to highlight an interesting fact. 
+
+:::
 
 ### Data Integration and Exploration {#eda}
 
+Now that you have acquired your data, it is time to explore it and further 
+familiarize yourself with it. For this mini-project, you are on your own for EDA. 
+Explore your data, find and note any irregularities (using them to improve your
+data import if appropriate) and to get baseline facts relevant to your analysis. 
+
+::: {.callout-tip title="Task 3: Exploratory Data Analysis"}
+
+Perform EDA on your data set. Document your results in (at least) 12 findings. 
+These should include at least: 
+
+- one inline value (scalar statistic); 
+- one data visualization; and
+- one table
+
+for each of the three effects we plan to study: US baseline performance, host 
+country effect, new sport effect. You can choose the topic and presentation of
+your final three EDA findings however you wish. 
+
+:::
 
 ### Statistical Analysis
 
@@ -147,8 +512,8 @@ are larger than can be explained by pure randomness. The `infer` package can
 be used to neatly integrate $t$-tests and binomial proportion tests into a 
 `tidyverse` workflow. 
 
-We will use the `t_test` and `prop_test` functions from this package to complete
-our analyses. These can be used as demonstrated below. 
+We will use the `t_test()` and `prop_test()` functions from this package to 
+complete our analyses. These can be used as demonstrated below. 
 
 -   Example 01: Suppose we want to test whether Gentoo penguins are heavier than
     Adelie penguins on average. Since we have a numerical response and two different
@@ -172,9 +537,12 @@ our analyses. These can be used as demonstrated below.
                order = c("Adelie", "Gentoo"))
     ```
   
-    From this, we see that Adelie penguins are 1375 grams _lighter_ on average
+    From this, we see that Adelie penguins are about 1375 grams _lighter_ on average
     than Gentoos and the $p$-value is far less than 0.01, so the difference is
-    unlikely to be solely due to sampling variability. 
+    unlikely to be solely due to sampling variability. Further more, the 
+    `lower_ci` and `upper_ci` columns give us a confidence interval (95% by 
+    default, but this can be adjusted by changing the `conf_level` argument to
+    `t_test()`.) for the difference in means. 
     
     Here, we perform the test by specifying the `response` (quantity of interest)
     on the left hand side of the `~` and the `explanatory` variable 
@@ -205,25 +573,42 @@ our analyses. These can be used as demonstrated below.
     
 2.  Example 02: In other contexts, we may have a _categorial_ response. In this 
     case, we should not perform a $t$-test on means, but we instead want to use 
-    a binomial proportion test *via* the `prop_test` function. For instance, if 
-    we want to see whether Adelie penguins are more likely to be female than 
-    Gentoos: 
+    a binomial proportion test *via* the `prop_test()` function. In the simplest
+    case, we might want to examine the fraction of sampled penguins which are
+    female: 
+    
+    ```{r}
+    penguins_ok |> 
+      mutate(is_female = (sex == "female")) |> 
+      prop_test(is_female ~ NULL)
+    ```
+    
+    Note that, here the `statistic` is the test statistic, not the sample
+    proportion. Examining the confidence interval, we see that it's quite clear
+    the fraction of female penguins is basically 50% (as we would expect). 
+    Here, the `~ NULL` of the specification implies that we aren't looking
+    at any potential covariates. 
+    
+    We can extend this to the two-sample setting to see if the frequency
+    differs between two groups. For instance, if we want to see whether Adelie 
+    penguins are more likely to be female than Gentoos: 
     
     ```{r}
     library(infer)
     library(tidyverse)
     penguins_ok |>
        filter(species != "Chinstrap") |>
-       prop_test(sex ~ species, 
+       mutate(is_female = (sex == "female")) |> 
+       prop_test(is_female ~ species, 
                  order = c("Adelie", "Gentoo"))
     ```
     
-    As before, we see that there is basically no evidence that the fraction of
+    As expected, we see that there is basically no evidence that the fraction of
     female penguins differs by species. Note the key difference between the 
-    `t_test` and the `prop_test`: in `t_test` the response is a numeric variable
-    and we are testing the _mean_ of that distribution; in a `prop_test` the
-    response is a Boolean (TRUE/FALSE) value and we are testing the probability
-    of observing a TRUE.[^prop]
+    `t_test()` and the `prop_test()`: in `t_test()` the response is a numeric 
+    variable and we are testing the _mean_ of that distribution; in a 
+    `prop_test()` the response is a Boolean (`TRUE`/`FALSE`) value and we are 
+    testing the probability of observing a `TRUE`.[^prop]
     
     We can also use this with a derived quantity. For instance, if we want to 
     see if Gentoos are more likely to be over 4000 grams than non-Gentoos: 
@@ -238,7 +623,7 @@ our analyses. These can be used as demonstrated below.
     
     Here, we see that there is _strong_ statistical evidence (in the form of a
     tiny $p$-value) that being a Gentoo penguin increases probability of weighing
-    over 4000 grams. 
+    over 4000 grams. While this interface does not give us an estimate of 
     
     We can also modify this to be a one-sided test: 
     
@@ -258,30 +643,172 @@ our analyses. These can be used as demonstrated below.
     
 ::: {.callout-tip title="Task 4: Statistical Inference"}
 
-TBD
+Using the tools of the `infer` package, construct confidence intervals for the 
+following quantities of interest: 
+
+1. The average number of *gold* medals won by the US at a summer Olympics. 
+1. The percent increase in *gold* medals won by the host country vs their
+   performance in the prior same-season Olympics. (*E.g.*, make sure to compare
+   Russia's performance in the 2014 Sochi Olympics to the 2010 Vancouver Olympics,
+   not the 2012 London Olympics.) Here, we use the *percent* increase over the
+   prior Olympics to account for the fact that some countries have a higher
+   'baseline' medal expectation than others. 
+1. The probability that the host country wins a *gold* medal in a new sport 
+   (defined as a sport that did not appear in the previous Olympics). 
+   
+Repeat your analysis for *silver* medals, *bronze* medals, and *total* medals. 
+
+For each of these, you may wish to focus on a relatively more recent subset
+of Olympics (say 1960 and later) to ensure your data is relevant to the 2028 
+Olympics. This is an instance of a common tension in the analysis of data 
+observed at different points in time: you want to focus on recent data points
+as they are more similar to the future, but you don't want to focus in too much
+and have insufficient data. 
 
 :::
 
+::: {.callout-tip title="Task 5: Combining Confidence Intervals to Forecast US Medal Counts"}
+
+*Combining* confidence intervals is a bit of an art, especially when the
+intervals are not independent (as they are not here). We are going to make a 
+working assumption that the intervals are independent which will make it a bit
+easier to combine things. 
+
+We can forecast Team USA's 2028 Olympic medal count using the following equation:
+
+$$ \text{Medals-2028} \approx \text{USA Baseline} * \text{Host Nation Factor} + 22 * \text{Probability Host Nation Wins} $$
+
+where we used the fact that there will be 22 more medal events in 2028 than there
+were in 2024. 
+
+To get a range of predictions for the expression above, we will use a simple
+*Monte Carlo* sample. That is, rather than doing the calculations exactly, we
+will simply simulate them many times over and use the results of that simulation
+to get an interval on the derived quantity. 
+
+For example, if I have two parameters $\alpha, \beta$ with 95% confidence 
+intervals $[2, 5]$ and $[-1, 3]$ respectively, I can get a confidence interval
+for their product as follows:[^pred_int]
+
+[^pred_int]: You might ask whether we want a *confidence* interval or a 
+*prediction* interval here. You are right to do so, but we are omitting this
+distinction as it's a far less odious problem than the other statistical sins
+we are already committing here. 
+
+```{r}
+alpha_ci_lower <- 2
+alpha_ci_upper <- 5
+beta_ci_lower <- -1
+beta_ci_upper <- 3
+
+alpha_ci_mean <- (alpha_ci_lower + alpha_ci_upper) / 2
+beta_ci_mean  <- (beta_ci_lower + beta_ci_upper) / 2
+
+alpha_ci_sd <- (alpha_ci_upper - alpha_ci_mean) / qnorm(1 - 0.05/2)
+beta_ci_sd  <- (beta_ci_upper - beta_ci_mean) / qnorm(1 - 0.05/2)
+```
+
+To wit, we have the confidence interval for $\alpha$ given by: 
+
+```{r}
+qnorm(c(0.025, 0.975), mean=alpha_ci_mean, sd=alpha_ci_sd)
+```
+
+and similarly for $\beta$. To get a CI for $\alpha\beta$, we then can simply
+proceed as: 
+
+```{r}
+alpha_samples <- rnorm(1e7, mean=alpha_ci_mean, sd=alpha_ci_sd)
+beta_samples  <- rnorm(1e7, mean=beta_ci_mean, sd=beta_ci_sd)
+
+alphabeta_samples <- alpha_samples * beta_samples
+
+alphabeta_interval <- quantile(alphabeta_samples, c(0.025, 0.975))
+```
+
+which gives an interval of [`r scales::number(min(alphabeta_interval), 0.01)`, 
+`r scales::number(max(alphabeta_interval), 0.01)`]. It's not obvious how we
+could have computed this analytically. 
+
+Adapt this approach to get 95% confidence intervals on Team USA's medal counts
+in LA 2028. 
+
+:::
 
 [^prop]: Of course, if you haven taken 
-[STA 9715](https://michael-weylandt.com/STA9715/), you know that there is only
-one univariate Boolean distribution (the Bernoulli) and that the probability of
-observing a success is equal to the mean of the distribution. 
+[STA 9715](https://michael-weylandt.com/STA9715/), you know that there is
+(essentially) only one univariate Boolean distribution (the Bernoulli) and that
+the probability of observing a success is equal to the mean of the distribution. 
 ($X \sim \text{Bernoulli} \implies \E[X] = \P(X = 1)$ and all that). This might 
 lead you to ask whether there really is a meaningful difference between a 
 $t$-test and a proportion test. These are good questions to ask your STA 
 9719 professor.
 
-### Final Deliverable: TBD
+### Final Deliverable: Team USA Fundraising Fact Sheet
 
-TBD
+With all of your analyses in hand, it is time to start promoting the LA 2028 
+Olympics. Specifically, write a short brief for the LA 2028 Organizing 
+Committee forecasting Team USA's performance that the fundraising team can use
+to start soliciting donations from potential sponsors. Specifically, you want
+to help your fundraising team speak confidently about how well you expect Team USA to perform so that sponsors feel comfortable giving to the cause. (Corporations
+always want to pay more to be associated with winners.)
+
+
+::: {.callout-tip title="Task 6: Write Your Final Deliverable"}
+
+Your forecast report should be no more than two pages in length and should
+describe your expected Team USA performance, using all of the work you have done
+above. Give your 'three-factor' model, interpret the terms individually, and 
+then put them together for your final prediction. Be sure to provide suitable
+background for each factor, to write at a level that could be easily interpreted
+by a marketing executive at a major corporation, and to include well-formatted
+graphics and tables as appropriate. 
+
+:::
+
+
 
 {{< include _aidisclosure.qmd >}}
 
 
 {{< include _echeader.qmd >}}
 
-TBD
+
+### Extra Credit Opportunity #01: Relaxing Distributional Assumptions {#ec01}
+
+The `prop_test()` and `t_test()` are classical normal-theory based statistical 
+tests. This makes them simple to implement, but at the cost of additional 
+assumptions. Assumptions are not necessarily a bad thing - and most statistical
+procedures are robust to at least mild violations of assumptions - but for 
+two points of extra credit, we can explore ways to relax these assumptions. 
+
+Review the [`infer` documentation](https://infer.tidymodels.org/articles/infer.html)
+and implement bootstrap based alternatives to `prop_test()` and `t_test()` in
+your analysis pipeline. Compare your parametric and bootstrap based forecasts.
+Chapters 7-10 of the [Statistical Inference via Data
+Science](https://moderndive.com/v2/index.html) book will give additional useful
+background. 
+
+### Extra Credit Opportunity #02: Model Improvement {#ec02}
+
+For up to two points of extra credit, add an additional factor to your forecast
+system and compare your forecasts with and without that extra term. Be sure to
+do the full work-up (some EDA, a statistical test to get a confidence interval,
+inclusion in the forecast model, propagation through to a final confidence
+interval). Make sure to justify your additional factor and to explain why you
+think it will make your model more accurate. 
+
+### Extra Credit Opportunity #03: Model Validation {#ec03}
+
+Finally, for up to three points, evaluate the performance of your forecast model
+_retrospectively_. *E.g.*, if you had used the same model for Japan in 2020, how
+well would it have predicted medal outcomes for those Olympics? There 
+are many ways you can go with this, but at a minimum, you should 
+
+i) Make at least 10 additional sets of predictions based on historical data
+ii) Compare the accuracy of those predictions with the realized values for each
+    medal category 
+iii) Use that error estimate to put some sort of margin of error on your 2028
+     population predictions. 
 
 {{< include _footer.qmd >}}
-
