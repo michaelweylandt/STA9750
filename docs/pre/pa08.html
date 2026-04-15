@@ -2,10 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.33">
+<meta name="generator" content="quarto-1.9.37">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>STA 9750 Lecture #8 Pre-Class Assignment: Taking Plots to the Next Level – STA 9750</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -68,10 +71,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-1c47065645911eb62ace0da5c8a22cd9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+<link href="../site_libs/bootstrap/bootstrap-f7b58eee2202a58c8e0dc5967ec053ef.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<meta name="shinylive:serviceworker_dir" content="..">
+<script src="../site_libs/quarto-contrib/shinylive-0.10.8/shinylive/load-shinylive-sw.js" type="module"></script>
+<script src="../site_libs/quarto-contrib/shinylive-0.10.8/shinylive/run-python-blocks.js" type="module"></script>
+<link href="../site_libs/quarto-contrib/shinylive-0.10.8/shinylive/shinylive.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/shinylive-quarto-css/shinylive-quarto.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
@@ -97,7 +105,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script>
+}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 </head>
 <body class="floating nav-fixed quarto-light">
 
@@ -165,33 +198,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             <div class="quarto-navbar-tools">
 </div>
       </div> <!-- /container-fluid -->
-    </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+    </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">On this page</h2>
    
   <ul>
-<li><a href="#optional-enrichment-myth-busting-and-apophenia-in-data-visualization" id="toc-optional-enrichment-myth-busting-and-apophenia-in-data-visualization" class="nav-link active" data-scroll-target="#optional-enrichment-myth-busting-and-apophenia-in-data-visualization">Optional Enrichment: “Myth Busting and Apophenia in Data Visualization”</a></li>
-  <li>
-<a href="#optional-check-software-install" id="toc-optional-check-software-install" class="nav-link" data-scroll-target="#optional-check-software-install">Optional: Check Software Install</a>
+<li>
+<a href="#software-checks" id="toc-software-checks" class="nav-link active" data-scroll-target="#software-checks">Software Checks</a>
   <ul class="collapse">
-<li><a href="#shiny" id="toc-shiny" class="nav-link" data-scroll-target="#shiny"><code>shiny</code></a></li>
-  <li><a href="#sf" id="toc-sf" class="nav-link" data-scroll-target="#sf"><code>sf</code></a></li>
+<li><a href="#sf" id="toc-sf" class="nav-link" data-scroll-target="#sf"><code>sf</code></a></li>
   <li><a href="#gganimate" id="toc-gganimate" class="nav-link" data-scroll-target="#gganimate"><code>gganimate</code></a></li>
+  <li><a href="#shiny" id="toc-shiny" class="nav-link" data-scroll-target="#shiny"><code>shiny</code></a></li>
   </ul>
 </li>
+  <li><a href="#spatial-data-manipulation" id="toc-spatial-data-manipulation" class="nav-link" data-scroll-target="#spatial-data-manipulation">Spatial Data Manipulation</a></li>
+  <li><a href="#getting-started-with-shiny" id="toc-getting-started-with-shiny" class="nav-link" data-scroll-target="#getting-started-with-shiny">Getting Started with Shiny</a></li>
+  <li><a href="#optional-enrichment-myth-busting-and-apophenia-in-data-visualization" id="toc-optional-enrichment-myth-busting-and-apophenia-in-data-visualization" class="nav-link" data-scroll-target="#optional-enrichment-myth-busting-and-apophenia-in-data-visualization">Optional Enrichment: “Myth Busting and Apophenia in Data Visualization”</a></li>
   </ul><div class="toc-actions"><ul><li><a href="https://github.com/michaelweylandt/STA9750/edit/main/pre/pa08.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/michaelweylandt/STA9750/blob/main/pre/pa08.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/michaelweylandt/STA9750/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
 </nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<main class="content column-page-right" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
 <h1 class="title">STA 9750 Lecture #8 Pre-Class Assignment: Taking Plots to the Next Level</h1>
 </div>
 
 
 
-<div class="quarto-title-meta">
+<div class="quarto-title-meta column-page-right">
 
     
   
@@ -202,9 +237,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header><p><strong>Due Date</strong>: 2026-04-21 (Tuesday) at 06:00pm (before Class Session #10)</p>
 <p><strong>Submission</strong>: <a href="https://brightspace.cuny.edu/">CUNY Brightspace</a></p>
-<p>This week, we will dive deeper into the world of data visualization, with a focus on tools for interactive (and animated) data visualization. Before doing so, let’s pause and consolidate everything we’ve done to date:</p>
+<p>This week, we will dive deeper into the world of data visualization, briefly introducing three important topics:</p>
+<ul>
+<li>mapping;</li>
+<li>animated visualizations; and</li>
+<li>interactivity.</li>
+</ul>
+<p>Before getting into the new stuff, let’s pause and consolidate everything we’ve done to date:</p>
 <ol type="1">
-<li><p>If you did not finish <a href="../labs/lab07.html">last week’s in-class lab</a>, do so now.</p></li>
+<li><p>If you did not finish <a href="../labs/lab06.html">our previous in class plotting activities</a>, please do so now.</p></li>
 <li>
 <p>Explore the <a href="https://r-graph-gallery.com/best-r-chart-examples">R Graphics Gallery “Best Charts” collection.</a> Pick one chart from this collection and evaluate it with a critical eye:</p>
 <ol type="i">
@@ -216,80 +257,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ol>
 </li>
 </ol>
-<p>After doing that, we’re ready to move on to new material. This week, we will explore various technologies for interactive data visualization. These can be divided into two broad categories:</p>
-<ul>
-<li>Server Based: When the user makes a change to a plot, it is sent to a server where the new plot is rendered and returned to the user.</li>
-<li>Browser Based: When the user makes a change to a plot, the new plot is created <em>in the browser</em> and re-rendered ‘on site’. (This is the strategy I have used through some of these notes, where you are able to type <code>R</code> code and run it directly in your browser.)</li>
-</ul>
-<p>Generally, server-based approaches are more flexible and a bit easier to implement, while browser-based approaches are more responsive and scalable. Since the browser work is done locally on the user’s computer (or phone or tablet), they are also cheaper and safer to run as there’s no need to have a server constantly responding to user input.</p>
-<p>This week, we will explore <em>a bit</em> of each modality, though entire courses (and indeed entire careers) have been spent on both.</p>
-<p>In the <code>R</code> ecosystem, the tool of choice for building server-based<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> web applications is <code>shiny</code>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> For this pre-assignment, you will work through Lessons 1 and 2 of the <a href="https://shiny.posit.co/r/getstarted/shiny-basics/lesson1/">“Shiny Basics”</a> web tutorial. (You do not need to do the “Next Steps” in Lesson 3, but you are of course welcome to.)</p>
-<p>After finishing these activities, complete the Weekly Pre-Assignment Quiz on Brightspace.</p>
-<section id="optional-enrichment-myth-busting-and-apophenia-in-data-visualization" class="level2"><h2 class="anchored" data-anchor-id="optional-enrichment-myth-busting-and-apophenia-in-data-visualization">Optional Enrichment: “Myth Busting and Apophenia in Data Visualization”</h2>
-<p>Watch <a href="https://www.dicook.org/">Prof.&nbsp;Di Cook</a>’s lecture “Myth busting and apophenia in data visualisation: is what you see really there?”. As we discussed in class, plots are an excellent way to explore data, but we always want to be careful that what we think find truly exists. Prof. Cook discusses relationships between effective statistical visualization and effective statistical practice.</p>
-<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/coGeZIHCk38" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
-</section><section id="optional-check-software-install" class="level2"><h2 class="anchored" data-anchor-id="optional-check-software-install">Optional: Check Software Install</h2>
+<p>After doing that, we’re ready to move on to new material. First let’s make sure that you have all the necessary software installed.</p>
+<section id="software-checks" class="level2"><h2 class="anchored" data-anchor-id="software-checks">Software Checks</h2>
 <p>This upcoming week, we will use several new <code>R</code> packages. These packages depend on additional software external to <code>R</code>; while this is not typically an issue, and <code>R</code> attempts to install these additional libraries “auto-magically” for you, issues do occasionally arise. In preparation for class, I recommend that you attempt to install these additional libraries so that you will be able to easily follow along in class.</p>
 <p>In particular, there are three <code>R</code> packages you should install and confirm work as expected:</p>
 <ol type="1">
 <li>
-<code>shiny</code> - A library for interactive dashboard creation</li>
-<li>
 <code>sf</code> - A library for working with geospatial data</li>
 <li>
 <code>gganimate</code> - A library for producing <em>animated</em> graphics.</li>
+<li>
+<code>shiny</code> - A library for interactive dashboard creation</li>
 </ol>
 <p>I provide code to install and run a small example of each software below. If you can run all of these without issue, you should be good to go. (You do not need to <em>understand</em> this code just yet, but you are welcome to work through it.) If you have issues installing this software, please reach out for help on the course discussion board or in office hours.</p>
-<section id="shiny" class="level3"><h3 class="anchored" data-anchor-id="shiny"><code>shiny</code></h3>
-<p>The following script will install <code>shiny</code>:</p>
-<div class="cell">
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span>repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>CRAN <span class="op">=</span> <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="st"><a href="https://shiny.posit.co/">"shiny"</a></span>, quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"shiny"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://shiny.posit.co/">shiny</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Once <code>shiny</code> is installed, confirm that it works as desired by running the following code:</p>
-<div class="cell">
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/shiny/man/shinyApp.html">shinyApp</a></span><span class="op">(</span></span>
-<span>    ui <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/fluidPage.html">fluidPage</a></span><span class="op">(</span></span>
-<span>      <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/numericInput.html">numericInput</a></span><span class="op">(</span><span class="st">"n"</span>, <span class="st">"n"</span>, <span class="fl">1</span><span class="op">)</span>,</span>
-<span>      <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/plotOutput.html">plotOutput</a></span><span class="op">(</span><span class="st">"plot"</span><span class="op">)</span></span>
-<span>    <span class="op">)</span>,</span>
-<span>    server <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">input</span>, <span class="va">output</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="va">output</span><span class="op">$</span><span class="va">plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/renderPlot.html">renderPlot</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">cars</span>, <span class="va">input</span><span class="op">$</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">)</span></span>
-<span>    <span class="op">}</span></span>
-<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>If this works, it will bring up a very simple window where you can enter a number and see that many random points plotted.</p>
-</section><section id="sf" class="level3"><h3 class="anchored" data-anchor-id="sf"><code>sf</code></h3>
+<section id="sf" class="level3"><h3 class="anchored" data-anchor-id="sf"><code>sf</code></h3>
 <p>The <code>sf</code> library provides a unified interface for manipulating geospatial data. We will primarily use it for visualizing <em>spatial</em> data, <em>i.e.</em>, maps.</p>
 <p><code>sf</code> depends on several other packages, so we will make sure these are all installed as needed:</p>
 <div class="cell">
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ensure_package</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span><span class="op">{</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ensure_package</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substitute.html">substitute</a></span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span>repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>CRAN <span class="op">=</span> <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va">pkg</span>, character.only<span class="op">=</span><span class="cn">TRUE</span>, quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html">stopifnot</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va">pkg</span>, character.only<span class="op">=</span><span class="cn">TRUE</span>, quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="fu">ensure_package</span><span class="op">(</span><span class="va">sf</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu">ensure_package</span><span class="op">(</span><span class="va">sf</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Linking to GEOS 3.13.0, GDAL 3.8.5, PROJ 9.5.1; sf_use_s2() is TRUE</code></pre>
 </div>
 </div>
 <p>Once these packages have been installed, run the following code to confirm correct installation.</p>
 <div class="cell">
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/">sf</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/">sf</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span><span class="op">(</span><span class="st">"shape/nc.shp"</span>, package <span class="op">=</span> <span class="st">"sf"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html">st_read</a></span><span class="op">(</span>quiet<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>geometry<span class="op">=</span><span class="va">geometry</span>, </span>
 <span>               fill<span class="op">=</span><span class="va">NAME</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html">guides</a></span><span class="op">(</span>fill<span class="op">=</span><span class="st">"none"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html">guides</a></span><span class="op">(</span>fill<span class="op">=</span><span class="st">"none"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="pa08_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="pa08_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -298,44 +306,1520 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section><section id="gganimate" class="level3"><h3 class="anchored" data-anchor-id="gganimate"><code>gganimate</code></h3>
 <p>The <code>gganimate</code> package can be used to create <em>animated</em> graphics. To do so, it generates a series of <code>png</code> files using “standard” <code>ggplot2</code> and then invokes an external library to combine those <code>png</code> files into a <code>gif</code>. The simplest tool for the <code>png</code>-to-<code>gif</code> transformation is called <code>gifski</code>, so we will try to install it first:</p>
 <div class="cell">
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ensure_package</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span><span class="op">{</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ensure_package</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substitute.html">substitute</a></span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span>repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>CRAN <span class="op">=</span> <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va">pkg</span>, character.only<span class="op">=</span><span class="cn">TRUE</span>, quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html">stopifnot</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va">pkg</span>, character.only<span class="op">=</span><span class="cn">TRUE</span>, quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu">ensure_package</span><span class="op">(</span><span class="va">gifski</span><span class="op">)</span></span>
-<span><span class="fu">ensure_package</span><span class="op">(</span><span class="va">gganimate</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu">ensure_package</span><span class="op">(</span><span class="va">gganimate</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Once installed, please run the following command to verify your installation was successful.</p>
 <div class="cell">
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://gganimate.com">gganimate</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span></span>
-<span><span class="va">penguins</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://tidyr.tidyverse.org/reference/drop_na.html">drop_na</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">flipper_len</span>, </span>
-<span>               y <span class="op">=</span> <span class="va">body_mass</span>, </span>
-<span>               color <span class="op">=</span> <span class="va">species</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span></span>
+<span><span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html">read_csv</a></span><span class="op">(</span><span class="st">"https://michael-weylandt.com/STA9750/labs/ssa_babynames.csv.gz"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Mary"</span>, <span class="st">"Ellen"</span>, <span class="st">"Robert"</span>, <span class="st">"Michael"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">number</span><span class="op">)</span>, .by<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"year"</span>, <span class="st">"name"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>name<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">name</span>, </span>
+<span>                       levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Robert"</span>, <span class="st">"Michael"</span>, <span class="st">"Mary"</span>, <span class="st">"Ellen"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">year</span>, y<span class="op">=</span><span class="va">n</span>, color<span class="op">=</span><span class="va">name</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position<span class="op">=</span><span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"Flipper Length (mm)"</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Body Mass (g)"</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html">scale_color_brewer</a></span><span class="op">(</span>name<span class="op">=</span><span class="st">"Species"</span>, </span>
-<span>                       type<span class="op">=</span><span class="st">"qual"</span>, </span>
-<span>                       palette<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>    <span class="fu"><a href="https://gganimate.com/reference/transition_time.html">transition_time</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span><span class="op">(</span><span class="st">"Penguins in Year {frame_time}"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position<span class="op">=</span><span class="st">'bottom'</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"Year"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Number of Registered Births"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html">scale_color_brewer</a></span><span class="op">(</span>type<span class="op">=</span><span class="st">"qual"</span>, palette<span class="op">=</span><span class="fl">2</span>, name<span class="op">=</span><span class="st">"First Name"</span><span class="op">)</span>  <span class="op">+</span> </span>
+<span>    <span class="fu"><a href="https://gganimate.com/reference/transition_reveal.html">transition_reveal</a></span><span class="op">(</span><span class="va">year</span><span class="op">)</span> </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>This should create a moving scatter plot of penguin measurements over a three year window. Note that this is not a particularly good use of an animated visualization - the penguins are not measured repeatedly year-over-year so re-use of a point is misleading.</p>
+<p><img src="./pa08_ssa.gif" class="img-fluid"></p>
+<p>This should create a moving line plot showing the number of children born each year with certain names.</p>
+</section><section id="shiny" class="level3"><h3 class="anchored" data-anchor-id="shiny"><code>shiny</code></h3>
+<p>The following script will install <code>shiny</code>:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ensure_package</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substitute.html">substitute</a></span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span>repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>CRAN <span class="op">=</span> <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va">pkg</span>, character.only<span class="op">=</span><span class="cn">TRUE</span>, quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html">stopifnot</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va">pkg</span>, character.only<span class="op">=</span><span class="cn">TRUE</span>, quietly<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu">ensure_package</span><span class="op">(</span><span class="va">shiny</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Once <code>shiny</code> is installed, confirm that it works as desired by running the following code:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://shiny.posit.co/">shiny</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/shiny/man/shinyApp.html">shinyApp</a></span><span class="op">(</span></span>
+<span>    ui <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/fluidPage.html">fluidPage</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/numericInput.html">numericInput</a></span><span class="op">(</span><span class="st">"n"</span>, <span class="st">"n"</span>, <span class="fl">10</span>, min<span class="op">=</span><span class="fl">3</span>, max<span class="op">=</span><span class="fl">30</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/plotOutput.html">plotOutput</a></span><span class="op">(</span><span class="st">"plot"</span><span class="op">)</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    server <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">input</span>, <span class="va">output</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">output</span><span class="op">$</span><span class="va">plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/shiny/man/renderPlot.html">renderPlot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>If this works, it will bring up a very simple window where you can enter a number and see that many random points plotted.</p>
+<pre class="shinylive-r" data-engine="r"><code><a href="https://shiny.posit.co/">#| '!! shinylive warning !!': |
+#|   shinylive does not work in self-contained HTML documents.
+#|   Please set `embed-resources: false` in your metadata.
+#| standalone: true
+#| echo: false
+#| viewerHeight: 420
+library(shiny)
+library(shinylive)
+shinyApp(
+    ui = fluidPage(
+      numericInput("n", "n", 10, min=3, max=30),
+      plotOutput("plot")
+    ),
+    server = function(input, output) {
+      output$plot &lt;- renderPlot(plot(rnorm(input$n)))
+    }
+  )</a></code></pre>
+<p>Note that this might take a while to load in the browser; the version that appears when you run the code locally should be rather quick.</p>
+</section></section><section id="spatial-data-manipulation" class="level2"><h2 class="anchored" data-anchor-id="spatial-data-manipulation">Spatial Data Manipulation</h2>
+<p>Above, when testing <code>sf</code>, we created a map of North Carolina. Let’s now take a closer look at what the plotted data actually entailed:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span><span class="op">(</span><span class="st">"shape/nc.shp"</span>, package <span class="op">=</span> <span class="st">"sf"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html">st_read</a></span><span class="op">(</span>quiet<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">nc</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 100 features and 14 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: -84.32385 ymin: 33.88199 xmax: -75.45698 ymax: 36.58965
+Geodetic CRS:  NAD27
+First 10 features:
+    AREA PERIMETER CNTY_ CNTY_ID        NAME  FIPS FIPSNO CRESS_ID BIR74 SID74
+1  0.114     1.442  1825    1825        Ashe 37009  37009        5  1091     1
+2  0.061     1.231  1827    1827   Alleghany 37005  37005        3   487     0
+3  0.143     1.630  1828    1828       Surry 37171  37171       86  3188     5
+4  0.070     2.968  1831    1831   Currituck 37053  37053       27   508     1
+5  0.153     2.206  1832    1832 Northampton 37131  37131       66  1421     9
+6  0.097     1.670  1833    1833    Hertford 37091  37091       46  1452     7
+7  0.062     1.547  1834    1834      Camden 37029  37029       15   286     0
+8  0.091     1.284  1835    1835       Gates 37073  37073       37   420     0
+9  0.118     1.421  1836    1836      Warren 37185  37185       93   968     4
+10 0.124     1.428  1837    1837      Stokes 37169  37169       85  1612     1
+   NWBIR74 BIR79 SID79 NWBIR79                       geometry
+1       10  1364     0      19 MULTIPOLYGON (((-81.47276 3...
+2       10   542     3      12 MULTIPOLYGON (((-81.23989 3...
+3      208  3616     6     260 MULTIPOLYGON (((-80.45634 3...
+4      123   830     2     145 MULTIPOLYGON (((-76.00897 3...
+5     1066  1606     3    1197 MULTIPOLYGON (((-77.21767 3...
+6      954  1838     5    1237 MULTIPOLYGON (((-76.74506 3...
+7      115   350     2     139 MULTIPOLYGON (((-76.00897 3...
+8      254   594     2     371 MULTIPOLYGON (((-76.56251 3...
+9      748  1190     2     844 MULTIPOLYGON (((-78.30876 3...
+10     160  2038     5     176 MULTIPOLYGON (((-80.02567 3...</code></pre>
+</div>
+</div>
+<p>Here, <code>nc</code> is a sf object: this is a <em>subclass</em> (specialized version) of a data frame that includes spatial information. If we <code><a href="https://pillar.r-lib.org/reference/glimpse.html">glimpse()</a></code> the object, we see that most of our columns are as expected, but the <code>geometry</code> column is unlike anything we’ve seen so far:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html">glimpse</a></span><span class="op">(</span><span class="va">nc</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 100
+Columns: 15
+$ AREA      &lt;dbl&gt; 0.114, 0.061, 0.143, 0.070, 0.153, 0.097, 0.062, 0.091, 0.11…
+$ PERIMETER &lt;dbl&gt; 1.442, 1.231, 1.630, 2.968, 2.206, 1.670, 1.547, 1.284, 1.42…
+$ CNTY_     &lt;dbl&gt; 1825, 1827, 1828, 1831, 1832, 1833, 1834, 1835, 1836, 1837, …
+$ CNTY_ID   &lt;dbl&gt; 1825, 1827, 1828, 1831, 1832, 1833, 1834, 1835, 1836, 1837, …
+$ NAME      &lt;chr&gt; "Ashe", "Alleghany", "Surry", "Currituck", "Northampton", "H…
+$ FIPS      &lt;chr&gt; "37009", "37005", "37171", "37053", "37131", "37091", "37029…
+$ FIPSNO    &lt;dbl&gt; 37009, 37005, 37171, 37053, 37131, 37091, 37029, 37073, 3718…
+$ CRESS_ID  &lt;int&gt; 5, 3, 86, 27, 66, 46, 15, 37, 93, 85, 17, 79, 39, 73, 91, 42…
+$ BIR74     &lt;dbl&gt; 1091, 487, 3188, 508, 1421, 1452, 286, 420, 968, 1612, 1035,…
+$ SID74     &lt;dbl&gt; 1, 0, 5, 1, 9, 7, 0, 0, 4, 1, 2, 16, 4, 4, 4, 18, 3, 4, 1, 1…
+$ NWBIR74   &lt;dbl&gt; 10, 10, 208, 123, 1066, 954, 115, 254, 748, 160, 550, 1243, …
+$ BIR79     &lt;dbl&gt; 1364, 542, 3616, 830, 1606, 1838, 350, 594, 1190, 2038, 1253…
+$ SID79     &lt;dbl&gt; 0, 3, 6, 2, 3, 5, 2, 2, 2, 5, 2, 5, 4, 4, 6, 17, 4, 7, 1, 0,…
+$ NWBIR79   &lt;dbl&gt; 19, 12, 260, 145, 1197, 1237, 139, 371, 844, 176, 597, 1369,…
+$ geometry  &lt;MULTIPOLYGON [°]&gt; MULTIPOLYGON (((-81.47276 3..., MULTIPOLYGON ((…</code></pre>
+</div>
+</div>
+<p>Here the <code>geometry</code> column is of type <code>MULTIPOLYGON</code> and if we look a bit closer at what that means, we see that each cell (so each single ‘data point’) looks something like this:</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>MULTIPOLYGON (((-81.47276 36.23436, -81.54084 36.27251, -81.56198 36.27359, -81.63306 36.34069, -81.74107 36.39178, -81.69828 36.47178, -81.7028 36.51934, -81.67 36.58965, -81.3453 36.57286, -81.34754 36.53791, -81.32478 36.51368, -81.31332 36.4807, -81.26624 36.43721, -81.26284 36.40504, -81.24069 36.37942, -81.23989 36.36536, -81.26424 36.35241, -81.32899 36.3635, -81.36137 36.35316, -81.36569 36.33905, -81.35413 36.29972, -81.36745 36.2787, -81.40639 36.28505, -81.41233 36.26729, -81.43104 36.26072, -81.45289 36.23959, -81.47276 36.23436)))</code></pre>
+</div>
+</div>
+<p>This is a list of GPS coordinates which can be traced out to give the shape of a <em>polygon</em>. In this particular case, the first row of the <code>nc</code> object is <a href="https://en.wikipedia.org/wiki/Ashe_County%2C_North_Carolina">Ashe County, NC</a> and the multipolygon is structured as:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="pa08_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>As you see, this forms a closed shape with linear sides, <em>i.e.</em>, a polygon. (Look back at that list of GPS coordinates above: it starts and ends in the same place.)</p>
+<p>So why is this called a <strong>multi</strong>polygon? Well, not all geographic regions are true <em>contiguous</em> polygons. <a href="https://en.wikipedia.org/wiki/Dare_County,_North_Carolina">Dare County, NC</a> contains some of NC’s famous <em>Outer Banks</em> islands.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="pa08_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>As you can see, this isn’t a super-high resolution boundary file, but it does pick up on the existence of several islands. Because this geographic unit is divided into several polygons, it is indeed a <em>multipolygon</em>.</p>
+<p>You’re probably starting to think that spatial data can be quite complicated - and you’re right! Programmatically dealing with geospatial data can require highly sophisticated GIS (“Geographic Information System”) tools, but we can cover the easy 80% of spatial data manipulation using <code>R</code>’s <code>sf</code> package.</p>
+<p><code>sf</code> or “Simple Features for <code>R</code>” integrates the <a href="https://en.wikipedia.org/wiki/Simple_Features">simple features GIS paradigm</a> into an <code>R</code> <code>tidyverse</code> framework. We’ll run through some basic examples here to help get you started.</p>
+<p>To make our intro a bit more concrete, let’s bring it home to NYC. We’ll load up three different spatial data sets:</p>
+<ol type="1">
+<li>The NYC subway lines:</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/">sf</a></span><span class="op">)</span></span>
+<span><span class="va">subway_lines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html">st_read</a></span><span class="op">(</span><span class="st">"https://data.ny.gov/resource/s692-irgq.geojson"</span>, </span>
+<span>                        quiet<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<ol start="2" type="1">
+<li>The NYC subway stations:</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">subway_stations</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html">st_read</a></span><span class="op">(</span><span class="st">"https://data.ny.gov/resource/39hk-dx4f.geojson"</span>, </span>
+<span>                           quiet<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">borough</span><span class="op">)</span> <span class="co"># We're going to use borough as an example later so drop</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<ol start="3" type="1">
+<li>NYC borough boundaries and populations</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://walker-data.com/tidycensus/">tidycensus</a></span><span class="op">)</span></span>
+<span><span class="va">nyc_tracts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://walker-data.com/tidycensus/reference/get_acs.html">get_acs</a></span><span class="op">(</span></span>
+<span>  geography <span class="op">=</span> <span class="st">"tract"</span>,</span>
+<span>  variables <span class="op">=</span> <span class="st">"B01003_001"</span>, </span>
+<span>  state <span class="op">=</span> <span class="st">"NY"</span>,</span>
+<span>  county <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"New York"</span>, <span class="st">"Kings"</span>, <span class="st">"Queens"</span>, <span class="st">"Bronx"</span>, <span class="st">"Richmond"</span><span class="op">)</span>,</span>
+<span>  geometry <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  year <span class="op">=</span> <span class="fl">2024</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>borough <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html">case_when</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html">str_detect</a></span><span class="op">(</span><span class="va">NAME</span>, <span class="st">"Queens County"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"Queens"</span>, </span>
+<span>    <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html">str_detect</a></span><span class="op">(</span><span class="va">NAME</span>, <span class="st">"Kings County"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"Brooklyn"</span>, </span>
+<span>    <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html">str_detect</a></span><span class="op">(</span><span class="va">NAME</span>, <span class="st">"Bronx County"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"Bronx"</span>, </span>
+<span>    <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html">str_detect</a></span><span class="op">(</span><span class="va">NAME</span>, <span class="st">"Richmond County"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"Staten Island"</span>, </span>
+<span>    <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html">str_detect</a></span><span class="op">(</span><span class="va">NAME</span>, <span class="st">"New York County"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"Manhattan"</span>,</span>
+<span>    .unmatched<span class="op">=</span><span class="st">"error"</span></span>
+<span>  <span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html">rename</a></span><span class="op">(</span>population <span class="op">=</span> <span class="va">estimate</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">GEOID</span>, <span class="op">-</span><span class="va">variable</span>, <span class="op">-</span><span class="va">moe</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_transform.html">st_transform</a></span><span class="op">(</span>crs<span class="op">=</span><span class="fl">4326</span><span class="op">)</span> <span class="co"># We'll talk about this in class</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Getting data from the 2020-2024 5-year ACS</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: • You have not set a Census API key. Users without a key are limited to 500
+queries per day and may experience performance limitations.
+ℹ For best results, get a Census API key at
+http://api.census.gov/data/key_signup.html and then supply the key to the
+`census_api_key()` function to use it throughout your tidycensus session.
+This warning is displayed once per session.</code></pre>
+</div>
+</div>
+<p>Let’s compare these three data sets:</p>
+<ol type="1">
+<li>
+<p><code>nyc_tracts</code> has a <code>MULTIPOLYGON</code> geometry, as we would expect for <a href="https://data.cityofnewyork.us/City-Government/2020-Census-Tracts-Mapped/weqx-t5xr">NYC’s Census Tracts</a>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html">glimpse</a></span><span class="op">(</span><span class="va">nyc_tracts</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 2,327
+Columns: 4
+$ NAME       &lt;chr&gt; "Census Tract 376; Bronx County; New York", "Census Tract 2…
+$ population &lt;dbl&gt; 2115, 4490, 4194, 6071, 5023, 2949, 2433, 2964, 4942, 7738,…
+$ borough    &lt;chr&gt; "Bronx", "Bronx", "Bronx", "Bronx", "Bronx", "Bronx", "Bron…
+$ geometry   &lt;MULTIPOLYGON [°]&gt; MULTIPOLYGON (((-73.87038 4..., MULTIPOLYGON (…</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>NYC’s Subway Stations have a <code>POINT</code> geometry type since they exist at a single point in space, not as a region.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html">glimpse</a></span><span class="op">(</span><span class="va">subway_stations</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 496
+Columns: 18
+$ station_id            &lt;chr&gt; "1", "2", "3", "4", "5", "6", "7", "8", "9", "10…
+$ north_direction_label &lt;chr&gt; "Last Stop", "Astoria", "Astoria", "Astoria", "A…
+$ line                  &lt;chr&gt; "Astoria", "Astoria", "Astoria", "Astoria", "Ast…
+$ daytime_routes        &lt;chr&gt; "N W", "N W", "N W", "N W", "N W", "N W", "N R W…
+$ complex_id            &lt;chr&gt; "1", "2", "3", "4", "5", "6", "613", "8", "9", "…
+$ division              &lt;chr&gt; "BMT", "BMT", "BMT", "BMT", "BMT", "BMT", "BMT",…
+$ ada_southbound        &lt;chr&gt; "0", "1", "0", "0", "0", "0", "0", "0", "1", "0"…
+$ gtfs_stop_id          &lt;chr&gt; "R01", "R03", "R04", "R05", "R06", "R08", "R11",…
+$ structure             &lt;chr&gt; "Elevated", "Elevated", "Elevated", "Elevated", …
+$ ada_notes             &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, "Uptown only…
+$ stop_name             &lt;chr&gt; "Astoria-Ditmars Blvd", "Astoria Blvd", "30 Av",…
+$ gtfs_longitude        &lt;chr&gt; "-73.912034", "-73.917843", "-73.921479", "-73.9…
+$ ada_northbound        &lt;chr&gt; "0", "1", "0", "0", "0", "0", "0", "0", "1", "1"…
+$ ada                   &lt;chr&gt; "0", "1", "0", "0", "0", "0", "0", "0", "1", "2"…
+$ south_direction_label &lt;chr&gt; "Manhattan", "Manhattan", "Manhattan", "Manhatta…
+$ cbd                   &lt;chr&gt; "false", "false", "false", "false", "false", "fa…
+$ gtfs_latitude         &lt;chr&gt; "40.775036", "40.770258", "40.766779", "40.76182…
+$ geometry              &lt;POINT [°]&gt; POINT (-73.91203 40.77504), POINT (-73.917…</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Finally, the subway <em>lines</em> have type <code>MULTILINESTRING</code>. This is a bit of a mouthful, but it captures the essence of how we would expect subway lines to be: one-dimensional paths traced on a 2D background.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">subway_lines</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 29 features and 4 fields
+Geometry type: MULTILINESTRING
+Dimension:     XY
+Bounding box:  xmin: -74.25271 ymin: 40.51221 xmax: -73.75446 ymax: 40.90373
+Geodetic CRS:  WGS 84
+First 10 features:
+   objectid            service_name service     shape_stlength
+1         5    Broadway / 7AV Local       1  77623.93076359815
+2         4        8 Avenue Express       A 101293.08009556108
+3         3    14 St-Canarsie Local       L  54130.28254204164
+4         2 Franklin Avenue Shuttle      SF   7098.21908922379
+5         1   Nassau Street Express       J  70656.68490562918
+6        11      Lexington Av Local       6  79571.48821306424
+7        10       42 Street Shuttle      ST  2285.504908819597
+8         9        6 Avenue Express       B 127602.11278784153
+9         8    Lexington Av Express       4 106032.53413854787
+10        7        Broadway Express       Q  96999.90734425026
+                         geometry
+1  MULTILINESTRING ((-73.98594...
+2  MULTILINESTRING ((-73.94368...
+3  MULTILINESTRING ((-74.00342...
+4  MULTILINESTRING ((-73.95576...
+5  MULTILINESTRING ((-74.00382...
+6  MULTILINESTRING ((-74.00482...
+7  MULTILINESTRING ((-73.97919...
+8  MULTILINESTRING ((-73.96132...
+9  MULTILINESTRING ((-73.93294...
+10 MULTILINESTRING ((-73.98115...</code></pre>
+</div>
+</div>
+</li>
+</ol>
+<p>So we have three types of data: point (stations), linear (subway lines), and areal (census tracts). The complexity of GIS work comes from combining these. First, let’s plot them. In each case, all we have to do is use the <code><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf()</a></code> function from <code>ggplot2</code> with the <code>geometry</code> aesthetic and <code>R</code> will handle it properly for us:<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nyc_tracts</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>geometry<span class="op">=</span><span class="va">geometry</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span><span class="op">(</span><span class="st">"NYC Census Tracts [Areal geom_sf]"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="pa08_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>vs.</em></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">subway_stations</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>geometry<span class="op">=</span><span class="va">geometry</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span><span class="op">(</span><span class="st">"NYC Subway Stations [Point geom_sf]"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="pa08_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>and</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">subway_lines</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>geometry<span class="op">=</span><span class="va">geometry</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span><span class="op">(</span><span class="st">"NYC Subway Lines [Linear geom_sf]"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="pa08_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can even superimpose these:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>mapping<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>geometry <span class="op">=</span> <span class="va">geometry</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">nyc_tracts</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">subway_stations</span>, col<span class="op">=</span><span class="st">"red4"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">subway_lines</span>, col<span class="op">=</span><span class="st">"green3"</span>, alpha<span class="op">=</span><span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span>  <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span><span class="op">(</span><span class="st">"NYC Subway System"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="pa08_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Note that here, instead of setting the <code>data</code> for the whole plot in the initial <code><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot()</a></code> call as we typically do, we have passed different data sets to each <em>layer</em> of the plot.</p>
+<p>So let’s do some basic manipulation. First, we might want to <em>aggregate</em> tracts to boroughs and get borough-level populations:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nyc_tracts</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">borough</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span><span class="op">(</span>population <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">population</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 5 features and 2 fields
+Geometry type: GEOMETRY
+Dimension:     XY
+Bounding box:  xmin: -74.25563 ymin: 40.4961 xmax: -73.70036 ymax: 40.91771
+Geodetic CRS:  WGS 84
+# A tibble: 5 × 3
+  borough       population                                              geometry
+  &lt;chr&gt;              &lt;dbl&gt;                                        &lt;GEOMETRY [°]&gt;
+1 Bronx            1404779 MULTIPOLYGON (((-73.78765 40.85973, -73.78671 40.858…
+2 Brooklyn         2631580 POLYGON ((-73.86702 40.68683, -73.86728 40.68774, -7…
+3 Manhattan        1629477 MULTIPOLYGON (((-74.0422 40.69997, -74.039 40.69762,…
+4 Queens           2323052 POLYGON ((-73.85307 40.80011, -73.85463 40.79972, -7…
+5 Staten Island     494956 MULTIPOLYGON (((-74.16004 40.5276, -74.15698 40.5289…</code></pre>
+</div>
+</div>
+<p>We see here that we summed the population as we might expect, but what happened to the <code>geometry</code> column? Because this was an <code>sf</code> and not a “regular” <code>data.frame</code>, the spatial nature <em>persisted</em> across summarization. Here, we see that the geometry column is essentially the <em>union</em> of all the tracts in that borough:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nyc_tracts</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">borough</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span><span class="op">(</span>population <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">population</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>geometry<span class="op">=</span><span class="va">geometry</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="pa08_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Pretty nifty. Our other <code>dplyr</code> operations work as we might expect:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nyc_tracts</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">borough</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_max</a></span><span class="op">(</span><span class="va">population</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>geometry<span class="op">=</span><span class="va">geometry</span>, fill<span class="op">=</span><span class="va">borough</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position<span class="op">=</span><span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span><span class="op">(</span><span class="st">"Most Populous Tracts in Each Borough"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure"><p><img src="pa08_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Not terribly attractive, but it does what we’d expect.</p>
+<p>Things get more interesting when we want to <em>combine</em> different bits of geometry. For example, suppose we want to ask “how many subway stations are in each borough?” (Poor Staten Island…) To answer this, we want to do a ‘join’, but it’s not quite one of the equality joins we used from normal <code>dplyr</code>.</p>
+<p>We need a <em>spatial</em> join, which is implement with the <code><a href="https://r-spatial.github.io/sf/reference/st_join.html">sf::st_join()</a></code> function. And instead of using a <code>join_by(x == y)</code> type specification, we need to use one of the relevant logical predicates listed <a href="https://r-spatial.github.io/sf/reference/st_join.html">on the help page</a>. For us, the default <code>st_intersects</code> seems to work just fine:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://gt.rstudio.com">gt</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_join.html">st_join</a></span><span class="op">(</span><span class="va">subway_stations</span>, <span class="va">nyc_tracts</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">borough</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span>id<span class="op">=</span><span class="st">"tbl_subway1"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/cols_hide.html">cols_hide</a></span><span class="op">(</span><span class="st">"geometry"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/cols_label.html">cols_label</a></span><span class="op">(</span>borough <span class="op">=</span> <span class="fu"><a href="https://gt.rstudio.com/reference/md.html">md</a></span><span class="op">(</span><span class="st">"**Borough**"</span><span class="op">)</span>, </span>
+<span>             n<span class="op">=</span><span class="st">"Number of Subway Stations"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/grand_summary_rows.html">grand_summary_rows</a></span><span class="op">(</span>columns<span class="op">=</span><span class="va">n</span>, </span>
+<span>                     fns<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"Total"</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="tbl_subway1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#tbl_subway1 table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#tbl_subway1 thead, #tbl_subway1 tbody, #tbl_subway1 tfoot, #tbl_subway1 tr, #tbl_subway1 td, #tbl_subway1 th {
+  border-style: none;
+}
+
+#tbl_subway1 p {
+  margin: 0;
+  padding: 0;
+}
+
+#tbl_subway1 .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#tbl_subway1 .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#tbl_subway1 .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#tbl_subway1 .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#tbl_subway1 .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#tbl_subway1 .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#tbl_subway1 .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#tbl_subway1 .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#tbl_subway1 .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#tbl_subway1 .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#tbl_subway1 .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#tbl_subway1 .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#tbl_subway1 .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#tbl_subway1 .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#tbl_subway1 .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#tbl_subway1 .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#tbl_subway1 .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#tbl_subway1 .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#tbl_subway1 .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tbl_subway1 .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#tbl_subway1 .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#tbl_subway1 .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#tbl_subway1 .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tbl_subway1 .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#tbl_subway1 .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#tbl_subway1 .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#tbl_subway1 .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tbl_subway1 .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#tbl_subway1 .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#tbl_subway1 .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#tbl_subway1 .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#tbl_subway1 .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#tbl_subway1 .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tbl_subway1 .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#tbl_subway1 .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#tbl_subway1 .gt_left {
+  text-align: left;
+}
+
+#tbl_subway1 .gt_center {
+  text-align: center;
+}
+
+#tbl_subway1 .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#tbl_subway1 .gt_font_normal {
+  font-weight: normal;
+}
+
+#tbl_subway1 .gt_font_bold {
+  font-weight: bold;
+}
+
+#tbl_subway1 .gt_font_italic {
+  font-style: italic;
+}
+
+#tbl_subway1 .gt_super {
+  font-size: 65%;
+}
+
+#tbl_subway1 .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#tbl_subway1 .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#tbl_subway1 .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#tbl_subway1 .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#tbl_subway1 .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#tbl_subway1 .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#tbl_subway1 .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#tbl_subway1 .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#tbl_subway1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
+<thead><tr class="gt_col_headings header">
+<th id="a::stub" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"></th>
+<th id="borough" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Borough</strong></th>
+<th id="n" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Number of Subway Stations</th>
+</tr></thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<th id="stub_1_1" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></th>
+<td class="gt_row gt_left" headers="stub_1_1 borough">Brooklyn</td>
+<td class="gt_row gt_right" headers="stub_1_1 n">169</td>
+</tr>
+<tr class="even">
+<th id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></th>
+<td class="gt_row gt_left" headers="stub_1_2 borough">Manhattan</td>
+<td class="gt_row gt_right" headers="stub_1_2 n">153</td>
+</tr>
+<tr class="odd">
+<th id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></th>
+<td class="gt_row gt_left" headers="stub_1_3 borough">Queens</td>
+<td class="gt_row gt_right" headers="stub_1_3 n">83</td>
+</tr>
+<tr class="even">
+<th id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></th>
+<td class="gt_row gt_left" headers="stub_1_4 borough">Bronx</td>
+<td class="gt_row gt_right" headers="stub_1_4 n">70</td>
+</tr>
+<tr class="odd">
+<th id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></th>
+<td class="gt_row gt_left" headers="stub_1_5 borough">Staten Island</td>
+<td class="gt_row gt_right" headers="stub_1_5 n">21</td>
+</tr>
+<tr class="even">
+<th id="grand_summary_stub_1" class="gt_row gt_left gt_stub gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">Total</th>
+<td class="gt_row gt_left gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 borough">—</td>
+<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 n">496</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>This is perhaps a bit fishy - why are there 21 stations in SI which (famously) does not have a subway. We should always start by seeing if our join went off, but things look good here. We have 496 rows, which matches the 496 rows in <code>subway_stations</code>. It turns out this is just a good-old “data not being what the label makes us think” problem:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_join.html">st_join</a></span><span class="op">(</span><span class="va">subway_stations</span>, <span class="va">nyc_tracts</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">borough</span> <span class="op">==</span> <span class="st">"Staten Island"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/cols_hide.html">cols_hide</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html">everything</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/cols_unhide.html">cols_unhide</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">stop_name</span>, <span class="va">line</span>, <span class="va">division</span>, <span class="va">borough</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/cols_merge.html">cols_merge</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">line</span>, <span class="va">division</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/cols_label.html">cols_label</a></span><span class="op">(</span>stop_name <span class="op">=</span> <span class="st">"Stop Name"</span>, </span>
+<span>             line<span class="op">=</span><span class="st">"Line"</span>, </span>
+<span>             borough<span class="op">=</span><span class="st">"Borough"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="vbjtfufvde" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#vbjtfufvde table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#vbjtfufvde thead, #vbjtfufvde tbody, #vbjtfufvde tfoot, #vbjtfufvde tr, #vbjtfufvde td, #vbjtfufvde th {
+  border-style: none;
+}
+
+#vbjtfufvde p {
+  margin: 0;
+  padding: 0;
+}
+
+#vbjtfufvde .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#vbjtfufvde .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#vbjtfufvde .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#vbjtfufvde .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#vbjtfufvde .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#vbjtfufvde .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vbjtfufvde .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#vbjtfufvde .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#vbjtfufvde .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#vbjtfufvde .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#vbjtfufvde .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#vbjtfufvde .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#vbjtfufvde .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#vbjtfufvde .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#vbjtfufvde .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#vbjtfufvde .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#vbjtfufvde .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#vbjtfufvde .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#vbjtfufvde .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vbjtfufvde .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#vbjtfufvde .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#vbjtfufvde .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#vbjtfufvde .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vbjtfufvde .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#vbjtfufvde .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#vbjtfufvde .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vbjtfufvde .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vbjtfufvde .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#vbjtfufvde .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vbjtfufvde .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#vbjtfufvde .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vbjtfufvde .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#vbjtfufvde .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vbjtfufvde .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#vbjtfufvde .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vbjtfufvde .gt_left {
+  text-align: left;
+}
+
+#vbjtfufvde .gt_center {
+  text-align: center;
+}
+
+#vbjtfufvde .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#vbjtfufvde .gt_font_normal {
+  font-weight: normal;
+}
+
+#vbjtfufvde .gt_font_bold {
+  font-weight: bold;
+}
+
+#vbjtfufvde .gt_font_italic {
+  font-style: italic;
+}
+
+#vbjtfufvde .gt_super {
+  font-size: 65%;
+}
+
+#vbjtfufvde .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#vbjtfufvde .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#vbjtfufvde .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#vbjtfufvde .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#vbjtfufvde .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#vbjtfufvde .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#vbjtfufvde .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#vbjtfufvde .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#vbjtfufvde div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
+<thead><tr class="gt_col_headings header">
+<th id="line" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Line</th>
+<th id="stop_name" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Stop Name</th>
+<th id="borough" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Borough</th>
+</tr></thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">St George</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Tompkinsville</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Stapleton</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Clifton</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Grasmere</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Old Town</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Dongan Hills</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Jefferson Av</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Grant City</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">New Dorp</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Oakwood Heights</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Bay Terrace</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Great Kills</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Eltingville</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Annadale</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Huguenot</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Prince's Bay</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Pleasant Plains</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Richmond Valley</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Tottenville</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="line">Staten Island SIR</td>
+<td class="gt_row gt_left" headers="stop_name">Arthur Kill</td>
+<td class="gt_row gt_left" headers="borough">Staten Island</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<p>So it seems the Staten Island Railroad is listed as a subway on the official <a href="https://data.ny.gov/Transportation/MTA-Subway-Stations/39hk-dx4f/about_data">MTA Subway Stations listing</a>. Ain’t life grand?</p>
+<p>There is <em>much</em> more that can be said about spatial data, but these are the basic tools and all that we have time for now. If you have questions about using spatial techniques in your course project, please ask!</p>
+</section><section id="getting-started-with-shiny" class="level2"><h2 class="anchored" data-anchor-id="getting-started-with-shiny">Getting Started with Shiny</h2>
+<p>This week, we will also explore various technologies for interactive data visualization. These can be divided into two broad categories:</p>
+<ul>
+<li>Server Based: When the user makes a change to a plot, it is sent to a server where the new plot is rendered and returned to the user.</li>
+<li>Browser Based: When the user makes a change to a plot, the new plot is created <em>in the browser</em> and re-rendered ‘on site’. (This is the strategy I have used through some of these notes, where you are able to type <code>R</code> code and run it directly in your browser.)</li>
+</ul>
+<p>Generally, server-based approaches are more flexible and a bit easier to implement, while browser-based approaches are more responsive and scalable. Since the browser work is done locally on the user’s computer (or phone or tablet), they are also cheaper and safer to run as there’s no need to have a server constantly responding to user input.</p>
+<p>This week, we will explore <em>a bit</em> of each modality, though entire courses (and indeed entire careers) have been spent on both.</p>
+<p>In the <code>R</code> ecosystem, the tool of choice for building server-based<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> web applications is <code>shiny</code>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> <strong>For this pre-assignment, work through Lessons 1 and 2 of the <a href="https://shiny.posit.co/r/getstarted/shiny-basics/lesson1/">“Shiny Basics”</a> web tutorial.</strong> (You do not need to do the “Next Steps” in Lesson 3, but you are of course welcome to.)</p>
+<p>After finishing these activities, complete the Weekly Pre-Assignment Quiz on Brightspace.</p>
+</section><section id="optional-enrichment-myth-busting-and-apophenia-in-data-visualization" class="level2"><h2 class="anchored" data-anchor-id="optional-enrichment-myth-busting-and-apophenia-in-data-visualization">Optional Enrichment: “Myth Busting and Apophenia in Data Visualization”</h2>
+<p>For some optional extra enrichment, watch <a href="https://www.dicook.org/">Prof.&nbsp;Di Cook</a>’s lecture “Myth busting and apophenia in data visualisation: is what you see really there?”. As we discussed in class, plots are an excellent way to explore data, but we always want to be careful that what we think find <em>truly exists</em>. For purely numeric summaries, we can often avoid (or at least minimize the frequency) of self-delusion with classical <span class="math inline">\(p\)</span>-value-type techniques, but these are not so easily applied to visualization.</p>
+<p>Prof.&nbsp;Cook discusses relationships between effective statistical visualization and effective statistical practice.</p>
+<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/coGeZIHCk38" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
 
 
-</section></section><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+</section><div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
 <ol>
-<li id="fn1"><p>There is an effort to run <code>shiny</code> fully in browser (avoiding the need for a web server). It is still a work-in-progress, but you can try it out on the <a href="https://posit-dev.github.io/r-shinylive/"><code>r-shinylive</code></a> website, with a full gallery of examples <a href="https://shinylive.io/r/examples/">here</a>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>If you are more of a Python person, you can also check out the Python versions of <a href="https://shiny.posit.co/py/"><code>shiny</code></a> and <a href="https://shiny.posit.co/py/docs/shinylive.html"><code>shinylive</code></a>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>Of course, the stations are not actually <em>true</em> points (in the sense of geometry) and have an extent and a shape, but we treat them as points for this exercise.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>You might notice that the census provided tract shapes include some water parts of NYC so we’re not actually getting the expected East River between Manhattan/Bronx and Brooklyn/Queens. NYC Planning provides <a href="https://www.nyc.gov/content/planning/pages/resources/datasets/census-tracts">a shoreline clipped shapefile</a> but then we’d have to match things up with the census data, so we’re not going to worry about the water for now.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>There is an effort to run <code>shiny</code> fully in browser (avoiding the need for a web server). It is still a work-in-progress, but you can try it out on the <a href="https://posit-dev.github.io/r-shinylive/"><code>r-shinylive</code></a> website, with a full gallery of examples <a href="https://shinylive.io/r/examples/">here</a>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>If you are more of a Python person, you can also check out the Python versions of <a href="https://shiny.posit.co/py/"><code>shiny</code></a> and <a href="https://shiny.posit.co/py/docs/shinylive.html"><code>shinylive</code></a>.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></div></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
@@ -387,13 +1871,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
