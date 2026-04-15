@@ -1,13 +1,17 @@
 ---
 session: "`r session <- 9; session`"
-last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
+last_updated: "`r last_updated <- Sys.Date(); 
+                  last_updated |> format('%Y-%m-%d')`"
 class_date:
   "`r library(tidyverse);
     class_date <- read_csv('key_dates.csv', name_repair='universal') |>
     filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
-format: revealjs
+    pull(Date); class_date |> format('%A %Y-%m-%d')`"
+format: 
+  revealjs:
+    echo: true
+course_repo: "`r yaml::read_yaml('_variables.yml')$course$repo`"
 ---
 
 {{< include _setup.qmd >}}
@@ -23,7 +27,7 @@ Today: `r TODAY_TOPIC`
 - Communicating Results (`quarto`)  ✅
 - `R` Basics  ✅
 - Data Manipulation in `R`  ✅
-- Data Visualization in `R`  ✅
+- Data Visualization in `R`  ⬅️
 - Getting Data into `R` ⬅️
   - Files and APIs  ⬅️
   - Web Scraping
@@ -32,6 +36,21 @@ Today: `r TODAY_TOPIC`
 
 :::
 
+
+## {{< var course.short >}} Week {{< meta session >}} 
+
+Today: `r TODAY_TOPIC`
+
+::: {.small}
+
+- Course Administration
+- Warm-Up Exercises
+- Using the File System 
+- How The Web *Actually* Works
+- JSON and APIs
+- Wrap-Up
+
+:::
 
 # Today
 
@@ -48,15 +67,6 @@ Today: `r TODAY_TOPIC`
 
 # Course Administration
 
-## GTA 
-  
-Charles Ramirez is our GTA
-
-- Wednesday Office Hours moved to 5:15-7:15 for greater access
-  - Give a bit of flexibility on the front end for CR to get off work
-- Working on Meta-Review #01
-  - I won't assign peer-feedback #02 until these grades are returned
-
 ## Mini-Project #03
 
 [MP#03](../mini/mini02.html) - `r get_mp_title(3)`
@@ -70,112 +80,37 @@ Topics covered:
 ::: {.incremental .smaller}
 
 - Data Import
-  - One static file (⬅️ Today)
-  - One API call (⬅️ Today)
-- Spatial Data
-  - Very basic spatial joins
-  - Spatial visualizations (maps!)
-  
+  - Using Published Packages (`tidycensus`)
+  - Downloading and Parsing Static Files
+  - Using APIs
+- Data Manipulation
+
 :::
-
-## Grading in Progress
-
-We owe you: 
-
-- MP#01 Meta-Review Grades
-- (Selected) MP#01 Regrades 
 
 ## Course Support
 
--   Synchronous
-    -   MW Office Hours 2x / week: **Tuesdays + Thursdays 5pm**
-        - Rest of Semester except Thanksgiving (Nov 27th)
-    - GTA Office Hours: **Wednesdays at 6pm**
--   Asynchronous: Piazza ($<20$ minute *average* response time)
+- Synchronous: MW Office Hours 2x / week: 
+  - **Wednesdays 5pm** in-person
+  - **Thursdays 5pm** on Zoom
+- Asynchronous: Piazza
 
 ## Future Mini-Projects
 
-- MP#04: 
+- MP#04: `r get_mp_title(4)`
   - Deadline: `r get_mp_deadline(4)`
-  - Topic: BLS Monthly Employment Reports
+  - Web Parsing (`Olympedia`) to predict the 2028 Olympics
   
-Posted 2025-11-01
+Already posted - subject to minor revisions before `r get_mp_assigned(4)`
 
 ## Course Project
 
-[Course Project](../project.html) should be your *main focus* 
-for rest of course
+[Course Project](../project.html) should be your *main focus* for rest of course
 
-- But you still need to do mini-projects and pre-assignments(!)
+- You have received second round of feedback from me
+- Starting with the tools of today, you can import data into `R` for EDA
+  - Next two weeks will dive deeper into data *cleaning* and *preparation*
 
-## Mid-Semester Check-Ins
-
-Week #10 - Mid-Semester Check-In Presentations: 
-
-::: {.incremental}
-
-- Overarching Question
-- Data Sources
-  - Quality
-  - Suitability
-- Specific Questions
-- Prior Art
-- Challenges
-
-:::
-
-## Data Sources
-
-When using 'found' data, two important questions to ask: 
-
-::: {.incremental}
-
-- _Quality_: Does the data do what it claims to?
-  - Exhaustiveness, sampling error, sampling bias, missingness
-- _Suitability_: Does the data do what you need it to?
-  - Right 'unit of analysis', construct alignment
-
-:::
-
-## Prior Art
-
-Context and Novelty: 
-
-::: {.incremental}
-
-- What else have people said on your topic? 
-  - What is missing? 
-- What do you have to add to this conversation? (Novelty)
-  - New data set, new way of measuring, new style of analysis
-  
-:::
-
-. . . 
-
-A _research_ project is not just summarization of other work: 
-how can you contribute something new?
-
-## Project Advice
-
-General Advice:
-
-::: {.incremental}
-
-- Work on _as small a scale as possible_
-- Leave room to _demonstrate your coding skill_: if you can't  
-  demonstrate the skills of this class, your SQ may be too small
-- Plan how to _integrate_ your findings: if you find 5 factors 
-  are all correlated with response, how can you identify which ones
-  are most important? 
-
-:::
-
-## Project Advice
-
-I'll try to write up some informal advice on: 
-
-- Estimating _causal_ effects
-- Identifying key factors
+But you still need to do other mini-projects and pre-assignments(!)
 
 # Review Exercise
 
@@ -187,30 +122,30 @@ I'll try to write up some informal advice on:
 
 - Simple _human readable_ and _human writeable_ file formats
 - Not specific to one piece of software
-- Examples: CSV, txt, TSV
-- Anti-Examples: docx, pdf, jpg
+- Examples: `.csv`, `.txt`, `.tsv`
+- Anti-Examples: `.docx`, `.pdf`, `.jpg`
+- Line isn't 100% clear
 
 :::
 
 . . . 
 
-Read into `R` with `readr` functions (*e.g.*, `read_csv`)
+Import into `R` with `read*` functions (*e.g.*, `readr::read_csv` )
 
-## Best Halloween Candy
+## SSA Baby Names
 
-From [FiveThirtyEight](https://fivethirtyeight.com/videos/the-ultimate-halloween-candy-power-ranking/)
+From [the US Social Security Administration](https://www.ssa.gov/OACT/babynames/index.html) 
+Baby Names records: 
 
-{{< video https://www.youtube.com/watch?v=FjT35R8CC9Q width=1000 height=600 >}}
+- State, Sex, Name, Number Born
 
-## Best Halloween Candy
+. . . 
 
-Data can be found at <https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv>
+Read into `R` (`readr::read_csv`) and make plots to answer various questions: 
 
-Read into `R` (`readr::read_csv`) and make 3 plots: 
-
-- Do people prefer more sugary candies? (Think OLS)
-- Do people prefer more expensive candies? (Think OLS)
-- Do people prefer chocolate candies? (Think ANOVA)
+1) How popular is the name "Michael" in NY?
+2) Are *Mary*s becoming less common in the past decade?
+3) Did *Juan* and *Jose* become popular names at the same time?
 
 ## Breakout Rooms {.scrollable}
 
@@ -223,6 +158,8 @@ BREAKOUT_TABLE
 
 :::
 
+Review activities from [today's lab](`r url_full`#review)
+
 # Files and the File System
 
 ## Files and the File System
@@ -234,7 +171,7 @@ The _file system_ is the way your computer organizes and provides access to file
 - Tree like-structure: 
   - Files in folders in folders in folders ... 
     - Separated by `/`
-    - *e.g.* `STA9750-2025-FALL/data/mp01/data_file.csv`
+    - *e.g.* `{{< meta course_repo >}}/data/mp01/data_file.csv`
   - End point (or starting point) is the _root_: 
     - Called `/` on Mac/Linux
     - Drive name on Windows (`C:/`)
@@ -252,7 +189,8 @@ Typically, all user files are stored in a "home directory":
 - Subfolders include `Downloads`, `Desktop`, `Documents`, *etc*
 - Commonly abbreviated as `~`
   - My desktop is `~/Desktop`
-  - My course material is in `~/{{< var course.repo >}}`
+  - My general course material is in `~/STA9750`
+  - Semester specific material is in `~/{{< meta course_repo >}}`
   
 :::
 
@@ -294,7 +232,7 @@ Return to breakout rooms to practice file system usage:
 
 - Convert relative paths to absolute paths
 - List files in a directory
-- Examine metadata the largest file(s) in your `{{< var course.repo >}}`
+- Examine metadata the largest file(s) in your `{{< meta course_repo >}}`
   directory
 
 # Accessing Data from the Web: URLs, HTTP, JSON
@@ -316,10 +254,9 @@ URLs are an extension of file paths for the internet:
 
 ## URLs
 
-From `abstrax.io`
+From `geeksforgeeks.org`
 
-![](https://abstrax.io/wp-content/uploads/2022/07/parts-of-url-1024x335.png)
-
+![](../images/url_parts.png){width="60%" fig-align="center"}
 
 ## Static Data Transfer
 
@@ -528,7 +465,7 @@ Build a request:
 - `req_cookies_set`
 - `req_auth_basic` / `req_oauth`
 
-## `httr2` Requests
+## httr2 Requests
 
 Behaviors: 
 
@@ -541,7 +478,7 @@ Execution:
 
 - `req_perform`
 
-## `httr2` Responses
+## httr2 Responses
 
 Request status
 
@@ -562,8 +499,7 @@ Demo: Using `httr2` to get a random joke from
 
 ## Exercise - CRAN Logs API
 
-See [Lab #09](../labs/lab09.html)
-
+See Part #03 from [Today's Lab](`r url_full`#api)
 
 # Wrap-Up
 
@@ -576,28 +512,24 @@ Web Data Access
 - HTTP and JSON
 - API Usage
 
-## Upcoming Work
+## Orientation
 
-Upcoming work from [course calendar](../index.qmd#calendar)
-
-::: {.incremental}
-
-- [Mini-Project #02](../mini/mini02.html) due on `r get_mp_deadline(2)`
-- Check-In Presentations
-- [Mini-Project #03](../mini/mini03.html) due on `r get_mp_deadline(3)`
-
-:::
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R`  ✅
+- Data Visualization in `R`  ⬅️ [**NEXT TUESDAY**]
+- Getting Data into `R` ⬅️ [**Continued Thursday**]
+- Statistical Modeling in `R`
 
 . . . 
 
-Topics for after presentations:
+Reminder: we're finishing *plotting* on Tuesday. Video recording to be posted for those who can't make it.
 
-- Reading and parsing HTML
-- Parsing messy (text) data
+{{< include ../advice/sorting_dates.qmd >}}
 
 ## Musical Treat
 
 </br>
 
-{{< video https://www.youtube.com/watch?v=gC0sP_YV4ns width="80%" height="400px">}}
+{{< video https://www.youtube.com/watch?v=kruKQCY77bc width="80%" height="400px">}}
 
