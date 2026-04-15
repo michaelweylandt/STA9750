@@ -17,117 +17,246 @@ suppressPackageStartupMessages(library(tidyverse))
 
 # Review Practice {#review}
 
-{{< video https://www.youtube.com/watch?v=FjT35R8CC9Q width=1000 height=600 >}}
-
-The data can be found online at
-<https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv>. 
-
-The data looks like this:
-
 ```{r}
 #| echo: false
 #| message: false
 #| warning: false
 library(tidyverse)
 
-read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv") |> glimpse()
+try_read_csv <- possibly(read_csv)
+
+SSA <- try_read_csv("https://michael-weylandt.com/STA9750/labs/ssa_babynames.csv.gz")
+
+if(is.null(SSA)){
+   SSA <- try_read_csv("docs/labs/ssa_babynames.csv.gz")
+}
 ```
 
-Read this data into `R` using the `read_csv` function from the
-`readr` package; note that the `read_csv` function can take a URL 
+Every year, the US Social Security Administration reports the number of
+children born each year in each state with each name: *e.g*., I was one of
+`r SSA |> filter(year==1989, state=="TX", name == "Robert", sex=="M") |> pull(number) |> scales::comma()` 
+male babies named Robert born in Texas in 1989.[^ssa_babies] I have placed a 
+cleaned-up CSV containing this data (through `r SSA |> pull(year) |> max()`) 
+online at 
+<https://michael-weylandt.com/STA9750/labs/ssa_babynames.csv.gz>. (The extra 
+`gz` extension indicates that this is a [`gzip` compressed
+file](https://en.wikipedia.org/wiki/Gzip) You don't need to know the details
+of `gzip`, only that it is a compression scheme used to make big files smaller;
+`bz` and `xz` will be used for some data sources. These are mainly *single-file* 
+compression methods, as opposed to `zip` which compresses a whole directory. ) 
+
+::: {.callout-caution title="Optional: Replication Code" collapse="true"}
+
+The following code can be used to create your own copy of this data set.
+
+```{r}
+#| eval: false
+SSA_URL <- "https://www.ssa.gov/oact/babynames/state/namesbystate.zip"
+TEMPDIR <- tempdir()
+TEMPZIP <- fs::path(TEMPDIR, "babynamesbystate.zip")
+download.file(SSA_URL, TEMPZIP)
+
+unzip(TEMPZIP, exdir=TEMPDIR)
+
+fs::dir_info(TEMPDIR) |> 
+    dplyr::filter(str_ends(path, ".TXT")) |> 
+    dplyr::pull(path) |> 
+    purrr::map(\(f) readr::read_csv(f, 
+                                    show_col_types=FALSE, 
+                                    col_names=c("state", "sex", "year", "name", "number"))) |> 
+    dplyr::bind_rows() |> 
+    readr::write_csv("labs/ssa_babynames.csv.gz") |>
+    readr::write_csv("docs/labs/ssa_babynames.csv.gz")
+```
+
+By the end of today's class, you should be able to understand everything that's
+happening in this little snippet.
+
+:::
+
+[^ssa_babies]: You might remember the aggregated version of this data from 
+the [review exercise in Lab #05](./lab05.qmd#review).
+
+The data looks something like this:
+
+```{r}
+#| echo: false
+SSA |> glimpse()
+```
+
+Read this data into `R` using the `read_csv()` function from the
+`readr` package; note that the `read_csv()` function can take a URL 
 as an input so you don't need to directly download this data set.
 
-Once you have downloaded the candy data, create visualizations that
-address the following questions: 
+Once you have downloaded the baby names data, create tables or visualizations 
+that address the following questions: 
 
-1. Do people prefer more sugary candies? (Think OLS)
+1. In 2024, what were the five most common girls' names *nationwide*?
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-```{webr}
+```{r}
 library(tidyverse)
-library(ggpmisc)
-read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv") |>
-    mutate(winpercent = winpercent / 100) |>
-    ggplot(aes(x=sugarpercent, y=winpercent)) + 
-      xlab("Sugariness (Percentile)") + 
-      ylab("Popularity (Percentile)") + 
-      geom_point() + 
-      scale_x_continuous(labels = scales::percent) + 
-      scale_y_continuous(labels = scales::percent) + 
-      stat_smooth(method="lm") + 
-      stat_poly_eq(use_label("R2", "R2.CI", "P"), 
-                   color="red4", 
-                   size=5) + 
-      theme_bw()
+library(gt)
+read_csv("https://michael-weylandt.com/STA9750/labs/ssa_babynames.csv.gz") |>
+   filter(year == 2024, 
+          sex == "F") |> 
+   group_by(name) |> 
+   summarize(number = sum(number)) |> 
+   slice_max(number, n=5) |> 
+   gt() |> 
+   cols_label(name = "Name", 
+              number = "Number of Girls Born Nationwide") |> 
+   tab_header(title="5 Most Popular Girls Names in 2024") |> 
+   tab_source_note("Data from the US SSA")
 ```
 
 :::
 
-2. Do people prefer more expensive candies? (Think OLS)
+2. In terms of popularity _ranking_ (1st, 2nd, 3rd, *etc*), how has the
+   popularity of the name "Michael" (for boys) changed in New York?
+   
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-```{webr}
-library(tidyverse)
-library(ggpmisc)
-read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv") |>
-    mutate(winpercent = winpercent / 100) |>
-    ggplot(aes(x=pricepercent, y=winpercent)) + 
-      xlab("Price (Percentile)") + 
-      ylab("Popularity (Percentile)") + 
-      geom_point() + 
-      scale_x_continuous(labels = scales::percent) + 
-      scale_y_continuous(labels = scales::percent) + 
-      stat_smooth(method="lm") + 
-      stat_poly_eq(use_label("R2", "R2.CI", "P"), 
-                   color="red4", 
-                   size=5) + 
-      theme_bw()
+```{r}
+SSA |> 
+    filter(state == "NY", 
+           sex == "M") |> 
+    # Flip ranking so high number => low (1st, 2nd) rank
+    # Compute rankings _for that year_
+    mutate(pop_rank = dense_rank(-number), 
+           .by = "year") |>
+    filter(name == "Michael") |> 
+    mutate(rank_smooth = runmed(pop_rank, 11)) |>
+    ggplot(aes(x=year)) + 
+    geom_point(aes(y=pop_rank), alpha=0.2) + 
+    geom_line(aes(y=rank_smooth)) + 
+    scale_y_reverse(breaks=c(1, 10, 20, 30, 40, 50)) + 
+    theme_bw() + 
+    xlab("Year") + 
+    ylab("Popularity Ranking")
 ```
+
+We see that, starting around 1925, the name "Michael" became very popular in
+NY and it was the most popular male name from 1956 to 2013 in all but two
+years.
 
 :::
 
-3. Do people prefer chocolate candies? (Think ANOVA)
+
+3. How has the *fraction* of *Juan*s born(as a fraction of all names) increased
+   over time? (*Hint:* Think OLS and use the `ggpmisc::stat_poly_eq` function
+   to annotate your solution.)
+   
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
-For this question, we only know whether a candy is chocolate-based
-or not, so a linear model is not the most straightforward approach.
-We can instead use an ANOVA-inspired bar plot.[^anova]
+```{r}
+library(ggpmisc)
+SSA |> 
+   summarize(n_total=sum(number), 
+             n_juan = sum(number * (name == "Juan")), 
+             .by = c("year")) |> 
+   mutate(p_juan = n_juan / n_total) |> 
+   ggplot(aes(x=year, y=1e5 * p_juan)) + 
+   geom_point() + 
+   xlab("Year") + 
+   ylab("Juans per 100,000 Babies") + 
+   theme_bw() + 
+   stat_poly_eq(use_label(c("R2", "eq"))) + 
+   geom_smooth(method="lm", col="red4")
+```
 
-[^anova]: Note, however, that standard ANOVA is basically just a 
-very restricted linear model; *cf.* <https://lindeloev.github.io/tests-as-linear/>. 
+Here, we see that, while the popularity of Juan has overall been increasing 
+(with an $R^2$ of 60%, which is quite good for the social sciences), there has
+been a drop-off post-2000 that a simple linear model wouldn't capture. 
 
-```{webr}
-library(tidyverse)
-read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/candy-power-ranking/candy-data.csv") |>
-    mutate(winpercent = winpercent / 100, 
-           chocolate = as.logical(chocolate)) |>
-    group_by(chocolate) |>
-    mutate(win_mean = mean(winpercent), 
-           win_sd   = sd(winpercent), 
-           n        = n(), 
-           win_se   = win_sd / sqrt(n)) |>
-    ungroup() |>
-    ggplot(aes(x=chocolate, y=winpercent)) + 
-    geom_jitter(height=0, width=0.2, alpha=0.3) + 
-    geom_errorbar(aes(ymin = win_mean - win_se, 
-                      ymax = win_mean + win_se),
-                  width=0.2, 
-                  color="red4") + 
+Note also the use of "Juans per 100,000" on the $y$-axis here. This is a general
+technique to put small probabilities into a more natural-human scale. You may
+be familiar with the use of [micromorts](https://en.wikipedia.org/wiki/Micromort)
+or deaths per million people as a measure of the risk associated with various 
+lifestyle factors.
+
+:::
+
+4. Have the numbers of *Juan*s and *Jose*s born each year increased in rough
+   proportion to each other?  (*Hint:* Think OLS)
+   
+
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{r}
+library(ggpmisc)
+SSA |> 
+   filter(name %in% c("Juan", "Jose")) |>
+   summarize(n=sum(number), 
+             .by = c("year", "name")) |>
+   pivot_wider(names_from=name,
+               values_from=n) |>
+   ggplot(aes(x=Juan, y=Jose)) +
+   # Put this here b/c color doesn't impact the stat_()s
+   # Only the point
+   geom_point(aes(color=year)) + 
+   scale_color_fermenter(palette=3,
+                         direction=1,
+                         breaks=c(1910, 1930, 1950,1970, 1980, 1990, 2000, 2010, 2020)) + 
+   theme_bw() + 
+   theme(legend.position="bottom") +
+   guides(color=guide_colorbar(barwidth=20)) +
+   stat_poly_line() + 
+   stat_poly_eq() + 
+   xlab("Number of Juan's Born Per Year") + 
+   ylab("Number of Jose's Born Per Year")
+```
+
+As before, by seeing the darkest purple dots near the
+center and not the top right of the graph, we see that 
+there are fewer *Juan*s and *Jose*s being born than 30 years
+ago.
+
+:::
+
+5. Were there more *Mary*s born per year in the 2000s or the 2010s? (*Hint:* Think ANOVA)
+
+
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{r}
+SSA |> 
+    filter(year >= 2000, 
+           year <= 2019, 
+           name == "Mary") |> 
+    group_by(year) |> 
+    summarize(n_mary = sum(number)) |> 
+    mutate(decade=if_else(year <= 2009, "2000s", "2010s")) |> 
+    group_by(decade) |> 
+    mutate(mean_n_mary = mean(n_mary), 
+           sd_n_mary = sd(n_mary), 
+           # Note n() to count number of obs per group
+           
+           se_n_mary = sd_n_mary / sqrt(n())) |>
+    ggplot(aes(x=decade, y=n_mary))  + 
     stat_summary(fun="mean", 
                  geom="col", 
                  fill="lightblue", 
-                 color="blue4", 
-                 alpha=0.4) + 
-    geom_point(aes(y=win_mean), size=2, color="red4") + 
+                 alpha=0.8) + 
+    # After so the points appear _above_ the summary bar
+    geom_jitter(height = 0) + 
     theme_bw() + 
-    xlab("Chocolate") + 
-    ylab("Popularity (Percentile)") + 
-    scale_y_continuous(labels = scales::percent, 
-                       limits = c(0, 1))
+    geom_errorbar(aes(ymin = mean_n_mary - se_n_mary, 
+                      ymax = mean_n_mary + se_n_mary), 
+                  color="red4", 
+                  width=0.4) + 
+    xlab(NULL) + 
+    ylab("Number of Marys Born Per Year")
 ```
+
+Because we're looking at the year as a categorical (decade)
+variable instead of a numeric quantity here, we use an
+ANOVA-inspired barplot instead of linear regression.[^anova] 
+[^anova]: Note, however, that standard ANOVA is basically just a 
+very restricted linear model; *cf.* <https://lindeloev.github.io/tests-as-linear/>. 
 
 :::
 
@@ -149,9 +278,9 @@ read_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/mast
 ::: {.callout-tip collapse="true" title="Solution"}
    
 Note that these solutions will give different answers on your
-personal computer as opposed to this web interface. That is to be expected 
+personal computer than on this web interface. That is to be expected 
 since we are going outside of `R` and interacting with the 
-whole system and should not surprise you. 
+whole system, so differences should not surprise you. 
    
 ```{webr}
 library(fs)
@@ -160,7 +289,37 @@ path("index.qmd") |> path_abs()
 
 :::
 
-2. A common pattern in working with files is wanting to find
+2. Using the `fs::file_size()` function, how big is the file you found in the 
+   previous section? 
+
+::: {.callout-tip collapse="true" title="Solution"}
+   
+Note that these solutions will give different answers on your
+personal computer as opposed to this web interface. That is to be expected 
+since we are going outside of `R` and interacting with the 
+whole system, so differences should not surprise you. 
+   
+```{webr}
+library(fs)
+path("index.qmd") |> path_abs() |> file_size()
+```
+
+:::
+
+3. Use the `file_exists` function to determine whether you have started 
+   [Mini-Project #03](../mini/mini03.html).
+
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{webr}
+library(fs)
+file_exists("mp03.qmd")
+```   
+
+:::
+
+
+4. A common pattern in working with files is wanting to find
    all files whose names match a certain pattern. This is known
    colloquially as _globbing_. The `dir_ls` function can be used
    to list all files in a directory. First use it to list all
@@ -172,7 +331,7 @@ path("index.qmd") |> path_abs()
    you will allow any match. For example, `*.csv` will match all CSV files, 
    `abc*` will match all files whose names start with `abc`, and 
    `abc*.csv` will match files whose names start with `abc` and end with
-   `.csv`.*
+   `.csv` with arbitrary text in between.*
    
 ::: {.callout-tip collapse="true" title="Solution"}
    
@@ -184,7 +343,7 @@ dir_ls(glob="*qmd")
 
 :::
 
-3. The `dir_info` function can be used to create a data frame with information
+5. The `dir_info` function can be used to create a data frame with information
    about all files in a directory. Use it and `dplyr` functionality to find the
    largest file in your project folder. Then return its _absolute_ path. 
    
@@ -198,7 +357,7 @@ dir_info() |> slice_max(size) |> pull(path) |> path_abs()
 
 :::   
 
-4. Often, we want to perform a search over all files and folders in a directory
+6. Often, we want to perform a search over all files and folders in a directory
    *recursively* - that is, looking inside subfolders, not just at files in
    the top level. The `recurse=TRUE` argument to `dir_info` will return
    information about all files contained in any level of the directory. Use
@@ -218,7 +377,7 @@ dir_info("data", recurse=TRUE) |> slice_max(size) |> pull(path) |> path_abs()
 
 :::
 
-5. Determine how much storage is used by the 5 largest files in any part of 
+7. Determine how much storage is used by the 5 largest files in any part of 
    your project directory. 
 
 ::: {.callout-tip collapse="true" title="Solution"}
@@ -231,27 +390,35 @@ dir_info(recurse=TRUE) |> slice_max(size, n=5) |> summarize(total_size = sum(siz
 
 :::
 
-6. Use the `file_exists` function to determine whether you have started 
-   [Mini-Project #03](../mini/mini03.html).
-
-::: {.callout-tip collapse="true" title="Solution"}
-   
-```{webr}
-library(fs)
-file_exists("mp03.qmd")
-```   
-
-:::
-
 # HTTP and Web Access {#http}
-
-
 
 ## Exercises #02 {#exercise02}
 
 Earlier, we used the fact that `read_csv` could download a file automatically
-for us to read in the 538 Candy Data. We are now going to download the same
-data using `httr2`. 
+for us to read in the SSA Data. We are now going to perform essentially 
+the same process using `httr2`, but instead we're going to look for the 
+smaller `nyc_demos.csv` file in the same directory.[^gz]
+
+[^gz]: The `ssa_babynames.csv.gz` file is compressed because it's big, but
+that makes downloading *slightly* trickier than I want to demonstrate here. 
+Essentially, to get `readr::read_csv` to read it correctly, we have to save
+it to a file and read it there, rather than simply reading it in from memory: 
+
+    ```{r}
+#| eval: false
+library(httr2)
+library(readr)
+request("https://michael-weylandt.com") |>
+    req_url_path("STA9750", 
+                 "labs",
+                 "ssa_babynames.csv.gz") |>
+    req_perform("ssa_babynames.csv.gz") |>
+    resp_check_status()  
+
+read_csv("ssa_babynames.csv.gz")
+    ```
+    
+    This isn't hard *per se*, but it's just one extra thing to think about.
 
 1. Use the `httr2` package to build a suitable `request` object. You should
    build your request in two steps: 
@@ -262,19 +429,12 @@ data using `httr2`.
    
 ::: {.callout-tip collapse="true" title="Solution"}
    
-```{webr}
+```{r}
 library(httr2)
-request("https://raw.githubusercontent.com") |>
-    req_url_path("fivethirtyeight", 
-                 "data",
-                 "refs",
-                 "heads",
-                 "master",
-                 "candy-power-ranking",
-                 "candy-data.csv") |>
-    req_perform() |>
-    resp_body_string() |> 
-    read_csv()
+request("https://michael-weylandt.com") |>
+    req_url_path("STA9750", 
+                 "labs",
+                 "nyc_demos.csv") 
 ```   
 
 :::
@@ -284,55 +444,59 @@ request("https://raw.githubusercontent.com") |>
    
 ::: {.callout-tip collapse="true" title="Solution"}
    
-```{webr}
+```{r}
 library(httr2)
-request("https://raw.githubusercontent.com") |>
-    req_url_path("fivethirtyeight", 
-                 "data",
-                 "refs",
-                 "heads",
-                 "master",
-                 "candy-power-ranking",
-                 "candy-data.csv") |>
+request("https://michael-weylandt.com") |>
+    req_url_path("STA9750", 
+                 "labs",
+                 "nyc_demos.csv") |>
     req_perform() |>
-    resp_check_status() |>
+    resp_check_status()
 ```   
+
+Remember - no noise is good noise! The fact `resp_check_status` didn't throw
+an error means we're good to continue.
+
+Note that we're switching from `req_` functions to `resp_` functions
+after we perform the request since we're interested in what we got back
+from the server, *i.e.*, the response.
 
 :::
    
 3. Because your request was successful, it will have a body. Extract this body
    as a string and pass it to `read_csv` to read the data into `R`. 
 
-
 ::: {.callout-tip collapse="true" title="Solution"}
    
-```{webr}
+```{r}
 library(httr2)
 library(readr)
-request("https://raw.githubusercontent.com") |>
-    req_url_path("fivethirtyeight", 
-                 "data",
-                 "refs",
-                 "heads",
-                 "master",
-                 "candy-power-ranking",
-                 "candy-data.csv") |>
-    req_perform() |>
+request("https://michael-weylandt.com") |>
+    req_url_path("STA9750", 
+                 "labs",
+                 "nyc_demos.csv") |>
+    req_perform() |> 
     resp_check_status() |>
     resp_body_string() |> 
     read_csv()
 ```
 
+Note that you can also pass a path to `req_perform` to save the result to a file
+instead of holding it in memory. This is useful if you are downloading many 
+files and saving them for later use.
+
 :::
 
-4. Modify your analysis to download your `mp01.qmd` file. To find the appropriate
-   URL, you will need to first find the file in the web interface for your GitHub
-   repository and then click the `Raw` button to a direct link to the file. 
-   Make a request to get this data and to check whether the request was successful. 
+4. Modify your analysis to download **your** `mp01.qmd` file. To find the 
+   appropriate URL, you will need to first find the file in the web interface 
+   for your GitHub repository and then click the `Raw` button to a direct link 
+   to the file. Make a request to get this data and check whether the 
+   request was successful. 
    
 ::: {.callout-tip collapse="true" title="Solution"}
    
-```{webr}
+```{r}
+#| eval: false
 library(httr2)
 request("https://raw.githubusercontent.com") |>
     req_url_path(YOUR GITHUB ID
@@ -347,14 +511,15 @@ request("https://raw.githubusercontent.com") |>
 
 :::
    
-5. Next, modify our analysis to check whether `mp04.qmd` has already
+5. Next, modify your analysis to check whether `mp04.qmd` has already
    been uploaded. Note that this will throw an error because a `404` is returned,
    indicating that you have not yet uploaded `mp04.qmd`. We will address this
    in the next step. 
 
 ::: {.callout-tip collapse="true" title="Solution"}
    
-```{webr}
+```{r}
+#| eval: false
 library(httr2)
 request("https://raw.githubusercontent.com") |>
     req_url_path(YOUR GITHUB ID
@@ -379,7 +544,8 @@ request("https://raw.githubusercontent.com") |>
 
 ::: {.callout-tip collapse="true" title="Solution"}
    
-```{webr}
+```{r}
+#| eval: false
 library(httr2)
 
 always_false <- function(x) FALSE
@@ -396,9 +562,10 @@ request("https://raw.githubusercontent.com") |>
     resp_is_error()
 ```
 
-Using an _anonymous_ function, we can write this a bit more compactly as 
+*Note*: Using an _anonymous_ function, we can write this a bit more compactly as 
 
-```{webr}
+```{r}
+#| eval: false
 library(httr2)
 request("https://raw.githubusercontent.com") |>
     req_url_path(YOUR GITHUB ID
@@ -422,7 +589,8 @@ request("https://raw.githubusercontent.com") |>
 
 ::: {.callout-tip collapse="true" title="Solution"}
    
-```{webr}
+```{r}
+#| eval: false
 library(httr2)
 library(glue)
 mp_is_missing <- function(N) {
@@ -445,11 +613,16 @@ mp_is_missing <- function(N) {
    Unfortunately, your function is not _vectorized_ so this is not as 
    simple as `func(1:4)`. Instead, we want to apply the same function separately
    to each element of the vector `c(1,2,3,4)`. This is a use case for the `map`
-   family of functions. Since your function returns a logical value, we'll use
+   family of functions, which we will discuss in more detail later during our
+   final optional enrichment session after your final presentations. Since your 
+   function returns a logical value, we'll use
    `map_lgl` here. 
    
-   
-```{webr}
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+```{r}
+#| eval: false
 library(httr2)
 library(glue)
 mp_is_missing <- function(N) {
@@ -471,7 +644,7 @@ map_lgl(1:4, mp_is_missing)
 
 This example is maybe a bit silly, but it is essentially how I check whether
 your mini-projects have been submitted on time. (I map over students rather than
-the project numbers.) 
+the project numbers and perform more checks, but the same ideas apply.) 
 
 # API Usage {#api}
 
@@ -505,9 +678,12 @@ can call the API from the command line:
 curl https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2
 ```
 
-Even though this is not `R` code, we can emulate this action in `R`. 
+To see what type of data this URL provides us, you can simply
+[open it in your browser](https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2)
+and observe that it returns `JSON` data. We can emulate this action in `R` and
+parse the data into an `R` object:
 
-```{webr}
+```{r}
 library(jsonlite)
 fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2")
 ```
@@ -515,22 +691,23 @@ fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2")
 And if we want to get download information for other packages, we can simply
 modify the URL: 
 
-```{webr}
+```{r}
 library(jsonlite)
 fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/dplyr")
 ```
 
-```{webr}
+```{r}
 library(jsonlite)
 fromJSON("https://cranlogs.r-pkg.org/downloads/total/last-week/readr")
 ```
 
 and so on. But this quickly becomes repetitive and we would prefer a 
-*programmatic* interface. This is where the `httr2` package comes in. 
+*programmatic* interface. This is where advanced functionality from the `httr2` 
+package comes in. 
 
 ## `httr2`
 
-`httr2` takes a "three-stage" approach to handling HTTP requests: 
+Recall that `httr2` takes a "three-stage" approach to handling HTTP requests: 
 
 1. First, we _build_ a _request_, specifying the URL to be queried, the mode of 
    that query, and any relevant information (data, passwords, *etc.*)
@@ -539,6 +716,12 @@ and so on. But this quickly becomes repetitive and we would prefer a
    appropriate
    
 Let's look at these one at a time. 
+
+Note that the first few steps should feel quite similar to what we did above, 
+since we're still communicating via HTTP. The *content* of that communication
+will be different (JSON instead of CSV) and the server's work will be different
+(adding up download statistics instead of serving a static file), but the 
+*protocol*--and hence most of our `httr2` flow--remains unchanged.
 
 ### Build a Request
 
@@ -564,7 +747,8 @@ print(my_req)
 ```
 
 We see here that this is a `GET` request by default, indicating we would like
-a response from the server, but we are not 
+a response from the server, but we are not sending data to the server for 
+processing. 
 
 We then modify the _path_ of the request to point to the specific _resource_ or
 _endpoint_ we want to query. For example, if we want to get the "top" `R` 
@@ -595,7 +779,7 @@ things in this response:
 
 1. We received back a "200 OK" response, indicating that our query worked perfectly
 2. We received back data in a `json` format
-3. Our results are currently in memory (as opposed to be saved to a file)
+3. Our results are currently in memory (as opposed to being saved into a file)
 
 ### Process the Response for Use in `R`
 
@@ -645,7 +829,8 @@ should pause and make an 'attack plan' for our analysis. I see several things he
    able to put them into one big easy-to-use data frame. 
    
 To do these steps, we will need to use functionality from the `purrr` package, 
-which we will discuss in more detail next week. For now, it suffices to run: 
+which we will discuss in more detail later in the course. For now, it suffices 
+to run: 
 
 ```{r}
 library(purrr)
@@ -659,7 +844,9 @@ downloads_df <- downloads_raw |>
 Here, we see we
 
 1) Pulled out the `"downloads"` portion of the JSON (`pluck`)
-2) Converted each row to a data frame (`map(as_tibble)`)
+2) Converted each row to a data frame (`map(as_tibble)`. The `as_tibble` does
+   the data frame conversion and the `map` means "do this to each element 
+   separately".)
 3) Combined the results rowwise (`list_rbind`)
 
 The result is a very nice little data frame: 
@@ -681,7 +868,7 @@ Now it's your turn! In your breakout rooms, try the following:
    
 ::: {.callout-note collapse="true" title="Solution"}
    
-```{webr}
+```{r}
 library(httr2)
 library(tidyverse)
 request("https://cranlogs.r-pkg.org") |>
@@ -704,10 +891,9 @@ request("https://cranlogs.r-pkg.org") |>
    *Hint: The `pluck` function can also take a number as input. This will say
    which list item (by position) to return.*
    
-
 ::: {.callout-note collapse="true" title="Solution"}
    
-```{webr}
+```{r}
 library(httr2)
 library(tidyverse)
 request("https://cranlogs.r-pkg.org") |>
@@ -717,7 +903,7 @@ request("https://cranlogs.r-pkg.org") |>
     req_url_path_append("ggplot2") |>
     req_perform() |>
     resp_body_json() |>
-    pluck(1)
+    pluck(1) |>
     pluck("downloads") |>
     map(as_tibble) |>
     list_rbind()
@@ -734,7 +920,7 @@ request("https://cranlogs.r-pkg.org") |>
     
 ::: {.callout-note collapse="true" title="Solution"}
    
-```{webr}
+```{r}
 library(httr2)
 library(tidyverse)
 get_downloads <- function(pkg){
@@ -766,21 +952,49 @@ print(gg_downloads)
    - `tibble`
    - `purrr`
    - `tidyr`
-   and combine your results into a single data frame. Then plot the download
-   trends for each package using `ggplot2`.
+   for the year and combine your results into a single data frame. 
+   Then plot the download trends for each package using `ggplot2`.
    
    You can do this by calling your function in a loop, but you should
    also try to apply the `map() |> list_rbind()` idiom here as well. 
    
+   To get values for a specific window, replace `"last-month"` with a date range
+   formatted as `"YYYY-MM-DD::YYYY-MM-DD"`. For this problem, you can use
+   `strftime(Sys.Date(), "%Y-01-01:%Y-%m-%d")` which evaluates to the string
+   "`r strftime(Sys.Date(), "%Y-01-01:%Y-%m-%d")`", *i.e.*, from the start of
+   the year to today or `paste(Sys.Date() - 365, Sys.Date(), sep=":")` to get
+   "`r paste(Sys.Date() - 365, Sys.Date(), sep=":")`" for the last 365 days.
+   
 ::: {.callout-note collapse="true" title="Solution"}
    
 
-```{webr}
-library(ggplot2)
+```{r}
+library(tidyverse)
+library(httr2)
 
 PACKAGES <- c("ggplot2", "dplyr", "httr2", "tibble", "purrr", "tidyr")
 
-map(PACKAGES, get_downloads) |>
+date_range <- paste(Sys.Date() - 365, 
+                    Sys.Date(), sep=":")
+
+get_downloads_year <- function(pkg){
+    request("https://cranlogs.r-pkg.org") |>
+        req_url_path_append("downloads") |>
+        req_url_path_append("daily") |>
+        req_url_path_append(date_range) |>
+        req_url_path_append(pkg) |>
+        req_perform() |>
+        resp_body_json() |>
+        pluck(1) |> 
+        pluck("downloads") |>
+        map(as_tibble) |>
+        list_rbind() |>
+        mutate(package=pkg, 
+               day=as.Date(day))
+}
+
+PACKAGES |> 
+  map(get_downloads_year) |>
   list_rbind() |>
   ggplot(aes(x=day, 
              y=downloads, 
@@ -790,13 +1004,16 @@ map(PACKAGES, get_downloads) |>
     geom_line() +
     scale_x_date() +
     xlab("Date of Download") +
-    ylab("Number of Package Downloads") +
+    ylab("Number of Daily Package Downloads") +
     theme_bw() +
     labs(caption="Data from cranlogs.r-pkg.org") +
     theme(legend.position="bottom") +
     scale_color_brewer(type="qual", 
                          palette=2, 
-                         name="Package Name")
+                         name="Package Name") + 
+    scale_y_continuous(labels=scales::label_number())
 ```
+
+Can you see the start of the semester(s) in this data? What other patterns can you spot?
 
 :::
