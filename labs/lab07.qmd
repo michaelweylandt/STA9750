@@ -3,6 +3,7 @@ lab_num: "`r lab <- 7; lab`"
 lab_title: "Data Import in `R`"
 engine: knitr
 format: live-html
+course_repo: "`r yaml::read_yaml('_variables.yml')$course$repo`"
 ---
 
 {{< include _setup.qmd >}}
@@ -111,6 +112,36 @@ read_csv("https://michael-weylandt.com/STA9750/labs/ssa_babynames.csv.gz") |>
    tab_source_note("Data from the US SSA")
 ```
 
+Since we're going to use this data set several times, it's a bit
+more efficient to save it to a variable once instead of re-downloading it over
+and over: 
+
+```{r}
+#| eval: false
+SSA <- read_csv("https://michael-weylandt.com/STA9750/labs/ssa_babynames.csv.gz") 
+```
+
+and now we have: 
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(gt)
+SSA |>
+   filter(year == 2024, 
+          sex == "F") |> 
+   group_by(name) |> 
+   summarize(number = sum(number)) |> 
+   slice_max(number, n=5) |> 
+   gt() |> 
+   cols_label(name = "Name", 
+              number = "Number of Girls Born Nationwide") |> 
+   tab_header(title="5 Most Popular Girls Names in 2024") |> 
+   tab_source_note("Data from the US SSA")
+```
+
+giving the same results.
+
 :::
 
 2. In terms of popularity _ranking_ (1st, 2nd, 3rd, *etc*), how has the
@@ -153,6 +184,8 @@ years.
 ::: {.callout-tip collapse="true" title="Solution"}
 
 ```{r}
+#| message: false
+#| warning: false
 library(ggpmisc)
 SSA |> 
    summarize(n_total=sum(number), 
@@ -255,6 +288,7 @@ SSA |>
 Because we're looking at the year as a categorical (decade)
 variable instead of a numeric quantity here, we use an
 ANOVA-inspired barplot instead of linear regression.[^anova] 
+
 [^anova]: Note, however, that standard ANOVA is basically just a 
 very restricted linear model; *cf.* <https://lindeloev.github.io/tests-as-linear/>. 
 
@@ -266,10 +300,10 @@ very restricted linear model; *cf.* <https://lindeloev.github.io/tests-as-linear
 
 0. Use the `getwd()` to find your current working directory. For the following
    exercises to be most useful, you will want to ensure that this is your 
-   `{{< var course.repo >}}` course directory. If you have somehow changed it
+   `{{< meta course_repo >}}` course directory. If you have somehow changed it
    please use the `setwd()` function to return to the proper directory.
 
-1. In your `{{< var course.repo >}}` directory, you have a 
+1. In your `{{< meta course_repo >}}` directory, you have a 
    file called `index.qmd`. Use the `path` function from the 
    `fs` package to create a `path` object pointing to that
    file and then use the `path_abs` function to convert that
@@ -323,7 +357,7 @@ file_exists("mp03.qmd")
    all files whose names match a certain pattern. This is known
    colloquially as _globbing_. The `dir_ls` function can be used
    to list all files in a directory. First use it to list all
-   files in your `{{< var course.repo >}}` course directory; then
+   files in your `{{< meta course_repo >}}` course directory; then
    use the `glob` argument to list only the `qmd` files in that
    directory. 
    
