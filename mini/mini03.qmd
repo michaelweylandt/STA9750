@@ -345,12 +345,25 @@ should, at a minimum,
    manipulate everything else to ensure your data is in the format 
    prescribed above.
    
-5) Use the `rbind_rows()` function to combine the results from each sheet 
-   together into a single 2,500 ($=50 \times 50$)[^fifty] row data frame.  Note that the
-   `rbind_rows()` function combines two data sets rowwise (*i.e.*, stacks them
-   vertically) so you will need to make sure your data has consistent column
-   names and types before calling it. 
+5)  Use either the `bind_rows()` or `list_rbind()` function to combine the 
+    results from each sheet together into a single 2,500 
+    ($=50 \times 50$)[^fifty] row data frame.  Note  that these functions combine
+    data sets rowwise (*i.e.*, stacks them vertically) so you will need to make 
+    sure your data has consistent column names and types before calling it. 
    
+    Note that these two functions do essentially the same thing, but differ in
+    the expect format of the input: 
+   
+    ```{r}
+    library(dplyr)
+    penguins_list <- list(penguins, penguins, penguins)
+    all.equal(list_rbind(penguins_list),
+              bind_rows(penguins, penguins, penguins))
+    ```
+    
+    So `list_rbind()` assumes its inputs are all in a single list - as you might
+    have from, *e.g.*, the output of the `purrr::map()` function - while 
+    `bind_rows()` takes its inputs as separate arguments. 
 :::
 
 [^fifty]: This data includes `Abroad` or `Foreign` country as a "one year ago"
@@ -426,8 +439,8 @@ should, at a minimum,
         N/A and we get that data elsewhere. 
     iii) Converting the numeric column to integer. 
    
-4)  Combine the results of your two imports using `rbind_rows()` and confirm that
-    you have a 2,500 row 5 column data set as before.[^fifty_two]
+4)  Combine the results of your two imports using `bind_rows()` or `list_rbind()`
+    and confirm that you have a 2,500 row 5 column data set as before.[^fifty_two]
 
 :::
 
@@ -438,9 +451,9 @@ Country) from column DH as your `abroad` factor.
 ::: {.callout-tip title="Task 4: Data Acquisition - Combined State-to-State Flows"}
 
 Write a function `state_to_state_migration` which invokes the two functions
-you wrote above and uses `rbind_rows()` to create a 5,000 row table of state to
-state migration over the previous two years. Confirm that your results match
-the example rows shown above. 
+you wrote above and uses `bind_rows()` or `list_rbind()` to create a 5,000 row 
+table of state to state migration over the previous two years. Confirm that your
+results match the example rows shown above. 
 
 :::
 
