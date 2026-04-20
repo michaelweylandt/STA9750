@@ -17,7 +17,8 @@ suppressPackageStartupMessages(library(tidyverse))
 
 # Review Practice {#review}
 
-Recall the SSA Birth Count Time Series from [earlier in the semester](lab05.html).
+Recall the SSA Birth Count Time Series from 
+[earlier in the semester](./lab05.qmd).
 
 You can load this data into `R` using the following code: 
 
@@ -46,8 +47,6 @@ Recall that the columns here are:
 We are going to look for structure in this data using our data visualization
 tools. 
 
-
-
 1. Compute the average number of babies born per day for each year. Is there
    evidence of a long term trend? 
 
@@ -66,13 +65,17 @@ births |>
         theme_bw()
 ```
 
+Yes, following a crash in the early 1970's, the number of births has increased
+most years, consistent with a growing national population (more people leading
+to more babies *ceteris paribus*).
+
 :::
 
 2. The previous plot may sacrifice too much resolution in taking yearly averages.
    Instead of using yearly averages, use a 90-day moving window to estimate 
    the median number of children born each day.
    
-   *Hint: `runmed`*
+   *Hint: `stats::runmed()` can be used to compute a running median.*
    
 
 ::: {.callout-tip collapse="true" title="Solution"}
@@ -84,7 +87,29 @@ births |>
     geom_line()
 ```
 
-There are clearly several interesting trends at play in this data. 
+There are clearly several interesting trends at play in this data, but use of
+`id` on the $x$-axis makes this plot a bit harder to comprehend, so let's
+put a bit more formatting into it: 
+
+```{webr}
+births |>
+  mutate(med_births = runmed(births, 91), 
+         date = ymd(paste(year, month, day))) |>
+  ggplot(aes(x=date)) + 
+  geom_point(aes(y=births), alpha=0.05) + 
+  geom_line(aes(y=med_births), color="red4") + 
+  theme_bw() + 
+  xlab("Date") + 
+  ylab("Number of Children Born per Day") 
+```
+
+Visualizing the individual points, we see quite a lot of variation that is worth
+further exploration, but the highest-level trend essentially matches what we
+saw above. 
+
+*Note*: If you look closely, you'll see that `runmed` has somewhat 
+counterintuitive behavior around the ends. For finer control over moving window
+statistics like this, look into the `slider::slide_dbl()` framework. 
 
 :::
 
@@ -107,6 +132,26 @@ births |>
         theme_bw()
 ```
 
+Again, we can do a bit better by manually adjusting the labels: 
+
+```{webr}
+births |> 
+    mutate(date = ymd(paste(year, month, day)), 
+           wday = weekdays(date)) |>
+    group_by(wday) |> 
+    summarize(day_of_week=mean(day_of_week), 
+              avg_births = mean(births)) |> 
+    arrange(day_of_week) |> 
+    mutate(wday = factor(wday, levels=wday, ordered=TRUE)) |> 
+    ggplot(aes(x=wday, y=avg_births, group=1)) + 
+        geom_col(fill="lightblue1", color="blue4", alpha=0.4) + 
+        geom_line(col="red4", linewidth=1.5) + 
+        geom_point(size=5) + 
+        xlab(NULL) + 
+        ylab("Average Number of Births per Day") + 
+        theme_bw()
+```
+
 :::
 
 
@@ -119,13 +164,17 @@ births |>
 births |> 
     group_by(month) |> 
     summarize(avg_births = mean(births)) |> 
-    # Optional: use the built-in month.name to map 1,2,3 => January, February, March, ...
+    # Optional: use the built-in month.name to map 
+    # 1,2,3 => January, February, March, ...
     mutate(month_name = month.name[month], 
-           month_name = factor(month_name, levels = month.name, ordered=TRUE)) |>
+           month_name = factor(month_name, 
+                               levels = month.name, 
+                               ordered = TRUE)) |>
     ggplot(aes(x=month_name, y=avg_births)) + 
         geom_col(fill="lightblue1", color="blue4", alpha=0.4) + 
         geom_point(size=5) + 
-        xlab("Month") + 
+        geom_line(col="red4", linewidth=1.5) +
+        xlab(NULL) + 
         ylab("Average Number of Births per Day") + 
         theme_bw()
 ```
@@ -136,7 +185,10 @@ From this analysis, it seems clear that there are actually several different
 periodic and trend components to this data set. Extracting them is a fascinating
 analysis on its own but beyond this course. See, *e.g.*, 
 [this page](https://research.cs.aalto.fi/pml/software/gpstuff/demo_births.shtml)
-for details of how you might approach this. 
+for details of how you might approach this to produce a plot like:
+
+![GP-Based Decomposition of Births Time Series from Vehtari Group
+(Aalto)](https://research.cs.aalto.fi/pml/software/gpstuff/pics/births_pic2.png)
 
 Note that this type of 'multi-seasonal' decomposition is _incredibly_ useful
 in business contexts. The [`prophet` package](https://facebook.github.io/prophet/),
@@ -148,7 +200,7 @@ this sort of analysis.
 *Instructor's Note: This week, I am providing non-interactive code snippets
 and encouraging you to run these examples locally (on your own instance
 of `RStudio`). Some of these tools rely on technologies you should have installed
-as part of [this week's pre-assignment](../preassigns/pa08.html), but that are
+as part of [this week's pre-assignment](../pre/pa08.html), but that are
 a bit tricky to perfectly emulate in-browser.*
 
 ## Spatial Visualization with `ggplot2` {#maps}
@@ -160,7 +212,7 @@ with the **simple features** (`sf`) paradigm. Also, if we focus on relatively
 small regions, we can avoid the complexities that come from Earth not being
 planar. 
 
-{{< video https://www.youtube.com/watch?v=vVX-PrBRtTY >}}
+{{< video https://www.youtube.com/watch?v=UPaca-SrvEk >}}
 
 Key to this approach is a _shapefile_. A _shapefile_, conventionally stored
 with a `shp` extension, gives precise coordinates outlining spatial regions. 
@@ -214,8 +266,9 @@ you will need to adjust the figure width and height using the `fig.width` and
 `fig.height` execution options. Rather than trying to tweak these both, you can
 also set `fig.asp` to manually set the aspect ratio. In this case, because NC
 runs about 2.5 degrees north-to-south and 8 degrees east-to-west, I have set 
-the aspect ratio fo most of the figures in this set of notes to 
-$0.3 \approx 2.5/8$, which gives a comfortable appearance. 
+the aspect ratio of most of the figures in this set of notes to 
+$0.3 \approx 2.5/8$, which gives a comfortable appearance without too much 
+whitespace. 
 
     ```{r}
 ggplot(nc, aes(geometry = geometry)) + 
@@ -241,12 +294,13 @@ for "area-multitude". It is commonly used to visualize _areal_[^areal] geospatia
 data - that is quantities associated with spatial regions - as opposed to
 point data. 
 
-[^areal]: The word "areal" is a homonym to the word "arial", but don't get them
+[^areal]: The word "areal" (area based) is a homonym to the word "arial" (the 
+font) or "aerial" (relating to flight or the atmosphere), but don't get them 
 confused.
 
 Building a chloropleth plot is not too hard, if you have an appropriate
 shape file. Thankfully, governments are in the business of knowing _exactly_
-what the boundaries of their territories are and providing shape files.
+what the boundaries of their territories lie and providing shape files.
 Typically, these shape files are distributed in a "zip" format, with other
 geodata files that we won't use in this course.
 
@@ -278,7 +332,7 @@ here, so I do them inside the individual `geom_`s instead of in the global
 
 :::
 
-## Exercises 1 - Geospatial Visualization of MTA Counties {#ex01}
+### Exercises 1 - Geospatial Visualization of MTA Counties {#ex01}
 
 Before completing the following exercises, run the following commands to 
 download shape data and census demographics for 12 counties within New York
@@ -495,7 +549,8 @@ ACS_DATA |>
    each county's voter power by this baseline to get a sense of its relative
    power. Visualize your result using a suitable color palette. 
    
-   *Hint: You may want to subtract 1 from your 
+   *Hint: You may want to subtract 1 from your voter power measure to center 0 
+   at "average".*
 
 
 ::: {.callout-tip collapse="true" title="Solution"}
@@ -509,7 +564,7 @@ ACS_DATA |>
     ggplot(aes(geometry=geometry, fill=relative_voter_power)) + 
         geom_sf() + 
         theme_bw() + 
-        scale_fill_fermenter(name="Relative Representation on the MTA Board [Red Regions and Over-Powered]", 
+        scale_fill_fermenter(name="Relative Representation on the MTA Board [Red Regions are Over-Powered]", 
                              type="div", 
                              palette="RdBu", 
                              breaks=c(-3, -1.5, 0, 1.5, 3)) +
@@ -527,11 +582,11 @@ Note that this analysis is somewhat limited as it assumes NYC's four votes are
 equally split by borough. In practice, the interests of the larger boroughs may
 be more strongly represented among mayoral appointees. 
 
-## Limitations and Extensions of Chloropleths
+### Limitations and Extensions of Chloropleths
 
 Chloropleth plots are rightly popular but they have a major limitation: 
 humans are not uniformly distributed across space! Smaller regions may
-have higher populations (*cf* Connecticut vs Montana) and administrative
+have higher populations (*cf.* Connecticut *vs.* Montana) and administrative
 regions are not the same size. Because human perception is naturally drawn
 to larger regions, we often need to adjust the color schemes used to 
 compensate for area effects. This process can be powerful, but it is a bit
@@ -566,13 +621,14 @@ of data -- rate estimation from rare counts -- can be pretty tricky to analyze,
 (and thankfully SIDS remains quite rare) but that's not the primary focus of 
 this class so we'll leave it here. 
 
-This plot still isn't perfect however: [Sampson county](https://en.wikipedia.org/wiki/Sampson_County%2C_North_Carolina)
-is the largest county in NC, but it has a relatively small population. That
-means that the largest area - and hence the place our eyes will most
+This plot still isn't perfect however: [Sampson
+county](https://en.wikipedia.org/wiki/Sampson_County%2C_North_Carolina)
+is the largest county in NC by area, but it has a relatively small population. 
+That means that the largest area - and hence the place our eyes will most
 immediately look - is assigned to a relatively unimportant county. Relatedly, 
 [Anson County](https://en.wikipedia.org/wiki/Anson_County%2C_North_Carolina) 
-is a county with a small population , but it appears to be a "hot-spot".
-This could be true, but it is more likely a noise-effect resulting from a
+is a county with a small population, but it appears to be a "hot-spot".
+This could be true, but it is much more likely a noise-effect resulting from a
 small population.
 
 To address these issues, we can use a _cartogram_ which will "adjust" 
@@ -600,7 +656,7 @@ Looking at this plot, we see that counties are now adjusted to population,
 (or, more precisely, birth count) and that and Anson county-while still high-is
 clearly down-weighted in accordance with its population. 
 
-## Exercises 2 - Cartogram Analysis of MTA Counties {#ex02}
+### Exercises 2 - Cartogram Analysis of MTA Counties {#ex02}
 
 1. Modify your plot of the MTA counties so that each county is resized proportional
    to its total population. 
@@ -627,7 +683,6 @@ ACS_DATA |>
 2. The result of the previous cartogram is a bit janky. Adapt your code to instead
    use a Dorling cartogram (`cartogram_dorling`) which gives a more recognizable 
    cartogram representation in some circumstances. 
-   
 
 ::: {.callout-tip collapse="true" title="Solution"}
    
@@ -675,149 +730,244 @@ ACS_DATA |>
 ```
 :::
 
+### Improving Cartogram Visualizations
+
+As we have seen, creating an attractive cartogram is not entirely trivial and we
+can often do better using a visualization that has a bit more of an artistic
+touch. One popular alternative - popularized by sites like FiveThirtyEight in
+the context of US elections - is a *Hex Map*, which represents political
+boundaries as a set of hexagonal tiles. If the hexagonal tiles each represent
+an area of roughly equal proportion, we can get to a scenario where area does
+indeed match population. Some software attempts to do this automatically (see
+the `tilemaps` `R` package or the [`mapshaper`](https://mapshaper.org/) website)
+but you will usually get a better result more easily if you can find a hex map 
+that has already been developed and published. 
+
+In the context of NYC, the `nychex` (read as `"nyc-hex"` not `"ny-chex"` like 
+the snack mix) package provides these at several levels. Note that this
+package is **not** available on CRAN and we have to install it from an alternate
+source: 
+
+```{r}
+#| eval: false
+install.packages(
+  "nychex",
+  repos = c("https://kjhealy.r-universe.dev", "https://cloud.r-project.org")
+)
+```
+
+Once installed, we can see the various hexmaps and square tiled maps this 
+package provides: 
+
+```{r}
+#| echo: false
+#| cache: true
+#| label: nychex_demo
+#| warning: false
+library(sf)
+library(ggplot2)
+library(ggiraph)
+library(nychex)
+library(patchwork)
+
+ggplot(nyc_nta20_hex_sf) +
+    geom_sf(aes(fill = boro_name), 
+            color = "white", 
+            linewidth = 0.3, 
+            alpha=0.3) +
+    geom_sf_text_interactive(aes(label=nta_abbrev, 
+                                 tooltip=nta_name), 
+                             size=1.8, 
+                             alpha=0) + 
+    geom_sf(data=nyc_nta_boros_hex_sf, 
+            aes(color=boro_name), 
+            fill=NA, 
+            linewidth=0.8) + 
+    scale_fill_brewer(palette = "Set2") +
+    scale_color_brewer(palette="Set2") + 
+    labs(fill = "Borough", color="Borough") +
+    theme_void() + 
+    ggtitle("NYC NTAs - HexMap") -> G1
+
+
+ggplot(nyc_nta20_sq_sf) +
+    geom_sf(aes(fill = boro_name), 
+            color = "white", 
+            linewidth = 0.3, 
+            alpha=0.3) +
+    geom_sf_text_interactive(aes(label=nta_abbrev, 
+                                 tooltip=nta_name), 
+                             size=1.8, 
+                             alpha=0) + 
+    geom_sf(data=nyc_nta_boros_sq_sf, 
+            aes(color=boro_name), 
+            fill=NA, 
+            linewidth=0.8) + 
+    scale_fill_brewer(palette = "Set2") +
+    scale_color_brewer(palette="Set2") + 
+    labs(fill = "Borough", color="Borough") +
+    theme_void() + 
+    ggtitle("NYC Square Tiles - HexMap") -> G2
+
+
+ggplot(nyc_ct20_hex_sf) +
+    geom_sf(aes(fill = boro_name), 
+            color = "white", 
+            linewidth = 0.3, 
+            alpha=0.3) +
+    geom_sf_text_interactive(aes(label=ct2020, 
+                                 tooltip=geoid),
+                             alpha=0,
+                             size=1.8) + 
+    geom_sf(data=nyc_ct_boros_hex_sf,
+            aes(color=boro_name), 
+            fill=NA, 
+            linewidth=0.8) + 
+    scale_fill_brewer(palette = "Set2") +
+    scale_color_brewer(palette="Set2") + 
+    labs(fill = "Borough", color="Borough") +
+    theme_void() + 
+    ggtitle("NYC Census Tracts - HexMap") -> G3
+
+
+ggplot(nyc_ct20_sq_sf) +
+    geom_sf(aes(fill = boro_name), 
+            color = "white", 
+            linewidth = 0.3, 
+            alpha=0.3) +
+    geom_sf_text_interactive(aes(label=ct2020, 
+                                 tooltip=geoid), 
+                             size=1.8, 
+                             alpha=0) + 
+    geom_sf(data=nyc_ct_boros_sq_sf, 
+            aes(color=boro_name), 
+            fill=NA, 
+            linewidth=0.8) + 
+    scale_fill_brewer(palette = "Set2") +
+    scale_color_brewer(palette="Set2") + 
+    labs(fill = "Borough", color="Borough") +
+    theme_void()  + 
+    ggtitle("NYC Census Tracts - Square Tiles") -> G4
+
+
+G <- G1 + G2 + G3 + G4 + 
+    plot_annotation("Comparison of nychex Cartograms", 
+                    caption="Mouseover for NTA/CT IDs") + 
+    plot_layout(guides="collect", nrow=2) & 
+    theme(legend.position="bottom")
+
+Gi <- girafe(ggobj=G, 
+             options=list(
+                 opts_hover_inv(css="opacity:0.3;"),
+                 opts_toolbar(saveaspng=FALSE), 
+                 opts_sizing(rescale=TRUE)),
+             width_svg=12, 
+             height_svg=10
+             )
+
+Gi
+```
+
+For your use, you will typically want to use either `nyc_nta20_hex_sf` which
+provides a hexmap for [NYC's Neighborhood Tabulation Areas](https://www.nyc.gov/content/planning/pages/resources/datasets/neighborhood-tabulation)
+or `nyc_ct20_hex_sf` which provides a hexmap for NYC's 2020 Census Tracts. 
+Note that NYC's NTAs are formed by aggregating census tracts in a way that roughly
+aligns with NYC's more interpretable neighborhood boundaries, so we can get 
+NTA-level values from the tract data by suitable aggregation: 
+
+```{r}
+#| warning: false
+#| message: false
+library(tidycensus)
+library(nychex)
+library(ggplot2)
+library(sf)
+get_acs(year=2024, 
+        geography="tract", 
+        variable=c(agg_income="B19025_001", 
+                   total_hhs="B19001_001"),
+        county=c("New York", 
+                 "Richmond", 
+                 "Bronx", 
+                 "Queens", 
+                 "Kings"), 
+        state="NY",
+        geometry=FALSE) |>
+    select(-NAME, 
+           -moe) |>
+    pivot_wider(names_from=variable, 
+                values_from=estimate) |>
+    filter(total_hhs > 0) |>
+    inner_join(nyc_ct20_hex_sf, 
+               join_by(GEOID == geoid)) |>
+    # Drop unneeded the CT shapes, since we're going to plot at NTA level
+    st_drop_geometry() |> 
+    select(total_hhs, 
+           agg_income, 
+           nta2020) |>
+    group_by(nta2020) |>
+    summarize(total_hhs = sum(total_hhs), 
+              agg_income = sum(agg_income)) |> 
+    mutate(hh_income_avg = agg_income / total_hhs) |> 
+    inner_join(nyc_nta20_hex_sf, 
+               join_by(nta2020 == nta2020)) |> 
+    ggplot(aes(geometry=tile_map)) + 
+    geom_sf(aes(fill=hh_income_avg), 
+            color=NA) + 
+    geom_sf(aes(color=boro_name), 
+            data=nyc_nta_boros_hex_sf, 
+            linewidth=2) + 
+    scale_color_brewer(type="qual", 
+                       palette=2, 
+                       name="Borough") + 
+    scale_fill_distiller(type="seq", 
+                         palette=2, 
+                         direction = 1, 
+                         name="Average Household Income", 
+                         labels=scales::label_dollar()) + 
+    theme_void() + 
+    theme(legend.position="bottom", 
+          legend.box="vertical") + 
+    guides(fill=guide_colorbar(barwidth=unit(10, "cm")))
+```
+
+Note that here I used aggregate income and count of households because these
+aggregate easily. For other types of statistics (proportions, medians), more
+sophisticated aggregation may be required.
 
 [^1]: If you get an error reading "`stat_sf()` requires the following
 missing aesthetics: geometry", make sure you include `geometry=geometry`
 in your `aes`
 
-## `shiny`: Creating Interactive Tools for Data Analysis
+## Animated Graphics {#animated}
 
-We now turn our attention to creating interactive tools (web applications and
-dashboards) for data analysis. By learning these tools, you won't necessarily
-enable yourself to do analysis, but you will enable colleagues and clients to
-more fully explore the results of your analyses. The main tool we will use to
-do is `shiny`, a **reactive** framework for `R`. 
+Animation is a natural and impressive way of adding "pop" to your graphics. 
+It's not right for all scenarios, but when it applies, *e.g.* when showing how
+something has changed over time, it can be quite magical. 
 
-"Reactive" programming refers to an architecture that changes only in response
-to user input. You have almost certainly worked with a reactive piece of
-software in the form of Microsoft Excel (or Google Sheets or similar). The
-values in the spreadsheet do not change *sua sponte*, but when you make an input
-all related cells are updated. (Conceptually, all cells are updated, but
-Excel is smart and tracks only those cells that actually need to be updated.)
+Some caution before you become too enamored with animated graphics: 
 
-In this week's pre-assignment, you have already read a bit about `shiny`, but
-now we will put it into practice. In this exercise, we will not focus on making
-things particularly attractive. If you want to improve upon the rather Spartan
-appearance of standard `shiny`, tools like 
-[the `flexdashboard` package](https://pkgs.rstudio.com/flexdashboard/) may help.
-
-## Exercise 3 - Building a `shiny` tool for {{< var course.short >}} {#ex03}
-
-Use the [course helper functions](../tips.html) to build a `shiny` tool that
-can be used to verify that your mini-projects and peer feedback have been 
-appropriately formatted and submitted. 
-
-### Step 0: Run `shiny`
-
-Take the following prototype and confirm that it runs on your computer. Note
-that this is the "single-file" format for `shiny` apps. It is somewhat more
-common to split `shiny` apps across two files - backend and frontend - but
-we are using a single file structure here for convenience. 
-
-```{r}
-#| eval: false
-if(!require("shiny")) install.packages("shiny")
-library(shiny)
-
-if(!require("glue")) install.packages("glue")
-library(glue)
-
-if(!require("yaml")) install.packages("yaml")
-library(yaml)
-
-# Create global variables here
-variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
-course_repo  <- variables$course$repo
-course_short <- variables$course$short
-
-# Define the UI
-ui <- bootstrapPage(
-    textInput('github_id', 
-              'What is your GitHub ID?', 
-              placeholder="Type your GitHub ID here"),
-    htmlOutput('gh_link')
-)
-
-# Define the server code
-server <- function(input, output) {
-    output$gh_link <- renderText({
-        markdown(glue("My code for this course found on [GitHub](https://github.com/{input$github_id}/{course_repo})"))
-    })
-}
-
-# Return a Shiny app object
-shinyApp(ui = ui, server = server)
-```
-
-### Step 1: Add a Link to your profile
-
-Add a second output to link to the homepage you created in
-[MP#00](../mini/mini00.html). Copying the treatment of `gh_link` in 
-the example, you will need to 
-
-1) Add a second output
-   [`renderText`](https://shiny.posit.co/r/reference/shiny/0.11/rendertext.html)
-   component in the server
-2) Add a second output [`htmlOutput`](https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html) 
-  component in the UI
-
-### Step 2: Parameterize the Mini-Project Number
-
-Next, extend your app to handle the mini-projects. 
-Modify the above example to do three things: 
-
-- Add a [`numericInput`](https://rstudio.github.io/shiny/reference/numericInput.html) 
-  that takes a number between `1` and `4` inclusive to select a mini-project.
-- Add an output [`htmlOutput`](https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html) 
-  element that adds a link to the relevant 
-  [mini-project instructions](https://michael-weylandt.com/STA9750/miniprojects.html). 
- 
-  The `glue` function can be used to easily substitute values in URLs (as in
-  the example). 
-- Add an output [`htmlOutput`](https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html) 
-  element that adds a link to *your* mini-project submission. This URL should
-  take both the `numericInput` and the `textInput` user inputs to construct
-  the URL. (That is, if you change the `GitHub` name used the URL should point
-  to a different repo)
-  
-### Step 3: Confirm Mini-Project Submission
-
-Take one of the course helper scripts and use it to determine whether a given 
-MP submission is properly formatted. To do so: 
-
-1) Load the helpers by adding `source("https://michael-weylandt.com/STA9750/load_helpers.R")`
-   to the top of your file (outside both the UI and the server). 
-2) Add a reactive input that runs `mp_submission_verify` and captures the output. 
-   The following code snippet will be useful:
+i) Animation isn't well-supported across all platforms. While HTML-based 
+   presentations are becoming standard and quite common, you can't always
+   assume you will have the option to use them. If you need to embed animation
+   inside a PDF, you are at the mercy of the system PDF viewer, which may not be
+   entirely reliable.
    
-```{r}
-#| eval: false
-O <- capture.output({
-    E <- tryCatch(mp_submission_verify(N, github_id), 
-                  error=function(e) e)
-})
+   In general, I recommend designing your presentations to 'fail gracefully', so
+   that they still work even if the animation is not displayed properly. 
+   Typically, this involves setting things up so the first frame of your 
+   animation is a plot showing all of the data; if the animation won't play, you
+   still have the ability to show all of the data you intended to show in your
+   presentation
+ii) Animation is showy, but not great for deep dives into data. Because most 
+    animations don't allow control of playback speed, it can be hard to stop
+    and focus in on an important frame or two. I tend to use animations only for
+    'finished' analyses and prefer interactivity or small-multiples for EDA-type
+    work. 
+iii) Animation has accessibility limitations that you should generally be 
+     aware of. 
 
-if(isTRUE(E)){
-    MESSAGE <- "Mini-Project properly submitted."
-} else {
-    MESSAGE <- "Mini-Project not properly submitted. Issue appears to be:\n"
-    MESSAGE <- paste(c(MESSAGE, O[1:2]), collapse="\n")
-}
-```
-
-   where you use `MESSAGE` in creating your output. 
-
-### Step 4: Extensions
-
-Time allowing, do one or more of the following: 
-
-- Adapt `mp_feedback_locate` to provide links to all peer feedback issues. 
-  Note that you will need to handle the case of later MPs, who haven't been
-  assigned yet (*i.e.*, MPs #03 and #04). 
-- Adapt `mp_feedback_verify` to check whether your peer feedback has been
-  properly formatted. This will require a new input for the peer's GitHub ID. 
-
-## Exercise 4: Animated Graphics {#ex04}
+### Exercise 3: Animated Graphics {#ex03}
 
 In this section, you will use the `gganimate` extension to `ggplot2` to create 
 animated graphics. We will use the famous `gapminder` data set from the 
@@ -828,11 +978,9 @@ packages before attempting attempting this set of exercises.
 
 {{< video https://www.youtube.com/watch?v=jbkSRLYSojo >}}
 
-
 1. Load the `gapminder` package and create a static scatter plot of the 
    relationship between GDP and Life Expectancy in the year 1952. Color points
    by continent and use the size aesthetic to represent population.
-   
    
    *Hint: You might want to put some quantities on a log-scale.* 
    
@@ -878,7 +1026,6 @@ The outlier is Kuwait. Removing it from our data yields the following:
 ```{r}
 library(tidyverse)
 library(gapminder)
-library(gganimate)
 
 gapminder |>
     filter(year == 1952, 
@@ -918,6 +1065,7 @@ Making this an animated plot only requires us to change two lines:
 
 ```{r}
 #| label: gapminder1
+#| cache: true
 library(tidyverse)
 library(gapminder)
 library(gganimate)
@@ -938,12 +1086,17 @@ gapminder |>
     transition_time(year)
 ```
 
+Specifically, we have to load the `gganimate` package with a `library()` call
+and then we can use `gganimate::transition_time()` to indicate that we want
+"time animation" according to the `year` variable. (The other `transition_*`
+functions provide other sorts of animation, *e.g.* cycling among subgroups, but 
+time is the natural place to start for many animated plots.)
+
 :::
    
 5. Using the theme machinery, labels, *etc.* make this a "publication ready" 
    plot. In particular, note that when using `transition_time()` you can use
    `{frame_time}` in the title to get a dynamically changing year. 
-
 
 ::: {.callout-tip collapse="true" title="Solution"}
 
@@ -952,6 +1105,7 @@ here is to tweak the label
 
 ```{r}
 #| label: gapminder2
+#| cache: true
 library(tidyverse)
 library(gapminder)
 library(gganimate)
@@ -986,9 +1140,9 @@ gapminder |>
 
 Following `?country_colors`:
 
-
 ```{r}
 #| label: gapminder3
+#| cache: true
 library(gganimate)
 library(gapminder)
 library(ggplot2)
@@ -1016,10 +1170,10 @@ highlight a few key points to see how they evolve over time. The `ggrepel`
 package provides some nice functionality to add labels in a position that avoids
 covering over the underlying data: 
 
-
 ```{r}
 #| label: gapminder4
 #| warning: false
+#| cache: true
 library(gganimate)
 library(gapminder)
 library(ggrepel)
@@ -1049,7 +1203,8 @@ gapminder |>
     facet_wrap(~continent)
 ```
 
-A few more tweaks could be used here, but it's pretty good.
+A few more tweaks could be used here since the labels are a bit jumpy,
+but it's pretty good.
 
 :::
 
@@ -1064,3 +1219,489 @@ move_to_labs_folder <- function(fname){
 
 walk(Sys.glob("lab08_files/**/gapminder*"), move_to_labs_folder)
 ```
+
+## Interactive Graphics {#interactive}
+
+The `ggiraph` package can be used to add simple interactivity to any 
+`ggplot2`-based visualization.[^plotly] Using `ggiraph` requires 
+two basic steps: 
+
+1) Add some _interactive_ `geom_()`s to your plot. `ggiraph` provides 
+   `_interactive` variants of almost all of the basic `ggplot2` `geom` types. 
+   For example, if I want to make the points in my scatter plot interactive, 
+   I will switch from a simple `geom_point()` to a `geom_point_interactive()`. 
+2) Passing the assembled `ggplot2` object to `girafe` (*NB*, not spelled like
+   the long-necked African animal). This is a bit clunky, since we need to save
+   the `ggplot` object to a variable and then pass it as a named argument to
+   `girafe`. 
+   
+For example, we may start with a basic plot of our penguins: 
+
+```{r}
+library(ggplot2)
+
+penguins |> 
+  drop_na() |> 
+  ggplot(aes(x=flipper_len, 
+             y=body_mass, 
+             color=species)) + 
+  geom_point() + 
+  theme_bw() + 
+  xlab("Flipper Length (mm)") + 
+  ylab("Body Mass (g)") + 
+  scale_color_brewer(name="Species", 
+                     palette=2, 
+                     type="qual") + 
+  theme(legend.position="bottom")
+```
+
+To add interactivity, I will swap to a `geom_point_interactive` plot, which 
+allows a `tooltip` aesthetic that specifies the message to be shown when the 
+mouse passes over a point. 
+
+```{r}
+library(ggplot2)
+library(ggiraph)
+library(glue)
+
+penguins |> 
+  drop_na() |> 
+  mutate(sex1 = if_else(sex == "male", "M", "F"), 
+         tooltip = glue("{species} Penguin ({sex1}) Observed on {island} Island in {year}\nBill Length (mm): {bill_len}\nBill Depth (mm): {bill_dep}")
+  ) |>
+  ggplot(aes(x=flipper_len, 
+             y=body_mass, 
+             color=species, 
+             tooltip=tooltip)) + 
+  geom_point_interactive() + 
+  theme_bw() + 
+  xlab("Flipper Length (mm)") + 
+  ylab("Body Mass (g)") + 
+  scale_color_brewer(name="Species", 
+                     palette=2, 
+                     type="qual") + 
+  theme(legend.position="bottom")
+```
+
+On its own, this does nothing (as seen above). To make this interactive, we
+work as follows: 
+
+```{r}
+library(ggplot2)
+library(ggiraph)
+library(glue)
+
+penguins |> 
+  drop_na() |> 
+  mutate(sex1 = if_else(sex == "male", "M", "F"), 
+         tooltip = glue("{species} Penguin ({sex1}) Observed on {island} Island in {year}\nBill Length (mm): {bill_len}\nBill Depth (mm): {bill_dep}")
+  ) |>
+  ggplot(aes(x=flipper_len, 
+             y=body_mass, 
+             color=species, 
+             tooltip=tooltip)) + 
+  geom_point_interactive() + 
+  theme_bw() + 
+  xlab("Flipper Length (mm)") + 
+  ylab("Body Mass (g)") + 
+  scale_color_brewer(name="Species", 
+                     palette=2, 
+                     type="qual") + 
+  theme(legend.position="bottom") -> G_penguins
+
+girafe(ggobj=G_penguins)
+```
+
+We see that, first we had to save our results to a variable `G_penguins`. I 
+find this a bit easier to do with the "right-assign" idiom which puts the 
+variable name after the object is built, but most folks prefer putting 
+`G_penguins <- ` at the start of the pipeline. 
+
+Then, once our plot object is created, we make it interactive by passing it as
+the `ggobj` of `girafe`. As with all `ggplot2` package, we finally see the object
+by printing it, which is done here implicitly. 
+
+### Linking Across Multiple Panels
+
+The `patchwork` package can be used to combine multiple `ggplot` objects
+as separate panels in a single figure (see my `nychex` example above). It also 
+plays particularly nicely with `ggiraph` and allows "connected" interactivity
+across panels. Specifically, if we use the `data_id` aesthetic across multiple
+panels, the corresponding element will be highlighted across each panel: 
+
+```{r}
+library(tidyverse)
+library(ggiraph)
+library(patchwork)
+
+penguins_id <- penguins |> 
+    drop_na() |> 
+    mutate(id = row_number(), 
+           tooltip=glue("Penguin #{id}\n Observed on {island} Island in {year}"))
+
+G_BASIC <- ggplot(penguins_id, 
+                  aes(data_id=id, 
+                      color=species, 
+                      tooltip=tooltip)) + 
+    theme_bw()  + 
+    scale_color_brewer(type="qual", palette=2, name="Species") + 
+    theme(legend.position="bottom")
+
+G1 <- G_BASIC + 
+    geom_point_interactive(
+          aes(x=body_mass, 
+              y=flipper_len), 
+          hover_nearest=TRUE) + 
+    xlab("Body Mass (g)") + 
+    ylab("Flipper Length (mm)")
+
+G2 <- G_BASIC + 
+    geom_point_interactive(
+        aes(x=bill_dep, 
+            y=bill_len), 
+        hover_nearest=TRUE) + 
+    xlab("Bill Depth (mm)") + 
+    ylab("Bill Length (mm)")
+
+# Align our two panels, combine the guides, and move the legend to the bottom
+G <- G1 + G2 + plot_layout(guides="collect") & theme(legend.position="bottom")
+
+girafe(ggobj=G,
+       # Extra interactive formatting to make our highlighting even more clear
+       options=list(
+           opts_hover(css = "fill:cyan;stroke:black;cursor:pointer;"),
+           opts_hover_inv(css="opacity:0.3;"),
+           opts_selection(type = "single", css = "fill:red;stroke:black;")
+       ))
+
+```
+
+The `ggiraph` package is quite powerful and has many additional features beyond
+those demonstrated here.
+
+
+[^plotly]: The `plotly` `R` package can do something similar with its 
+`plotly::ggplotly()` function, but we're going to focus on `ggiraph` here 
+since it has functionality that allows integration with `shiny`. This is beyond
+our course, but you can see a nice example by running 
+`ggiraph::run_girafe_example()` on your local machine.
+
+### Exercise 4 - Adding Simple Interactivity with `ggiraph` {#ex04}
+
+1. Use `ggiraph::geom_sf_interactive()` to add a tooltip to your MTA governance 
+   map from above. 
+
+::: {.callout-tip collapse="true" title="Solution"}
+
+We can use something like the following: 
+
+```{r}
+library(ggiraph)
+library(glue)
+
+G_MTA <- ACS_DATA |>
+    mutate(county_voter_power = effective_mta_vote / total_population, 
+           baseline_voter_power = sum(effective_mta_vote) / sum(total_population), 
+           relative_voter_power = county_voter_power / baseline_voter_power - 1, 
+           pop_fmt = scales::comma(total_population),
+           cvp_e6 = scales::number(county_voter_power * 1e6),
+           vp_rank = rank(desc(county_voter_power)),
+           tooltip = glue("{county}\n {effective_mta_vote} MTA Votes for {pop_fmt} Residents\n {cvp_e6} MTA Board Seats per Million Residents (Power Ranking: {vp_rank})")) |>
+    ggplot(aes(geometry=geometry, 
+               fill=relative_voter_power, 
+               tooltip=tooltip)) + 
+    geom_sf_interactive() + 
+    theme_bw() + 
+    scale_fill_fermenter(name="Relative Representation on the MTA Board [Red Regions are Over-Powered]", 
+                         type="div", 
+                         palette="RdBu", 
+                         breaks=c(-3, -1.5, 0, 1.5, 3)) +
+    theme(legend.position="bottom", 
+          legend.text = element_blank()) # Disable legend ticks
+
+girafe(ggobj=G_MTA)
+```
+
+:::
+
+2. Use `patchwork` and the `data_id` element to combine several barplots of the
+   ACS data, allowing us to compare different subpopulations (male, female, white
+   non-white, *etc*) across the MTA commuter counties. 
+   
+::: {.callout-tip collapse="true" title="Solution"}
+   
+```{r}
+G1 <- ACS_DATA |>
+    ggplot(aes(geometry=geometry, 
+               fill=total_population, 
+               tooltip=county, 
+               data_id=county)) + 
+    geom_sf_interactive() + 
+    theme_bw() + 
+    scale_fill_fermenter(type="seq", 
+                         palette="Reds", 
+                         name="Total Population", 
+                         direction=1) + 
+    theme(legend.position="bottom") + 
+    guides(fill="none")
+
+G2 <- ACS_DATA |> 
+    arrange(desc(-total_population)) |>
+    mutate(county=factor(county, levels=county)) |> 
+    ggplot(aes(x=county, 
+               y=total_population, 
+               fill=total_population,
+               tooltip=county, 
+               data_id=county)) + 
+    geom_col_interactive() + 
+    theme_bw() + 
+    coord_flip() + 
+    scale_fill_fermenter(type="seq", 
+                     palette="Reds", 
+                     name="Total Population", 
+                     direction=1) + 
+    xlab(NULL) + 
+    ylab(NULL) + 
+    ggtitle("Total Population") + 
+    guides(fill="none")
+
+G3 <- ACS_DATA |> 
+    arrange(desc(-total_male_population)) |>
+    mutate(county=factor(county, levels=county)) |> 
+    ggplot(aes(x=county, 
+               y=total_male_population, 
+               fill=total_population,
+               tooltip=county, 
+               data_id=county)) + 
+    geom_col_interactive() + 
+    theme_bw() + 
+    coord_flip() + 
+    scale_fill_fermenter(type="seq", 
+                         palette="Reds", 
+                         direction=1) + 
+    xlab(NULL) + 
+    ylab(NULL) + 
+    ggtitle("Total Male Population") + 
+    guides(fill="none") + 
+    theme(axis.text.y = element_blank(), 
+          axis.ticks.y = element_blank())
+
+
+G4 <- ACS_DATA |> 
+    arrange(desc(-total_female_population)) |>
+    mutate(county=factor(county, levels=county)) |> 
+    ggplot(aes(x=county, 
+               y=total_female_population, 
+               fill=total_population,
+               tooltip=county, 
+               data_id=county)) + 
+    geom_col_interactive() + 
+    theme_bw() + 
+    coord_flip() + 
+    scale_fill_fermenter(type="seq", 
+                         palette="Reds", 
+                         direction=1) + 
+    xlab(NULL) + 
+    ylab(NULL) + 
+    ggtitle("Total Female Population") + 
+    guides(fill="none") + 
+    theme(axis.text.y = element_blank(), 
+          axis.ticks.y = element_blank())
+
+
+G5 <- ACS_DATA |> 
+    arrange(desc(-total_white_population)) |>
+    mutate(county=factor(county, levels=county)) |> 
+    ggplot(aes(x=county, 
+               y=total_white_population, 
+               fill=total_population,
+               tooltip=county, 
+               data_id=county)) + 
+    geom_col_interactive() + 
+    theme_bw() + 
+    coord_flip() + 
+    scale_fill_fermenter(type="seq", 
+                         palette="Reds", 
+                         direction=1) + 
+    xlab(NULL) + 
+    ylab(NULL) + 
+    ggtitle("Total White Population") + 
+    guides(fill="none") + 
+    theme(axis.text.y = element_blank(), 
+          axis.ticks.y = element_blank())
+
+
+G6 <- ACS_DATA |> 
+    arrange(desc(-(total_population - total_white_population))) |>
+    mutate(county=factor(county, levels=county)) |> 
+    ggplot(aes(x=county, 
+               y=total_population - total_white_population, 
+               fill=total_population,
+               tooltip=county, 
+               data_id=county)) + 
+    geom_col_interactive() + 
+    theme_bw() + 
+    coord_flip() + 
+    scale_fill_fermenter(type="seq", 
+                         palette="Reds", 
+                         direction=1) + 
+    xlab(NULL) + 
+    ylab(NULL) + 
+    ggtitle("Total Non-White Population") + 
+    guides(fill="none") + 
+    theme(axis.text.y = element_blank(), 
+          axis.ticks.y = element_blank())
+
+G <- (G1 + G2 + plot_layout(widths=c(2, 1))) / 
+     (G3 + G4) / 
+     (G5 + G6) + plot_layout(guides="collect", heights = c(3, 2, 2))
+
+girafe(ggobj=G) |> 
+    girafe_options(
+        opts_hover(css = "fill:cyan;stroke:black;cursor:pointer;"),
+        opts_selection(type = "single", css = "fill:red;stroke:black;")
+    )
+```
+
+Note that this example is _highly_ redundant and the code could be made shorter
+since many graph elements are shared.
+
+:::
+
+## `shiny`: Creating Interactive Tools for Data Analysis
+
+We finally turn our attention to creating interactive tools (web applications and
+dashboards) for data analysis. By learning these tools, you won't necessarily
+enable yourself to do analysis, but you will enable colleagues and clients to
+more fully explore the results of your analyses. The main tool we will use to
+do is `shiny`, a **reactive** framework for `R`. 
+
+"Reactive" programming refers to an architecture that changes only in response
+to user input. You have almost certainly worked with a reactive piece of
+software in the form of Microsoft Excel (or Google Sheets or similar). The
+values in the spreadsheet do not change *sua sponte*, but when you make an input
+all related cells are updated. (Conceptually, all cells are updated, but
+Excel is smart and tracks only those cells that actually need to be updated.)
+
+In this week's pre-assignment, you have already read a bit about `shiny`, but
+now we will put it into practice. In this exercise, we will not focus on making
+things particularly attractive. If you want to improve upon the rather Spartan
+appearance of standard `shiny`, tools like 
+[the `flexdashboard` package](https://pkgs.rstudio.com/flexdashboard/) may help.
+
+
+### Exercise 5 - Building a `shiny` tool for {{< var course.short >}} {#ex05}
+
+Use the [course helper functions](../tips.html) to build a `shiny` tool that
+can be used to verify that your mini-projects and peer feedback have been 
+appropriately formatted and submitted. 
+
+#### Step 0: Run `shiny`
+
+Take the following prototype and confirm that it runs on your computer. Note
+that this is the "single-file" format for `shiny` apps. It is somewhat more
+common to split `shiny` apps across two files - backend and frontend - but
+we are using a single file structure here for convenience. 
+
+```{r}
+#| eval: false
+if(!require("shiny")) install.packages("shiny")
+library(shiny)
+
+if(!require("glue")) install.packages("glue")
+library(glue)
+
+if(!require("yaml")) install.packages("yaml")
+library(yaml)
+
+# Create global variables here
+variables <- read_yaml("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/_variables.yml")
+course_repo  <- variables$course$repo
+course_short <- variables$course$short
+
+# Define the UI
+ui <- bootstrapPage(
+    textInput('github_id', 
+              'What is your GitHub ID?', 
+              placeholder="Type your GitHub ID here"),
+    htmlOutput('gh_link')
+)
+
+# Define the server code
+server <- function(input, output) {
+    output$gh_link <- renderText({
+        markdown(glue("My code for this course found on [GitHub](https://github.com/{input$github_id}/{course_repo})"))
+    })
+}
+
+# Return a Shiny app object
+shinyApp(ui = ui, server = server)
+```
+
+#### Step 1: Add a Link to your profile
+
+Add a second output to link to the homepage you created in
+[MP#00](../mini/mini00.html). Copying the treatment of `gh_link` in 
+the example, you will need to 
+
+1) Add a second output
+   [`renderText`](https://shiny.posit.co/r/reference/shiny/0.11/rendertext.html)
+   component in the server
+2) Add a second output [`htmlOutput`](https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html) 
+  component in the UI
+
+#### Step 2: Parameterize the Mini-Project Number
+
+Next, extend your app to handle the mini-projects. 
+Modify the above example to do three things: 
+
+- Add a [`numericInput`](https://rstudio.github.io/shiny/reference/numericInput.html) 
+  that takes a number between `1` and `4` inclusive to select a mini-project.
+- Add an output [`htmlOutput`](https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html) 
+  element that adds a link to the relevant 
+  [mini-project instructions](https://michael-weylandt.com/STA9750/miniprojects.html). 
+ 
+  The `glue` function can be used to easily substitute values in URLs (as in
+  the example). 
+- Add an output [`htmlOutput`](https://shiny.posit.co/r/reference/shiny/0.11/htmloutput.html) 
+  element that adds a link to *your* mini-project submission. This URL should
+  take both the `numericInput` and the `textInput` user inputs to construct
+  the URL. (That is, if you change the `GitHub` name used the URL should point
+  to a different repo)
+  
+#### Step 3: Confirm Mini-Project Submission
+
+Take one of the course helper scripts and use it to determine whether a given 
+MP submission is properly formatted. To do so: 
+
+1) Load the helpers by adding `source("https://michael-weylandt.com/STA9750/load_helpers.R")`
+   to the top of your file (outside both the UI and the server). 
+2) Add a reactive input that runs `mp_submission_verify` and captures the output. 
+   The following code snippet will be useful:
+   
+```{r}
+#| eval: false
+O <- capture.output({
+    E <- tryCatch(mp_submission_verify(N, github_id), 
+                  error=function(e) e)
+})
+
+if(isTRUE(E)){
+    MESSAGE <- "Mini-Project properly submitted."
+} else {
+    MESSAGE <- "Mini-Project not properly submitted. Issue appears to be:\n"
+    MESSAGE <- paste(c(MESSAGE, O[1:2]), collapse="\n")
+}
+```
+
+   where you use `MESSAGE` in creating your output. 
+
+#### Step 4: Extensions
+
+Time allowing, do one or more of the following: 
+
+- Adapt `mp_feedback_locate` to provide links to all peer feedback issues. 
+  Note that you will need to handle the case of later MPs, who haven't been
+  assigned yet (*i.e.*, MPs #03 and #04). 
+- Adapt `mp_feedback_verify` to check whether your peer feedback has been
+  properly formatted. This will require a new input for the peer's GitHub ID. 
