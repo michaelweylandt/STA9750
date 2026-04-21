@@ -1,15 +1,18 @@
 ---
 session: "`r session <- 10; session`"
-last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
+last_updated: "`r last_updated <- Sys.Date(); 
+                  last_updated |> format('%Y-%m-%d')`"
 class_date:
   "`r library(tidyverse);
     class_date <- read_csv('key_dates.csv', name_repair='universal') |>
     filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
-format: revealjs
+    pull(Date); class_date |> format('%A %Y-%m-%d')`"
+format: 
+  revealjs:
+    echo: true
+course_repo: "`r yaml::read_yaml('_variables.yml')$course$repo`"
 ---
-
 
 {{< include _setup.qmd >}}
 
@@ -19,13 +22,17 @@ Today: `r TODAY_TOPIC`
 
 . . . 
 
-::: {.small}
 
-- Proposals ✅
-- Mid-Semester Check-In ⬅️
-- Final Presentation
-- Final Group Report
-- Final Individual Report
+::: {.smaller}
+
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R`  ✅
+- Data Visualization in `R`  ⬅️
+  - Static Plots  ✅
+  - Interactivity, Maps, Animated Plots  ⬅️
+- Getting Data into `R`
+- Statistical Modeling in `R`
 
 :::
 
@@ -34,8 +41,11 @@ Today: `r TODAY_TOPIC`
 ## Today
 
 - Course Administration
-- Mid-Semester Check-In Presentations
-- Optional Material: Functional Programming with `purrr`
+- Review Exercise
+- Advanced `ggplot2`
+  - Spatial Data (Maps)
+  - Animation
+  - Interactivity
 - Wrap-Up
   - Life Tip of the Day
 
@@ -44,9 +54,7 @@ Today: `r TODAY_TOPIC`
 ## {{< var course.short >}} Mini-Projects
 
 - Mini-Project #01 ✅ (`r get_mp_deadline(1)`)
-- Mini-Project #02 🔄 (`r get_mp_deadline(2)`)
-  - Submission ✅
-  - Peer Feedback ⬅️
+- Mini-Project #02 ✅ (`r get_mp_deadline(2)`)
 - Mini-Project #03 (`r get_mp_deadline(3)`)
   - Submission ⬅️
   - Peer Feedback
@@ -65,11 +73,11 @@ Topics covered:
 ::: {.incremental .smaller}
 
 - Data Import
-  - One static file
-  - One API call
-- Spatial Data
-  - Very basic spatial joins
-  - Spatial visualizations (maps!)
+  - Package Usage
+  - Static Files
+  - API Calls
+- Advanced Data Manipulation
+- Spatial Data Visualization (Optional)
   
 :::
 
@@ -81,47 +89,26 @@ Topics covered:
 
 . . . 
 
-TBD
-
-. . . 
-
 Topics covered: 
 
 ::: {.incremental .smaller}
 
 - Data Import
-  - HTTP Request Construction
+  - HTTP Requests
   - HTML Scraping (Tabular)
+  - Text Processing
 - $t$-tests
 - Putting Everything Together
 
 :::
 
-## Grading in Progress
-
-We *will* owe you: 
-
-- Mid-Term Check In Grades
-
-## Re-Grade Requests
-
-Per course policy: 
-
-- If you feel peer grades are wrong, please request an
-  instructor re-grade
-- New Brightspace 'quiz' to request
-  - Not an actual quiz...
-
-. . . 
-
-If you want to discuss your MPs or project in more detail, come to office hours!
 
 ## Course Support
 
--   Synchronous
-    -   MW Office Hours 2x / week: **Tuesdays + Thursdays 5-5:45pm**
-        - Rest of Semester except Thanksgiving (Nov 27th)
--   Asynchronous: Piazza ($<20$ minute *average* response time)
+- Synchronous: MW Office Hours 2x / week: 
+  - **Wednesdays 5pm** in-person
+  - **Thursdays 5pm** on Zoom
+- Asynchronous: Piazza
 
 ## Course Project
 
@@ -142,80 +129,414 @@ Final submissions:
   
 :::
 
-. . . 
-
-Nothing new *per se* - just more details about grading
-(4 elements => 10)
 
 . . . 
 
-Additional notes added on _integration_ of SQs and strategies for estimating
+Notes added on _integration_ of SQs and strategies for estimating
 causal effects. Ask questions! I'm happy to fill these out further.
 
+# Review Exercise
 
-# Check-In Presentations
+## SSA Registered Births
 
-## Check-In Presentations
-
-Today, I'm looking for: 
-
-::: {.incremental}
-
-- Finalized _overarching question_
-- Locking in on _specific questions_
-- Evaluation of _relevant_ data sources
-  - Anticipated data or statistical challenges
-- Engagement with _existing literature_
-- 6 minutes
-
-:::
+Time series data of babies born and registered with the 
+Social Security Administration (previously in [Lab #05](../labs/lab05.qmd))
 
 . . . 
-
-Mainly, I want to see that you will be able to _succeed_ 
-
-## After Proposals
-
-Optional discussion of functional programming in `R`
-
-::: {.incremental}
-
-- List manipulation (useful for `JSON` handling)
-- Simple iteration over large data sets
-- Error handling and robustness
-- Parallelization
-
-:::
-
-# On to the Show!
-
-## Presentation Order {.scrollable}
 
 ```{r}
 #| echo: false
-#| eval: false
-set.seed(9750+session)
-library(yaml)
-library(jsonlite)
 
-TEAMS <- read_yaml("_teaching.yml") |> 
-  pluck("gradedir") |> 
-  file.path("teams.json") |> 
-  read_json(simplify=TRUE) |> 
-  pull(name) |>
-  sample()
+if(!file.exists("births.csv")){
+    download.file("https://raw.githubusercontent.com/michaelweylandt/STA9750/main/births.csv", 
+                  destfile="births.csv")
+}
+library(readr)
+library(dplyr)
 
-TUESDAY_TEAMS  <- TEAMS[str_detect(TEAMS, fixed("(T)"))]
-THURSDAY_TEAMS <- TEAMS[str_detect(TEAMS, fixed("(R)"))]
-
-data.frame(name = TUESDAY_TEAMS) |> 
-    mutate(name = paste0(row_number(), ". ", name)) |> 
-    knitr::kable(col.names="Presentation Order", 
-                 row.names=FALSE, 
-                 align = "l")
+births <- read_csv("births.csv")
+glimpse(births)
 ```
 
-TBD
+## SSA Registered Births
+
+Practice visualization: 
+
+1. Are there months with more births?
+2. Are there days of the week with more births? 
+3. Is there a long-term trend in births?
+
+See [Lab #08](`r url_full`#review) for details.
+
+
+## Breakout Rooms {.scrollable}
+
+```{r}
+#| echo: false
+BREAKOUT_TABLE
+```
+
+Review activities from [today's lab](`r url_full`#review)
+
+
+# Advanced `ggplot2`
+
+## Spatial Data
+
+Maps are more interesting than you think!
+
+- The world isn't flat!
+
+. . . 
+
+This can get *intense*, but we will get by with simple features (`sf`)
+
+## Map Projections
+
+{{< video https://www.youtube.com/watch?v=UPaca-SrvEkhttps://www.youtube.com/watch?v=vb-_qqmOcCI width="80%" height="400px">}}
+
+## WGS 84
+
+[WGS 84](https://en.wikipedia.org/wiki/World_Geodetic_System#WGS_84) is a 
+robust and widely-used way of creating maps from 3D coordinates. 
+
+- Good default
+- Convert existing `sf` using `sf::st_transform(4326)`
+
+. . . 
+
+Not universal!
+
+{{< video https://www.youtube.com/watch?v=L9Di-UVC-_4 width="40%" height="200px" >}}
+
+## sf Package
+
+The `sf` package provides tools for dealing with spatial data: 
+
+- `st_read` for reading `geojson` or `shp` files
+- `st_join` for combining spatial data
+- Integrates with `ggplot2::geom_sf()`  for plotting
+
+## sf Objects
+
+`sf` object - `data.frame` with additional _geometry_ information 
+
+```{r}
+#| echo: true
+library(sf); library(tidyverse)
+nc <- st_read(system.file("shape/nc.shp", package="sf"))
+glimpse(nc)
+```
+
+## Chloropleths
+
+A map whose fill depends on the value of interest is called a _chloropleth_:
+
+::: {.small}
+
+```{r}
+ggplot(nc, aes(fill=BIR79 / BIR74 - 1, geometry=geometry)) + 
+  geom_sf() + 
+  guides(fill="none") + 
+  ggtitle("% Change in Number of Children Born Per Year 1974-1979")
+```
+
+:::
+
+. . . 
+
+Integrates well with `ggplot2`: 
+
+- `geom_sf` knows how to handle geometries
+- other features all work as expected (fill, animation, legends, *etc.*)
+
+## Breakout Exercises
+
+Two sets of spatial exercises: 
+
+- Chloropleths
+- Cartograms
+
+[Spatial Data in Lab #08](`r url_full`#maps)
+
+# Animation
+
+## Animated Graphics
+
+`gganimate` is the *de facto* standard for animated `ggplot2`: 
+
+- Make a bunch of `png` files
+- Combine into a `gif`
+
+. . . 
+
+Most commonly: `+transition_time(VARIABLE)`
+
+NB: Unlike `facet_wrap`, no `~` before `VARIABLE`
+
+## transition_*() functions
+
+Animation is implemented via a new plot element: `transition_*()`: 
+
+```{r}
+#| code-line-numbers: "4"
+library(gganimate)
+ggplot(births, aes(x=day_of_year, y=births)) +
+  geom_line() + 
+  transition_time(year)
+```
+
+## transition_*() functions
+
+Add a title to indicate _time_ being shown: 
+
+```{r}
+#| code-line-numbers: "4"
+library(gganimate)
+ggplot(births, aes(x=day_of_year, y=births)) +
+  geom_line() + 
+  transition_time(year) + ggtitle("Year: {frame_time}")
+```
+
+
+## transition_*() functions
+
+`gganimate` "tweens" (interpolates) between frames for
+smoothness - works best for _continuous_ time data. 
+
+It's a bit weird here and we might prefer a more discrete
+interpolation:
+
+```{r}
+#| code-line-numbers: "4"
+library(gganimate)
+ggplot(births, aes(x=day_of_year, y=births)) +
+  geom_line() + 
+  transition_states(year) + ggtitle("Year: {closest_state}")
+```
+
+## Easing
+
+Use the `ease_` functions (or `enter_()`/`exit_*()` separately) for finer control: 
+
+```{r}
+ggplot(births, aes(x=day_of_year, y=births, group=year)) +
+  geom_line() + transition_states(year, transition_length = 4, state_length=1) + 
+  ggtitle("Year: {closest_state}") + enter_grow() + exit_fade()
+```
+
+## Grouping
+
+The `group`  variable is used to determine whether something is permanent over time. 
+
+```{r}
+penguins |> drop_na() |>
+  ggplot(aes(x = bill_dep, y = body_mass)) +
+  geom_point() + ggtitle("{frame_time}") + 
+  transition_time(year)
+```
+
+. . . 
+
+**Bad!** Doesn't make sense to _interpolate_ penguins
+
+## Grouping
+
+```{r}
+penguins |> drop_na() |>
+  ggplot(aes(x = bill_dep, y = body_mass, group=year)) +
+  geom_point() + ggtitle("{floor(frame_time)}") + 
+  transition_time(year)
+```
+
+See [`gganimate` Getting Started
+Documentation](https://gganimate.com/articles/gganimate.html) 
+for more
+
+## Breakout Exercises
+
+Animation exercises: 
+
+- `gapminder` data
+- How has the world gotten healthier and richer over the past century?
+
+[Animated Visualizations in Lab #08](`r url_full`#animated)
+
+## Animated Graphics
+
+When it works, `gganimate` is great
+
+- PITA when external software is busted
+
+. . . 
+
+Alternatives: 
+
+- Facet plots
+- Split facets over pages and scroll quickly: `ggforce::facet_wrap_paginate()`
+- Interactivity with autoplay
+
+. . . 
+
+Caution: think about how transitions should be structured
+
+# Interactivity
+
+## Interactivity 
+
+The `ggiraph` package provides for _interactive_ `ggplot2` 
+
+- 
+
+## Alternatives
+
+The `plotly` package provides a `ggplotly()` function which 
+works similarly. 
+
+::: {.small .incremental}
+
+Advantages: 
+
+- Has a more sophisticated "time change" interactivity
+
+Disadvantages
+
+- Doesn't support all of `ggplot2`
+
+:::
+
+## Alternatives
+
+Example of `ggplotly` - `frame` gives rise to a time slider:
+
+```{r}
+#| code-line-numbers: "2|4"
+library(plotly)
+G <- ggplot(births, aes(x=day_of_year, y=births, frame=year)) +
+  geom_point() + geom_line() + theme_bw()
+ggplotly(G)
+```
+
+# Shiny
+
+
+# Plotting FAQs
+
+## ggplot2 & Pie Charts
+
+Why do Pie Charts have a bad reputation?
+
+- Use of _area_ and _angle_ over _length_: less accurate perception
+- Depends on `fill` to convey category - limited categories
+
+. . . 
+
+But primarily - "insider smugness"  and hate of `Excel`
+
+
+## ggplot2 Plot Type Choice
+
+For me: 
+
+- Exploratory mode: 
+  - Simple: line, scatter, bar, frequency
+- Publication mode:
+  - Very context specific
+  - "Simplicity" / "Elegance" depend on audience expectations
+
+## ggplot2 Font Sizing
+
+Theme machinery!
+
+```{r}
+ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width)) + 
+    geom_point() + theme(axis.text = element_text(size=24))
+```
+
+## Overplotting / ScatterBlobs
+
+Student asked about "scatterblobs" - typo(?) but I love it!
+
+. . . 
+
+- Density based plotting: hexbins, histograms, rugplots
+- Data reduction: summarization or sub-sampling
+
+## Optimizing ggplot2 Performance
+
+Active project of `ggplot2` team - not much you can do
+
+. . . 
+
+*Practical advice*: 
+
+- Plot less (see previous slide)
+- Take advantage of [`quarto` Caching](https://quarto.org/docs/computations/caching.html)
+
+## ggplot2 Beyond Scatter and Line
+
+Some favorite semi-advanced plot types: 
+
+- Violin plots: combination of boxplot and histogram
+- Ridgelines
+- Beeswarms
+
+_Deep_ rabbit hole
+
+## ggplot2 + High-Dimensional Data
+
+High-dimensional data: measure many variables per observation ("wide")
+
+High-dimensional data is _hard_ to visualize
+
+. . . 
+
+Approaches: 
+
+- Pair plots for "moderate" HDD
+- PCA (or similar dimension reduction. Take 9890!)
+
+## Custom ggplot2 Theme
+
+```{r}
+my_theme <- theme_bw() + theme(panel.background = element_rect(fill = 'lightblue'))
+ggplot(iris, aes(x=Sepal.Length, y = Sepal.Width)) + geom_point() + my_theme
+```
+
+Advanced: 
+
+- `theme_set()` - change `ggplot2` defaults
+- `.Rprofile` - set code to run every time you start `R`
+
+## ggplot2 - When Not to Use 
+
+`ggplot2` is designed to make good statistical graphics. Sub-par for: 
+
+- Very advanced interactivity (unless combined with `shiny` or custom JS)
+- _Really_ big data
+- Hardcore customization / "infographics"
+
+## `git` WTF
+
+Reference: [Happy Git with R](https://happygitwithr.com/)
+
+```{r}
+#| echo: false
+fs::dir_ls("slides10_files/figure-revealjs/") |>
+  fs::file_copy("docs/slides/slides10_files/figure-revealjs/", 
+                overwrite=TRUE)
+```
+
+# Wrap-Up
+
+## Review
+
+Advanced `ggplot2`: 
+
+- `ggplot2` as a platform for powerful extensions
+- Spatial data: `sf`
+- Animation: `gganimate`
+- Interactivity: `ggiraph`, `shiny`
 
 # Wrap-Up
 
@@ -227,22 +548,9 @@ TBD
 - Data Visualization in `R`  ✅
 - Getting Data into `R` ⬅️
   - Files and APIs ✅
-  - Web Scraping
+  - Web Scraping **[Thursday]**
   - Cleaning and Processing Text
 - Statistical Modeling in `R`
-
-## Upcoming Work
-
-Upcoming work from [course calendar](../index.qmd#calendar)
-
-::: {.incremental}
-
-- [Mini-Project #02 Peer Feedback](../miniprojects.html) due on ~~`r get_mp_pf_deadline(2)`~~
-- [Pre-Assignment #0`r next_session`](../pre/pa11.html) due `r get_pa_deadline(next_session)`
-- [Mini-Project #03](../mini/mini03.html) due on `r get_mp_deadline(3)`
-
-:::
-
 
 <!-- TODO: LIFE TIP? -->
 
@@ -252,499 +560,3 @@ Upcoming work from [course calendar](../index.qmd#calendar)
 
 {{< video https://www.youtube.com/watch?v=__OSyznVDOY width="80%" height="400px">}}
 
-
-# Optional Material: Functional Programming with `purrr`
-
-## Functional Programming
-
-Functional programming - *purity* 
-
-- Minimizing _book-keeping_ and _side-effects_
-
-. . . 
-
-Can go _deep_ into FP world - we're just dipping a toe in
-
-- Iteration: `map` and friends, `reduce`, `list_*`
-- Adverbs: `safely`, `partial`, `insistently`, `in_parallel` 
-- List access: `pluck`
-
-## Functional Programming
-
-![](https://imgs.xkcd.com/comics/purity.png)
-
-## Functional Programming
-
-Compare: 
-
-```{r}
-#| eval: false
-#| echo: true
-for(i in seq_along(letters)){
-    lower_letter <- letters[i]
-    upper_letter <- LETTERS[i]
-    
-    cat(upper_letter, " is the upper case of ", lower_letter, "\n")
-}
-```
-
-and 
-
-```{r}
-#| eval: false
-#| echo: true
-walk2(LETTERS, letters, ~ cat(.x, " is the upper case of ", .y, "\n"))
-```
-
-. . . 
-
-No indexing (`[]`) or explicit loop management
-
-## FP in R
-
-In `R`, FP is principally associated with `list`s
-
-. . . 
-
-*Recall: a `list` is a _generic_ container in `R` (can hold anything, even other lists)*
-
-- Natural tool for parsing JSON (see last week)
-- Many things in `R` are lists under the hood (including `data.frame`s)
-
-## Iteration - map
-
-Often, we want to do the _same thing_ to several different items: 
-
-- E.g., on MP#04, download BLS revisions _for each year_
-
-. . . 
-
-`map` and friends let us avoid loops
-
-- Handles book-keeping for us
-- List in and list out (by default)
-
-## Iteration - map
-
-```{r}
-#| echo: true
-#| eval: false
-map(INPUT, FUNCTION)
-```
-
-applies `FUNCTION` to each element of `INPUT` and
-collects the output in a new list
-
-. . . 
-
-```{r}
-map(month.name, toupper)
-```
-
-## Typed Iteration
-
-Sometimes, we know the type of values to be returned: 
-
-`map_*` lets us put those into a vector: 
-
-. . . 
-
-```{r}
-map_chr(month.name, toupper)
-```
-
-
-. . . 
-
-```{r}
-map_int(month.name, nchar)
-```
-
-## Anonymous Functions
-
-Functions in `R` can be defined as: 
-
-```{r}
-#| eval: false
-#| echo: true
-my_function <- function(arg1, arg2="default"){
-    function_code(goes * here)
-}
-```
-
-But this is clunky
-
-. . . 
-
-_Anonymous_ functions ("lambdas") let us define 'little functions' more complactly
-
-```{r}
-plus_1 <- function(x){
-    x + 1
-}
-
-\(x) x + 1
-```
-
-Supposedly `\(` looks like the Greek $\lambda$
-
-## Anonymous Functions
-
-Anonymous functions play well with `map`: 
-
-```{r}
-# String manipulation (Week 12) to count vowels
-map_int(month.name, \(x) str_count(x, "[aeiou]")) 
-```
-
-## map returning Data Frames {.scrollable}
-
-A common idiom is to return a data frame inside `map`
-
-```{r}
-map(month.name, 
-    \(x) data.frame(month = x, 
-                    upper = toupper(x), 
-                    n_vowels = str_count(x, "[aeiou]")))
-```
-
-## map returning Data Frames {.scrollable}
-
-Combine this list of little DFs _rowwise_ with `list_rbind()`
-
-```{r}
-map(month.name, 
-    \(x) data.frame(month = x, 
-                    upper = toupper(x), 
-                    n_vowels = str_count(x, "[aeiou]"))) |>
-    list_rbind()
-```
-
-## Mapping Together
-
-Often, we will want to `map` multiple things together: 
-
-- `month.name`
-- `month.abb`
-
-```{r}
-map2_chr(month.name, month.abb, \(x, y) paste(y, "is short for", x))
-```
-Use `pmap` to go to three or more
-
-## Mapping and Counting
-
-Use `imap` to get the index of the element as well:
-
-```{r}
-imap_chr(month.name, \(x, y) paste(x, "is month number", y))
-```
-
-## map vs Vectorization
-
-`map` is most useful when the underlying function can't be vectorized: *e.g.*, 
-file processing or downloading
-
-```{r}
-library(jsonlite); library(glue)
-map(1:5, 
-    \(n) as_tibble(fromJSON(glue("https://official-joke-api.appspot.com/jokes/{n}")))) |>
-    list_rbind()
-```
-
-## map pipelines
-
-Often we will want to `map` several times as we perform
-steps of an analysis.
-
-. . . 
-
-Cleaner than one big function:
-
-```{r}
-1:5 |>
-    map(\(n) glue("https://official-joke-api.appspot.com/jokes/{n}")) |>
-    map(fromJSON) |>
-    map(as_tibble) |>
-    list_rbind()
-```
-
-## Accessing nested elements
-
-Sometimes, when we have a complex list, we want to pull out
-certain elements: 
-
-- Pass an index or name to `map`:
-
-```{r}
-library(gh)
-gh("/orgs/tidyverse/repos") |>
-    map("name")
-```
-
-## Accessing List Elements
-
-Use `pluck` to access elements of a list in the same way:
-
-From last week, 
-
-```{r}
-#| eval: false
-#| echo: true
-request("https://cranlogs.r-pkg.org") |>
-    req_url_path_append("top") |>
-    req_url_path_append("last-day") |>
-    req_url_path_append(100) |>
-    req_perform() |>
-    resp_body_json() |>
-    pluck("downloads") |>
-    map(as_tibble) |>
-    list_rbind()
-```
-
-## map for Complex Analysis
-
-_Anything_ can be a column of a `data.frame`, even another `data.frame`
-
-```{r}
-penguins |>
-    group_by(species) |>
-    nest()
-```
-
-. . . 
-
-`data` is a set of 3 different data frames (one per species)
-
-## map for Complex Analysis
-
-Use `map` to fit the same model to each `data` separately: 
-
-```{r}
-penguins |>
-    group_by(species) |>
-    nest() |>
-    mutate(model = map(data, \(d) lm(body_mass ~ flipper_len, data=d)))
-```
-
-## map for Complex Analyses
-
-::: {.small}
-
-Continue using `map` to analyze each species-model separately
-
-```{r}
-penguins |>
-    group_by(species) |>
-    nest() |>
-    mutate(model = map(data, \(d) lm(body_mass ~ flipper_len, data=d)), 
-           mdl_summary = map(model, summary), 
-           coefficients = map(model, coef), 
-           slope = map_dbl(coefficients, "flipper_len"), 
-           r_sq = map_dbl(mdl_summary, "r.squared")) |>
-    select(-data, -model, -mdl_summary)
-```
-
-So `flipper_len` explains the most `body_mass` variation in `Gentoo`
-penguins.
-
-:::
-
-## Modifying Map Behavior
-
-When passing functions to `map`, we might want to handle errors
-
-- Use an `adverb` to modify a function
-
-## Adverbs: safely
-
-If you have a function that sometimes throws errors, wrap
-it in `safely`
-
-```{r}
-#| error: true
-nchar_bad <- function(x){
-    if(runif(1) < 0.2) stop("AN ERROR") else nchar(x)
-}
-
-map_dbl(month.name, nchar_bad)
-```
-
-## Adverbs: safely
-
-```{r}
-#| error: true
-nchar_safe <- safely(nchar_bad, otherwise=NA)
-
-map(month.name, nchar_safe) |> 
-    map("result") |> # Result of safely() is list, so
-    list_c()         # We must map() our pluck()
-```
-
-## Adverb: `possibly`
-
-The `safely |> map("result")` combo is common, so helper `possibly`:
-
-```{r}
-#| error: true
-nchar_safe <- possibly(nchar_bad, otherwise=NA)
-
-map_int(month.name, nchar_safe) 
-```
-
-## Adverbs: insistently
-
-For functions that fail sporadically (*e.g.*, web access), try `insistently`: 
-
-```{r}
-#| eval: false
-#| echo: true
-read_html_insist <- insistently(read_html)
-
-read_html_insist("https://a.sketchy.site")
-```
-
-Will try 3 times by default
-
-(*cf*, sites that don't work reliably like in MP#02)
-
-## Adverbs: slowly
-
-Some websites will get mad if you query too often: `slowly` will make sure it isn't called too often
-
-```{r}
-#| eval: false
-#| echo: true
-read_html_slow <- slowly(read_html)
-
-read_html_slow("https://a.rate-limited.site")
-```
-
-Default is once per second.
-
-## Adverbs: in_parallel
-
-For parallel processing, use the `in_parallel` adverb: 
-
-```{r}
-mirai::daemons(4) # Run 4 processes in parallel
-
-map_dbl(1:4, \(x) x+1)
-
-map_dbl(1:4, in_parallel(\(x) x + 1))
-```
-
-Argument to `in_parallel` needs to be an anonymous function
-
-## Adverbs: in_parallel
-
-Compare:
-
-```{r}
-system.time(map_dbl(1:4, \(x) {Sys.sleep(1); x+1}))
-```
-
-```{r}
-mirai::daemons(4) # Run 4 processes in parallel
-system.time(map_dbl(1:4, in_parallel(\(x) {Sys.sleep(1); x+1})))
-```
-
-## Adverbs: in_parallel
-
-Parallelization is not magic: 
-
-- Most useful for IO bound tasks (reading files, downloads)
-- Too much parallelization slows things down ("thrashing")
-- Need to be careful about error handling
-  - Use `safely` so if one step errors, you don't loose everything
-
-## List Access with pluck
-
-Given a `list`, the `pluck` function will pull out elements: 
-
-- `list_obj |> pluck(n)` will pull out the $n^{\text{th}}$ element
-- `list_obj |> pluck("name")` will pull out the element named `"name"`
-- `list_obj |> pluck(func)` will apply the "accessor" `func`
-
-## List Access with pluck
-
-`lm`: Linear regression (and ANOVA)
-
-```{r}
-#| echo: true
-my_regression <- lm(body_mass ~ flipper_len, data=penguins)
-
-summary(my_regression)
-```
-
-## List Access with pluck
-
-Can use `pluck` + accessors to get the coefficients
-
-```{r}
-#| echo: true
-#| eval: false
-my_regression |> pluck(1)
-my_regression |> pluck("coefficients")
-my_regression |> pluck(coef)
-```
-
-```{r}
-#| echo: false
-#| eval: true
-my_regression |> pluck(coef)
-```
-
-Final form is most robust
-
-## List Access with pluck
-
-`pluck` has some nice useability features: 
-
-::: incremental
-
-- Can supply "compound" selections:
-  `pluck(1) |> pluck("a")` is the same as `pluck(1, "a")`
-- Can change default value from `NULL`: `pluck("a", .default=NA)` 
-  - Use `chuck` if you want to error instead of default
-  
-:::
-
-
-## Combining Results
-
-Given a list, we can 'combine' elements with the
-`reduce` function:
-
-```{r}
-#| echo: true
-map(month.name, 
-    nchar) |>
-    reduce(`+`) # reduce(`+`) => sum
-```
-
-```{r}
-#| echo: true
-map(month.name, 
-    nchar) |>
-    reduce(max)
-```
-
-Useful for combining _many_ data sets in a 'mega-join'
-
-Use `accumulate` to keep intermediate results (a la `cumsum`)
-
-## Functional Tools
-
-Not everything fits within `purrr` tooling 
-
-. . . 
-
-But a lot does!
-
-Use it when helpful: 
-
-- Applying the same analysis many times `map`
-- Recursively combining ($n$-way inner join)
-- Error handling
-- List-structured data (HTML -> more next week!)
