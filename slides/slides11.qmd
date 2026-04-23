@@ -1,13 +1,17 @@
 ---
 session: "`r session <- 11; session`"
-last_updated: "`r Sys.Date() |> format('%Y-%m-%d')`"
+
+last_updated: "`r last_updated <- Sys.Date(); 
+                  last_updated |> format('%Y-%m-%d')`"
 class_date:
   "`r library(tidyverse);
     class_date <- read_csv('key_dates.csv', name_repair='universal') |>
     filter(Course.Element == 'Class Session',
            Item.Number == session) |>
-    pull(Date) |> format('%A %Y-%m-%d'); class_date`"
-format: revealjs
+    pull(Date); class_date |> format('%A %Y-%m-%d')`"
+format: 
+  revealjs:
+    echo: true
 ---
 
 {{< include _setup.qmd >}}
@@ -48,14 +52,6 @@ Today: `r TODAY_TOPIC`
 
 # Course Administration
 
-## GTA 
-  
-Charles Ramirez is our GTA
-
-- Wednesday Office Hours moved to 5:15-7:15 for greater access
-  - Give a bit of flexibility on the front end for CR to get off work
-- Will start on Meta-Review #02 after Peer Feedback due Tuesday November 18th
-
 ## Mini-Project #03
 
 [MP#03](../mini/mini03.html) - `r get_mp_title(3)`
@@ -69,13 +65,16 @@ Topics covered:
 ::: {.incremental .smaller}
 
 - Data Import
-  - One static file 
-  - One API call
-- Spatial Data
-  - Very basic spatial joins
-  - Spatial visualizations (maps!)
+  - Using the `tidycensus` Package
+  - Static files
+  - API Usage
+- Data Maipulation and Visualization
+  - Slicing and Dicing with `dplyr`
+  - Spatial visualization (optional)
   
 :::
+
+. . . 
 
 Submissions so far look great!
 
@@ -93,27 +92,22 @@ Topics covered:
 ::: {.incremental .smaller}
 
 - Data Import
-  - HTTP Request Construction (Week 9)
+  - HTTP Request Construction (Last Week)
   - HTML Scraping (Tabular) ⬅️ (Today)
 - $t$-tests
 - Putting Everything Together
 
 :::
 
-## Grading in Progress
-
-We owe you: 
-
-- Selected Regrades 
-- Mid-Term Check-In Presentation Feedback
 
 ## Course Support
 
--   Synchronous
-    -   MW Office Hours 2x / week: **Tuesdays + Thursdays 5pm**
-        - Rest of Semester except Thanksgiving (Nov 27th)
-    - GTA Office Hours: **Wednesdays at 5:15-7:15pm**
--   Asynchronous: Piazza ($<20$ minute *average* response time)
+-   Synchronous - MW Office Hours 2x / week: 
+    - **Wednesdays 5pm**: In Person
+    - **Thursdays 5pm**: Zoom
+-   Asynchronous: Piazza ($<45$ minute *average* response time)
+
+<!--
 
 ## Large Files
 
@@ -127,6 +121,8 @@ Several of you have reported issues with `git` complaining about large files
 
 ⚠️This is dangerous! I can help with it after class.⚠️
 
+-->
+
 # Review Exercise
 
 ## API Exercise
@@ -135,18 +131,15 @@ The [Open Trivia Database](https://opentdb.com/)
 
 - Use the API to build the question bank for a trivia night
 
-[Lab #11](../labs/lab11.html#review)
+See [this week's Lab](`r url_full`#review) for details
 
 ## Breakout Rooms {.scrollable}
-
-::: {.smaller}
 
 ```{r}
 #| echo: false
 BREAKOUT_TABLE
 ```
 
-:::
 
 # Working with HTML 
 
@@ -172,7 +165,7 @@ HTML is written as a nested series of `elements`:
 
 There are _many_ HTML elements; some important ones are: 
 
-::: {.incremental}
+::: {.incremental .small}
 
 - `body`: Body (the 'mean' of a page)
 - `h1`, `h2`, ...: Headers
@@ -180,6 +173,7 @@ There are _many_ HTML elements; some important ones are:
 - `p`: Paragraph (most text goes in these)
 - `table`: Table (often how data is displayed)
 - `ul`, `ol`: Lists (unordered and ordered)
+- `li`: List Item (for both list types)
 - `a`: Anchors (used for linking)
 
 :::
@@ -197,48 +191,76 @@ You won't use these directly, but they are _everywhere_
 
 The SelectorGadget can be used to practice selecting elements on web pages
 
+::: {.incremental .smaller}
+
 - `#id` will select by ID ("name")
 - `type` will select all elements of that type
 - `.class` will select all elements with that class
+- `[attribute]` will select elements with that attribute
+- `[attribute="value"]` will select elements with that attribute and value
 - `sel1 sel2` will select elements matching `sel2` that are _inside_ a `sel1`
+  - *e.g.*, `tr .odd` will select the odd rows of a `gt` table
+  
+:::
+  
+## Advanced CSS Selectors
+
+[CSS Selector Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Selectors) can be used to implement more specific logic
+
+::: {.incremental}
+
+- `first-of-type` (*e.g.*, `table:first-of-type` gets the _first_ table)
+- `nth-of-type` (*e.g.*, `h2:nth-of-type(2)` gets the _second_ `h2`)
+- `not` (*e.g.*, `tr:not(.odd)` gets all table rows _without_ the `odd` class)
+
+:::
 
 ## HTML Element Selection
 
-- [Star Wars](https://rvest.tidyverse.org/articles/starwars.html)
+From the pre-reading:
 
-. . . 
+::: {.incremental}
 
-`main h2`
+1. [Star Wars](https://rvest.tidyverse.org/articles/starwars.html) movie titles
+    -  `main h2`
+2. [Baruch GPS](https://en.wikipedia.org/wiki/Baruch_College)
+    - `.geo`
+3. Wikipedia [CUNY Table](https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions)
+    - `table` or `tbody`
 
-. . . 
-
-- [CUNY Table](https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions)
-
-. . . 
-
-`table` or `tbody`
-
-. . . 
-
-- [Baruch GPS](https://en.wikipedia.org/wiki/Baruch_College)
-
-. . . 
-
-`.geo`
+:::
 
 ## HTML Anchors
 
 _Anchors_ (`a` elements) are probably the most important part of HTML
 
-Confusingly, anchors are both links and destinations.
+. . . 
+
+Confusingly, anchors are *both links and destinations*.
+
+. . . 
 
 Anchors can reference: 
+
+::: {.incremental .small}
 
 - Another page (`http://URL`)
 - A particular part of another page (`http://URL#place`)
 - A particular part of the same page (`#place`)
 
-Quarto supports [cross-linking](https://quarto.org/docs/authoring/cross-references.html) with anchors
+:::
+
+. . . 
+
+Can also use _relative_ paths for links within the same site
+
+. . . 
+
+::: {.smaller}
+
+Quarto supports [cross-linking](https://quarto.org/docs/authoring/cross-references.html) with anchors: *e.g.* `../lab09.qmd#review` gives a link to this week's review
+
+:::
 
 ## HTML Anchors
 
@@ -276,10 +298,10 @@ The `rvest` package can be used to manipulate HTML in `R`:
 - Get HTML by either `read_html` or `resp_body_html` if using `httr2`
 - Select elements with `html_elements("selector")`
   - Same syntax as SelectorGadget
-  - Use `html_element` if you only want the first
+  - Use `html_element` if you only want **the first**
 - Eventually need to extract content
   - `html_text` and `html_text2` (removes whitespace)
-  - `html_attr` gets attribute values (e.g., link targets)
+  - `html_attr` gets attribute values (*e.g.*, link targets)
   - `html_table` will attempt to parse a table automatically
   
 :::
@@ -301,10 +323,10 @@ read_html("https://michael-weylandt.com/STA9750/miniprojects.html") |>
 
 ## Breakout Exercise #01
 
-Return to your breakout rooms for [Exercise #01](../labs/lab11.html#ex01)
+Return to your breakout rooms for [Exercise #01](`r url_full`#ex01)
 
-- Use `html_element` to extract the course table
-- Use `html_table` to convert to a data frame
+- Use `html_element()` to extract the course table
+- Use `html_table()` to convert to a data frame
 
 ## JavaScript Websites
 
@@ -326,6 +348,36 @@ Return to your breakout rooms for [Exercise #02](../labs/lab11.html#ex02)
 - Finding a table in a more complex website
 - Pulling out desired data
 - Making a map of results (optional)
+
+## read_html_live
+
+`rvest` also provides tools for interacting with sites _as shown in the browser_
+
+- `read_html_live()`
+
+. . . 
+
+::: {.smaller}
+
+User interface is a bit different - we have to _load_ the page explicitly and 
+interact with a persistent object:
+
+```{r}
+#| eval: false
+wikipage <- read_html_live("https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions")
+wikipage$view()
+wikipage$html_elements(".jquery-tablesorter")
+```
+
+Should remind you of Python's `obj.method()` syntax
+
+:::
+
+. . . 
+
+This is advanced, so don't worry too much about it until you need it
+
+
 
 ## Non-Tabular Data
 
@@ -360,7 +412,8 @@ Accumulate data
 all_results <- tibble()
 for(item in container){
     new_results <- do_something_with(item)
-    new_tibble <- tibble(col1=val1, col2=val2)
+    new_tibble <- tibble(col1=new_results |> get_val1(), 
+                         col2=new_results |> get_val2())
     all_results <- rbind(all_results, new_tibble)
 }
 ```
@@ -382,7 +435,7 @@ preassigns <- read_html("https://michael-weylandt.com/STA9750/preassignments.htm
 pa_details <- tibble()
 for(pa in preassigns){
     name        = pa |> html_element("h4") |> html_text2()
-    description = pa |> html_elements("p:last-of-type") |>  html_text2()
+    description = pa |> html_elements("p:last-of-type") |>html_text2()
     
     pa_df <- tibble(name = name, description = description)
     
@@ -392,13 +445,58 @@ for(pa in preassigns){
 pa_details
 ```
 
+
+## Example
+
+Functional syntax is a bit more compact
+
+
+```{r}
+#| eval: false
+library(rvest)
+
+preassigns <- read_html("https://michael-weylandt.com/STA9750/preassignments.html") |> 
+    html_element("#pre-assignments") |>
+    html_elements("section")
+
+parse_pa <- function(pa){
+    name <- pa |> html_element("h4") |> html_text2()
+    description <- pa |> html_elements("p:last-of-type") |>  html_text2()
+    
+    tibble(name = name, description = description)
+}
+
+pa_details <- preassigns |> map(parse_pa) |> list_rbind()
+
+pa_details
+```
+
+## Example
+
+When vectorization is possible (via `html_elements`) - even cleaner:
+
+```{r}
+#| eval: false
+library(rvest)
+
+preassigns <- read_html("https://michael-weylandt.com/STA9750/preassignments.html") |> 
+    html_element("#pre-assignments") |>
+    html_elements("section")
+
+names <- preassigns |> html_elements("h4") |> html_text2()
+descriptions <- preassigns |> html_elements("p:last-of-type") |>  html_text2()
+    
+pa_details <- tibble(name = names, description = descriptions)
+
+pa_details
+```
+
 ## Breakout Exercise #03
 
-Return to your breakout rooms for [Exercise #03](../labs/lab11.html#ex03)
+Return to your breakout rooms for [Exercise #03](`r url_full`#ex03)
 
 - Examining a multi-page site
 - Pulling out data from non-tabular elements
-
 
 # Wrap Up
 
@@ -410,29 +508,6 @@ Processing HTML in R
 - HTML Selectors
 - `html_table` and `<table>` elements
 - HTML Anchors and Links
-
-## Upcoming Work
-
-Upcoming work from [course calendar](../index.qmd#calendar)
-
-::: {.incremental}
-
-- [Mini-Project #03](../mini/mini03.html) due on `r get_mp_deadline(3)`
-- [Mini-Project #04](../mini/mini04.html) due on `r get_mp_deadline(4)`
-- End of Semester Project Submissions
-
-:::
-
-. . . 
-
-Remaining Topics 
-
-- Parsing messy (text) data
-- Statistical Modeling
-
-
-{{< include ../advice/semester_end.qmd >}}
-
 
 ## Musical Treat
 

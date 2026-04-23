@@ -18,7 +18,7 @@ you and some friends.
 1. Use the API call generator to create a URL to download 5 multiple-choice 
    questions on a topic of your choosing. Copy this URL. 
 2. Now, use the `httr2` package in `R` to make a request to that URL. At first,
-   simply paste the whole URL into `request` and confirm it works. Then, break
+   simply paste the whole URL into `request()` and confirm it works. Then, break
    the URL into its constitutent parts using the `req_url_path()` and 
    `req_url_query()` functions to construct the URL. (We won't be parametrizing
    the API call in this brief exercise, but this is important to do if you are
@@ -54,7 +54,7 @@ resp
 
 :::
 
-3. The default response format is `json`, so use the `resp_body_json` function
+3. The default response format is `json`, so use the `resp_body_json()` function
    to convert the response into `R`. Print the repsonse to screen and examine
    the format. This will help you know what you need to do to manipulate 
    ("rectangle") the data into a useful structure. 
@@ -120,13 +120,13 @@ Everything looks pretty good here, with two notes:
 
 :::
 
-5. Use the `unnest` and `pivot_wider` functions to conver this data into a 
+5. Use the `unnest()` and `pivot_wider()` functions to convert this data into a 
    more usable structure. 
    
-   When applied to a `list` column, the `unnest` function will try to convert
+   When applied to a `list` column, the `unnest()` function will try to convert
    it into a more standard vector-type column. 
    
-   *Hint*: Before using `pivot_wider`, you will need to create a new column with
+   *Hint*: Before using `pivot_wider()`, you will need to create a new column with
    column names for the pivoted data. 
 
 ::: {.callout-tip title="Solution" collapse="true"}
@@ -200,14 +200,14 @@ data frame that captures the structure of the table.
    - By a specific named element, accessed as `html_element("#name")`
    - By a specific element type, accessed as `html_element("type")`
    
-2) Use the `read_html` function to read this entire page into `R`, then use
-   the `html_element` function with the selector from the previous step to
+2) Use the `read_html()` function to read this entire page into `R`, then use
+   the `html_element()` function with the selector from the previous step to
    extract the table. 
    
-3) Use the `html_table` function to conver this table into a data frame. 
+3) Use the `html_table()` function to convert this table into a data frame. 
 
 This page is pretty simple, so a little bit of element selection and 
-`html_table` will suffice. For more complex tables, you may need to do more to
+`html_table()` will suffice. For more complex tables, you may need to do more to
 select the specific table and more to 'clean up' that table once it is in `R`.
 
 ::: {.callout-tip title="Solution" collapse="true"}
@@ -215,12 +215,12 @@ select the specific table and more to 'clean up' that table once it is in `R`.
 ```{r}
 #| eval: false
 library(rvest)
-read_html("https://michael-weylandt.com/STA9750/labs/lab11.html") |>
+read_html("https://michael-weylandt.com/STA9750/labs/lab09.html") |>
     html_element("#tbl-baruch-stats") |> 
     html_table()
 
 # OR - Since this page has only a single table
-read_html("https://michael-weylandt.com/STA9750/labs/lab11.html") |>
+read_html("https://michael-weylandt.com/STA9750/labs/lab09.html") |>
     html_element("table") |> 
     html_table()
 ```
@@ -318,7 +318,7 @@ of fancier alternatives when possible.
 ```{r}  
 CUNYs <- read_html("https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions") |> 
     html_element("tbody") |>
-    html_elements("tr td:nth-child(2)") |>
+    html_elements("tr td:nth-child(2)") |> # Second column of each row
     html_elements("a") 
 
 CUNYs <- tibble(name = CUNYs |> html_text(), 
@@ -342,8 +342,8 @@ CUNYs <- read_html("https://en.wikipedia.org/wiki/List_of_City_University_of_New
 
 4) Modify the links extracted from the Wikipedia table to form full URLs.
 
-   Proper URL handling is a bit subtle - it's a common avenue for security holes
-   - but a simple `paste0` will suffice here. 
+   Proper URL handling is a bit subtle - it's a common avenue for 
+   security holes - but a simple `paste0()` will suffice here. 
  
 ::: {.callout-tip title="Solution" collapse="true"}
    
@@ -353,7 +353,7 @@ CUNYs <- CUNYs |> mutate(link = paste0("https://en.wikipedia.org", link))
 
 :::
 
-4) Apply your HTML parsing function from Step 1 to each CUNY page
+5) Apply your HTML parsing function from Step 1 to each CUNY page
    using the `map` function or the `rowwise()` grouping structure: 
    
    *Hint*: You may need to use `unnest` to convert a list column into something
@@ -376,7 +376,7 @@ CUNYs
 
 :::   
    
-5) Use your results to build a CUNY-wide map
+6) Use your results to build a CUNY-wide map
 
 ::: {.callout-tip title="Solution" collapse="true"}
    
@@ -389,6 +389,26 @@ MAP <- leaflet() |>
 
 MAP
 ```
+
+If we want to add links to each page, we can do that as well, but we have to
+handle rendering the appropriate HTML element properly. Here we'll write
+and then process some markdown
+
+```{r}
+CUNYs <- CUNYs |> mutate(md = glue::glue("[{name}]({link})"), 
+                         html = map_chr(md, commonmark::markdown_html), 
+                         html2 = map(html, htmltools::HTML)) |> 
+   unnest(html2)
+with(CUNYs, 
+     leaflet() |> 
+        addTiles() |> 
+        addMarkers(lng=longitude, 
+                   lat=latitude, popup=html2))
+```
+
+Though this is a bit finicky because both `commonmark::markdown_html` and
+`htmltools::HTML` try to combine their inputs by default, so we have to use
+`map()` functions instead of simple vectorization.
 
 :::   
 
@@ -421,7 +441,7 @@ a scraping strategy:
    ingredients. 
    
 For this task, you will likely see several recipes more than once.
-Don't worry about this for now - we can `distinct` out the duplicates
+Don't worry about this for now - we can `distinct()` out the duplicates
 later in our analysis. It's better to be over-inclusive than
 under-inclusive.
    
@@ -445,7 +465,6 @@ PAGES <- read_html(BASE_URL) |>
             html_attr("href")
 
 PAGE_URLS <- paste0(BASE_URL, PAGES)
-
 
 PAGE_URLS
 ```
@@ -569,23 +588,25 @@ ALL_RECIPES
 
 :::
 
-6) Save your code for next week. Next week we will investigate string processing
-   and learn how to turn a table like: 
+**Save your code for next week.** Next week we will cover string processing
+and learn how to turn a table like: 
    
-   | Name     | Ingredient           |
-   |----------|----------------------|
-   | Daiquiri | 2 oz Rum             | 
-   | Daiquiri | 1 oz Lime Juice      | 
-   | Daiquiri | 0.75 oz Simple Syrup |
+| Name     | Ingredient           |
+|----------|----------------------|
+| Daiquiri | 2 oz Rum             | 
+| Daiquiri | 1 oz Lime Juice      | 
+| Daiquiri | 0.75 oz Simple Syrup |
    
-   into 
+into 
 
-   | Name     | Ingredient   | Amount  |
-   |----------|--------------|---------|
-   | Daiquiri | Rum          | 2       |
-   | Daiquiri | Lime Juice   | 1       |
-   | Daiquiri | Simple Syrup | 0.75    |
+| Name     | Ingredient   | Amount  |
+|----------|--------------|---------|
+| Daiquiri | Rum          | 2       |
+| Daiquiri | Lime Juice   | 1       |
+| Daiquiri | Simple Syrup | 0.75    |
 
+by processing the character column `Ingredient` and splitting it into separate
+parts.
 
 ::: {.callout-caution title="FP Solution" collapse="true"}
 
@@ -597,6 +618,9 @@ programming tools of `purrr`, you can write this entire analysis in one swoop:
 library(tidyverse)
 library(rvest)
 process_recipe <- function(recipe){
+    # Question for reflection - why can't I vectorize this? 
+    # Hint: It has to do with the fact different recipes have different numbers
+    # of ingredients
     title <- recipe |> html_element(".title") |> html_text2()
     ingredients <- recipe |> html_elements("li") |> html_text2()
     
