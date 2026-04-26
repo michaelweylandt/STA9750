@@ -740,7 +740,9 @@ estimate this in two steps:
     where $M^{(t)}$ is the total net migration (all sources) into region the
     country between year $t$ and year $t+1$. 
     
-2)  Compute $m_{i \to j}$ for each state pair as
+2)  Compute $m_{i \to j}$ for each state pair as $$m_{i \to j} = M_{i \to j} / 
+    \sqrt{P_i P_j}.$$ That is, the migration rate is the total migration divided
+    by the (geometric mean) average of the two populations.[^loop]
 
 So, for example, if we have three regions (A, B, C) with the following 
 population data: 
@@ -771,6 +773,14 @@ pop_example |>
                 columns=starts_with("pop_y1_")) |> 
     grand_summary_rows(fns = list("Total (Nationwide)" ~ sum(.)))
 ```
+
+[^loop]: You might rightly worry that this is a bit circular. To avoid this, we
+will assume the migration rate is constant across time, so if the migration rate
+in 2024 was 1 per 10,000, we will use that same rate to make our forecast for
+the following years. This type of model - a variant of a _gravity model_ - is
+simple and doesn't look at root causes of migration (*e.g.*, a model that 
+looks at differences in the economies of the two states), but on short enough
+time scales it is reasonable.
 
 From these, we compute the following key statistics: 
 
