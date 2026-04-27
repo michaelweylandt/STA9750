@@ -10,6 +10,17 @@ library(purrr)
 library(jsonlite)
 library(tidyverse)
 
+if(!exists("SESSION")){
+    if(exists("session")){
+        SESSION <- session
+    } else {
+        SESSION <- rmarkdown::metadata$session
+    }
+}
+
+SESSION <- as.integer(SESSION)
+NEXT_SESSION <- SESSION + 1
+
 REPO_NAME <- read_yaml("_variables.yml")$course$repo
 get_mp_title <- function(N){
     mp_file <- glue("mini/mini0{N}.qmd")
@@ -164,7 +175,7 @@ get_project_due_date <- function(element = c("team-formation",
                                   "final-presentation" ~ "Final Project Presentation Slides",
                                   "individual-report" ~ "Individual Report",
                                   "group-report" ~ "Summary Report",
-                                  "final-peer" ~ "Final Poject Teammate")
+                                  "final-peer" ~ "Final Project Teammate")
     read_csv("key_dates.csv", 
              show_col_types=FALSE) |> 
         filter(`Course Element` == "Course Project", 
@@ -172,11 +183,9 @@ get_project_due_date <- function(element = c("team-formation",
         pull(Date)
 }
 
-next_session <- session + 1
-
 DATES   <- read_csv("key_dates.csv", show_col_types=FALSE)
 TODAY   <- DATES |> filter(`Course Element` == "Class Session", 
-                           `Item Number` == session)
+                           `Item Number` == SESSION)
 
 TODAY_TOPIC <- TODAY |>
     slice_head(n=1) |>
@@ -225,7 +234,7 @@ if(file.exists(ROSTER_FILE)){
     N_TEAMS <- N_ON_TEAM <- N_NO_TEAM <- NA
 }
 
-set.seed(9750+session)
+set.seed(9750+SESSION)
 
 INITIALS <- ROSTER_FILE |> 
     read_json(simplify=TRUE) |> 
@@ -271,7 +280,7 @@ These slides can be found online at:
 #| echo: false
 library(yaml)
 url_base <- read_yaml("_variables.yml")$course$`web-url`
-url_file <- sprintf("slides/slides%02g.html", session)
+url_file <- sprintf("slides/slides%02g.html", SESSION)
 
 url_full <- paste0(url_base, url_file)
 ```
@@ -318,7 +327,7 @@ read_csv("key_dates.csv",
     arrange(Date, Time2) |> 
     select(Date, Time, Details) |> 
     filter(Date <= class_date + 28) |>
-    gt(id=glue("schedule_table_session_{session}")) |>
+    gt(id=glue("schedule_table_session_{SESSION}")) |>
     tab_options(table.width = pct(100), 
                 table.font.size = pct(80))
 ```

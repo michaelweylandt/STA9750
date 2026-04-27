@@ -11,243 +11,285 @@ format: live-html
 
 # Review and Warm-Up {#review}
 
-*Redux of [Exercise 03 from Last Week](./lab09.qmd#ex03)*
+Apples are an essential part of the human experience, known for their ability to
+ward off medical professionals, to curry favor with educators, and to lead to 
+one being forcibly evicted from pleasant gardens. Accordingly, humanity has 
+spent many years developing a spectrum of apples, ranging from the cloyingly 
+sweet to the bracingly tart. 
 
+![Wheel of Apples Arranged by Tartness. Copied from [Reddit](https://www.reddit.com/r/traderjoes/comments/w4z32l/love_my_tjs_apple_sweetness_spectrum/)](../images/apples.webp)
 
-[Hadley Wickham](https://hadley.nz/) is the author of many of the 
-"tidy tools" we use in this course. He is also an excellent bartender
-and chef. In this exercise, we are going to web scrape his cocktail
-recipe book which can be found at <https://cocktails.hadley.nz/>. 
+This cornucopia challenges the average consumer, who often struggles to find
+the best apple on any given day. Thankfully, Brian Frange of 
+[applerankings.com](htpts://applerankings.com) is on the task. For this warm-up
+exercise, we are going to extract his rankings of apples into a four-column
+table of the following format: 
 
-Our goal is to create a data frame that records all 150+ recipes on this site 
-(as rows) and the different ingredients (as columns). This
-week, we are going to pull the different recipes into `R`: next week
-we are going to process the text and create our final data frame (so
-stay tuned!). 
+|Type             |Description                     |Score |summary        |
+|:----------------|:-------------------------------|:----:|:-------------:|
+|SweeTango Apples |"The Holy Grail"                |95    |Nearly Perfect |
+|Lucy Glo Apples  |"The Breathtaking Circus Freak" |93    |Superb         |
+|Pink Lady Apples |"The Cover Girl"                |90    |Superb         |
 
-Working with your project team, first go through the following steps to build
-a scraping strategy:
-
-1) Poke around the website to see how it is organized. Is there a
-   single page listing all of the cocktails? If not, how else can
-   you make sure that you've explored the entire site?
-2) Once you know how you're going to explore the whole site, use
-   your browser tools to see if you can identify an HTML element that
-   corresponds to a single recipe. (This element will occur several
-   times per page) Remember that you want to select "as small as
-   possible" but no smaller.
-3) Once you have found the right HTML element for a recipe, identify
-   an HTML element that corresponds to i) the title; and ii) individual
-   ingredients. 
+1. Create the table shown above using `rvest`. The first two columns - `Type`
+   and `Description` - are fairly straightforward, requiring only a simple
+   selector using standard elements (headers and anchors) and the use of 
+   `html_elements()`; the latter two are more complex and you will want to
+   use `SelectorGadget` or similar to get the desired outcome. 
    
-For this task, you will likely see several recipes more than once.
-Don't worry about this for now - we can `distinct` out the duplicates
-later in our analysis. It's better to be over-inclusive than
-under-inclusive.
+   *Hint*: Make sure that you are getting the same number of results for
+   all four columns before building your table. If you are getting twice as
+   many results in one column, your selector needs to be more precise. 
    
-After you have built your plan, it's time to start putting this all to
-code. 
+   *Hint*: `SelectorGadget` can be a bit picky about the order in which you
+   have to select elements to get the desired answer. If you hit a dead end, 
+   clear and try again in a different order. 
+   
 
-1) Write code to get a list of all pages you will need to process. Construct 
-   full URLs for your future requests. 
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| message: false
+library(tidyverse)
+library(rvest)
+APPLES_HTML <- read_html("https://applerankings.com/pick-an-apple/")
+
+
+type <- APPLES_HTML |> html_elements("h2") |> html_text2()
+description <- APPLES_HTML |> html_elements("h4 a") |> html_text2()
+score <- APPLES_HTML |> html_elements(".elementor-widget-heading:nth-child(1) div.elementor-size-default") |> html_text2() |> as.integer()
+summary <- APPLES_HTML |> html_elements(".elementor-widget-heading:nth-child(2) div.elementor-size-default") |> html_text2()
+
+APPLES <- tibble(type, description, score, summary)
+
+head(APPLES)
+```
+
+With a bit of `gt()` formatting, we can also mimic the formatting of the 
+original website:
+
+```{r}
+library(gt)
+
+APPLES |> 
+    gt(id="apples_table_small", 
+       groupname_col = "summary") |> 
+    tab_style(style=list(cell_fill("#4E79A7"),
+                         cell_text(color="white", 
+                                   weight="bold", 
+                                   align="center")), 
+              locations=cells_row_groups()) |>
+    cols_label(description="Description", 
+               score="Score",
+               type="Type") |>
+    data_color(columns=score,
+               target_columns=everything(),
+               direction="column", 
+               palette = c("#8B4513", "#FF0000", "#FFBF00", "#008000"), 
+               domain = c(0, 100))
+```
+
+:::
+
+2. If you click through to a specific type of apple, these overall scores are
+   backed up by a set of 9 specific scores, displayed as progress bars. 
+   *E.g.*, for the [Kanzi Apple](https://applerankings.com/kanzi-apple-review/),
+   we see a high score on density, with middling scores on beauty and skin.
+   
+   Using `rvest`, extract the **first seven** category names and scores for the 
+   Kanzi apple into a table like:[^seven]
+   
+   |element                | element_score|
+   |:----------------------|-------------:|
+   |Taste                  |            90|
+   |Crispness              |            90|
+   |Skin                   |            70|
+   |Flesh                  |            80|
+   |Juiciness              |           100|
+   |Density                |           100|
+   |Beauty                 |            60|
+
+   *Hint*: The _text_ for each category will be reasonably easy to get. 
+   The numeric value is hidden inside an HTML element called `data-max`
+   which you can access with `html_attr()`.
+    
+[^seven]: Because this site seems to be somewhat manually constructed, the
+names of the last two columns are not quite consistent, *e.g.*,
+`"Cost/Availability"` on one page might be `"Cost / Availability"` on another. 
+We can address this using the string manipulation tools we're focusing on today,
+but until we introduce those, it's easier just to ignore those two columns.
+    
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+KANZI_HTML <- read_html("https://applerankings.com/kanzi-apple-review/")
+
+element <- KANZI_HTML |> 
+  html_elements(".elementor-title") |> 
+  html_text2()
+element_score <- KANZI_HTML |> 
+  html_elements(".elementor-progress-bar") |> 
+  html_attr("data-max") |> 
+  as.integer()
+
+data.frame(element=element, 
+           element_score=element_score) |>
+  head(7)
+```
+
+::: 
+
+3. Now that you have the ability to parse the page for a single apple, connect
+   this to your overall table of apples. You will first need to modify your 
+   original parsing code to additionally pull out the link to each page. 
+   
+   Apply your parsing code from the previous step to get the results from
+   each page. Join your results into a large table. 
+   
+   *Hint:* There is some flexibility on the final format that will be easiest
+   to worth with, but I recommend augmenting your original 4 columns with nine
+   more sub-score columns and keeping the same number of total rows. 
+   
+   *Hint*: The `map()` + `unnest()` paradigm might be useful here. 
    
 ::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
 #| cache: true
-library(tidyverse)
-library(httr2)
-library(rvest)
+parse_page <- function(url){
+  page_html <- read_html(url)
+  
+  element <- page_html |> 
+    html_elements(".elementor-title") |> 
+    html_text2()
+  element_score <- page_html |> 
+    html_elements(".elementor-progress-bar") |> 
+    html_attr("data-max") |> 
+    as.integer()
 
-BASE_URL <- "https://cocktails.hadley.nz/"
+data.frame(element=element, 
+           element_score=element_score) |>
+  head(7)
+}
 
-PAGES <- read_html(BASE_URL) |> 
-            html_elements("nav a") |> 
-            html_attr("href")
+APPLES_HTML <- read_html("https://applerankings.com/pick-an-apple/")
 
-PAGE_URLS <- paste0(BASE_URL, PAGES)
+type <- APPLES_HTML |> 
+  html_elements("h2") |> 
+  html_text2()
 
+url <- APPLES_HTML |> 
+  html_elements("h2 a") |> 
+  html_attr("href") 
 
-PAGE_URLS
+description <- APPLES_HTML |> 
+  html_elements("h4 a") |> 
+  html_text2()
+
+score <- APPLES_HTML |> 
+  html_elements(".elementor-widget-heading:nth-child(1) div.elementor-size-default") |>
+  html_text2() |> 
+  as.integer()
+
+summary <- APPLES_HTML |> 
+  html_elements(".elementor-widget-heading:nth-child(2) div.elementor-size-default") |>
+  html_text2()
+
+APPLES <- tibble(type, url, description, score, summary) |>
+  mutate(scores = map(url, parse_page)) |>
+  unnest(scores) |> 
+  pivot_wider(names_from=element, 
+              values_from=element_score) |>
+  rename(Overall=score)
 ```
+
+We can, as before, format this nicely: 
+
+```{r}
+
+APPLES |> 
+    gt(id="apples_table_full", 
+       groupname_col = "summary") |> 
+    tab_style(style=list(cell_fill("#4E79A7"),
+                         cell_text(color="white", 
+                                   weight="bold", 
+                                   align="center")), 
+              locations=cells_row_groups()) |>
+    tab_style(locations=cells_body(columns=Overall), 
+              style=cell_text(weight="bold")) |>
+    cols_label(description="", 
+               Overall="Overall Score",
+               type="") |>
+    tab_spanner(label="Sub-Scores", 
+                columns=c(Taste, Crispness, Skin, Flesh, Juiciness, Density, Beauty)) |>
+    data_color(columns=Overall,
+               target_columns=everything(),
+               direction="column", 
+               palette = c("#8B4513", "#FF0000", "#FFBF00", "#008000"), 
+               domain = c(0, 100)) |>
+    cols_merge(columns=c(type, description, url), 
+               pattern="{1}@@{2}@@{3}") |>
+    text_transform(locations=cells_body(columns=type), 
+                   fn = \(x) {
+                       type = str_extract(x, "(.*)@@(.*)@@(.*)", group=1)
+                       desc = str_extract(x, "(.*)@@(.*)@@(.*)", group=2)
+                       url  = str_extract(x, "(.*)@@(.*)@@(.*)", group=3)
+                       glue("<a href='{url}' style='color: inherit;'> {type} ({desc}) </a>")})
+```
+
+Note that we had to use a bit of trickery in the final `text_transform()` call
+to get the links formatted how we want. Hopefully the use of `str_extract()`
+will be clearer by the end of today.
 
 :::
 
-2) Write a function that takes a single URL and extracts all recipes on that
-   page as HTML elements. 
-   
-   Try this out on a fixed URL and confirm that it gets the right number of
-   recipes
+4. Create a suitable visualization to demonstrate which of the sub-scores is 
+   most predictive of the overall score. 
+
 
 ::: {.callout-tip title="Solution" collapse="true"}
 
-```{r}
-library(tidyverse)
-library(httr2)
-library(rvest)
-get_recipes <- function(url){
-    read_html(url) |> html_elements("article")
-}
-```   
-
-We can test this [against this page](https://cocktails.hadley.nz/tag-bubbles.html)
-and see that it works as expected: 
+Something like this would work: 
 
 ```{r}
-BUBBLES <- get_recipes("https://cocktails.hadley.nz/tag-bubbles.html")
-
-BUBBLES
+#| message: false
+library(ggpmisc)
+APPLES |> 
+  pivot_longer(cols=Taste:Beauty) |> 
+  group_by(name) |> 
+  mutate(r2 = cor(Overall, value)) |> 
+  ungroup() |>
+  arrange(desc(r2)) |> 
+  mutate(name=factor(name, ordered=TRUE, levels=unique(name))) |> 
+  ggplot(aes(y=Overall, x=value)) + 
+    facet_wrap(~name) + 
+    geom_point() + 
+    ylab("Overall Score") + 
+    xlab("Component Score") + 
+    theme_bw() + 
+    geom_smooth(method="lm", 
+                se=FALSE, 
+                color="red4") + 
+    stat_poly_eq(
+        aes(label = paste("atop(", after_stat(eq.label), ",", 
+                          after_stat(rr.label), "*phantom(123456)", ")")),
+        # We use parse = TRUE because atop() is a plotmath command
+        # This is somewhat advanced, but it is useful for doing LaTeX-like math
+        # inside a plot
+        parse = TRUE)
 ```
+
+From this, we see that both `Flesh` and `Crispness` are powerful
+predictors of overall score ($R^2\approx 0.69$) but `Crispness` might
+be the edge as it has a slightly larger regression coefficient. Note
+also that we did a bit of work here to re-arrange the categories into
+descending order by $R^2$ instead of alphabetical order: for a data set
+of this size, this might just be a matter of taste, but when dealing
+with large cardinalities, it is often good to give your buckets some
+sort of meaningful order.
 
 :::
-
-3) Write a function that takes in a single recipe and returns a small data 
-   frame with the title and ingredients: 
-   
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-library(tidyverse)
-library(httr2)
-library(rvest)
-process_recipe <- function(art){
-    title <- art |> html_element(".title") |> html_text2()
-    ingredients <- art |> html_elements("li") |> html_text2()
-    
-    tibble(title=title, ingredients=ingredients)
-}
-```  
-
-We can again test this using the recipes we extracted above: 
-
-```{r}
-process_recipe(BUBBLES[[1]])
-```
-
-:::
-
-4) Write a function that combines your results from the previous two steps to
-   build a data frame with _all_ recipes on a single page. 
-   
-   Try this out on a fixed URL and confirm it works as expected. 
-   
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-library(tidyverse)
-library(httr2)
-library(rvest)
-
-process_url <- function(url){
-    html_recipes <- get_recipes(url)
-    
-    RECIPES <- data.frame()
-    
-    for(r in html_recipes){
-        RECIPES <- rbind(RECIPES, process_recipe(r))
-    }
-    
-    RECIPES
-}
-```
-
-We can test this on the page of bubbly recipes: 
-
-```{r}
-process_url("https://cocktails.hadley.nz/tag-bubbles.html")
-```
-
-:::
-   
-5) Use your function from the first step with the list of URLs from Step 1 so
-   that you get all of the recipes on the site. Combine your results into one
-   large data frame that looks something like:
-   
-   | Name     | Ingredient           |
-   |----------|----------------------|
-   | Daiquiri | 2 oz Rum             | 
-   | Daiquiri | 1 oz Lime Juice      | 
-   | Daiquiri | 0.75 oz Simple Syrup |
-
-   To be polite, you may want to add `req_cache` to your requests so you are not
-   requesting the same page many times over. 
-   
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-library(tidyverse)
-library(httr2)
-library(rvest)
-
-ALL_RECIPES <- data.frame()
-
-for(page in PAGE_URLS){
-    ALL_RECIPES <- rbind(ALL_RECIPES, process_url(page))
-}
-
-ALL_RECIPES
-```
-
-:::
-
-
-
-
-::: {.callout-caution title="FP Solution" collapse="true"}
-
-If you are comfortable with (or want to become comfortable with) the functional
-programming tools of `purrr`, you can write this entire analysis in one swoop:
-
-```{r}
-#| cache: true
-library(tidyverse)
-library(rvest)
-process_recipe <- function(recipe){
-    title <- recipe |> html_element(".title") |> html_text2()
-    ingredients <- recipe |> html_elements("li") |> html_text2()
-    
-    tibble(title=title, ingredients=ingredients)
-}
-
-BASE_URL <- "https://cocktails.hadley.nz/"
-
-read_html(BASE_URL) |> 
-    html_elements("nav a") |> 
-    html_attr("href") |>
-    map(\(p) request(BASE_URL) |> req_url_path(p)) |>
-    map(req_perform) |>
-    map(resp_body_html) |> 
-    map(html_elements, "article") |> 
-    reduce(c) |>
-    map(process_recipe) |> 
-    list_rbind()
-```
-
-This is clearly quite terse and would benefit from some additional comments,
-but I'm omitting them so you can try to deconstruct this code yourself if 
-you want to practice functional programming idioms. 
-
-:::
-
-At this point, we're _almost_ done, but we would really like to transform
-a table like: 
-
-   | Name     | Ingredient           |
-   |----------|----------------------|
-   | Daiquiri | 2 oz Rum             | 
-   | Daiquiri | 1 oz Lime Juice      | 
-   | Daiquiri | 0.75 oz Simple Syrup |
-   
-into 
-
-   | Name     | Ingredient   | Amount  |
-   |----------|--------------|---------|
-   | Daiquiri | Rum          | 2       |
-   | Daiquiri | Lime Juice   | 1       |
-   | Daiquiri | Simple Syrup | 0.75    |
-
-by splitting the _amount_ (number) from the _ingredient_ (string). This type
-of manipulation is the major goal of today's class. 
 
 # Regular Expression Practice {#regex}
 
@@ -437,14 +479,519 @@ library(stringr)
 gradethis::grade_this_code()
 ```
 
-# Scraping Practice I: Cocktails {#cocktails_finish}
+# Scraping Practice I: Quotes {#quotes}
+
+Now that we've introduced regular expressions, let's see how we can
+use them to analyze the website <https://quotes.toscrape.com>,
+a website designed to practice web-scraping. Use `stringr` and
+`rvest` tools to answer the following questions about the site. 
+
+Before you start coding, it is always a good idea to explore the
+site and to get a sense of how it is organized. For this site, 
+consider: 
+
+- How the `Next` button can be used to go to the next page (if one
+  exists)
+- How you can click on the `(about)` page for each author to get info
+  about them
+- What CSS selector can be used to select things like the quote, the
+  author, the tags, *etc.*
+  
+After doing that, it's time to take on the following questions. For 
+each of these, note that you can check your answers "by hand" to ensure
+you're getting the right answer, but you should make sure you can answer
+them all in code. 
+
+
+0. How many pages of quotes are on this site? 
+
+   *Hint*: Write code to keep paging until no more "Next" button is present.
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(rvest)
+library(tidyverse)
+
+N_PAGES <- 1
+URL <- "https://quotes.toscrape.com/"
+
+repeat{
+    missing_next_button <- request(URL) |>
+        req_url_path("page", N_PAGES) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_element(".next") |>
+        is.na()
+    
+    if(missing_next_button){
+        break
+    } else {
+        N_PAGES <- N_PAGES + 1
+    }
+}
+```
+
+There are `r N_PAGES` (i.e., `N_PAGES`) pages worth of quotes on this site.
+
+Alternatively, we can do increment the page number and check if
+`html_elements(".quote")` returns anything of use: 
+
+```{r}
+BASE_REQUEST <-  request("https://quotes.toscrape.com/page")
+QUOTES_DF <- data.frame(page=1:20) |> 
+  mutate(request= map(page, \(p) BASE_REQUEST |> req_url_path_append(p)), 
+         resp   = map(request, req_perform), 
+         quotes = map(resp, \(r) r |> resp_body_html() |> html_elements(".quote")), 
+         n_quotes = map_dbl(quotes, length)) |>
+  filter(n_quotes > 0)
+```
+
+This is a bit less natural than the coding equivalent of "click to next", but
+it will allow us to do our analysis in a bit more `dplyr`-native style. I expand
+on this approach in more detail below for those interested in this style of
+programming.
+
+:::   
+
+1. How many quotes are on this website (all pages)? 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+N_TOTAL_QUOTES <- 0
+
+for(page in 1:N_PAGES){
+    n_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote") |>
+        length()
+    
+    N_TOTAL_QUOTES <- N_TOTAL_QUOTES + n_quotes
+    
+}
+```
+
+or using `purrr`-style programming: 
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote") |>
+    map_int(length) |>
+    sum()
+```
+
+
+:::
+
+2. How many quotes are tagged "Death"?
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+N_DEATH_QUOTES <- 0
+
+for(page in 1:N_PAGES){
+    death_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote .tag") |>
+        html_text2() |>
+        str_detect("death") |>
+        sum()
+    
+    N_DEATH_QUOTES <- N_DEATH_QUOTES + death_quotes
+    
+}
+
+N_DEATH_QUOTES
+```
+
+or using `purrr`-style programming: 
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote .tag") |>
+    map(html_text2) |>
+    map_int(\(x) sum(str_detect(x, "death"))) |>
+    sum()
+```
+
+Note that this analysis _includes_ quotes that have `"death"` as a substring, 
+*e.g.*, one quote tagged as `"live-death-love"`. If you want the _exact_ tag, 
+consider using `str_equal()` instead or modify the `str_detect()` regular 
+expression to `"^death$"`.
+
+If we are willing to make some new web requests and are only ok with the literal
+string `"death"`, we might also find the
+`/tag/` part of the URL scheme: 
+
+```{r}
+request("https://quotes.toscrape.com/tag/death/page/1/") |>
+  req_perform() |> 
+  resp_body_html() |> 
+  html_elements(".quote") |> 
+  length()
+```
+
+which might be the easiest.
+
+
+:::
+
+3. How many quotes are by (or at least are attributed to) Albert Einstein?
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+N_EINSTEIN_QUOTES <- 0
+
+for(page in 1:N_PAGES){
+    einstein_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote .author") |>
+        html_text2() |>
+        str_detect("Einstein") |>
+        sum()
+    
+    N_EINSTEIN_QUOTES <- N_EINSTEIN_QUOTES + einstein_quotes
+    
+}
+
+N_EINSTEIN_QUOTES
+```
+
+or using `purrr`-style programming: 
+
+```{r}
+#| cache: true
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote .author") |>
+    map(html_text2) |>
+    map_int(\(x) sum(str_detect(x, "Einstein"))) |>
+    sum()
+```
+ 
+
+:::
+
+4. What is the longest quote (by number of characters)? The `str_length()` 
+   and `which.max()` functions will be helpful. 
+   
+   You can use them like this: 
+   
+   ```{r}
+   x <- c("short", "medium", "very quite long")
+   longest <- x[which.max(str_length(x))]
+   ```
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+LONGEST_QUOTE <- ""
+
+for(page in 1:N_PAGES){
+    all_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote .text") |>
+        html_text2()
+        
+    longest_on_page <- all_quotes[which.max(str_length(all_quotes))]
+    
+    if(str_length(longest_on_page) > str_length(LONGEST_QUOTE)){
+        LONGEST_QUOTE <- longest_on_page
+    }
+}
+```
+
+From this, we see that the longest quote is "`r LONGEST_QUOTE`"
+which is `r str_length(LONGEST_QUOTE)` characters long.
+
+If we instead wish to do this in a `purrr` style: 
+
+```{r}
+#| cache: true
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote .text") |>
+    map(html_text2) |>
+    enframe("page", "quote") |> 
+    unnest(quote) |> 
+    mutate(nchar = str_length(quote)) |> 
+    slice_max(nchar)
+```
+
+:::
+   
+5. Of all authors quoted, who has the earliest (estimated) birthday? 
+
+   *Hint:* Use the `as.Date` function to parse these dates. *E.g.*,
+   
+   ```{r}
+   x <- "March 14, 1879"
+   as.Date(x, "%b %d, %Y")
+   ```
+   
+   Here, the second string is a _format_ string, which specifies how the date
+   is written.
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+
+```{r}
+#| cache: true
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+ALL_AUTHOR_LINKS <- c()
+
+for(page in 1:N_PAGES){
+    author_links <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote a") |>
+        html_attr("href") |>
+        str_subset("author")
+    
+    ALL_AUTHOR_LINKS <- c(ALL_AUTHOR_LINKS, paste0(URL, author_links))
+    
+}
+
+ALL_AUTHOR_LINKS <- unique(ALL_AUTHOR_LINKS)
+
+AUTHORS <- map(ALL_AUTHOR_LINKS, read_html) |>
+    map(\(h) data.frame(name=h |> html_element(".author-title") |> html_text2(),
+                        date=h |> html_element(".author-born-date") |> html_text2())) |>
+    list_rbind() |>
+    mutate(date = as.Date(date, "%b %d, %Y"))
+
+AUTHORS |> slice_min(date)
+```
+
+Again, in a fully `purrr` style:
+
+```{r}
+#| cache: true
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote a") |>
+    map(html_attr, "href") |> 
+    list_c() |> 
+    unique() |> 
+    str_subset("^/author") |>
+    map(\(p) request(URL) |> req_url_path(p)) |>
+    map(req_perform) |> 
+    map(resp_body_html) |>
+    map(\(h) 
+        tibble(author = h |> html_element(".author-title") |> html_text2(), 
+               birth_str = h |> html_element(".author-born-date") |> html_text2())
+    ) |>
+    list_rbind() |> 
+    mutate(birth = as.Date(birth_str, "%b %d, %Y")) |>
+    slice_min(birth)
+```
+
+:::
+
+6. When dealing with text, we may want to see what the most commonly appearing
+   words are, but a naive approach is likely to get "junk" like `the` and `a`. 
+   These are valid words, but they are essentially content-less. Such words
+   are called "stop words" and it is common to remove them before text 
+   processing.
+   
+   Find the most common words in the quote bank, after removing stopwords. Do 
+   this by: 
+   
+   - Concatenating all of the quotes on the site across all pages
+   - Splitting the quotes into a vector of words 
+   - Removing punctuation at the beginning and end of the words
+   - Using `dplyr::count()` to get a count of how often each word appears
+   - Using `dplyr::anti_join` and `tidytext::stop_words` to remove stop words
+   
+   *Hint*: The `list_c()` function will be useful to convert the output of 
+   `str_split()` back into a vector. You can also use `table()` to get counts
+   and then `enframe()` to conver the output of `table()` to a data frame.
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+library(httr2)
+library(tidyverse)
+library(rvest)
+library(tidytext)
+
+ALL_QUOTES <- character()
+
+for(page in 1:N_PAGES){
+    page_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote .text") |>
+        html_text2()
+        
+    ALL_QUOTES <- c(ALL_QUOTES, page_quotes)
+}
+
+ALL_QUOTES |> 
+    str_split(" ") |> 
+    list_c() |>
+    str_to_lower() |> 
+    str_remove_all("^[:punct:]+") |> 
+    str_remove_all("[:punct:]+$") |> 
+    table() |> 
+    enframe(name="word", value="count") |>
+    filter(nchar(word) > 3) |> 
+    anti_join(stop_words, 
+              join_by(word == word)) |> 
+    slice_max(count, n=10)
+```
+
+In `purrr` style: 
+
+```{r}
+#| cache: true
+library(tidytext)
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote .text") |>
+    map(html_text2) |>
+    list_c() |>
+    str_split(" ") |>
+    list_c() |> 
+    str_to_lower() |> 
+    str_remove_all("^[:punct:]+") |> 
+    str_remove_all("[:punct:]+$") |> 
+    data.frame() |> 
+    rename(word=1) |> 
+    count(word) |> 
+    filter(nchar(word) > 3) |> 
+    anti_join(stop_words, 
+              join_by(word == word)) |> 
+    slice_max(n, n=10)
+```
+
+:::
+
+::: {.callout-caution title="An Alternative Approach" collapse="true"}
+
+For those of you looking for an even more compact and `dplyr`-inflected style, 
+we can write the analysis even more compactly as:
+
+```{r}
+#| cache: true
+BASE_REQUEST <-  request("https://quotes.toscrape.com/")
+
+QUOTES_DF <- data.frame(page=1:20) |> 
+    mutate(request= map(page, \(p) BASE_REQUEST |> req_url_path_append("page", p)), 
+           resp   = map(request, req_perform), 
+           html   = map(resp, resp_body_html),
+           quotes = map(html, html_elements, ".quote"),
+           quotes_list = map(quotes, c)) |> 
+    unnest(quotes_list)  |> 
+    rename(quote = quotes_list) |> 
+    select(-request, -resp, -html, -quotes) |> 
+    mutate(text = map_chr(quote, \(q) q |> html_element(".text") |> html_text2()), 
+           tags = map(quote, \(q) q |> html_elements(".tag") |> html_text2()), 
+           about_death = map_lgl(tags, \(t) "death" %in% t), 
+           author = map(quote, html_element, ".author"), 
+           author_name = map_chr(author, html_text2), 
+           author_link = map_chr(quote, \(q) q |> html_element("small.author + a") |> html_attr("href")))
+
+AUTHORS_DF <- QUOTES_DF |> 
+    select(author_link) |> 
+    distinct() |> 
+    mutate(req  = map(author_link, \(al) BASE_REQUEST |> req_url_path(al)), 
+           resp = map(req, req_perform), 
+           html = map(resp, resp_body_html), 
+           name = map_chr(html, \(h) h |> html_element(".author-title") |> html_text2()),
+           born_str = map_chr(html, \(h) h |> html_element(".author-born-date") |> html_text2()), 
+           born = as.Date(born_str, "%b %d, %Y"))
+```
+
+and answer our questions as: 
+
+```{r}
+QUOTES_DF |> pull(page) |> max()
+QUOTES_DF |> NROW() 
+QUOTES_DF |> filter(about_death) |> NROW()
+QUOTES_DF |> filter(str_detect(author_name, "Einstein")) |> NROW()
+QUOTES_DF |> mutate(text_nchar = nchar(text)) |> slice_max(text_nchar) |> pull(text)
+AUTHORS_DF |> slice_min(born) |> pull(name)
+```
+
+This is pretty advanced - and a bit 'too clever' in parts, sacrificing clarity
+for compactness - so I wouldn't encourage you to pay too much attention to 
+this style. 
+
+For the final question, use `QUOTES_DF |> pull(text)` and then pass to the
+`str_split(" ")` pipeline as above. 
+
+:::
+
+# Scraping Practice II: Cocktails {#cocktails_finish}
 
 Last week, we began to scrape [Hadley's Cocktails](https://cocktails.hadley.nz/)
 with an (eventual) goal of creating a "spreadsheet" of recipes by ingredients.
 
 We found the following: 
 
-```{r}
+```{r cocktails_old}
 #| cache: true
 library(rvest)
 BASE_URL <- "https://cocktails.hadley.nz/"
@@ -470,10 +1017,34 @@ read_page <- function(stub){
 RECIPES_LONG <- map(PAGES, read_page) |> list_rbind()
 ```
 
+If you did not already, please [refer back](./lab09.qmd#cocktails) to 
+last week and make sure you understand this data and the processing done up
+to this point.
+
+Now that we've scraped all the different pages, we're _almost_ done, but we 
+would really like to transform a table like: 
+
+   | Name     | Ingredient           |
+   |----------|----------------------|
+   | Daiquiri | 2 oz Rum             | 
+   | Daiquiri | 1 oz Lime Juice      | 
+   | Daiquiri | 0.75 oz Simple Syrup |
+   
+into 
+
+   | Name     | Ingredient   | Amount  |
+   |----------|--------------|---------|
+   | Daiquiri | Rum          | 2       |
+   | Daiquiri | Lime Juice   | 1       |
+   | Daiquiri | Simple Syrup | 0.75    |
+
+by splitting the _amount_ (number) from the _ingredient_ (string). This type
+of manipulation is the major goal of today's class. 
+
 Take this output and use `stringr` and `tidyr` to complete the transition to
 a well-formatted "wide" set of recipes. 
 
-1. Clean up the `title` column using `str_trim` and remove duplicate rows: 
+1. Clean up the `title` column using `str_trim()` and remove duplicate rows: 
 
 ::: {.callout-tip title="Solution" collapse="true"}
 
@@ -496,15 +1067,17 @@ RECIPES_LONG <- RECIPES_LONG |>
     The units found in this data are `oz`, `dash`, `drop`, `t`, `chunk`, 
     `leaves`, `sprig`, `twist`, and `cm`. 
       
-    *Hint*: Use a `str_extract` and make sure to require a space before and 
-    after the unit so you don't pick up `t`s in the names of ingredients.
+    *Hint*: Use a `str_extract()` and make sure to require a space before and 
+    after the unit so you don't pick up `t`s in the names of ingredients. You
+    might also want to include an optional terminal `s` to account for both
+    `1 drop` and `2 drops`.
       
 ::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
 RECIPES_LONG <- RECIPES_LONG |>
     mutate(unit = str_extract(ingredient, 
-                              " (oz|dash(es)?|sprigs?|twist|drops?|t|chunks?|leaves|cm) ",
+                              " (oz|dash|sprig|twist|drop|t|chunk|leaves|cm)e?s? ",
                               group=1))
 ```
 
@@ -542,7 +1115,7 @@ RECIPES_LONG <- RECIPES_LONG |>
 
 
 4. Finally, everything that you haven't already extracted can be assumed to
-   be the name of an ingredient. Use `str_remove` twice to get the ingredient
+   be the name of an ingredient. Use `str_remove()` twice to get the ingredient
    names. 
        
    *Hint*: `str_remove()` doesn't handle `NA`s or empty strings well, so the
@@ -702,276 +1275,6 @@ RECIPES_LONG |>
                 values_from = Amount, 
                 values_fill = 0) |>
     select("Cocktail", sort(tidyselect::peek_vars()))
-```
-
-:::
-
-# Scraping Practice II: Quotes {#quotes}
-
-Let's analyze the website [https://quotes.toscrape.com](https://quotes.toscrape.com),
-a website designed to practice web-scraping. 
-
-Scrape the contents of that website--note that quotes continue for multiple 
-pages--and answer the following questions. You can check most of these "by hand"
-but you need to compute your answers in code!
-
-0. How many pages of quotes are on this site? 
-
-   *Hint*: Write code to keep paging until no more "Next" button is present.
-   
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-library(httr2)
-library(rvest)
-library(tidyverse)
-
-N_PAGES <- 1
-URL <- "https://quotes.toscrape.com/"
-
-repeat{
-    missing_next_button <- request(URL) |>
-        req_url_path("page", N_PAGES) |>
-        req_perform() |>
-        resp_body_html() |>
-        html_element(".next") |>
-        is.na()
-    
-    if(missing_next_button){
-        break
-    } else {
-        N_PAGES <- N_PAGES + 1
-    }
-}
-```
-
-There are `N_PAGES` pages worth of quotes on this site. 
-
-:::   
-
-1. How many quotes are on this website (all pages)? 
-
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-library(httr2)
-library(tidyverse)
-library(rvest)
-
-N_TOTAL_QUOTES <- 0
-
-for(page in 1:N_PAGES){
-    n_quotes <- request(URL) |>
-        req_url_path("page", page) |>
-        req_perform() |>
-        resp_body_html() |>
-        html_elements(".quote") |>
-        length()
-    
-    N_TOTAL_QUOTES <- N_TOTAL_QUOTES + n_quotes
-    
-}
-```
-
-or using `purrr`-style programming: 
-
-```{r}
-library(httr2)
-library(tidyverse)
-library(rvest)
-
-seq(N_PAGES) |>
-    map(\(p) request(URL) |> req_url_path("page", p)) |>
-    map(req_perform) |>
-    map(resp_body_html) |>
-    map(html_elements, ".quote") |>
-    map_int(length) |>
-    sum()
-```
-
-:::
-
-2. How many quotes are tagged "Death"?
-
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-library(httr2)
-library(tidyverse)
-library(rvest)
-
-N_DEATH_QUOTES <- 0
-
-for(page in 1:N_PAGES){
-    death_quotes <- request(URL) |>
-        req_url_path("page", page) |>
-        req_perform() |>
-        resp_body_html() |>
-        html_elements(".quote .tags") |>
-        html_text2() |>
-        str_detect("death") |>
-        sum()
-    
-    N_DEATH_QUOTES <- N_DEATH_QUOTES + death_quotes
-    
-}
-
-N_DEATH_QUOTES
-```
-
-or using `purrr`-style programming: 
-
-```{r}
-library(httr2)
-library(tidyverse)
-library(rvest)
-
-seq(N_PAGES) |>
-    map(\(p) request(URL) |> req_url_path("page", p)) |>
-    map(req_perform) |>
-    map(resp_body_html) |>
-    map(html_elements, ".quote .tags") |>
-    map(html_text2) |>
-    map_int(\(x) sum(str_detect(x, "death"))) |>
-    sum()
-```
-
-:::
-
-3. How many quotes are by (or at least are attributed to) Albert Einstein?
-
-
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-library(httr2)
-library(tidyverse)
-library(rvest)
-
-N_EINSTEIN_QUOTES <- 0
-
-for(page in 1:N_PAGES){
-    einstein_quotes <- request(URL) |>
-        req_url_path("page", page) |>
-        req_perform() |>
-        resp_body_html() |>
-        html_elements(".quote .author") |>
-        html_text2() |>
-        str_detect("Einstein") |>
-        sum()
-    
-    N_EINSTEIN_QUOTES <- N_EINSTEIN_QUOTES + einstein_quotes
-    
-}
-
-N_EINSTEIN_QUOTES
-```
-
-or using `purrr`-style programming: 
-
-```{r}
-library(httr2)
-library(tidyverse)
-library(rvest)
-
-seq(N_PAGES) |>
-    map(\(p) request(URL) |> req_url_path("page", p)) |>
-    map(req_perform) |>
-    map(resp_body_html) |>
-    map(html_elements, ".quote .author") |>
-    map(html_text2) |>
-    map_int(\(x) sum(str_detect(x, "Einstein"))) |>
-    sum()
-```
-
-:::
-
-4. What is the longest quote (by number of characters)? The `str_length` 
-   and `which.max` functions will be helpful. 
-   
-   You can use them like this: 
-   
-   ```{r}
-   x <- c("short", "medium", "very quite long")
-   longest <- x[which.max(str_length(x))]
-   ```
-   
-::: {.callout-tip title="Solution" collapse="true"}
-
-```{r}
-library(httr2)
-library(tidyverse)
-library(rvest)
-
-LONGEST_QUOTE <- ""
-
-for(page in 1:N_PAGES){
-    all_quotes <- request(URL) |>
-        req_url_path("page", page) |>
-        req_perform() |>
-        resp_body_html() |>
-        html_elements(".quote .text") |>
-        html_text2()
-        
-    longest_on_page <- all_quotes[which.max(str_length(all_quotes))]
-    
-    if(str_length(longest_on_page) > str_length(LONGEST_QUOTE)){
-        LONGEST_QUOTE <- longest_on_page
-    }
-}
-
-cat("The longest quote is: ")
-cat(LONGEST_QUOTE)
-cat("which is ", str_length(LONGEST_QUOTE), " characters long.")
-```
-:::
-   
-
-5. Of all authors quoted, who has the earliest (estimated) birthday? 
-
-   *Hint:* Use the `as.Date` function to parse these dates. *E.g.*,
-   
-   ```{r}
-   x <- "March 14, 1879"
-   as.Date(x, "%b %d, %Y")
-   ```
-   
-   Here, the second string is a _format_ string, which specifies how the date
-   is written.
-   
-::: {.callout-tip title="Solution" collapse="true"}
-
-
-```{r}
-#| cache: true
-library(httr2)
-library(tidyverse)
-library(rvest)
-
-ALL_AUTHOR_LINKS <- c()
-
-for(page in 1:N_PAGES){
-    author_links <- request(URL) |>
-        req_url_path("page", page) |>
-        req_perform() |>
-        resp_body_html() |>
-        html_elements(".quote a") |>
-        html_attr("href") |>
-        str_subset("author")
-    
-    ALL_AUTHOR_LINKS <- c(ALL_AUTHOR_LINKS, paste0(URL, author_links))
-    
-}
-
-ALL_AUTHOR_LINKS <- unique(ALL_AUTHOR_LINKS)
-
-AUTHORS <- map(ALL_AUTHOR_LINKS, read_html) |>
-    map(\(h) data.frame(name=h |> html_element(".author-title") |> html_text2(),
-                        date=h |> html_element(".author-born-date") |> html_text2())) |>
-    list_rbind() |>
-    mutate(date = as.Date(date, "%b %d, %Y"))
-
-AUTHORS |> slice_min(date)
 ```
 
 :::
