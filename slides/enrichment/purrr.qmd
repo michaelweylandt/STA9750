@@ -53,7 +53,7 @@ In `R`, FP is principally associated with `list`s
 
 *Recall: a `list` is a _generic_ container in `R` (can hold anything, even other lists)*
 
-- Natural tool for parsing JSON (see last week)
+- Natural tool for parsing JSON (see previous weeks)
 - Many things in `R` are lists under the hood (including `data.frame`s)
 
 ## Iteration - map
@@ -83,7 +83,7 @@ collects the output in a new list
 . . . 
 
 ```{r}
-map(month.name, toupper)
+map(month.name, str_to_upper)
 ```
 
 ## Typed Iteration
@@ -95,7 +95,7 @@ Sometimes, we know the type of values to be returned:
 . . . 
 
 ```{r}
-map_chr(month.name, toupper)
+map_chr(month.name, str_to_upper)
 ```
 
 
@@ -109,6 +109,8 @@ map_int(month.name, nchar)
 
 Functions in `R` can be defined as: 
 
+::: {.small}
+
 ```{r}
 #| eval: false
 #| echo: true
@@ -117,19 +119,27 @@ my_function <- function(arg1, arg2="default"){
 }
 ```
 
+:::
+
 But this is clunky
 
 . . . 
 
 _Anonymous_ functions ("lambdas") let us define 'little functions' more complactly
 
+::: {.small}
+
 ```{r}
+#| eval: false
+#| echo: true
 plus_1 <- function(x){
     x + 1
 }
 
 \(x) x + 1
 ```
+
+:::
 
 Supposedly `\(` looks like the Greek $\lambda$
 
@@ -138,8 +148,8 @@ Supposedly `\(` looks like the Greek $\lambda$
 Anonymous functions play well with `map`: 
 
 ```{r}
-# String manipulation (Week 12) to count vowels
-map_int(month.name, \(x) str_count(x, "[aeiou]")) 
+# String manipulation (Lecture 10) to count vowels
+map_int(month.name, \(x) x |> str_to_lower() |> str_count( "[aeiou]")) 
 ```
 
 ## map returning Data Frames {.scrollable}
@@ -149,8 +159,8 @@ A common idiom is to return a data frame inside `map`
 ```{r}
 map(month.name, 
     \(x) data.frame(month = x, 
-                    upper = toupper(x), 
-                    n_vowels = str_count(x, "[aeiou]")))
+                    upper = str_to_upper(x), 
+                    n_vowels = str_count(str_to_lower(x), "[aeiou]")))
 ```
 
 ## map returning Data Frames {.scrollable}
@@ -160,8 +170,8 @@ Combine this list of little DFs _rowwise_ with `list_rbind()`
 ```{r}
 map(month.name, 
     \(x) data.frame(month = x, 
-                    upper = toupper(x), 
-                    n_vowels = str_count(x, "[aeiou]"))) |>
+                    upper = str_to_upper(x), 
+                    n_vowels = str_count(str_to_lower(x), "[aeiou]"))) |>
     list_rbind()
 ```
 
@@ -175,6 +185,7 @@ Often, we will want to `map` multiple things together:
 ```{r}
 map2_chr(month.name, month.abb, \(x, y) paste(y, "is short for", x))
 ```
+
 Use `pmap` to go to three or more
 
 ## Mapping and Counting
@@ -231,7 +242,7 @@ gh("/orgs/tidyverse/repos") |>
 
 Use `pluck` to access elements of a list in the same way:
 
-From last week, 
+From [API Examples](../labs/lab07.qmd#api):
 
 ```{r}
 #| eval: false
@@ -326,7 +337,7 @@ map(month.name, nchar_safe) |>
     list_c()         # We must map() our pluck()
 ```
 
-## Adverb: `possibly`
+## Adverb: possibly
 
 The `safely |> map("result")` combo is common, so helper `possibly`:
 
