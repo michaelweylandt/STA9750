@@ -21,9 +21,10 @@ sweet to the bracingly tart.
 
 This cornucopia challenges the average consumer, who often struggles to find
 the best apple on any given day. Thankfully, Brian Frange of 
-[applerankings.com](htpts://applerankings.com) is on the task. For this warm-up
-exercise, we are going to extract his rankings of apples into a four-column
-table of the following format: 
+[applerankings.com](https://applerankings.com) is on the task. For this warm-up
+exercise, we are going to extract his rankings of apples from 
+<https://applerankings.com/pick-an-apple/> into a
+four-column table of the following format: 
 
 |Type             |Description                     |Score |summary        |
 |:----------------|:-------------------------------|:----:|:-------------:|
@@ -318,7 +319,7 @@ str_extract_all(todo, ______, simplify=TRUE)
 #| solution: true
 library(stringr)
 todo <- "Yesterday, I needed to buy four cups of flour, a piece of Parmesan cheese, two gallons of ice cream, and a six-pack of bottled (non-alcoholic) beers."
-str_extract_all(todo, " [A-Za-z]+s[., ]", simplify=TRUE)
+str_extract_all(todo, " [:alnum:]+s[., ]", simplify=TRUE)
 ```
 
 If you recall character classes from the pre-assignment, this can also be written as: 
@@ -351,7 +352,9 @@ gradethis::grade_this_code()
 
 
 [^1]: While English pluralization rules are tricky, you can just find the words 
-ending with an `s`.
+ending with an `s`. If you want to be more precise about this, look into 
+functions like `pluralize::is_plural()`, but note that even that library 
+can be tripped up by verbs ending with an `s`, *e.g.*, "goes".
 
 2. In the following sentence, compute the total number of fruits on my shopping
 list: 
@@ -375,7 +378,7 @@ sum(as.numeric(str_extract_all(shopping, ______, simplify=TRUE)))
 #| solution: true
 library(stringr)
 shopping <- "Today, I need to purchase 3 apples, 5 limes, and 2 lemons."
-sum(as.numeric(str_extract_all(shopping, "\\d+", simplify=TRUE)))
+sum(as.numeric(str_extract_all(shopping, "[:digit:]+", simplify=TRUE)))
 ```
 :::
 
@@ -437,7 +440,7 @@ str_count(swift, ______)
 #| solution: true
 library(stringr)
 swift <- "Taylor Alison Swift (born December 13, 1989) is an American singer-songwriter. A subject of widespread public interest, she has influenced the music industry and popular culture through her artistry, especially in songwriting, and entrepreneurship. She is an advocate of artists rights and womens empowerment. Swift began professional songwriting at age 14. She signed with Big Machine Records in 2005 and achieved prominence as a country pop singer with the albums Taylor Swift (2006) and Fearless (2008). Their singles 'Teardrops on My Guitar', 'Love Story', and 'You Belong with Me' were crossover successes on country and pop radio formats and brought Swift mainstream fame. She experimented with rock and electronic styles on her next albums, Speak Now (2010) and Red (2012), respectively, with the latter featuring her first Billboard Hot 100 number-one single, 'We Are Never Ever Getting Back Together'. Swift recalibrated her image from country to pop with 1989 (2014), a synth-pop album containing the chart-topping songs 'Shake It Off', 'Blank Space', and 'Bad Blood'. Media scrutiny inspired the hip-hop-influenced Reputation (2017) and its number-one single 'Look What You Made Me Do'. After signing with Republic Records in 2018, Swift released the eclectic pop album Lover (2019) and the autobiographical documentary Miss Americana (2020). She explored indie folk styles on the 2020 albums Folklore and Evermore, subdued electropop on Midnights (2022), and re-recorded four albums subtitled Taylors Version after a dispute with Big Machine. These albums spawned the number-one songs 'Cruel Summer', 'Cardigan', 'Willow', 'Anti-Hero', 'All Too Well', and 'Is It Over Now?'. Her Eras Tour (2023-2024) and its accompanying concert film became the highest-grossing tour and concert film of all time, respectively. Swift has directed videos and films such as Folklore: The Long Pond Studio Sessions (2020) and All Too Well: The Short Film (2021). Swift is one of the worlds best-selling artists, with 200 million records sold worldwide as of 2019. She is the most-streamed artist on Spotify, the highest-grossing female touring act, and the first billionaire with music as the main source of income. Six of her albums have opened with over one million sales in a week. The 2023 Time Person of the Year, Swift has appeared on lists such as Rolling Stones 100 Greatest Songwriters of All Time, Billboards Greatest of All Time Artists, and Forbes Worlds 100 Most Powerful Women. Her accolades include 14 Grammy Awards, a Primetime Emmy Award,  40 American Music Awards, 39 Billboard Music Awards, and 23 MTV Video Music Awards; she has won the Grammy Award for Album of the Year, the MTV Video Music Award for Video of the Year, and the IFPI Global Recording Artist of the Year a record four times each."
-str_count(swift, "\\d{4}")
+str_count(swift, "[:digit:]{4}")
 ```
 :::
 
@@ -1077,8 +1080,11 @@ RECIPES_LONG <- RECIPES_LONG |>
 ```{r}
 RECIPES_LONG <- RECIPES_LONG |>
     mutate(unit = str_extract(ingredient, 
-                              " (oz|dash|sprig|twist|drop|t|chunk|leaves|cm)e?s? ",
-                              group=1))
+                              # Remove unit with optional plurals
+                              " (oz|dash(es)?|drops?|t|chunks?|leaves|cm) ", 
+                              group=1),
+           # Remove trailing s or es (dashes => dash)
+           unit = str_remove(unit, "e?s$"))
 ```
 
 :::
@@ -1090,12 +1096,15 @@ RECIPES_LONG <- RECIPES_LONG |>
 ```{r}
 standardize_number <- function(x){
     library(stringr)
-    x |> str_replace("(\\d)½", "\\1.5") |> 
+    x |> str_replace("([:digit:]+)½", "\\1.5") |> 
          str_replace("½", "0.5") |>
-         str_replace("(\\d)¾", "\\1.75") |> 
+         str_replace("1/2", "0.5") |>
+         str_replace("([:digit:]+)¾", "\\1.75") |> 
          str_replace("¾", "0.75") |>
-         str_replace("(\\d)¼", "\\1.25") |> 
-         str_replace("¼", "0.25")
+         str_replace("3/4", "0.75") |>
+         str_replace("([:digit:]+)¼", "\\1.25") |> 
+         str_replace("¼", "0.25") |>
+         str_replace("1/4", "0.25")
 }
 
 x <- c("½ oz allspice liqueur", "¾ oz Campari", "1¾ oz gin")
@@ -1144,15 +1153,17 @@ RECIPES_LONG <- RECIPES_LONG |>
 
 :::   
    
-    You should wind up with a table that looks something like
+    
+
+5.  You should wind up with a table that looks something like
    
     | Cocktail | Ingredient | Unit | Amount |
     |----------|------------|------|--------|
     | Bachelor | rum, dark  | oz   | 1      |
     | Bachelor | Meletti    | oz   | 1      |
-
-5. Combine the ingredient and unit columns so that `Meletti` and ` oz ` in 
-   two separate columns becomes `Meletti (oz)` in a single column. 
+    
+    Combine the ingredient and unit columns so that `Meletti` and ` oz ` in 
+    two separate columns becomes `Meletti (oz)` in a single column. 
 
 ::: {.callout-tip title="Solution" collapse="true"}
 
@@ -1219,11 +1230,12 @@ RECIPES_LONG <- read_html(BASE_URL) |>
 
 standardize_number <- function(x){
     library(stringr)
-    x |> str_replace("(\\d)½", "\\1.5") |> 
+    x |> str_replace("([:digit:]+)½", "\\1.5") |> 
          str_replace("½", "0.5") |>
-         str_replace("(\\d)¾", "\\1.75") |> 
+         str_replace("1/2", "0.5") |>
+         str_replace("([:digit:]+)¾", "\\1.75") |> 
          str_replace("¾", "0.75") |>
-         str_replace("(\\d)¼", "\\1.25") |> 
+         str_replace("([:digit:]+)¼", "\\1.25") |> 
          str_replace("¼", "0.25")
 }
 
@@ -1249,8 +1261,11 @@ RECIPES_LONG |>
            unit = str_extract(ingredient, 
                               " (oz|dash(es)?|drops?|t|chunks?|leaves|cm) ", 
                               group=1),
-           ingredient = str_remove_all_s(ingredient, unit), 
-           ingredient = str_remove_all_s(ingredient, amount),
+           unit = str_remove(unit, "e?s$"), 
+           ingredient = str_remove_s(ingredient, unit), 
+           ingredient = str_remove_s(ingredient, amount),
+           # Remove any extra S / ES at the beginning from the unit stuff
+           ingredient = str_remove_s(ingredient, "^ *e?s "),
            ingredient = str_trim(ingredient)) |>
     # For some ingredients, e.g. a lemon twist, the implied
     # but unstated quantity is 1
@@ -1276,5 +1291,8 @@ RECIPES_LONG |>
                 values_fill = 0) |>
     select("Cocktail", sort(tidyselect::peek_vars()))
 ```
+
+There is more that could be done here, *e.g.*, standardizing ounces and 
+teaspoons, but it's a pretty solid start.
 
 :::

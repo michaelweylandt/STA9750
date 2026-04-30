@@ -10,7 +10,7 @@
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.9.37">
 
-  <title>STA 9750 – Software Tools for Data AnalysisSTA 9750Michael WeylandtWeek 12 – Thursday 2026-04-30Last Updated: 2026-04-27</title>
+  <title>STA 9750 – Software Tools for Data AnalysisSTA 9750Michael WeylandtWeek 12 – Thursday 2026-04-30Last Updated: 2026-04-30</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -196,7 +196,7 @@
     <div class="slides">
 
 <section id="title-slide" data-background-image="../images/baruch_title.png" data-background-size="100% 100%" class="quarto-title-block center">
-  <h1 class="title"><br><br><br><br><br>Software Tools for Data Analysis<br>STA 9750<br>Michael Weylandt<br>Week 12 – Thursday 2026-04-30<br>Last Updated: 2026-04-27</h1>
+  <h1 class="title"><br><br><br><br><br>Software Tools for Data Analysis<br>STA 9750<br>Michael Weylandt<br>Week 12 – Thursday 2026-04-30<br>Last Updated: 2026-04-30</h1>
 
 <div class="quarto-title-authors">
 </div>
@@ -1735,20 +1735,17 @@
 <div class="fragment">
 <p>Specify groups with parentheses</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a></a><span class="st">"[:digit:]{3}-([:digit:]{3})-[:digit:]{4}"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "[:digit:]{3}-([:digit:]{3})-[:digit:]{4}"</code></pre>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a></a><span class="st">"([:digit:]{3})-[:digit:]{3}-[:digit:]{4}"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-</div>
-<p>will extract <code>"312"</code> when applied to <code>"646-312-3257"</code></p>
+<p>will extract <code>"646"</code> when applied to <code>"646-312-3257"</code></p>
 </div>
 </section>
 <section id="extracting-matches-1" class="slide level2">
 <h2>Extracting Matches</h2>
 <p><code>str_detect</code> - is there a match?</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a></a>x <span class="ot">&lt;-</span> <span class="st">"Baruch College, CUNY is a wonderful place to work!"</span></span>
-<span id="cb46-2"><a></a>stringr<span class="sc">::</span><span class="fu">str_detect</span>(x, <span class="st">"(.*), CUNY"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a></a>x <span class="ot">&lt;-</span> <span class="st">"Baruch College, CUNY is a wonderful place to work!"</span></span>
+<span id="cb45-2"><a></a>stringr<span class="sc">::</span><span class="fu">str_detect</span>(x, <span class="st">"(.*), CUNY"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE</code></pre>
 </div>
@@ -1756,7 +1753,7 @@
 <div class="fragment">
 <p><code>str_extract</code> - get the matched substring</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a></a>stringr<span class="sc">::</span><span class="fu">str_extract</span>(x, <span class="st">"(.*), CUNY"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a></a>stringr<span class="sc">::</span><span class="fu">str_extract</span>(x, <span class="st">"(.*), CUNY"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Baruch College, CUNY"</code></pre>
 </div>
@@ -1765,11 +1762,11 @@
 <div class="fragment">
 <p><code>str_match</code> - use capture groups</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a></a>stringr<span class="sc">::</span><span class="fu">str_extract</span>(x, <span class="st">"(.*), CUNY"</span>, <span class="at">group=</span><span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a></a>stringr<span class="sc">::</span><span class="fu">str_extract</span>(x, <span class="st">"(.*), CUNY"</span>, <span class="at">group=</span><span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Baruch College"</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a></a>stringr<span class="sc">::</span><span class="fu">str_match</span>(x, <span class="st">"(.*), CUNY"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a></a>stringr<span class="sc">::</span><span class="fu">str_match</span>(x, <span class="st">"(.*), CUNY"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     [,1]                   [,2]            
 [1,] "Baruch College, CUNY" "Baruch College"</code></pre>
@@ -1781,8 +1778,8 @@
 <h2>Extracting Matches</h2>
 <p>Very useful for pulling numbers out of text:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"123"</span>, <span class="st">"456 (estimated)"</span>, <span class="st">"Approximately 7.89"</span>)</span>
-<span id="cb54-2"><a></a><span class="fu">str_extract</span>(x, <span class="st">"[.[:digit:]]+"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"123"</span>, <span class="st">"456 (estimated)"</span>, <span class="st">"Approximately 7.89"</span>)</span>
+<span id="cb53-2"><a></a><span class="fu">str_extract</span>(x, <span class="st">"[.[:digit:]]+"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "123"  "456"  "7.89"</code></pre>
 </div>
@@ -1792,14 +1789,14 @@
 <h2>Extracting Matches</h2>
 <p><code>str_match(group=)</code> is useful for complex data extraction.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Michael Weylandt teaches STA9750"</span>, </span>
-<span id="cb56-2"><a></a>       <span class="st">"Kamiar Rad teaches STA9891"</span>)</span>
-<span id="cb56-3"><a></a>pattern <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"(.*) teaches (.*)"</span>)</span>
-<span id="cb56-4"><a></a>stringr<span class="sc">::</span><span class="fu">str_extract</span>(x, pattern, <span class="at">group=</span><span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Michael Weylandt teaches STA9750 on Thursday"</span>, </span>
+<span id="cb55-2"><a></a>       <span class="st">"Kamiar Rad teaches STA9891 on Wednesday"</span>)</span>
+<span id="cb55-3"><a></a>pattern <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"(.*) teaches ([:alnum:]*)"</span>)</span>
+<span id="cb55-4"><a></a>stringr<span class="sc">::</span><span class="fu">str_extract</span>(x, pattern, <span class="at">group=</span><span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Michael Weylandt" "Kamiar Rad"      </code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a></a>stringr<span class="sc">::</span><span class="fu">str_extract</span>(x, pattern, <span class="at">group=</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a></a>stringr<span class="sc">::</span><span class="fu">str_extract</span>(x, pattern, <span class="at">group=</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "STA9750" "STA9891"</code></pre>
 </div>
@@ -1807,12 +1804,16 @@
 <div class="fragment">
 <p>Also allows named groups - really helpful!</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a></a>pattern <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"(?&lt;instructor&gt;.*) teaches (?&lt;course&gt;.*) on (?&lt;weekday&gt;.*)"</span>)</span>
-<span id="cb60-2"><a></a>stringr<span class="sc">::</span><span class="fu">str_match</span>(x, pattern) <span class="sc">|&gt;</span> <span class="fu">as.data.frame</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a></a>pattern <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"(?&lt;instructor&gt;.*) teaches (?&lt;course&gt;.*) on (?&lt;weekday&gt;.*)"</span>)</span>
+<span id="cb59-2"><a></a>stringr<span class="sc">::</span><span class="fu">str_match</span>(x, pattern) <span class="sc">|&gt;</span> </span>
+<span id="cb59-3"><a></a>  <span class="fu">as.data.frame</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>    V1 instructor course weekday
-1 &lt;NA&gt;       &lt;NA&gt;   &lt;NA&gt;    &lt;NA&gt;
-2 &lt;NA&gt;       &lt;NA&gt;   &lt;NA&gt;    &lt;NA&gt;</code></pre>
+<pre><code>                                            V1       instructor  course
+1 Michael Weylandt teaches STA9750 on Thursday Michael Weylandt STA9750
+2      Kamiar Rad teaches STA9891 on Wednesday       Kamiar Rad STA9891
+    weekday
+1  Thursday
+2 Wednesday</code></pre>
 </div>
 </div>
 </div>
@@ -1820,8 +1821,8 @@
 <section id="exclusion" class="slide level2">
 <h2>Exclusion</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"10 blue fish"</span>, <span class="st">"three wet goats"</span>)</span>
-<span id="cb62-2"><a></a>stringr<span class="sc">::</span><span class="fu">str_detect</span>(x, <span class="st">"[^0123456789]"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"10 blue fish"</span>, <span class="st">"three wet goats"</span>)</span>
+<span id="cb61-2"><a></a>stringr<span class="sc">::</span><span class="fu">str_detect</span>(x, <span class="st">"[^0123456789]"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE TRUE</code></pre>
 </div>
@@ -1830,7 +1831,7 @@
 <div class="fragment">
 <p><code>str_detect</code> has a <code>negate</code> option:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a></a>stringr<span class="sc">::</span><span class="fu">str_detect</span>(x, <span class="st">"[0-9]"</span>, <span class="at">negate=</span><span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a></a>stringr<span class="sc">::</span><span class="fu">str_detect</span>(x, <span class="st">"[0-9]"</span>, <span class="at">negate=</span><span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] FALSE  TRUE</code></pre>
 </div>
@@ -1840,8 +1841,8 @@
 <section id="homoglyphs" class="slide level2">
 <h2>Homoglyphs</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Η"</span>, <span class="st">"H"</span>)</span>
-<span id="cb66-2"><a></a><span class="fu">tolower</span>(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Η"</span>, <span class="st">"H"</span>)</span>
+<span id="cb65-2"><a></a><span class="fu">str_to_lower</span>(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "η" "h"</code></pre>
 </div>
@@ -1849,8 +1850,8 @@
 <p>Why?</p>
 <div class="fragment">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a></a>uni_info <span class="ot">&lt;-</span> <span class="fu">Vectorize</span>(\(x) Unicode<span class="sc">::</span><span class="fu">u_char_name</span>(<span class="fu">utf8ToInt</span>(x)), <span class="st">"x"</span>)</span>
-<span id="cb68-2"><a></a><span class="fu">uni_info</span>(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb67"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a></a>uni_info <span class="ot">&lt;-</span> <span class="fu">Vectorize</span>(\(x) Unicode<span class="sc">::</span><span class="fu">u_char_name</span>(<span class="fu">utf8ToInt</span>(x)), <span class="st">"x"</span>)</span>
+<span id="cb67-2"><a></a><span class="fu">uni_info</span>(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                         Η                          H 
 "GREEK CAPITAL LETTER ETA"   "LATIN CAPITAL LETTER H" </code></pre>
@@ -1860,14 +1861,14 @@
 </section>
 <section id="homoglyphs-1" class="slide level2">
 <h2>Homoglyphs</h2>
-<p>Particularly nasty with dashes - lean on <code>[:punct::]</code> where possible.</p>
+<p>Particularly nasty with dashes - lean on <code>[:punct:]</code> where possible.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb70"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Em Dash —"</span>, <span class="st">"En Dash –"</span>, <span class="st">"Hyphen ‐"</span>)</span>
-<span id="cb70-2"><a></a>stringr<span class="sc">::</span><span class="fu">str_remove</span>(x, <span class="st">"[:punct:]"</span>) <span class="co"># Works</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb69"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Em Dash —"</span>, <span class="st">"En Dash –"</span>, <span class="st">"Hyphen ‐"</span>)</span>
+<span id="cb69-2"><a></a>stringr<span class="sc">::</span><span class="fu">str_remove</span>(x, <span class="st">"[:punct:]"</span>) <span class="co"># Works</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Em Dash " "En Dash " "Hyphen " </code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a></a>stringr<span class="sc">::</span><span class="fu">str_remove</span>(x, <span class="st">"-"</span>)  <span class="co"># Keyboard minus = Fail</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb71"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a></a>stringr<span class="sc">::</span><span class="fu">str_remove</span>(x, <span class="st">"-"</span>)  <span class="co"># Keyboard minus = Fail</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Em Dash —" "En Dash –" "Hyphen ‐" </code></pre>
 </div>
@@ -1908,27 +1909,27 @@
 <h2>Regex + Scraping</h2>
 <p>Common paradigm: <code>html_text2() |&gt; str_remove_all() |&gt; as.numeric()</code></p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb74"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a></a>prices <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"8.25"</span>, <span class="st">"$1,000"</span>, <span class="st">"500 USD"</span>, <span class="st">"$12,345.67 (Estimate)"</span>)</span>
-<span id="cb74-2"><a></a>prices <span class="sc">|&gt;</span> <span class="fu">str_remove_all</span>(<span class="st">"[^.[:digit:]]"</span>) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb73"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a></a>prices <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"8.25"</span>, <span class="st">"$1,000"</span>, <span class="st">"500 USD"</span>, <span class="st">"$12,345.67 (Estimate)"</span>)</span>
+<span id="cb73-2"><a></a>prices <span class="sc">|&gt;</span> <span class="fu">str_remove_all</span>(<span class="st">"[^.[:digit:]-]"</span>) <span class="sc">|&gt;</span> <span class="fu">as.numeric</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1]     8.25  1000.00   500.00 12345.67</code></pre>
 </div>
 </div>
-<p>Here, <code>[^.[:digit:]]</code> means anything (<code>[]</code>) that is not (<code>^</code>) a period or a digit.</p>
+<p>Here, <code>[^.[:digit:]-]</code> means anything (<code>[]</code>) that is not (<code>^</code>) a period, a digit, or a <code>-</code>.</p>
 </section>
 <section id="regex-scraping-2" class="slide level2">
 <h2>Regex + Scraping</h2>
 <p>Another common paradigm is to extract structured text into a data frame when <code>html_table</code> fails</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb76"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a></a>x <span class="ot">&lt;-</span> <span class="st">"Adelie female 200g</span></span>
-<span id="cb76-2"><a></a><span class="st">Gentoo Male 500g</span></span>
-<span id="cb76-3"><a></a><span class="st">Chinstrap Female 1000g"</span></span>
-<span id="cb76-4"><a></a></span>
-<span id="cb76-5"><a></a><span class="fu">str_split</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">n"</span>, <span class="at">simplify=</span><span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb76-6"><a></a>    <span class="fu">str_match</span>(<span class="st">"(?&lt;species&gt;.*) (?&lt;sex&gt;.*) (?&lt;weight&gt;</span><span class="sc">\\</span><span class="st">d+)g"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb76-7"><a></a>    <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
-<span id="cb76-8"><a></a>    <span class="fu">select</span>(<span class="sc">-</span>V1) <span class="sc">|&gt;</span></span>
-<span id="cb76-9"><a></a>    <span class="fu">mutate</span>(<span class="at">sex =</span> <span class="fu">if_else</span>(<span class="fu">str_detect</span>(sex, <span class="st">"[Ff]"</span>), <span class="st">"female"</span>, <span class="st">"male"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb75"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a></a>x <span class="ot">&lt;-</span> <span class="st">"Adelie female 200g</span></span>
+<span id="cb75-2"><a></a><span class="st">Gentoo Male 500g</span></span>
+<span id="cb75-3"><a></a><span class="st">Chinstrap Female 1000g"</span></span>
+<span id="cb75-4"><a></a></span>
+<span id="cb75-5"><a></a><span class="fu">str_split</span>(x, <span class="st">"</span><span class="sc">\\</span><span class="st">n"</span>, <span class="at">simplify=</span><span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb75-6"><a></a>    <span class="fu">str_match</span>(<span class="st">"(?&lt;species&gt;.*) (?&lt;sex&gt;.*) (?&lt;weight&gt;[:digit:]+)g"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb75-7"><a></a>    <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb75-8"><a></a>    <span class="fu">select</span>(<span class="sc">-</span>V1) <span class="sc">|&gt;</span></span>
+<span id="cb75-9"><a></a>    <span class="fu">mutate</span>(<span class="at">sex =</span> <span class="fu">if_else</span>(<span class="fu">str_detect</span>(sex, <span class="st">"[Ff]"</span>), <span class="st">"female"</span>, <span class="st">"male"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    species    sex weight
 1    Adelie female    200
@@ -1941,14 +1942,14 @@
 <h2>Regex + Scraping</h2>
 <p>Can also be used to manipulate strings within a data frame:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb78"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">tribble</span>(</span>
-<span id="cb78-2"><a></a>    <span class="sc">~</span>enrollment, <span class="sc">~</span>course,</span>
-<span id="cb78-3"><a></a>    <span class="dv">50</span>, <span class="st">"STA 9750"</span>,</span>
-<span id="cb78-4"><a></a>    <span class="dv">20</span>, <span class="st">"STA 9890"</span></span>
-<span id="cb78-5"><a></a>)</span>
-<span id="cb78-6"><a></a></span>
-<span id="cb78-7"><a></a>x <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">dept =</span> <span class="fu">str_extract</span>(course, <span class="st">"([:alpha:]{3}) ([:digit:]{4})"</span>, <span class="at">group=</span><span class="dv">1</span>),</span>
-<span id="cb78-8"><a></a>            <span class="at">numb =</span> <span class="fu">str_extract</span>(course, <span class="st">"([:alpha:]{3}) ([:digit:]{4})"</span>, <span class="at">group=</span><span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb77"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a></a>x <span class="ot">&lt;-</span> <span class="fu">tribble</span>(</span>
+<span id="cb77-2"><a></a>    <span class="sc">~</span>enrollment, <span class="sc">~</span>course,</span>
+<span id="cb77-3"><a></a>    <span class="dv">50</span>, <span class="st">"STA 9750"</span>,</span>
+<span id="cb77-4"><a></a>    <span class="dv">20</span>, <span class="st">"STA 9890"</span></span>
+<span id="cb77-5"><a></a>)</span>
+<span id="cb77-6"><a></a></span>
+<span id="cb77-7"><a></a>x <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">dept =</span> <span class="fu">str_extract</span>(course, <span class="st">"([:alpha:]{3}) ([:digit:]{4})"</span>, <span class="at">group=</span><span class="dv">1</span>),</span>
+<span id="cb77-8"><a></a>            <span class="at">numb =</span> <span class="fu">str_extract</span>(course, <span class="st">"([:alpha:]{3}) ([:digit:]{4})"</span>, <span class="at">group=</span><span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 4
   enrollment course   dept  numb 
@@ -1991,49 +1992,8 @@
 <li>String Manipulations</li>
 <li>Capturing with Regex</li>
 </ul>
-<div class="center">
-<div class="{when-meta:&quot;session=1&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=2&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=3&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=4&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=5&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=6&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=7&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=8&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=9&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=10&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=11&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=12&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=13&quot;}">
-
-</div>
-<div class="{when-meta:&quot;session=14&quot;}">
-
-</div>
+<div data-when-meta="session:12">
+<!-- TODO: LIFE TIP? -->
 </div>
 </section>
 <section id="musical-treat" class="slide level2">

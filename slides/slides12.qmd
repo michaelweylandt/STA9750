@@ -469,10 +469,11 @@ Often, we use regex to pull our part of a string:
 Specify groups with parentheses
 
 ```{r}
-"[:digit:]{3}-([:digit:]{3})-[:digit:]{4}"
+#| eval: false
+"([:digit:]{3})-[:digit:]{3}-[:digit:]{4}"
 ```
 
-will extract `"312"` when applied to `"646-312-3257"`
+will extract `"646"` when applied to `"646-312-3257"`
 
 ## Extracting Matches
 
@@ -514,9 +515,9 @@ str_extract(x, "[.[:digit:]]+")
 `str_match(group=)` is useful for complex data extraction. 
 
 ```{r}
-x <- c("Michael Weylandt teaches STA9750", 
-       "Kamiar Rad teaches STA9891")
-pattern <- c("(.*) teaches (.*)")
+x <- c("Michael Weylandt teaches STA9750 on Thursday", 
+       "Kamiar Rad teaches STA9891 on Wednesday")
+pattern <- c("(.*) teaches ([:alnum:]*)")
 stringr::str_extract(x, pattern, group=1)
 stringr::str_extract(x, pattern, group=2)
 ```
@@ -527,7 +528,8 @@ Also allows named groups - really helpful!
 
 ```{r}
 pattern <- c("(?<instructor>.*) teaches (?<course>.*) on (?<weekday>.*)")
-stringr::str_match(x, pattern) |> as.data.frame()
+stringr::str_match(x, pattern) |> 
+  as.data.frame()
 ```
 
 
@@ -552,7 +554,7 @@ stringr::str_detect(x, "[0-9]", negate=TRUE)
 
 ```{r}
 x <- c("Η", "H")
-tolower(x)
+str_to_lower(x)
 ```
 
 Why?
@@ -566,7 +568,7 @@ uni_info(x)
 
 ## Homoglyphs
 
-Particularly nasty with dashes - lean on `[:punct::]` where possible.
+Particularly nasty with dashes - lean on `[:punct:]` where possible.
 
 ```{r}
 x <- c("Em Dash —", "En Dash –", "Hyphen ‐")
@@ -616,10 +618,10 @@ Common paradigm: `html_text2() |> str_remove_all() |> as.numeric()`
 
 ```{r}
 prices <- c("8.25", "$1,000", "500 USD", "$12,345.67 (Estimate)")
-prices |> str_remove_all("[^.[:digit:]]") |> as.numeric()
+prices |> str_remove_all("[^.[:digit:]-]") |> as.numeric()
 ```
 
-Here, `[^.[:digit:]]` means anything (`[]`) that is not (`^`) a period or a digit.
+Here, `[^.[:digit:]-]` means anything (`[]`) that is not (`^`) a period, a digit, or a `-`.
 
 ## Regex + Scraping
 
@@ -632,7 +634,7 @@ Gentoo Male 500g
 Chinstrap Female 1000g"
 
 str_split(x, "\\n", simplify=TRUE) |> 
-    str_match("(?<species>.*) (?<sex>.*) (?<weight>\\d+)g") |> 
+    str_match("(?<species>.*) (?<sex>.*) (?<weight>[:digit:]+)g") |> 
     as.data.frame() |>
     select(-V1) |>
     mutate(sex = if_else(str_detect(sex, "[Ff]"), "female", "male"))
