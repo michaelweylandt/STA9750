@@ -1,7 +1,6 @@
 ---
 lab_num: "`r lab <- 11; lab`"
 lab_title: "Predictive Modeling - Inference and Prediction in `R`"
-format: live-html
 engine: knitr 
 ---
 
@@ -89,6 +88,7 @@ COUNTRIES |> slice_max(density, n=1) |> pull(capital)
 
 ```{r}
 #| message: false
+#| cache: true
 library(tidyverse)
 library(jsonlite)
 
@@ -101,7 +101,8 @@ COUNTRIES <- read_json("https://secure.geonames.org/countryInfoJSON?username=dpe
            area = areaInSqKm, 
            population = population) |>
     mutate(area = as.numeric(area), 
-           population = as.numeric(population))
+           population = as.numeric(population)) |> 
+   filter(area > 0) # Ignore countries / political entities without land area
 ```
 
 :::
@@ -123,6 +124,7 @@ COUNTRIES <- read_json("https://secure.geonames.org/countryInfoJSON?username=dpe
 ::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
+#| cache: true
 library(tidyverse)
 library(jsonlite)
 
@@ -163,11 +165,72 @@ UNJOINED |> summarize(n_missing = n(),
 
 :::
 
-5) Make a series of web requests to read the `geojson` files for each of 
-   the countries using the URLs obtained from the API. Since you will want to
-   make this request sequentially, use the `rowwise` function before calling
-   `sf::st_read`. You will also want to use `unnest` to remove the resulting
-   list-column. 
+5)  **Optional** In the previous section, we found that one major country was
+    missing. After some poking around, it turns out that the missing country
+    is linked in the `ADM1` listing and not the `ADM0` listing. This appears
+    to be just a manual error, but the [related GitHub
+    issue](https://github.com/wmgeolab/geoBoundaries/issues/4265) has not yet
+    been addressed, so we need to handle it ourselves. 
+   
+    Do this by making a second request to request the `ADM1` listings and
+    then filtering out any duplicates. Next join this to the response you
+    had from before, now using a `left_join()` to avoid dropping results
+    from intermediate tables. Finally, use the `coalesce()` function to handle
+    redundant columns. Note that the `coalesce()` column takes a set of
+    column names and gets the first non-`NA` value so it is great for things
+    like this: 
+   
+    ```{r}
+    coalesce_df <- tribble(
+    ~a, ~b, ~c, 
+    1, 2, 3, 
+    4, NA, 6, 
+    NA, NA, 9)
+    coalesce_df |> mutate(fixed_val = coalesce(a, b, c))
+    ```
+
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+
+library(tidyverse)
+
+API_REFERENCE_ADM0 <- "https://www.geoboundaries.org/api/current/gbOpen/ALL/ADM0/" |>
+    read_json(simplify = TRUE) |>
+    select(country = boundaryName, 
+           iso_code = boundaryISO,
+           simple_geojson = simplifiedGeometryGeoJSON) |>
+    distinct()
+
+
+API_REFERENCE_ADM1 <- "https://www.geoboundaries.org/api/current/gbOpen/ALL/ADM1/" |>
+    read_json(simplify = TRUE) |>
+    select(country = boundaryName, 
+           iso_code = boundaryISO,
+           simple_geojson = simplifiedGeometryGeoJSON) |>
+    distinct()
+
+JOINED <- COUNTRIES |> 
+   left_join(API_REFERENCE_ADM0, 
+             join_by(iso_code)) |> 
+   left_join(API_REFERENCE_ADM1, 
+             join_by(iso_code)) |>
+   mutate(country = coalesce(country.x, country.y), 
+          simple_geojson = coalesce(simple_geojson.x, simple_geojson.y)) |>
+   select(-country.x, -country.y, -simple_geojson.x, -simple_geojson.y) |>
+   filter_out(is.na(simple_geojson))
+```
+
+:::
+
+
+6)  Make a series of web requests to read the `geojson` files for each of 
+    the countries using the URLs obtained from the API. Since you will want to
+    make this request sequentially, use the `map()` function to call   
+    `sf::st_read` repeatedly. You will also want to use `unnest()` to remove 
+    the resulting list-column. 
    
 ::: {.callout-tip title="Solution" collapse="true"}
 
@@ -178,20 +241,23 @@ library(tidyverse)
 library(sf)
 
 JOINED_GEOMETRY <- JOINED |>
-    rowwise() |>
-    mutate(geometry = st_read(simple_geojson, quiet=TRUE)) |>
+    mutate(geometry = map(simple_geojson, st_read, quiet=TRUE)) |>
     unnest(geometry) |>
     ungroup()
 ```
 
 :::
 
-6) Create a chloropleth visualization with each country colored according to
+7) Create a chloropleth visualization with each country colored according to
    its population density. 
+   
+   Note that this will take a little while due to the high-resolution
+   shapefiles used above. If you want a faster plot, you can use 
+   `sf::st_simplify()` to reduce the resolution of the boundaries.
    
 ::: {.callout-tip title="Solution" collapse="true"}
 
-```{r}
+```{r draw_map}
 #| cache: true
 #| warning: false
 JOINED_GEOMETRY |>
@@ -202,16 +268,18 @@ JOINED_GEOMETRY |>
     theme(legend.position="bottom") + 
     scale_fill_distiller(name="Population Density", 
                          palette=4, 
-                         direction = 1, 
-                         trans="log")
+                         direction=1,
+                         trans=scales::pseudo_log_trans(), 
+                         breaks=c(0, 3, 10, 30, 100, 300, 1000, 3000, 10000, 30000)) + 
+    guides(fill = guide_colorbar(barwidth=unit(10, "cm")))
 ```
 
 :::
 
 # Classical Statistical Models in `R` {#lm}
 
-Using the countries data downloaded above, use statistical models like `lm`
-and `mgcv::gam` to answer the following: 
+Using the countries data downloaded above, use statistical models like `lm()`
+and `mgcv::gam()` to answer the following: 
 
 1. Recall the `flights` data from the `nycflights13` package. Load this package
    and fit a linear model to predict air time as a function of distance. 
@@ -220,7 +288,6 @@ and `mgcv::gam` to answer the following:
    a flight - the unavoidable time taken to travel between the gate and the
    runway. What is the estimate of this cost based on the model you fit?
    
-
 ::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
@@ -257,7 +324,9 @@ air_time_model |>
     filter(term == "distance") |> 
     mutate(hours_per_mile = estimate / 60, 
            miles_per_hour = 1/hours_per_mile) |> 
-    pull(miles_per_hour)
+    pull(miles_per_hour) |>
+    round(2) |>
+    paste("miles per hour")
 ```
 
 :::
@@ -266,7 +335,7 @@ air_time_model |>
    three NYC-area airports. (Maintain a single estimate of speed for all 
    airports.) Which seems to be the most efficient? 
    
-   Use `broom::tidy` and some regular expressions to create a table that looks
+   Use `broom::tidy()` and some regular expressions to create a table that looks
    like this: 
    
    | Airport | Estimated Fixed Cost |
@@ -286,11 +355,18 @@ air_time_model |>
 library(tidyverse)
 library(nycflights13)
 library(broom)
+library(gt)
 lm(air_time ~ distance + origin - 1, data=flights) |> 
     tidy() |> 
     filter(str_detect(term, "origin")) |> 
     mutate(term=str_remove(term, "origin")) |> 
-    select(Airport=term, `Estimated Fixed Cost (minutes)` = estimate)
+    gt() |>
+    cols_hide(c(statistic, p.value)) |>
+    cols_label(term="Airport", 
+               estimate="Estimated Fixed Transit Cost (Minutes)") |>
+    cols_merge(c(estimate, std.error), 
+               pattern="{1}±{2}") |>
+    fmt_number(c(estimate, std.error))
 ```
 
 :::
@@ -310,16 +386,20 @@ lm(air_time ~ distance + origin - 1, data=flights) |>
 library(tidyverse)
 library(nycflights13)
 library(broom)
-lm(air_time ~ distance * origin - 1 - distance, data=flights) |>
+library(gt)
+lm(air_time ~ distance * origin - 1 - distance,
+    data=flights) |>
     tidy() |>
     mutate(airport = str_sub(term, start=-3), 
            effect = if_else(str_detect(term, "distance"), "speed", "fixed")) |>
     select(estimate, airport, effect) |>
     pivot_wider(names_from=effect, values_from=estimate) |>
     mutate(speed = 60 / speed) |>
-    rename(`Origin Airport` = airport, 
-           `Gate Taxi Time` = fixed, 
-           `Estimated Air Speed` = speed)
+    gt() |>
+    cols_label(airport=md("**Origin Airport**"),
+               fixed=md("Gate Taxi Time (Minutes)"),
+               speed=md("Estimated Air Speed (mph)")) |>
+   fmt_number(c(fixed, speed), decimals = 1)
 ```
 
 :::
@@ -393,7 +473,7 @@ lm(body_mass ~ flipper_len * species, data=penguins) |>
 lm(air_time ~ distance * origin - 1 - distance, data=flights) |>
     augment(newdata=flights) |>
     group_by(month, origin) |>
-    rsq(truth = air_time,
+    rsq(truth=air_time,
         estimate=.fitted) |>
     slice_min(.estimate)
 ```
@@ -413,82 +493,1065 @@ So the drop in $R^2$ is 99.5% to 95.6%: this isn't nothing...
 
 # Computational Inference {#inference}
 
-Using the countries data downloaded above, test the null hypothesis that the 
+**Using the countries data downloaded above, test the null hypothesis that the 
 _standard deviation of population density is equal in African and non-African
-countries_. 
+countries_.** 
 
-To do this, you will need to determine the critical value for the difference in
-sample standard deviation for populations of two different sizes. This is not an
-easy calculation, so we will approach it computationally. 
+Before doing so, let's review the concept of _bootstrapping_, a variant of the
+computationally-powered inference you reviewed in this week's pre-assignment 
+that attempts to relax the requirement that we specify a null distribution 
+precisely.
 
-1. Determine how many African and non-African countries are present in our data
-   set. 
+### Refresher
+
+As discussed [in this week's pre-assignment](../pre/pa11.qmd), the core of
+computationally-intensive approach to statistical inference is to get _many_ 
+'pseudo-samples' from a null distribution, to compute the test statistic on 
+those 'pseudo-samples', and to compare the distribution of the test statistic 
+against the observed value. Doing so requires us to have some sense of a null 
+distribution: it can be a parametric posited *a priori* or, as we do here, it 
+can be based on re-sampling the data at hand. 
+
+In this case, we don't want to posit a full model for country density: we only 
+want to see if our data supports the claim that the standard deviation of 
+population density is the same within Africa and outside of Africa. Because we
+don't require a full model to define our null hypothesis, you might be tempted
+to use a 'working model' based on a normal distribution. A quick plot of the
+data suggests that this data is _quite_ heavy tailed (there are some very small,
+very densely populated areas like Monaco, Hong Kong, and Singapore) so this
+strategy of 'get a good enough' model isn't likely to be productive. 
+
+But we don't _exactly_ need a model for country density - we really just need the
+ability to _sample_ from such a null model that doesn't distinguish Africa and 
+non-Africa. Is there a way we can do that instead without the full overhead of
+a 'proper' model?
+
+We turn to the technique of _bootstrapping_. In essence, we use the data
+we have _as a rough model_ of the (unknown) distribution of interest. How does 
+this work? 
+
+First, note that IID sampling + something like density estimation is a universal
+estimator. No matter the distribution (within reason), if we have enough data
+the sample density estimate (or histogram or empirical CDF) will converge to
+the corresponding true distribution. While this seems intuitive, not everything 
+in statistics is like this: *e.g.*, no matter how much data you have, linear
+regression will never get the 'true' relationship if it is actually non-linear.
+Here, we're replying the fact that things like a density estimate or the ECDF
+are _non-parametric_ and can fit essentially any shape. 
+
+Let $\hat{\mathbb{P}}_n$ be the 'estimated CDF' based on the observed data: 
+we can evaluate $\hat{\mathbb{P}}_n$ by: 
+
+$$\hat{\mathbb{P}}_n(x) = \frac{1}{n} \sum_{i=1}^n 1_{x \leq x_i} $$
+
+That is, to estimate the CDF at any point $x$, we simply look at the fraction
+of points that fall below $x$. The law of large numbers[^gc] tells us that
+
+$$\hat{\mathbb{P}}_n(x) \to \mathbb{P}(x) \text{ for all } x$$ or just
+
+$$\hat{\mathbb{P}}_n \to \mathbb{P}$$
+
+
+where $\mathbb{P}$ is the true distribution used to generate the data. This
+suggests to us that, while we might be interested in the variance of our
+test statistic $T$ under distribution $\mathbb{P}$, we can approximate it 
+using $\hat{\mathbb{P}}_n$. That is, we hope that
+
+$$\text{Variance}_{\hat{\mathbb{P}}_n}(T) \to \text{Variance}_{\mathbb{P}}(T)$$
+
+for any test statistic $T$ as the sample size $n \to \infty$. Notably, this 
+should work for almost _any_ distribution $\mathbb{P}$ and any test statistic
+$T$. Similar results hold for quantiles of $T$ as well:
+
+$$q\text{-Quantile}_{\hat{\mathbb{P}}_n}(T) \to q\text{-Quantile}_{\mathbb{P}}(T) \text{ for all } q \in (0, 1)$$
+
+So this means that we can approximate $\text{Quantile}_{\mathbb{P}}(T)$ if we
+can estimate $\text{Quantile}_{\hat{\mathbb{P}}_n}(T)$. This leaves us with 
+just one question: how do we sample from $\hat{\mathbb{P}}_n$? 
+
+Note that $\hat{\mathbb{P}}_n$ is the CDF of a discrete distribution with equal 
+jumps at each observation: that is, it's uniform over the observed samples. So 
+how can we sample from a uniform distribution? We simply pick one of its values
+at random. And how do we get a second sample, we just get another value at
+random once again. 
+
+::: {.callout-info title="Bootstrap Resampling"}
+
+Bootstrap sampling is often described as _sampling with replacement_. This is
+true, but I don't like it as an explanation because it seems a bit magical. 
+
+The true idea of bootstrapping is that we are just getting $n$ samples from a 
+(uniform) distribution over the original data. When we take any number of
+samples from a discrete distribution, there is always a possibility of ties, 
+regardless of how we came up with that distribution. "Bootstrap sampling with
+replacement" is then just weirdly redundant: regular sampling of any 
+distribution always allows with replacement."[^cont] (You would never specify 
+'flipping a coin three times _with replacement_'!)
+
+To recap: in bootstrapping
+
+- We build a discrete uniform distribution from the original data
+- We sample from that distribution to estimate quantities of interest
+
+The fact we get samples _with replacement_ is not because we are bootstrapping
+*per se*, it's just because we are IID sampling from a _distribution_ and the 
+values that distribution don't change based on what we saw previously.
+
+:::
+
+[^cont]: Even sampling from a continuous distribution _theoretically_ allows 
+us to get repeated values; in practice, these are 'probability zero' types of
+events and never happen. But it's not _actually_ impossible - just _never going
+to happen_!
+
+Before we apply this to statistical hypothesis testing, let's just use this
+idea to estimate the _quantiles_ of the standard deviation of the country 
+density. The point estimate is straightforward: 
+
+```{r}
+COUNTRIES |> 
+   mutate(density = population / area) |> 
+   summarize(sd(density))
+```
+
+But how can we get a sense of the variance of this quantity? Ideally, we would
+have _many_ sets of countries and could compute standard deviation _within_ each
+set and then compute a variance _across_ sets. Resampling will get us there: 
+
+```{r}
+COUNTRIES |> 
+   mutate(density = population / area) |> 
+   mutate(density_resampled = sample(density, replace=TRUE)) |> 
+   summarize(sd(density_resampled))
+```
+
+A bit different - but not too much. But one 'alternate world value' isn't enough
+to get quantiles. We need many! There are several ways to code this in `dplyr`, 
+but one of the easiest is to use the `expand_grid()` function to induce 
+replicates: 
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+conflicted::conflict_prefer("filter", "dplyr")
+```
+
+```{r}
+COUNTRIES |> 
+    filter(area > 0) |> 
+    mutate(density = population / area) |> 
+    expand_grid(replicate=1:100) |> 
+    mutate(density_resampled = sample(density, replace=TRUE)) |> 
+    group_by(replicate) |> 
+    summarize(density_sd_resampled = sd(density_resampled)) |> 
+    summarize(density_sd_q95 = quantile(density_sd_resampled, 0.95), 
+              density_sd_q05 = quantile(density_sd_resampled, 0.05))
+```
+
+To understand this better, let's apply it to a smaller example with 9 penguins:
+
+```{r}
+small_penguins <- penguins |> 
+   drop_na() |> 
+   group_by(species) |> 
+   slice_sample(n=3)
+
+small_penguins
+```
+
+If we use `expand_grid()`, we induce _copies_ of each data set: 
+
+```{r}
+small_penguins_eg <- small_penguins |> expand_grid(replicate = 1:3)
+
+small_penguins_eg
+```
+
+We then use `sample(..., replace=TRUE)` to perform bootstrap sampling on the 
+`body_mass` column: 
+
+```{r}
+small_penguins_eg_bs <- small_penguins_eg |> 
+   mutate(body_mass_bs = sample(body_mass, replace=TRUE))
+```
+
+And finally, we use the replicate column to get multiple samples we can use 
+to get a sense of variance: 
+
+```{r}
+small_penguins_eg_bs |> 
+   group_by(replicate) |> 
+   summarize(avg_body_mass = mean(body_mass_bs)) |> 
+   summarize(sd_avg_body_mass = sd(avg_body_mass))
+```
+
+With only three samples, this doesn't give us much strength, so let's just let
+the number of bootstrap samples go to 5000. 
+
+```{r}
+small_penguins |> 
+   expand_grid(replicate = 1:5000) |>
+   mutate(body_mass_bs = sample(body_mass, replace=TRUE)) |>
+   group_by(replicate) |> 
+   summarize(avg_body_mass = mean(body_mass_bs)) |> 
+   summarize(sd_avg_body_mass = sd(avg_body_mass))
+```
+
+Usually, around 1000 bootstrap samples is enough to account for the randomness 
+from the `sample()` in the third line.
+
+Returning to our population density SD example from above: 
+
+```{r}
+COUNTRIES |> 
+    filter(area > 0) |> 
+    mutate(density = population / area) |> 
+    expand_grid(replicate=1:2000) |> 
+    mutate(density_resampled = sample(density, replace=TRUE)) |> 
+    group_by(replicate) |> 
+    summarize(density_sd_resampled = sd(density_resampled)) |> 
+    summarize(density_sd_q95 = quantile(density_sd_resampled, 0.95), 
+              density_sd_q05 = quantile(density_sd_resampled, 0.05))
+```
+
+This gives us a sense of the _range_ of plausible standard deviations - or, more
+precisely, the range of standard deviations that are consistent with the 
+observations we have seen. 
+
+We can plot these as well: 
+
+```{r}
+COUNTRIES |> 
+    filter(area > 0) |> 
+    mutate(density = population / area, 
+           true_density_sd = sd(density)) |> 
+    expand_grid(replicate=1:200) |> 
+    mutate(density_resampled = sample(density, replace=TRUE)) |> 
+    group_by(replicate) |> 
+    summarize(density_sd_resampled = sd(density_resampled), 
+              true_density_sd = first(true_density_sd)) |> 
+    mutate(density_sd_q95 = quantile(density_sd_resampled, 0.95), 
+           density_sd_q05 = quantile(density_sd_resampled, 0.05)) |> 
+    ggplot(aes(x=density_sd_resampled)) + 
+    geom_density() + 
+    theme_bw() + 
+    xlab("Standard Deviation of Density") + 
+    ylab("Bootstrap Sampling Density") + 
+    geom_area(stat="density", 
+              aes(fill = after_stat(x) > quantile(x, 0.05) & 
+                         after_stat(x) < quantile(x, 0.95))) + 
+    scale_fill_manual(name="Central 90%", 
+                      values=c("TRUE"="#4682B477",
+                               "FALSE"=NA)) + 
+    guides(fill="none") + 
+    geom_vline(aes(xintercept=true_density_sd), 
+               color="red4", 
+               linewidth=2, 
+               linetype=2) + 
+    ggtitle("Sampling Distribution of Standard Deviation of Country Densities", 
+            "True value (Red) lies in the middle of the sampling distribution")
+```
+
+We see here that, unsurpsingly, the bootstrap distribution is located around
+the 'true' value, with a second mode that likely corresponds to the times that
+the highest- and lowest-density countries are randomly excluded. This second
+mode provides us strong evidence that country populations and areas are not 
+normally distributed (if that weren't already obvious).
+
+In this case, if we, for whatever reason, had a null belief that the 'true'
+standard deviation was near 3000, it would be clear that this is quite 
+incompatible with the observed value (red line) but also with the variance 
+around that observed value (blue area). 
+
+[^gc]: More precisely, a *uniform* law of large numbers called the 
+Glivenko-Cantelli theorem. 
+
+
+### Boostrap Testing in Action
+
+Now it's your turn! Using the countries data downloaded above, test the null 
+hypothesis that the **standard deviation of population density is equal in 
+African and non-African countries**.
+
+1. Create a new (Boolean) variable to determine whether a country is in 
+   Africa or not. 
    
-2. Write a function that:
-   a. Generates $n_x$ samples from a standard normal distribution and saves the
-      results as $x$.
-   b. Generates $n_y$ samples from a standard normal distribution and saves the
-      results as $y$.
-   c. Computes the difference between the standard deviation of $x$ and the
-      standard deviation $y$. 
-      
-3. Call this function a large number of times to get a sense of the 
-   null distribution. Compute its 2.5% and 97.5% quantiles. 
-   
-4. Compute the difference in standard deviations on the actual data. 
+::: {.callout-tip title="Solution" collapse="true"}
 
-5. Draw the appropriate inference: is the null hypothesis rejected or not? 
-     
+```{r}
+COUNTRIES <- COUNTRIES |>
+   mutate(in_africa = (continent == "Africa"), 
+          density = population / area)
+```
+
+:::
+   
+2. Compute the standard deviation of density for both African and non-African
+   countries, then compute the _difference_ in standard deviations. This will be
+   the 'observed' value we want to compare against the bootstrap samples. 
+   
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+delta_sd_observed <- COUNTRIES |> 
+    group_by(in_africa) |> 
+    summarize(sd_density = sd(density)) |> 
+    mutate(in_africa = if_else(in_africa, "africa", "nonaf")) |>
+    pivot_wider(names_from=in_africa,
+                values_from=sd_density) |> 
+    mutate(delta_sd = nonaf - africa) |> 
+    pull(delta_sd)
+```
+
+:::
+   
+3. Modify the strategy above to compute standard deviations for African and
+   non-African countries in each replicate. 
+   
+   *Hint*: When forming replicates, we are assuming that the distribution of
+   African and non-African countries is the same, so we do not need to modify
+   our bootstrap sampling in any significant way. Here, the two-group structure
+   is only used to define our test statistic. 
+   
 ::: {.callout-tip title="Solution" collapse="true"}
 
 ```{r}
 COUNTRIES |> 
-    mutate(in_africa = (continent == "Africa")) |> 
-    count(in_africa)
-
-n_africa <- 58
-n_nonafr <- 192
-
-sim_sd_diff <- function(nx, ny){
-    x <- rnorm(nx)
-    y <- rnorm(ny)
-    
-    sd(x) - sd(y)
-}
-
-null_samples <- replicate(1e5, sim_sd_diff(n_africa, n_nonafr))
-
-# If the observed data it outside this range, we will reject the null
-quantile(null_samples, c(0.025, 0.975))
-
-# The observed value is way outside the quantile sampling, so we reject the null
-COUNTRIES |> 
-    mutate(in_africa = (continent == "Africa"), 
-           density = population / area, 
-           overall_sd_dens = sd(density, na.rm=TRUE)) |> 
-    group_by(in_africa) |>
-    summarize(sd_dens = sd(density, na.rm=TRUE) / first(overall_sd_dens)) |>
-    summarize(diff_sd = diff(sd_dens))
+    expand_grid(replicate=1:1000) |> 
+    mutate(density_resampled = sample(density, replace=TRUE)) |> 
+    group_by(replicate, in_africa) |> 
+    summarize(density_sd_resampled = sd(density_resampled))
 ```
-
-In this case, we quite clearly reject the null. This is not surprising as some
-of the highest density (Monaco, Singapore, Hong Kong) and lowest density 
-(Antarctica) countries are not in Africa, so we expect there to be more 
-spread outside Africa than within Africa. 
 
 :::
 
-You might reasonably ask whether normal sampling is correct here as 
-the distribution of densities does not appear to follow a normal distribution. 
-Techniques like _bootstrapping_ can be used to relax the assumption of normality
-but we will not purse it here. 
+3. Now compute the _difference_ in SDs for each replicate and construct 
+   a density plot for the middle 95% of the distribution of differences.  
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+COUNTRIES |> 
+    expand_grid(replicate=1:1000) |> 
+    mutate(density_resampled = sample(density, replace=TRUE)) |> 
+    group_by(replicate, in_africa) |> 
+    summarize(sd_density_resampled = sd(density_resampled)) |>
+    mutate(in_africa = if_else(in_africa, "africa", "nonaf")) |>
+    pivot_wider(names_from=in_africa,
+                values_from=sd_density_resampled) |> 
+    mutate(delta_sd_resampled = nonaf - africa) |>
+    ggplot(aes(x=delta_sd_resampled)) + 
+    geom_density() + 
+    theme_bw() + 
+    xlab("Standard Deviation of Difference in Population Densities") + 
+    ylab("Bootstrap Sampling Density") + 
+    geom_area(stat="density", 
+              aes(fill = after_stat(x) > quantile(x, 0.05) & 
+                         after_stat(x) < quantile(x, 0.95))) + 
+    scale_fill_manual(name="Central 90%", 
+                      values=c("TRUE"="#4682B477",
+                               "FALSE"=NA)) + 
+    guides(fill="none")
+```
+
+:::
+   
+4. Add a vertical line for your observed value (computed above). If this
+   falls _outside_ the shaded area, we can _reject_ the null of no difference
+   between African and non-African countries. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+COUNTRIES |> 
+    expand_grid(replicate=1:1000) |> 
+    mutate(density_resampled = sample(density, replace=TRUE)) |> 
+    group_by(replicate, in_africa) |> 
+    summarize(sd_density_resampled = sd(density_resampled)) |>
+    mutate(in_africa = if_else(in_africa, "africa", "nonaf")) |>
+    pivot_wider(names_from=in_africa,
+                values_from=sd_density_resampled) |> 
+    mutate(delta_sd_resampled = nonaf - africa) |>
+    ggplot(aes(x=delta_sd_resampled)) + 
+    geom_density() + 
+    theme_bw() + 
+    xlab("Standard Deviation of Difference in Population Densities") + 
+    ylab("Bootstrap Sampling Density") + 
+    geom_area(stat="density", 
+              aes(fill = after_stat(x) > quantile(x, 0.05) & 
+                         after_stat(x) < quantile(x, 0.95))) + 
+    scale_fill_manual(name="Central 90%", 
+                      values=c("TRUE"="#4682B477",
+                               "FALSE"=NA)) + 
+    guides(fill="none") + 
+    geom_vline(xintercept=delta_sd_observed, 
+               color="red4", 
+               linewidth=2)
+```
+
+From here, we see that while there is a wider spread among non-African countries
+than there is among African countries, it is not inconsistent with 
+'pure randomness' that we could get if we randomly swapped the labels on this
+data. In particular, we see that we can get differences in standard deviations 
+of $\pm 2000$, so the observed difference of `r delta_sd_observed |> round()` 
+is not that big in context.[^perm]
+
+:::
+
+[^perm]: We also could have _permuted_ the labels of Africa / non-Africa here
+to get a similar type of test. In finite samples, this test is likely to be just 
+a bit more reliable (since we don't rely on the 'enough data to estimate a 
+true distribution' argument that powers bootstrapping), but the differences 
+aren't huge. In practice, this comes down to _shuffling_ rather than 
+_resampling_, which can also be done with the `sample` function, but now with
+`sample(..., replace=FALSE)`. Permutation testing is a bit simpler and better
+when possible, but not everything is easily done with a permutation test.
+
+::: {.callout-tip title="All In One Go" collapse="true"}
+
+If you want to avoid having `delta_sd_observed` as its own variable, this
+example shows how it can be handled as its own column to get the same results:
+
+```{r}
+COUNTRIES |> 
+    expand_grid(replicate=1:1000) |> 
+    mutate(density_resampled = sample(density, replace=TRUE)) |> 
+    group_by(replicate, in_africa) |> 
+    summarize(sd_density_resampled = sd(density_resampled), 
+              sd_density = sd(density), 
+              .groups="drop") |>
+    mutate(in_africa = if_else(in_africa, "africa", "nonafr")) |>
+    pivot_wider(names_from=in_africa, 
+                values_from=c(sd_density, sd_density_resampled)) |>
+    mutate(delta_sd_resampled = sd_density_resampled_nonafr - sd_density_resampled_africa, 
+           delta_sd = sd_density_nonafr - sd_density_africa ) |>
+    ggplot(aes(x=delta_sd_resampled)) + 
+    geom_density() + 
+    theme_bw() + 
+    xlab("Standard Deviation of Difference in Population Densities") + 
+    ylab("Bootstrap Sampling Density") + 
+    geom_area(stat="density", 
+              aes(fill = after_stat(x) > quantile(x, 0.05) & 
+                         after_stat(x) < quantile(x, 0.95))) + 
+    scale_fill_manual(name="Central 90%", 
+                      values=c("TRUE"="#4682B477",
+                               "FALSE"=NA)) + 
+    guides(fill="none") + 
+    geom_vline(aes(xintercept=delta_sd), 
+               color="red4", 
+               linewidth=2) + 
+   ggtitle("Comparison of Population Density Variance Among African and Non-African Countries", 
+           "Insignificant Evidence that Non-African Countries Exhibit Higher Density Variance")
+```
+
+:::
+
+I like to code these types of analyses 'by hand' and think that it is a useful
+exercise to clarify the logic of statistical testing; sometimes, particularly
+if you want to stay closer to a 'standard' test with standard test statitics, 
+it may be easier to rely on a pre-packaged implementation. The `infer` package
+makes this type of computational inference quite easy and supports both 
+parametric, bootstrap, and permutation based approaches to inference. See
+[this vignette](https://infer.tidymodels.org/articles/observed_stat_examples.html)
+for more.
 
 # Tidymodels {#tidymodels}
 
-Work through the second model (tree ensembles, *i.e.*, _random forests_) at
-<https://www.tidymodels.org/start/case-study#second-model>. 
+The `tidymodels` package provides an elegant interface for applying many 
+"black box" machine learning models in a standardized manner. This is especially
+useful when you want to compare many different models to see which performs the
+best on a prediction task.[^sta9890]
 
-Note that you may need to begin with the data import section before following
-the random forest example. 
+[^sta9890]: As someone who has dedicated large part of my career to the 
+subtle _differences_ between these models, this sort of 'easy swappability'
+rubs me the wrong way, but it is _immensely_ useful in applied work. If you do 
+want to learn what these models actually do - and when one should be preferred
+over the other - I'd encourage you to take STA 9890 and STA 9891, which cover
+these types of "ML" models in more detail.
 
+In these notes, we're going to use `tidymodels` for two tasks that may be
+useful as you finish your final projects: 
+
+i)  Building a model that takes in several features and uses them to predict
+    an output of interest
+ii) Using both feature importance scores and a _leave-one-covariate-out_ (LOCO)
+    strategy to determine which features are most important. 
     
+## Tidymodels Basics
+
+`tidymodels` provides a unified framework for building _predictive_ models. 
+In this context, we are _solely_ focused on out-of-sample prediction and aren't
+paying attention to things like coefficients or statistical significance. 
+This single-minded focus makes it possible for `tidymodels` to "abstract" over
+different types of machine-learning models, using them only as prediction 
+machines.[^bb]
+
+[^bb]: This type of framework uses models as 'black-boxes' because the
+user is not required to, nor able to, interrogate the parameters of the model.
+Indeed, for some of the most powerful and useful models we will consider, the
+model does not have parameters in the classical sense. 
+
+We will demonstrate the use of the `tidymodels` ecosystem[^tm] to build a predictive 
+model on a data set of NYS public school test results. I have prepared two files
+containing relevant data: 
+
+[^tm]: Like the `tidyverse` packages, we will typically load the `tidymodels`
+packages through a helper package `tidymodels` that loads several packages for
+us. Running `library(tidymodels)` is functionally equivalent to something like: 
+
+    ```{r}
+#| message: false
+#| warning: false
+library(dials)
+library(broom)
+library(hardhat)
+library(parsnip)
+library(recipes)
+library(rsample)
+library(tune)
+library(workflows)
+library(yardstick)
+    ```
+
+- [School-Level Covariates (`schools_covariates.csv`)](../schools_covariates.csv)
+- [School-Level Test Results (`schools_test_results.csv`)](../schools_test_results.csv)
+
+```{r}
+#| echo: false
+#| message: false
+library(tidyverse)
+COVARIATES <- read_csv("schools_covariates.csv")
+RESULTS <- read_csv("schools_test_results.csv")
+```
+
+The first file, `schools_covariates.csv`, has data on `r NROW(COVARIATES)` 
+schools, covering information about class size, the number of teachers and 
+support staff, the percentage of students who quality for discounted or free
+lunches, and funding levels.[^cov] The latter file, `school_test_results.csv`,
+has `r NROW(RESULTS)` test results, indexed by the school, the student subgroup
+(*e.g.*., all male students or all non-white students), and the test subject.
+The variable we seek to predict is `PERCENT_PROFICIENT`, the fraction of 
+students who achieved a 'proficient' score on that test.[^scores]
+
+[^cov]: There are `r NCOL(COVARIATES)` school covariates in total, but we won't 
+use them all in this exercise. 
+
+[^scores]: While these are percentages, they are scaled up by 100, so a value
+of "50" indicates that half (50%) of students were proficient. 
+
+::: {.callout-info title="Additional Background" collapse="true"}
+
+Persuant to the [Every Student Succeeds Act (ESSA) of
+2015](https://en.wikipedia.org/wiki/Every_Student_Succeeds_Act) and its 
+predecessor, the [No Child Left Behind Act (NCLB) of
+2001](https://en.wikipedia.org/wiki/No_Child_Left_Behind_Act), all public 
+schools in New York State are required to administer standardized examinations
+annually to their students. Students' results on these tests are used for a
+variety of purposes, including assessing teacher and school performance, 
+providing additional recognition to high-performing schools, and identifying
+struggling students or subgroups. The 
+[New York State Education Department (NYSED)](https://www.nysed.gov/)
+makes aggregate test results available through its annual 
+["School Report Card"](https://data.nysed.gov/) data
+releases. For this exercise, we will predict the percentage of students at each 
+school who score in the "Proficient" range (*i.e.*, at or above grade level) on 
+a wide battery of standardized tests during the 2024 testing period. 
+
+New York administers two primary sets of standardized exams:[^alts]
+
+- Grade 3-8 Exams: 
+  - English Language Arts ("ELA") given every year 
+  - Mathematics given every year
+  - Science, typically given only in grade 5 and grade 8
+- [Regents Exams](https://en.wikipedia.org/wiki/New_York_Regents_Examinations) 
+  for high school students
+
+The Regents exams cover a broader variety of topics and, historically, have been
+a graduation requirement in NYS. For each exam, a "proficiency" level is 
+determined: *e.g.*, if a exam gives scores from "1" to "4", levels "3" and "4"
+may be considered "proficient". Your task is to predict the fraction of students
+who achieve proficiency. 
+
+The organization of public schools in New York State is, like everything in New
+York State, rather confusing. As of the time of writing, NYSED reports: 
+
+- 730 Districts
+- 4,394 Public Schools
+- 373 Charter Schools
+- 215,701 Public School Teachers
+- 2,421,491 Public School Students
+
+in the state. These districts range from very small, *e.g.*, [Newcomb
+CSD](https://data.nysed.gov/profile.php?instid=800000051865) with 47 students to
+very large, *e.g.*, [NYC Public 
+Schools](https://data.nysed.gov/profile.php?instid=7889678368) with just under 
+a million students. 
+
+Outside of NYC, public schools are organized into local school districts, which
+typically have (at least) one elementary school, one middle school, and one
+high school.[^small] These districts are further organized into [Boards of
+Cooperative Educational Serices "BOCES"](https://www.boces.org/) which provide
+shared resources to groups of smaller districts.  Local school districts are 
+principally funded by property taxes, with more affluent districts having a 
+larger tax base and providing higher per-student funding levels. Local school
+districts are run by an elected school board, following statewide standards. To
+address differences in funding, NYSED provides supplemental funding to districts
+based on their assessed ["Needs/Resource
+Capacity"](https://p12.nysed.gov/irs/accountability/2011-12/NeedResourceCapacityIndex.pdf),
+though [work is ongoing](https://rockinst.org/wp-content/uploads/2024/12/2024-12-Foundation-Aid-Report.pdf)
+to update and refine the current funding formula. 
+
+Within NYC, public schools are run by the [NYC Department of Education (NYC
+DOE)](https://en.wikipedia.org/wiki/New_York_City_Department_of_Education), 
+under a commissioner and [school
+board](https://en.wikipedia.org/wiki/New_York_City_Panel_for_Educational_Policy)
+appointed by the mayor and borough presidents. NYCDOE is subdivided into 
+[32 geographic school districts](https://www.schools.nyc.gov/docs/default-source/default-document-library/nycdoe-district-map.pdf)
+and two citywide districts providing specialized services for students with 
+disabilities or students in alternative education programs.
+
+[^alts]: We are ignoring alternative assessments like the
+[NYSAA](https://www.nysed.gov/state-assessment/new-york-state-alternate-assessment)
+for this exercise. 
+
+[^small]: Very small districts may consolidate into two (or even one) school
+serving a wider variety of grades or arrange for their students to be educated
+within a neighboring district. 
+
+:::
+
+Let's read these files into `R`, join them together, and remove some identifiers
+that aren't relevant to us: 
+
+```{r}
+#| message: false
+library(tidyverse)
+COVARIATES <- read_csv("schools_covariates.csv")
+RESULTS <- read_csv("schools_test_results.csv")
+
+DATA <- inner_join(RESULTS, 
+                   COVARIATES, 
+                   join_by(SCHOOL == SCHOOL)) |> 
+    select(-ASSESSMENT_ID)
+```
+
+In the interest of speed, we're only going to use a few features and a subset
+of the entire data set, though all of the code shown here can be scaled up to 
+use all of the rows and columns in this data set: 
+
+```{r feature_engineering_subsample_data}
+#| cache: true
+DATA <- DATA |> 
+    mutate(
+        # Lunch discount as a proxy for family income
+        LUNCH_DISCOUNT = PERCENT_FREE_LUNCH + PERCENT_REDUCED_LUNCH, 
+        # Student-teacher-ratio
+        STUDENT_TEACHER_RATIO = N_PUPILS / NUMBER_OF_TEACHERS, 
+        # Does more funding actually help?
+        FUNDING_PER_STUDENT = LOCAL_FUNDING_PER_PUPIL + 
+            FEDERAL_FUNDING_PER_PUPIL) |>
+    select(
+        # Outcome of interest
+        PERCENT_PROFICIENT, 
+        # Population of interest: which test and which group of students?
+        SUBGROUP_NAME, 
+        ASSESSMENT_NAME, 
+        # Three constructed features
+        LUNCH_DISCOUNT, 
+        STUDENT_TEACHER_RATIO, 
+        FUNDING_PER_STUDENT) |> 
+    slice_sample(n=10000)
+```
+
+
+::: {.callout-caution title="Simplified Modeling"}
+
+The model demonstrated here ignores much of the interesting structure (schools
+within districts within regions, *etc*) of this data that a more effective model
+would take advantage of. The simple model we show here is intended to 
+demonstrate the use of `tidymodels`, not to be the last word in modeling this
+type of data.
+
+:::
+
+## Prediction Models
+
+For this demonstration, we are going to build a _random forest_ (RF) predictor. 
+Random forests are a powerful and flexible machine learning tool that can be
+fit efficiently and don't require too much tuning.
+
+`tidymodels` requires us to specify a few separate components of our model 
+fitting pipeline: 
+
+- A _recipe_ describing how the prediction task is specified and any data
+  pre-processing that is performed. This is the stage in which we specify which
+  variables are to be used as predictors and which is our outcome. We also 
+  perform steps like data standardization, imputing missing values, handling
+  categorical features, removing 'low information features', *etc.* here. 
+- A _model_ specification indicating what type of model we want to use. At this
+  stage, in addition to specifying the _type_ of model, we also have the option
+  to specify any 'knobs' (hyperparameters) that control model behavior and, for
+  models with multiple implementations, specify which package we want to use.
+- The range of tuning parameters (if any) to consider
+- Data used to tune and evaluate the model
+
+Let us build these each in turn. We first build a `recipe()` for our task, a 
+set of steps that define the roles of each variable (predictor or response) and
+any pre-processing, if necessary. In this case, we don't need much 
+pre-processing as we're using a model family that's quite robust. 
+
+```{r}
+#| message: false
+library(tidymodels)
+
+schools_proficiency_task <- recipe(PERCENT_PROFICIENT ~ ., data=DATA)
+```
+
+Here, we simply specify that we want to predict one column (`PERCENT_PROFICIENT`)
+using all other features (`.`). At this point, we have specified our goal, but
+we still need to specify the manner (model) by which we hope to achieve that goal.
+
+For this task, we're going to specify a _random forest_ model: 
+
+```{r}
+rf_model <- rand_forest() |> 
+    set_mode("regression") |> 
+    set_engine("ranger")
+```
+
+Here, we have specified a basic random forest and set two properties: 
+
+- the `mode` specifies what type of random forest we are fitting. Here we are
+  predicting a continuous response rather than a categorical or discrete one,
+  so our task is 'regression' in the jargon of machine learning. 
+- the `engine` specifies which `R` package we want to use. Here, we're using the
+  [`ranger` package](https://imbs-hl.github.io/ranger/) which provides a 
+  high-performance and high-quality implementation of the random forest framework.
+  
+At this point, we can define a `workflow()` object that will put these two together:
+
+```{r}
+schools_rf <- workflow() |> 
+    add_recipe(schools_proficiency_task) |> 
+    add_model(rf_model)
+```
+
+Finally, we can use this `workflow`  to fit our model to data: 
+
+```{r fit_full_rf}
+#| cache: true
+rf_fitted <- schools_rf |> fit(data=DATA)
+```
+
+At this point, we have a model that could be used to make predictions: 
+
+```{r}
+augment(rf_fitted, new_data=DATA) |> head(n=5)
+```
+
+Indeed, we could even compute a set of accuracy measures for this problem:[^err]
+
+[^err]: It is not clear to me why we have to specify the `estimate` and `truth`
+columns automatically here. It seems like the kind of thing that should be 
+inferred from the `recipe`, but it's the way it is (for now). 
+
+```{r}
+metrics <- metric_set(
+    # Root Mean Squared Error
+    rmse, 
+    # R-Squared
+    rsq, 
+    # Mean Absolute Error
+    mae, 
+    # Mean Absolute Percentage Error, 
+    mape)
+
+augment(rf_fitted, new_data=DATA) |> 
+    metrics(truth=PERCENT_PROFICIENT, 
+            estimate=.pred)
+```
+
+So that last row -- "percent error" -- goes a bit janky just because we have
+`r DATA |> filter(PERCENT_PROFICIENT == 0) |> NROW()` tests on which 0% of
+students were at grade level.  We can exclude these from our analysis and use
+other `tidyverse` techniques to see how our model performs on different tests: 
+
+```{r}
+library(gt)
+rf_fitted |> 
+    augment(new_data=DATA) |> 
+    filter(PERCENT_PROFICIENT > 0) |> 
+    group_by(ASSESSMENT_NAME) |> 
+    metrics(truth=PERCENT_PROFICIENT, 
+            estimate=.pred) |> 
+    select(-.estimator) |> 
+    pivot_wider(names_from=.metric, values_from=.estimate) |>
+    mutate(mape = mape/100) |> 
+    gt(id="tbl_exams_1", rowname_col = "ASSESSMENT_NAME") |>
+    cols_label(rmse="Root Mean Squared Error", 
+               rsq="R^2", 
+               mae="Mean Absolute Error", 
+               mape="Mean Absolute Percent Error") |>
+    fmt_percent(c(rsq, mape)) |> 
+    fmt_number(c(rmse, mae))
+```
+
+This is good, as far as it goes, but we have violated *several* ML 
+best practices. In fact, the `new_data` argument to `augment()` should have
+been a bit of a warning sign. Here, we are evaluating the model on the data
+used to train it. 
+
+A better practice is to hold some of our data aside and use it for model
+evaluation. This can be done in several ways, but here we're going to use a
+technique known as 
+[cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics))
+wherein we split the data into several pieces and fit the model several times,
+holding out one piece for evaluation each time. 
+
+This is conceptually straightforward, but the book-keeping can be a bit 
+of a pain. Thankfully, `tidymodels` is available to help us: 
+
+```{r fit_rf_cv}
+#| cache: true
+schools_cv <- vfold_cv(DATA, v=5)
+
+schools_rf_cv <- schools_rf |> fit_resamples(schools_cv)
+```
+
+Note that here we use `fit_resamples()`  instead of a plain `fit()` to
+account for this repeated fitting and evaluation structure. In this case, 
+we also see that several metrics were automatically computed for us
+
+```{r}
+schools_rf_cv |> select(id, .metrics) |> unnest(.metrics) |> head(n=5)
+```
+
+If we want to use all four metrics from before, we can pass the
+`metrics` argument to `fit_resamples()`. This gives us a sense of 
+error bars on our metrics, which we can compute by hand or with the
+help of the `collect_metrics()`: 
+
+```{r fit_rf_cv2}
+#| cache: true
+schools_rf |> fit_resamples(schools_cv, metrics = metrics) |> collect_metrics()
+```
+
+If we want to get group-wise statistics as before, we still need to do
+a bit of work by hand. 
+
+```{r fit_rf_cv3}
+#| cache: true
+#| message: false
+#| warning: false
+schools_rf |> 
+    fit_resamples(schools_cv, 
+                  metrics = metrics, 
+                  control = control_resamples(save_pred = TRUE)) |>
+    collect_predictions() |> 
+    arrange(.row) |> 
+    inner_join(DATA |> mutate(.row=row_number()), 
+               join_by(.row, 
+                       PERCENT_PROFICIENT)) |> 
+    filter(PERCENT_PROFICIENT > 0) |> 
+    group_by(ASSESSMENT_NAME, id) |>
+    metrics(truth=PERCENT_PROFICIENT, 
+            estimate=.pred) |> 
+    group_by(ASSESSMENT_NAME, 
+             .metric) |> 
+    summarize(mean_metric = mean(.estimate), 
+              sd_metric = sd(.estimate), 
+              se_metric = sd_metric / sqrt(n())) |>
+    ungroup() |>
+    select(-sd_metric) |> 
+    pivot_wider(values_from=c(mean_metric, se_metric), 
+                names_from=.metric) |> 
+    mutate(mean_metric_mape = mean_metric_mape / 100, 
+           se_metric_mape = se_metric_mape / 100) |>
+    gt(id="tbl_exams_2", 
+       rowname_col = "ASSESSMENT_NAME") |> 
+    cols_label(mean_metric_rmse="Root Mean Squared Error", 
+               mean_metric_rsq="R^2",
+               mean_metric_mae="Mean Absolute Error", 
+               mean_metric_mape="Mean Absolute Percent Error") |>
+    fmt_percent(c(mean_metric_rsq, se_metric_rsq, 
+                  mean_metric_mape, se_metric_mape)) |>
+    fmt_number(c(mean_metric_rmse, se_metric_rmse, 
+                  mean_metric_mae, se_metric_mae)) |>
+    cols_merge(c(mean_metric_rmse, se_metric_rmse), pattern="{1}±{2}") |>
+    cols_merge(c(mean_metric_rsq, se_metric_rsq), pattern="{1}±{2}") |>
+    cols_merge(c(mean_metric_mae, se_metric_mae), pattern="{1}±{2}") |>
+    cols_merge(c(mean_metric_mape, se_metric_mape), pattern="{1}±{2}") |> 
+    sub_missing() |>
+    tab_header("Prediction Error Metrics by Exam", 
+               "CV Prediction Error of a Random Forest Model Predicting Student Exam Proficiency Using Funding, SES, and Student-Teacher Ratios")
+```
+
+Not surprisingly, our performance here is worse than we saw above, because we 
+are now getting 'out-of-sample' results.
+
+This is rather messy, but it gives us a good sense of how well our model can
+do on different exams. In general, we see that we are 10-15% off (RMSE) using
+these three features, so our model isn't great yet. 
+
+## LOCO Inference
+
+With our model in hand, we now want to ask which of our three big features 
+is most important. In general, when assessing feature importance we have a
+choice between methods _intrinsic_ to the model (*e.g.*, regression
+coefficients for OLS) or methods _extrinsic_ to the model. Extrinsic methods
+are necessarily less specific, but useful because they can be compared across
+different models. 
+
+Here, we're going to demonstrate the use of the _extrinsic_ model known as 
+*Leave-One-Covariate-Out* (LOCO) feature importance. In brief, LOCO compares
+the model with and without some feature and compares the predictic performance.
+If the performance changes significantly, the feature was important; if the
+performance doesn't change much, _either_ the model didn't really use the
+feature or the value of that feature could be replaced by other correlated
+features; either way, a small change (low LOCO score) indicates that the
+feature is not that important. 
+
+The following code can be used to compute the LOCO scores here: 
+
+```{r}
+calc_loco <- function(workflow_obj, data, metrics = NULL, 
+                      loco_groups = NULL, v = 5) {
+    # Step 1: Extract LOCO Features
+    # 
+    # We want loco-groups to be a list of features (or groups of features) we can
+    # iterate over. This does a bit of pre-processing to automatically produce
+    # the list if not provided or to convert a vector to a list of singletons
+    # if a character vector is provided
+    if (is.null(loco_groups)) {
+        # If the loco_groups aren't provided, let's just pull out each predictor
+        # from the recipe component of the workflow object and use those as our
+        # features to LOCO
+        loco_groups <- workflow_obj |> 
+            extract_recipe(estimated=FALSE) |> 
+            summary() |> 
+            filter(role == "predictor") |> 
+            pull(variable) |> 
+            set_names() |> 
+            as.list()
+    } else if (is.character(loco_groups)) {
+        loco_groups <- loco_groups |> 
+            set_names() |> 
+            as.list()
+    }
+    
+    # Step 2 - Set up resampling. If given an rset (resampling set) object, just
+    # use that. Otherwise, automatically perform v-fold CV (v from above) internally
+    folds <- if (inherits(data, "data.frame") && !inherits(data, "rset")) {
+        vfold_cv(data, v = v)
+    } else {
+        data
+    }
+    
+    # Step 3. Implementing LOCO. 
+    #
+    # This function will take a list of variables (if provided) and temporarily
+    # remove them from the predictors (marking them as 'LOCO' role instead) 
+    # and re-fit the model. tidymodels will automaticaly ignore LOCO-marked 
+    # variables, giving us the predictions we need to get our LOCO scores. 
+    # 
+    # This function only takes variables to drop - everything else is captured
+    # dynamically from the enclosing environment
+    run_loco <- function(drop_vars) {
+        if(is.null(drop_vars)) {
+            loco_wflow <- workflow_obj
+        } else {
+            wflow_recipe <- workflow_obj |> 
+                extract_recipe(estimated = FALSE) |> 
+                update_role(all_of(drop_vars),
+                            new_role="LOCO")
+            loco_wflow <- workflow_obj |> update_recipe(wflow_recipe)
+        }
+        
+        # Fit model to resampled data and get results
+        loco_wflow |>
+            fit_resamples(resamples = folds, 
+                          metrics = metrics) |> 
+            collect_metrics() |> 
+            select(-.estimator, -.config) |> 
+            mutate(direction = map_chr(.metric, \(m) get(m) |> attr("direction")))
+    }
+    
+    # Step 4. Showtime. First fit the full model, then iterate through loco_groups
+    # performing each LOCO
+    full_results <- run_loco(NULL) |> 
+        mutate(LOCO_feature="FULL_MODEL") |>
+        select(-n, -std_err, -LOCO_feature)
+    loco_results <- imap(loco_groups, \(x, y) run_loco(x) |> mutate(LOCO_feature=y)) |>
+        list_rbind() |> 
+        select(-n, -std_err)
+    
+    inner_join(loco_results, 
+               full_results, 
+               join_by(.metric, direction), 
+               suffix=c(".LOCO", ".FULL")) |> 
+        mutate(loco_value = mean.FULL - mean.LOCO, 
+               loco_value = if_else(direction == "minimize", -1, 1) * loco_value) |> 
+    rename(loco_score = loco_value, 
+           metric=.metric, 
+           full_model=mean.FULL, 
+           loco_model=mean.LOCO)
+}
+
+```
+
+We can apply this to get LOCO scores for this model: 
+
+```{r fit_loco}
+#| cache: true
+schools_loco <- calc_loco(schools_rf, schools_cv)
+```
+
+which gives us: 
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+schools_loco |> 
+    mutate(across(where(is.numeric), \(x) round(x, 2))) |> 
+    mutate(LOCO = glue("{loco_score} ({full_model} -> {loco_model})")) |>
+    select(metric, LOCO, LOCO_feature) |>
+    pivot_wider(names_from=metric, 
+                values_from=c(LOCO)) |> 
+    gt(id="tbl_loco") |> 
+    cols_label(LOCO_feature="Dropped Feature", 
+               rmse="Root Mean Squared Error", 
+               rsq="R^2")
+```
+
+From this, we see that knowing the subject and grade (via `ASSESSMENT_NAME`) 
+is the most important information in predicting performance, followed very 
+closely by family socioeconomic status (`LUNCH_DISCOUNT`). By contrast, 
+student demographics (via `SUBGROUP_NAME`) or school properties 
+(`FUNDING_PER_STUDENT` and `STUDENT_TEACHER_RATIO`) seem much less important. 
+
+While powerful - this LOCO framework has a few limitations to be aware of: 
+
+1) It can only measure importance *vis-a-vis* the type of model being fit, here
+   a random forest and is not an abstract 'model-free' measure of importance.[^mf] 
+   Theoretically, some other model could take better advantage of a feature that
+   random forests can't really make much use of in this data. 
+2) LOCO scores are only meaningful insofar as the model itself is predictive. 
+   Knowing how useful a feature is to a useless model is not actually valuable.
+3) Fitting LOCO can be quite computationally intensive: if we have $p$ features
+   and use 5-fold CV, we have to fit $5(p+1)$ models. If these are slow, this
+   can start to add up. To improve performance, we can either parallelize at
+   the model fitting level (`set_engine("ranger", num.threads=4)`) or at the 
+   cross-validation level by registering a parallelization system and letting
+   `tidymodels` pick it up automatically. 
+   
+[^mf]: Scores like LOCO are sometimes called 'model-free', but I prefer to call
+them 'model-agnostic' or 'model-flexible'. They can be applied to any single
+model at a time, but their results still depend on the model choice. 
+
+## Going Deeper with `tidymodels`
+
+To learn more about `tidymodels`, review the introductory case study at
+<https://www.tidymodels.org/start/>. 

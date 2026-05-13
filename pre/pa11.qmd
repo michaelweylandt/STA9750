@@ -39,10 +39,11 @@ the difference be plausibly due to getting a few extra-chunky penguins?
 This type of statistical question is a deep and fundamental part of statistics,
 generally known as _inference_, and it is a topic you will cover at great length
 in your other courses. In this note, we simply focus on the computational steps
-needed to perform tests. 
-
-We will implement two of the most widely used types of tests here, though
-many others can be implemented using the same framework. 
+needed to perform tests - that is, the calculations that tell us whether the 
+evidence strongly suggests (or, more formally, is deeply inconsistent with the
+lack of) a difference in groups. We will implement two of the most widely used 
+types of tests here, though many others can be implemented using the same 
+framework. 
 
 For each of these, we will make use of the `infer` package, though base `R`
 equivalents are available. 
@@ -56,21 +57,36 @@ Perhaps the most fundamental task in statistics is to ask whether two groups are
 systematically different: this is the world of _two-sample testing_. 
 'Systematically different' is a somewhat slippery term requiring more 
 more specificity: if we interpret it to mean "having different means", then we
-arrive at so-called $t$-tests: tests of whether two groups have different means. 
+arrive at so-called $t$-tests: tests of whether two groups have different 
+means.[^others]
+
+[^others]: Other types of two sample tests ask whether the _entire distribution_
+differ, *e.g.*, the Kolmogorov-Smirnov test and friends, whether the _medians_
+of two distributions differ, *e.g.*, the test variously known as the Wilcoxon
+or the Mann-Whitney test, or tests of equal variance, *e.g.*, Bartlett's test. 
+There are _many_ statistical tests out there, but it's not really worth learning
+them all as distinct ideas with unique (and historically-contingent) names. 
+As we discuss a bit more below, understanding the general _structure_ of 
+hypothesis tests as sampling from a null and comparing on a single statistic is
+more useful for most problems in life. Statistical theorists are often concerned
+with coming up with _the best possible_ test (under various technical meanings
+of 'best') but these differences are not nearly as important as understanding
+the logic of hypothesis testing and having the capability to develop a test that
+is _suitable for the actual problem at hand_.
 
 $t$-tests are typically performed under the assumption that each observation
 is normally distributed around its groups respective mean. This assumption, like
 most normality assumptions, is impossible to verify, but the magic of statistics
-is that -- with enough data in conditions that aren't too terrible[^assumptions]
+is that -- with enough data and conditions that aren't too terrible[^assumptions]
 -- this is often a reasonable assumption to make. When we assume normality, the
 distribution of the estimated difference in means divided by the estimated 
 standard deviation follows a $t$-distribution, giving this test its name. 
 
-With the `infer` package, this type of test is implemented with the `t_test`
+With the `infer` package, this type of test is implemented with the `t_test()`
 function.[^baseR] Like most `tidyverse` functions, the first argument to this
 function is a data frame. The second argument is a _formula_: we haven't done
-much with formulas to this point, but you might remember them from `facet_grid`
-in `ggplot2`. 
+much with formulas to this point, but you might remember them from 
+the `facet_grid()` function in `ggplot2`. 
 
 A formula is an expression with a variable name on each side separated by a 
 `~`.[^typing] Conventionally, the variable on the left-hand side is the
@@ -85,7 +101,8 @@ use the formula:
 body_mass ~ sex
 ```
 
-This gives us: 
+Here we are asking whether the left hand side (`body_mass`) depends on the 
+right hand side (`sex`). Using this within a `t_test` gives us:
 
 ```{r}
 library(infer)
@@ -93,9 +110,14 @@ penguins |> t_test(body_mass ~ sex)
 ```
 
 Note the `warning` message here: we are looking at the difference in groups, 
-but we have not said which groups or in what order to compare them. Following
-the text of the `warning`, it is a good idea to specify the order of the 
-comparisons: 
+but we have not said which groups or in what order to compare them.[^order]
+Following the text of the `warning`, it is a good idea to specify the order 
+of the comparisons: 
+
+[^order]: If you are literally only interested in the binary question of
+"equal or not", it might be ok to ignore the order since it's just a sign flip
+on the difference in means, but you almost always want to look at the sign
+(direction) of the difference once you establish that it exists.
 
 ```{r}
 library(infer)
@@ -114,7 +136,7 @@ Let's look at the columns of our result:
   confidence interval for our estimate. By default, these are set at the 
   conventional 95% level, but this can be changed by supplying the `conf_level`
   argument. (Test yourself: if we set `conf_level=0.9` instead, what would happen
-  to these two values?)
+  to these two values? Why?)
 - `p_value`: This is a $p$-value, indicating the strength of evidence against 
   the null hypothesis that the averages of the two groups are equal. Smaller 
   $p$-values indicate more confidence that there is a systematic difference.
@@ -125,13 +147,17 @@ Let's look at the columns of our result:
   "less than or equal".[^alternative]
 
 [^assumptions]: You should be a bit unsatisfied with "enough" and 
-"not too terrible": these terms have more precise definitions, but they aren't in
-our scope here. 
+"not too terrible": these terms have more precise definitions, but they aren't 
+in our scope here. As you hopefully have learned from your other courses, the 
+ubiquity of the normal distribution is really just the second-order Taylor
+expansion running roughshod over the field of statistics, so the situations
+that make calculus work well are also those that make statistics function 
+robustly.
 
-[^baseR]: The `t_test` function is a thin wrapper around the `t.test` function
+[^baseR]: The `t_test()` function is a thin wrapper around the `t.test()` function
 provided to us by base `R`. The `infer` version has the nice property of returning
 its results in a data frame, rather than a more obscure object type, but the
-specific values returned are equal, so it's fine to use `t.test` instead. 
+specific values returned are equal, so it's fine to use `t.test()` instead. 
 
 [^paired]: Not the _average difference_ as this data has no paired structure.
 
@@ -144,11 +170,13 @@ and _dependent_ variables in other contexts. This terminology is absurd. In
 statistics, dependence is a symmetric relationship: $Y$ depends on $X$, then
 $X$ depends on $Y$; and if $Y$ is independent of $X$, then $X$ is independent of
 $Y$. Almost all of our methods are looking for some relationship between two
-variables, so *a priori* calling one of them "independent" is just silly.
+variables, so *a priori* calling one of them "independent" is more than a little
+absurd.
 
-[^alternative]: It's conventional to specify the alternative instead of the null,
-but if you recall your introductory courses, we really only test _against the null_, 
-never _for the alternative_ so I find this to be a strange design choice.
+[^alternative]: It's conventional to specify the alternative instead of the 
+null, but if you recall your introductory courses, we really only test 
+_against the null_, never _for the alternative_ so I find this to be a strange
+design choice.
 
 The use of a `data.frame` here means that `infer` plays nicely with the tools
 we have been using all semester long. For instance, we might question whether
@@ -167,7 +195,15 @@ penguins |>
 Here, we see that Gentoos, being the largest penguins in our data, exhibit the
 largest sex difference. This pattern can be very useful for testing sub-group
 differences, though you should take at least a bit of care to avoid issues with
-multiplicity corrections: 
+multiplicity corrections:[^mult]
+
+[^mult]: This issue of _multiple testing_ comes down to the fact that performing
+multiple tests, each of which individually has a 5% probability of error, 
+doesn't imply that there is only a 5% chance of making _any_ error across the
+entire collection of tests. Think of something like the March Madness 
+basketball tournament: the probability of an upset in any given game is less 
+than 50% by definition, but with so many games, it's crazy to expect there to
+be _no_ upsets in the entire tournament. 
 
 ![From XKCD #882](https://imgs.xkcd.com/comics/significant.png)
 
@@ -191,9 +227,10 @@ penguins |>
         theme_bw()
 ```
 
+
 ### Proportion Tests
 
-The `prop_test` function extends this paradigm to the case where the _response_ 
+The `prop_test()` function extends this paradigm to the case where the _response_ 
 is a binary variable. This analysis is conceptually quite similar to a $t$-test,
 but the mathematical details are based on a binomial distribution, not a normal
 distribution. 
@@ -208,10 +245,11 @@ penguins |>
 
 Notice here that we constructed our binary variables (`is_male`, `is_gentoo`)
 manually. In theory, you can pass categorical variables to `prop_test` directly
-and it will binarize them for you, but I find that behavior a bit too fragile. 
+and it will binarize them for you, but I find that behavior a bit too fragile
+and prefer to do it by hand.
 
-In both of these tests, we can instead perform a "one-sample" test, by not specifying
-an explanatory variable and instead passing `NULL`
+In both of these tests, we can instead perform a "one-sample" test, by not 
+specifying an explanatory variable and instead passing `NULL`
 
 ```{r}
 penguins |> 
@@ -232,12 +270,265 @@ penguins |>
 So (unsurprisingly), we can say with high-confidence that there are not twice
 as many male penguins as females in our sample. 
 
+### Computational Inference
+
+The `t_test()` and `prop_test()` functions used above are wrappers around `R`'s
+built-in `t.test()` and `prop.test()` functions. These are classical statistical
+techniques, based on the normal distribution and impressive technical 
+calculations that tell us _exactly_ how these tests perform if the data is
+actually from a normal distribution. But in practice, we often don't know
+whether our data is truly from a normal distribution and, while arguments around
+'close enough' are often valid, they can become quite fragile quite quickly. 
+
+In the year `r Sys.Date() |> strftime("%Y%")`, we can do better but it will
+take us down a bit of a rabbit hole. Let's first step back and take a 30,000
+foot view of what statistical testing is really doing.[^highlevel]
+
+[^highlevel]: I'm not going to cover _every_ possible statistical test here,
+and I'm not being terribly technical, but I'm just trying to hit the high points.
+
+- We have some data $X_1, \dots, X_n$ which we think might have come from some
+  distribution $\mathcal{D}$. Our choice of $\mathcal{D}$ may be driven by all
+  sorts of factors, but for now, it's just what we think. We might summarize
+  this in a technical statement like: 
+  
+  $$H_0: \quad X_1, \dots, X_n \buildrel \text{IID}\over\sim \mathcal{D}$$
+  
+  That is, our _null hypothesis_ (baseline or prior belief) is that our $n$
+  data points are all independently sampled from the same distribution 
+  $\mathcal{D}$.
+  
+- We now ask ourselves whether the data really is consistent with $H_0$. That 
+  is, do we have reason to _ditch_ the $H_0$ that we currently believe. We might
+  not have a better belief, but even knowing that $H_0$ is wrong will give us
+  some impetus to do more work. 
+  
+  But how do we do this? On one side of $H_0$ we have some data - numbers - and
+  on the other side we have the abstract concept of a distribution. These aren't
+  directly comparable. To make the comparison, we need to construct some sort of
+  _test statistic_, a simple numerical summary of a distribution that we can
+  compare against. 
+  
+  These test statistics can be essentially anything (means, medians, minima, 
+  maxima, modes, standard deviations, quantiles, quartiles, correlations, *etc.*).
+  Our only requirement is that we can compute this statistic on the distribution
+  _abstractly_ and that it isn't tied to a specific finite representaion, so 
+  things like 'number of samples' don't work here. (What would the 'number of 
+  samples' even mean for the standard normal distribution?)
+  
+  
+  
+  Note that this simplification is a bit lossy! We're reducing a whole 
+  distribution to a single number. There are lots of considerations here: 
+  are we picking an 'effective' test statistic that is likely to pick up 
+  differences or are we getting something essentially useless? Are we picking
+  a test statistic that looks at something that we actually care about? 
+
+- Having computed our test statistic, we now want to compare the test statistic
+  on $\mathcal{D}$ to the same statistic computed on our sample data 
+  $X_1, \dots, X_n$.[^empirical] So we have reduced $H_0$ to the weaker claim
+  
+  $$H_0': T(X_1, \dots, X_n) = T(\mathcal{D})$$
+  
+  
+  where $T(\cdot)$ is the test statistic from above. For example, while we
+  might have originally started by asking if $X_i$ came from a normal 
+  distribution with mean 3 and variance 4, if we use the mean as our test 
+  statistic, we're now really testing whether the mean of our sample data
+  matches the mean of $\mathcal{N}(3, 2^2)$.
+  
+  In a perfect world, this would be enough. If we found the two statistics
+  differed, we would reject $H_0'$ and hence $H_0$. (Recall $H_0 \implies H_0'$
+  so if $H_0'$ is false, $H_0$ must also be false.)
+  
+  But sadly, we do not live in such a simple world. We know the data $X_i$ are 
+  noisy and random[^random] and expecting _exact_ equality is too much. We need 
+  to allow some sort of tolerance and instead look into a test something like: 
+  
+  $$H_0^*: T(X_1, \dots, X_n) \approx T(\mathcal{D})$$
+  
+  Here, if the random quantity $T(X_1, \dots, X_n)$ is close enough to the 
+  non-random quantity $T(\mathcal{D})$, we don't have strong reason to reject
+  $H_0$. On the other hand, if $T(X_1, \dots, X_n)$ is very different than 
+  $T(\mathcal{D})$, we can reject $H_0^*$ and hence $H_0$. 
+  
+  Much of the _technical_ legwork of statistics comes down to making that idea
+  of "close enough" precise. We clearly have a trade-off: if we require a 
+  _closer_ equality, we're going to reject $H_0$ more often, including when we 
+  shouldn't because we just got unlucky with our data, but if we are more 
+  loosey-goosey about 'close enough', we'll not notice _real_ differences. 
+  
+- We generally set the 'close enough' bar to control the probability of getting
+  the _wrong_ answer when $H_0$ is true. That is, when $H_0$ is true, we don't
+  want to get rid of it too often. We can't _never_ get rid of it (the only way
+  to do so is to be completely impervious to our data), but let's control the 
+  probability. 
+  
+  Specifically, we set the 'close enough' threshold so that, if $H_0$ is true
+  we only through it out with some probability that we call the _level_ of our
+  test. This is conventionally $\alpha = 5\%$ though any value 0 to 100% 
+  (exclusive) is possible.
+  
+  To do this, we need some sense of _how wiggly_ $T(X_1, \dots, X_n)$ is
+  _when_ $H_0$ is true. If we see a test statistic outside that 'range of 
+  expected variability', we'll reject $H_0$. This range is historically computed
+  mathematically, but it turns out we can do this on a computer much more 
+  easily.
+  
+  Specifically, _if_ we can create samples from $\mathcal{D}$, we can generate
+  lots of versions of $X_1, \dots, X_n$ and hence lots of values of $T$ to get
+  a sense of the variance of $T$. 
+
+[^random]; Even if we don't think of the data as 'truly' random, everything
+we measure in life has a little bit of error. For example, the number of NYC
+residents is not _random_ in the way we think of a coin flip as being random
+(or maybe it is - that's a question for philosophers), but we're never going to
+know it exactly due to paperwork problems, people not answering their phones, 
+people moving around within the city, people constantly being born and dying, 
+*etc.*
+  
+[^empirical] Maybe a bit more technically but satisfyingly, we can use 
+$X_1, \dots, X_n$ to build an _empirical_ distribution $\hat{\mathcal{D}}_n$ 
+(think ECDF, but not necessarily just a CDF) and now we can compare the test 
+statistic on $\math{\mathcal{D}}_n$ with that same statistic on $\mathcal{D}$.
+In this formulation, we have $H_0': T(\hat{\mathcal{D}}_n) = T(\mathcal{D})$.
+  
+Let's do this in practice. As above, let's assume we have 16 samples ($n=16$)
+and we're going to assume they come from $\mathcal{D} = \mathcal{N}(3, 2^2)$.
+
+```{r}
+x <- c(3.24, 0.91, 1.89, 2.39, 4.31, 2.77, 0.78,  5.15, 
+       1.6,  3.71, 2.67, 3.75, 3.52, 4.22, 1.86, -1.43)
+x_mean <- mean(x)
+```
+
+Clearly, the mean of this data, roughly `r x_mean |> round(2)`, is not
+_exactly 3_ but is it far enough that we should doubt ourselves? 
+
+Let's use the computer to do some work for us. Here, we're going to use the
+`rnorm()` function which lets us generate **r**andom samples from a **norm**al
+distribution. 
+
+```{r}
+x_simulated <- rnorm(n=16, mean=3, sd=2)
+mean(x_simulated)
+```
+
+So that's further away! Maybe 2.58 is good enough. 
+
+But if we want to be more certain, we have to recognize that `x_simulated` was
+also random. So let's repeat this process _many_ times over: 
+
+```{r}
+simulation <- data.frame(replicate = 1:100) |>
+  mutate(x_simulated = map(replicate, \(r) rnorm(n=16, mean=3, sd=2)), 
+         x_simulated_mean = map_dbl(x_simulated, mean))
+```
+
+Here, we've generated `r NROW(simulation)` different versions of our test 
+statistic. Let's compare this visually to the value of `r x_mean |> round(2)` 
+we saw above: 
+
+```{r}
+ggplot(simulation, aes(x=x_simulated_mean)) + 
+  geom_density() + 
+  geom_vline(xintercept=x_mean, color="red4") + 
+  theme_bw() + 
+  xlab("Simulated Test Statitic Values Under the Null") + 
+  ylab("Density")
+```
+
+Here, we see that our data is pretty consistent with what we would expect 
+if $\mathcal{D}$ were true. In particular, we see that our data, as shown 
+through $T(X_1, \dots, X_n) = $ `r x_mean |> round(2)` is well within the
+range of 'typical values' we got _when we **knew** $H_0$ is true because that's
+how we simulated our data_. If you want to be a bit more specific about it, we
+can do this with a quantile calculation: 
+
+```{r}
+simulation |> 
+  summarize(p_above_x_bar = mean(x_simulated_mean > x_mean), 
+            p_below_x_bar = mean(x_simulated_mean < x_mean))
+```
+
+so we're very much in the middle of the data. (If one of these numbers were large
+and the other were small, that would imply we were towards the ends of the curve.)
+
+Let's compare this with what we get by doing this the 'right' way using `t.test()`:
+
+```{r}
+t.test(x, mu=3, alternative="greater") |> pluck("p.value")
+```
+
+and 
+
+```{r}
+t.test(x, mu=3, alternative="less") |> pluck("p.value")
+```
+
+So basically the same (and if we did more replicates to our simulation, it 
+would eventually be _exactly_ the same) but with no math![^twosided]
+
+[^twosided]: The comparison with the "two-sided" alternative is only a bit 
+trickier. In this case, we basically just need to take the smaller of those
+two values and double it, but the general construction takes a bit more
+work.
+
+This is quite cool! And, importantly, we do can do this _simulate from a 
+computer_ trick even in situations where the math is just impractical. Let's do
+a crazy example. 
+
+We have 25 data points that we think might have come from a _lognormal_ 
+distribution with log-mean 3 and log-standard deviation 5. For inexplicable 
+reasons, our data collection assistant lost the raw data, but remembers that
+20 of the points, when rounded to the nearest whole number, were perfect squares.
+
+Is this fact, on its own, enough to make us doubt the log-normal assumption?
+
+```{r}
+is_perfect_square <- function(x) sqrt(x) == floor(sqrt(x))
+
+data.frame(replicate = 1:1000) |>
+  mutate(x_simulated = map(replicate, \(r) rlnorm(n=26, meanlog=3, sdlog=5)), 
+         x_simulated_rounded = map(x_simulated, round), 
+         x_simulated_squares = map(x_simulated_rounded, is_perfect_square), 
+         x_count_squares = map_int(x_simulated_squares, sum)) |> 
+  count(x_count_squares) |>
+  mutate(p = n / sum(n)) |>
+  ggplot(aes(x=x_count_squares, y=p, )) +
+  geom_point() + 
+  geom_linerange(aes(ymin=0, ymax=p)) + 
+  geom_vline(xintercept=20, color="red4", linewidth=2, linetype=2) + 
+  theme_bw() + 
+  xlab("Number of 'Round to Squares' in Sample") + 
+  ylab("Probability Under Null Hypothesis")
+```
+
+So in this case, the value of 20 that we saw is literally _off the chart_ 
+indicating that it's very unlikely to have come about from the particular
+log-normal we talked about before. Sadly, due to the data loss, we can't 
+try to fit a better model, but we can at least build a custom statistical test
+based on this one bizzare piece of information we still have. 
+
+Note what happened here: 
+
+- we did a very weird calculation on the underlying data model (sample from
+  a continuous log-normal distribution, round it to a discrete distribution,
+  and then compute the probability of that discrete distribution giving a 
+  perfect square); and
+- we computed a custom never-before-seen statistical test for that crazy data 
+  model
+  
+without doing any math! This is quite a powerful tool and, as we'll see in
+class, we can sometimes even get away with not assuming quite as much about 
+the $H_0$ distribution.
+
 ## Linear Models in `R`
 
 Another important task for which `R` is well suited is the fitting and usage
 of statistical models. As noted above, we will consider this topic in detail in
-class, but it is worth being familiar with the basic tool for fitting linear models
-in `R`, the `lm` function. 
+class, but it is worth being familiar with the basic tool for fitting linear 
+models in `R`, the `lm()` function. 
 
 The `tidymodels` package includes the `ames` data set, which records 82 variables
 about 2,930 properties sold in Ames, Iowa. Clearly, predicting the sale price
@@ -328,7 +619,7 @@ additional functionality for working with the model after we fit it:
 ames_lm <- lm(Sale_Price ~ Lot_Area + First_Flr_SF + Second_Flr_SF + Central_Air, 
               data=ames)
 
-predict(ames_lm)
+predict(ames_lm) |> head(n=5) # Limit print out
 ```
 
 When applied to a fitted linear model, the `predict` function will automatically
@@ -364,10 +655,7 @@ estimated regression coefficients.
 
 We will have much more to say about these types of manipulations in class. 
 
-
 [^contrast]: The specifics of mapping a categorical variable to a numerical
 model like linear regression are beyond what we talk about in this course, but
 surprisingly non-trivial. Ask your regression professor about `contrasts` or
 `encodings`. 
-
-
