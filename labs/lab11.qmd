@@ -163,6 +163,14 @@ UNJOINED |> summarize(n_missing = n(),
                       pop_missing = sum(population))
 ```
 
+Wow! That's over a billion people. 
+
+```{r}
+UNJOINED |> slice_max(population, n=1)
+```
+
+So India is missing - that's a problem!
+
 :::
 
 5)  **Optional** In the previous section, we found that one major country was
@@ -1041,7 +1049,7 @@ use them all in this exercise.
 [^scores]: While these are percentages, they are scaled up by 100, so a value
 of "50" indicates that half (50%) of students were proficient. 
 
-::: {.callout-info title="Additional Background" collapse="true"}
+::: {.callout-note title="Additional Background" collapse="true"}
 
 Persuant to the [Every Student Succeeds Act (ESSA) of
 2015](https://en.wikipedia.org/wiki/Every_Student_Succeeds_Act) and its 
@@ -1460,8 +1468,10 @@ calc_loco <- function(workflow_obj, data, metrics = NULL,
     # dynamically from the enclosing environment
     run_loco <- function(drop_vars) {
         if(is.null(drop_vars)) {
+            message("Running Full Model (LOCO Baseline)")
             loco_wflow <- workflow_obj
         } else {
+            message(paste("Running LOCO Model - Omitting", drop_vars))
             wflow_recipe <- workflow_obj |> 
                 extract_recipe(estimated = FALSE) |> 
                 update_role(all_of(drop_vars),
@@ -1550,6 +1560,276 @@ While powerful - this LOCO framework has a few limitations to be aware of:
 [^mf]: Scores like LOCO are sometimes called 'model-free', but I prefer to call
 them 'model-agnostic' or 'model-flexible'. They can be applied to any single
 model at a time, but their results still depend on the model choice. 
+
+## LOCO in Action
+
+Apply this LOCO technique to the Hotel Prediction case study from the 
+[`tidymodels` tutorial](https://www.tidymodels.org/start/case-study/).
+
+For your convenience, I have copied and simplified the relevant parts of the 
+case study below: 
+
+```{r}
+#| cache: true
+#| message: false
+library(tidyverse)
+library(tidymodels)
+
+hotels <- read_csv("https://tidymodels.org/start/case-study/hotels.csv") |>
+  mutate(across(where(is.character), as.factor))
+
+hotel_splits <- initial_validation_split(hotels, 
+                                         strata = children,
+                                         prop = c(0.60, 0.15))
+
+# TODO: Clarify how tidymodels is using these various splits.
+hotel_train <- training(hotel_splits)
+hotel_val   <- validation(hotel_splits)
+hotel_test  <- testing(hotel_splits)
+hotel_other <- bind_rows(hotel_train, hotel_val)
+
+val_set <- validation_set(hotel_splits)
+
+holidays <- c("AllSouls", "AshWednesday", "ChristmasEve", "Easter", 
+              "ChristmasDay", "GoodFriday", "NewYearsDay", "PalmSunday")
+
+hotel_recipe <- 
+  recipe(children ~ ., data = hotel_other) |> 
+  step_date(arrival_date) |> 
+  step_holiday(arrival_date, holidays = holidays) |> 
+  step_rm(arrival_date) 
+
+hotel_recipe_one_hot <- hotel_recipe |> 
+    step_dummy(all_nominal_predictors())|> 
+    step_zv(all_predictors()) |> 
+    step_normalize(all_predictors())
+
+lr_mod <- 
+  logistic_reg(penalty = tune(), 
+               mixture = 1) |> 
+  set_engine("glmnet")
+
+lr_workflow <- 
+  workflow() |> 
+  add_model(lr_mod) |> 
+  add_recipe(hotel_recipe_one_hot)
+
+lr_reg_grid <- tibble(penalty = 10^seq(-4, -1, length.out = 30))
+
+lr_res <- 
+  lr_workflow |> 
+  tune_grid(val_set,
+            grid = lr_reg_grid,
+            control = control_grid(save_pred = TRUE),
+            metrics = metric_set(roc_auc))
+
+rf_mod <- 
+  rand_forest(mtry = tune(), 
+              min_n = tune(), 
+              trees = 200) |> 
+  set_engine("ranger", 
+             num.threads = parallel::detectCores()) |> 
+  set_mode("classification")
+
+rf_workflow <- 
+  workflow() |> 
+  add_model(rf_mod) |> 
+  add_recipe(hotel_recipe)
+
+rf_res <- 
+  rf_workflow |> 
+  tune_grid(val_set,
+            grid = 25,
+            control = control_grid(save_pred = TRUE),
+            metrics = metric_set(roc_auc))
+
+lr_best_params <- lr_res |> select_best(metric="roc_auc")
+lr_best_workflow <- lr_workflow |> finalize_workflow(lr_best_params)
+
+rf_best_params <- rf_res |> select_best(metric="roc_auc")
+rf_best_workflow <- rf_workflow |> finalize_workflow(rf_best_params)
+```
+
+1. Apply LOCO inference to the `lr_best_workflow` to determine the most 
+   important features to logistic regression. For data, use `hotel_train`. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r lr_loco}
+#| message: false
+#| cache: true
+lr_loco_results <- calc_loco(lr_best_workflow, hotel_train, v=3)
+```
+
+In a table, 
+
+```{r}
+lr_loco_results |> 
+    select(-full_model, -loco_model, -direction) |> 
+    pivot_wider(names_from=metric, values_from=loco_score) |> 
+    arrange(desc(roc_auc)) |>
+    gt(id="tbl_loco_lr") |> 
+    cols_label(accuracy="Classification Accuracy", 
+               brier_class="Brier Score", 
+               roc_auc="Area Under the ROC Curve", 
+               LOCO_feature="Feature") |> 
+    tab_header("LOCO Feature Importance", 
+               "Larger values signify larger (adverse) shifts in model performance") |>
+    tab_spanner("Performance Measures", 
+                -LOCO_feature) |>
+    fmt_percent(accuracy) |>
+    fmt_number(c(brier_class, roc_auc), 
+               decimals=4)
+```
+:::
+
+Note here that these values are a bit random due to the internal
+cross-validation used for LOCO scores, but most of the scores are 0
+across several features, consistent with the fact we are performing sparse
+logistic regression, *i.e.*, logistic regression with several coefficients 
+set to zero.
+
+2. Compare the LOCO feature scores computed above with the regression 
+   coefficients of the fitted model. Do they align? If no, why not? 
+   
+   *Hint*: Use `tidy()` on the result of fitting the workflow to get the 
+   coefficients of the selected linear model. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| message: false
+lr_coefs <- lr_best_workflow |> fit(hotel_train) |> tidy()
+
+inner_join(lr_loco_results, 
+           lr_coefs, 
+           join_by(LOCO_feature == term)) |>
+    select(LOCO_feature, loco_score, metric, coefficient=estimate) |>
+    pivot_wider(names_from=metric, 
+                values_from=loco_score) |> 
+    mutate(abs_coefficient=abs(coefficient)) |>
+    arrange(desc(abs_coefficient)) |> 
+    gt(id="tbl_loco_lr_coefs") |> 
+    cols_label(accuracy="Classification Accuracy", 
+               brier_class="Brier Score", 
+               roc_auc="Area Under the ROC Curve", 
+               LOCO_feature="Feature", 
+               coefficient="Logistic Regression Coefficient") |>
+    cols_hide(abs_coefficient) |>
+    tab_header("LOCO Feature Importance", 
+               "Larger values signify larger (adverse) shifts in model performance") |>
+    tab_spanner("LOCO Metric Measures", 
+                -c(LOCO_feature, coefficient)) |>
+    fmt_percent(accuracy) |>
+    fmt_number(c(brier_class, roc_auc, coefficient), 
+               decimals=4) |>
+    data_color(abs_coefficient,
+               target_columns=coefficient, 
+               method="numeric", 
+               palette="Greens") |>
+    data_color(-accuracy,
+               method="numeric", 
+               palette="Blues")
+```
+
+A visualization is perhaps a bit more helpful here: 
+
+```{r}
+#| warning: false
+#| message: false
+library(ggrepel)
+library(broom)
+
+lr_coefs <- lr_best_workflow |> fit(hotel_train) |> tidy()
+
+inner_join(lr_loco_results, 
+           lr_coefs, 
+           join_by(LOCO_feature == term)) |>
+    select(LOCO_feature, loco_score, metric, coefficient=estimate) |>
+    filter(metric == "roc_auc") |>
+    ggplot(aes(x=abs(coefficient), 
+                y=loco_score, 
+                label=LOCO_feature)) + 
+    geom_point() + 
+    theme_bw() + 
+    xlab("Absolute Value of Regression Coefficient") + 
+    ylab("LOCO Score [ROC AUC]") + 
+    geom_smooth(method="lm", se=FALSE) + 
+    geom_text_repel()
+```
+
+
+The question of consistency among importance scores is subtle. One important
+factor to be aware of is that predictive importance is a combination of 'how big
+is the effect' and 'how much does that covariate change'. For example, in 
+comparing the importance of obesity on health outcomes vs that of a rare but 
+highly fatal infection, *e.g.*, Ebola. The direct impact of the infection is
+larger on an individual, but for America writ large, obesity is a larger 
+problem. Any comparison of 'importance' needs to distinguish these two factors
+and this is well beyond the scope of this course.[^importance]
+
+[^importance]: For this an _much_ more on the difficulty of having a single
+universal measure of 'importance', see 
+[this paper](https://arxiv.org/pdf/2505.15728), which demonstrates challenges
+of consistency empirically, or [this
+paper](https://www.annualreviews.org/content/journals/10.1146/annurev-statistics-040120-030919)
+which wrestles with the problem from a more theoretical point-of-view.
+which 
+
+
+:::
+
+3. Apply LOCO inference to the `rf_best_workflow` to determine the most 
+   important features to a random forest model. For data, use `hotel_train`. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r rf_loco}
+#| message: false
+#| cache: true
+rf_loco_results <- calc_loco(rf_best_workflow, hotel_train, v=3)
+```
+
+As before, it is interesting to compare these results with the regression 
+coefficients and LOCO scores arising from our logistic regression model:
+
+```{r}
+lr_loco2 <- lr_loco_results |> select(metric, lr_loco_score=loco_score, LOCO_feature)
+rf_loco2 <- rf_loco_results |> select(metric, rf_loco_score=loco_score, LOCO_feature)
+
+inner_join(lr_loco2, rf_loco2, join_by(LOCO_feature, metric)) |>
+    inner_join(lr_coefs, join_by(LOCO_feature == term)) |>
+    select(-penalty) |> 
+    rename(coefficient=estimate) |>
+    pivot_wider(names_from=metric, 
+                values_from=c(lr_loco_score, rf_loco_score)) |>
+    mutate(abs_coefficient=abs(coefficient)) |>
+    arrange(desc(abs_coefficient)) |>
+    gt(id="tbl_lr_rf_loco") |> 
+    cols_label_with(contains("accuracy"), \(x) "Classification Accuracy") |>
+    cols_label_with(contains("roc_auc"), \(x) "AUC ROC") |>
+    cols_label_with(contains("brier_class"), \(x) "Brier Score") |>
+    cols_label(coefficient="Logistic Regression Coefficient", 
+               LOCO_feature="Feature") |> 
+    tab_spanner("Logistic Regression LOCO", 
+                contains("lr")) |>
+    tab_spanner("Random Forest LOCO", 
+                contains("rf")) |>
+    cols_hide(abs_coefficient) |>
+    fmt_percent(contains("accuracy")) |>
+    fmt_number(matches("brier_class|roc_auc|coefficient"), 
+               decimals=4) |>
+    data_color(columns=-coefficient, 
+               method="numeric", 
+               palette="Blues") |>
+    data_color(abs_coefficient,
+               target_columns=coefficient, 
+               method="numeric", 
+               palette="Greens") |>
+    tab_header("Comparison of Regression Coefficients and LOCO Feature Importance Scores")
+```
+
+:::
 
 ## Going Deeper with `tidymodels`
 
