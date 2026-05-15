@@ -368,7 +368,7 @@ lm(air_time ~ distance + origin - 1, data=flights) |>
     tidy() |> 
     filter(str_detect(term, "origin")) |> 
     mutate(term=str_remove(term, "origin")) |> 
-    gt() |>
+    gt(id="tbl_airport1") |>
     cols_hide(c(statistic, p.value)) |>
     cols_label(term="Airport", 
                estimate="Estimated Fixed Transit Cost (Minutes)") |>
@@ -403,7 +403,7 @@ lm(air_time ~ distance * origin - 1 - distance,
     select(estimate, airport, effect) |>
     pivot_wider(names_from=effect, values_from=estimate) |>
     mutate(speed = 60 / speed) |>
-    gt() |>
+    gt(id="tbl_airport2") |>
     cols_label(airport=md("**Origin Airport**"),
                fixed=md("Gate Taxi Time (Minutes)"),
                speed=md("Estimated Air Speed (mph)")) |>
@@ -1593,8 +1593,7 @@ val_set <- validation_set(hotel_splits)
 holidays <- c("AllSouls", "AshWednesday", "ChristmasEve", "Easter", 
               "ChristmasDay", "GoodFriday", "NewYearsDay", "PalmSunday")
 
-hotel_recipe <- 
-  recipe(children ~ ., data = hotel_other) |> 
+hotel_recipe <- recipe(children ~ ., data = hotel_other) |> 
   step_date(arrival_date) |> 
   step_holiday(arrival_date, holidays = holidays) |> 
   step_rm(arrival_date) 
@@ -1604,40 +1603,34 @@ hotel_recipe_one_hot <- hotel_recipe |>
     step_zv(all_predictors()) |> 
     step_normalize(all_predictors())
 
-lr_mod <- 
-  logistic_reg(penalty = tune(), 
-               mixture = 1) |> 
+lr_mod <- logistic_reg(penalty = tune(), 
+                       mixture = 1) |> 
   set_engine("glmnet")
 
-lr_workflow <- 
-  workflow() |> 
+lr_workflow <- workflow() |> 
   add_model(lr_mod) |> 
   add_recipe(hotel_recipe_one_hot)
 
 lr_reg_grid <- tibble(penalty = 10^seq(-4, -1, length.out = 30))
 
-lr_res <- 
-  lr_workflow |> 
+lr_res <- lr_workflow |> 
   tune_grid(val_set,
             grid = lr_reg_grid,
             control = control_grid(save_pred = TRUE),
             metrics = metric_set(roc_auc))
 
-rf_mod <- 
-  rand_forest(mtry = tune(), 
+rf_mod <- rand_forest(mtry = tune(), 
               min_n = tune(), 
               trees = 200) |> 
   set_engine("ranger", 
              num.threads = parallel::detectCores()) |> 
   set_mode("classification")
 
-rf_workflow <- 
-  workflow() |> 
+rf_workflow <- workflow() |> 
   add_model(rf_mod) |> 
   add_recipe(hotel_recipe)
 
-rf_res <- 
-  rf_workflow |> 
+rf_res <- rf_workflow |> 
   tune_grid(val_set,
             grid = 25,
             control = control_grid(save_pred = TRUE),
@@ -1681,6 +1674,7 @@ lr_loco_results |>
     fmt_number(c(brier_class, roc_auc), 
                decimals=4)
 ```
+
 :::
 
 Note here that these values are a bit random due to the internal
@@ -1697,11 +1691,46 @@ set to zero.
 
 ::: {.callout-tip title="Solution" collapse="true"}
 
+This function is a bit complex, will help coloring columns in a predictable 
+and standardized way:
+
+```{r}
+color_cols_centered <- function(gt_tbl, ..., palette="RdBu", .multiplier=1.01){
+    tbl_body <- gt_tbl |> extract_body()
+    ## tidyselect magic to handle the dots and allow helpers and `-` selectors
+    column_quosure <- rlang::enquos(...)
+    col_names <- names(tidyselect::eval_select(expr(c(!!!column_quosure)), tbl_body))
+    
+    center_column <- function(gt_tbl, col_name){
+        x <- tbl_body |> pull(!!col_name)
+        
+        suppressWarnings(x_numeric <- as.numeric(x))
+        
+        if(all(is.na(x_numeric))){
+            warning(glue::glue("Could not treat column {col_name} as numeric. 
+                               Consider using color_col_centered before fmt_*() functions"))
+            return(gt_tbl)
+        }
+        
+        limit <- max(abs(x_numeric), na.rm=TRUE) * .multiplier
+        
+        gt_tbl |> 
+            data_color(!!col_name, 
+                       palette=palette, 
+                       domain=c(-limit, limit))
+    }
+    
+    reduce(col_names, center_column, .init=gt_tbl)
+}
+```
+
+With that in hand:
+
 ```{r}
 #| message: false
 lr_coefs <- lr_best_workflow |> fit(hotel_train) |> tidy()
 
-inner_join(lr_loco_results, 
+left_join(lr_loco_results, 
            lr_coefs, 
            join_by(LOCO_feature == term)) |>
     select(LOCO_feature, loco_score, metric, coefficient=estimate) |>
@@ -1709,7 +1738,7 @@ inner_join(lr_loco_results,
                 values_from=loco_score) |> 
     mutate(abs_coefficient=abs(coefficient)) |>
     arrange(desc(abs_coefficient)) |> 
-    gt(id="tbl_loco_lr_coefs") |> 
+    gt(id="tbl_loco_lr_coefs") |>
     cols_label(accuracy="Classification Accuracy", 
                brier_class="Brier Score", 
                roc_auc="Area Under the ROC Curve", 
@@ -1720,17 +1749,22 @@ inner_join(lr_loco_results,
                "Larger values signify larger (adverse) shifts in model performance") |>
     tab_spanner("LOCO Metric Measures", 
                 -c(LOCO_feature, coefficient)) |>
-    fmt_percent(accuracy) |>
-    fmt_number(c(brier_class, roc_auc, coefficient), 
-               decimals=4) |>
     data_color(abs_coefficient,
                target_columns=coefficient, 
                method="numeric", 
-               palette="Greens") |>
-    data_color(-accuracy,
-               method="numeric", 
-               palette="Blues")
+               palette="Greens", 
+               na_color="white") |>
+    color_cols_centered(-c(coefficient, LOCO_feature), palette="RdBu") |>
+    fmt_percent(accuracy) |>
+    fmt_number(c(brier_class, roc_auc, coefficient), 
+               decimals=4)  |>
+    sub_missing()
 ```
+
+Note that we have `NA` values for the regression coefficients for categorical
+features. Under the hood, `tidymodels` has encoded these as numerical features
+for us to use in modeling, but it is not evident how to construct a single
+'coefficient' for display in this table.
 
 A visualization is perhaps a bit more helpful here: 
 
@@ -1774,7 +1808,6 @@ universal measure of 'importance', see
 of consistency empirically, or [this
 paper](https://www.annualreviews.org/content/journals/10.1146/annurev-statistics-040120-030919)
 which wrestles with the problem from a more theoretical point-of-view.
-which 
 
 
 :::
@@ -1798,7 +1831,7 @@ lr_loco2 <- lr_loco_results |> select(metric, lr_loco_score=loco_score, LOCO_fea
 rf_loco2 <- rf_loco_results |> select(metric, rf_loco_score=loco_score, LOCO_feature)
 
 inner_join(lr_loco2, rf_loco2, join_by(LOCO_feature, metric)) |>
-    inner_join(lr_coefs, join_by(LOCO_feature == term)) |>
+    left_join(lr_coefs, join_by(LOCO_feature == term)) |>
     select(-penalty) |> 
     rename(coefficient=estimate) |>
     pivot_wider(names_from=metric, 
@@ -1816,16 +1849,17 @@ inner_join(lr_loco2, rf_loco2, join_by(LOCO_feature, metric)) |>
     tab_spanner("Random Forest LOCO", 
                 contains("rf")) |>
     cols_hide(abs_coefficient) |>
-    fmt_percent(contains("accuracy")) |>
-    fmt_number(matches("brier_class|roc_auc|coefficient"), 
-               decimals=4) |>
-    data_color(columns=-coefficient, 
-               method="numeric", 
-               palette="Blues") |>
     data_color(abs_coefficient,
                target_columns=coefficient, 
                method="numeric", 
-               palette="Greens") |>
+               palette="Greens", 
+               na_color="white") |>
+    color_cols_centered(-c(coefficient, LOCO_feature), 
+                        palette="RdBu") |>
+    fmt_percent(contains("accuracy")) |>
+    fmt_number(matches("brier_class|roc_auc|coefficient"), 
+               decimals=4) |>
+    sub_missing() |>
     tab_header("Comparison of Regression Coefficients and LOCO Feature Importance Scores")
 ```
 
