@@ -939,7 +939,7 @@ project_peer_evals <- function(github = gitcreds::gitcreds_get()$username, cycle
                                DS = "Contribution(s) to Data Source Identification",
                                RR = "Responsibility and Reliability as a Teammate",
                                PR = "Contribution(s) to your Group Project Presentations (so far)")
-    } else if(cycle == "end"){
+    } else if(cycle == "final"){
         project_questions <- c(OQ = "Contribution(s) to Overarching Question Development", 
                                SQ = "Contribution(s) to Specific Question Development", 
                                DS = "Contribution(s) to Data Source Identification",
@@ -949,7 +949,7 @@ project_peer_evals <- function(github = gitcreds::gitcreds_get()$username, cycle
                                FR = "Contribution(s) to Writing the Final Report",
                                PR = "Contribution(s) to your Group Project Presentations", 
                                HP = "Willingness to help others with technical challenges", 
-                               RR = "Responsibility and Reliability as a Teammate",)
+                               RR = "Responsibility and Reliability as a Teammate")
     } else {
         stop(glue("Unknown cycle: {cycle} - abort!"))
     }
