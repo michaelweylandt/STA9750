@@ -1,6 +1,6 @@
 Hi @{{ gh }},
 
-The Peer Feedback cycle for Mini-Project #0{{ project_id }} is
+The Peer Feedback cycle for Mini-Project #**0{{ project_id }}** is
 now underway. You have been asked to provide peer feedback on
 {{ n_assignments}} of your classmates' submissions. 
 

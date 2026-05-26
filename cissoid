@@ -36,6 +36,7 @@ from requests.compat import urljoin, quote, quote_plus
 from yaml import safe_load as yaml_load
 from yaml import dump as yaml_dump
 from yaml.scanner import ScannerError
+from yaml.parser import ParserError
 from pandas.api.types import is_list_like
 
 @cache
@@ -165,6 +166,11 @@ class Issue(object):
         try: 
             return int(self._title_match.group(2))
         except: 
+            submitted = click.prompt(f"Which mini-project is Issue #{self.number} ({self.title}) Associated With?", type=int)
+            
+            if submitted:
+                return submitted 
+            
             import pdb; pdb.set_trace()
             
             return None
@@ -997,9 +1003,244 @@ class PeerFeedbackCollection(object):
         else:
             import pdb; pdb.set_trace()
 
-PeerFeedbackComment = namedtuple("PeerFeedbackComment", 
-    ["score", "comment", "properly_formatted"])
+class ProjectPeerFeedback:
+    _QUESTIONS = {
+        "OQ": "Contribution(s) to Overarching Question Development", 
+        "SQ": "Contribution(s) to Specific Question Development", 
+        "DS": "Contribution(s) to Data Source Identification",
+        "DC": "Contribution(s) to Data Import and Data Cleaning",
+        "IN": "Contribution(s) to Integrating Findings from Individual SQs",
+        "IR": "Ability to complete their Individual Report on time and at an expected level of quality",
+        "FR": "Contribution(s) to Writing the Final Report",
+        "PR": "Contribution(s) to your Group Project Presentations", 
+        "HP": "Willingness to help others with technical challenges", 
+        "RR": "Responsibility and Reliability as a Teammate"
+    }
+    
+    _COMMENTS = {
+        "positive": "Notable Strength as a Teammate",
+        "negative": "Most Challenging Part of Working With",
+        "advice": "How to Be a Better Teammate",
+        "instructor": "Confidential Comment to Instructor"
+    }
+    
+    FEEDBACK_CYCLES = ["mid", "final"]
+    
+    def __init__(self, *, evaluator, evaluated, cycle, comments, scores):
+        self._evaluator = evaluator
+        self._evaluated = evaluated
+        
+        if cycle not in ["mid", "final"]:
+            raise ValueError
+        
+        self._cycle = cycle
+        
+        self._overall_comments = comments
+        self._scores = scores
+        
+    @classmethod
+    def from_dict(cls, d):
+        get_optional_under = lambda d, k: d[k] if k in d else d["_" + k]
 
+        evaluator = get_optional_under(d, "evaluator")
+        if "teammate" in d:
+            evaluated = d["teammate"]
+        else:
+            evaluated = get_optional_under(d, "evaluated")
+            
+        cycle = get_optional_under(d, "cycle")
+        
+        if "questions" in d:
+            scores = d["questions"]
+        else:
+            scores = get_optional_under(d, "scores")
+            
+        comments = get_optional_under(d, "overall_comments")
+        
+        return cls(evaluator=evaluator, 
+                   evaluated=evaluated,
+                   cycle=cycle,
+                   scores=scores,
+                   comments=comments)
+        
+    
+    def load_from_file(self, fname):
+        pass
+    
+    def load_from_bspf(self, fname):
+        pass
+        
+    @classmethod
+    def parse_pf_file(cls, fname):
+        pass
+    
+    @classmethod
+    def parse_brightspace_export(cls, dirname):
+        "Parse"
+    
+    @property
+    def evaluated(self):
+        return self._evaluated
+    
+    @property
+    def evaluator(self):
+        return self._evaluator
+    
+    @property
+    def comments(self):
+        return self._overall_comments
+    
+    @property
+    def scores(self):
+        return self._scores
+    
+class ProjectPeerFeedbackCollection:
+    FEEDBACK_CYCLES = ProjectPeerFeedback.FEEDBACK_CYCLES
+    QUESTIONS = ProjectPeerFeedback._QUESTIONS
+    COMMENTS = ProjectPeerFeedback._COMMENTS
+    
+    def __init__(self, cycle):
+        if cycle not in self.FEEDBACK_CYCLES:
+            raise ValueError("Unknown Feedback Cycle")
+        
+        self.cycle = cycle
+        self._collected_feedback = []
+        self._assignments = None
+        
+    def parse_yaml_from_zip(self, zip_fname, submission):
+        zip_f = zipfile.ZipFile(op.realpath(op.expanduser(zip_fname)))
+        n_attempts = 0
+        with zip_f.open(submission) as f:
+            yaml_text_raw = f.read().decode()
+            
+        while True:
+            try:
+                pf_yaml_raw = yaml_load(yaml_text_raw)
+                return pf_yaml_raw
+            except (ScannerError, ParserError) as YamlError: 
+                click.echo(f"Failed to parse YAML with message {str(YamlError)}")
+                click.confirm("Would you like to try to fix this manually?", abort=True)
+                    
+                yaml_text_raw = click.edit(text=yaml_text_raw, editor="/usr/bin/nano")
+                    
+                if not yaml_text_raw: 
+                    click.echo("No changes performed")
+                    return 
+                
+                n_attempts += 1
+                
+                if n_attempts > 3:
+                    click.echo(f"Failed to fix after {n_attempts} attempts.")
+                    if click.confirm("Would you like to skip this submission?", default=False):
+                        return
+                
+        return pf_yaml_raw
+        
+    def load_from_zip(self, zip_fname):
+        zip_f = zipfile.ZipFile(op.realpath(op.expanduser(zip_fname)))
+        for submission in zip_f.infolist():
+            if not submission.filename.endswith("bspf"):
+                continue 
+            
+            pf_yaml_raw = self.parse_yaml_from_zip(zip_fname, submission)
+            
+            if not pf_yaml_raw:
+                continue 
+
+            try:
+                evaluator = pf_yaml_raw["evaluator"]
+            except TypeError: 
+                import pdb; pdb.set_trace()
+            evaluator_subs = [evaluator in n for n in zip_f.namelist()]
+                
+            if sum(evaluator_subs) > 1:
+                submissions = [n for n in zip_f.namelist() if evaluator in n]
+                click.echo(f"Multiple submissions received from {evaluator}:")
+                for s in submissions:
+                    click.echo(f"- {s}")
+                click.confirm(f"Only processing {max(submissions)}. Is it ok to proceed?", abort=True, default=True)
+                
+                if submission.filename != max(submissions):
+                    continue 
+                
+            for k, v in pf_yaml_raw.items():
+                if k == "evaluator":
+                    continue
+                    
+                v["evaluator"] = evaluator
+                peer_comment = ProjectPeerFeedback.from_dict(v)
+                
+                self._collected_feedback.append(peer_comment)
+                
+        return self
+    
+    def load_from_json(self, json_fname):
+        if not op.exists(json_fname):
+            raise click.ClickException(f"The file {json_fname} does not exist. Do you need to run `peer collect` first?")
+        
+        if not op.getsize(json_fname):
+            raise click.ClickException(f"The file {json_fname} appears to be empty. Do you need to run `peer collect` first?")
+        
+        with open(json_fname) as f:
+            json_dicts = json.loads(f.read())
+            
+        for d in json_dicts["collected_feedback"]:
+            self._collected_feedback.append(ProjectPeerFeedback.from_dict(d))
+            
+        if "assignment" in json_dicts:
+            self._assignment = json_dicts["assignment"]
+            
+        return self
+    
+    def load_assignments_from_yaml(self, assignment_file):
+        self._assignments = PeerFeedbackAssignment(self.mp_num)
+        self._assignments.load_from_yaml(assignment_file)
+        
+    @property
+    def assignments(self):
+        if self._assignments:
+            return self._assignments
+        else: 
+            import pdb; pdb.set_trace()
+        
+    def to_json(self):
+        return json.dumps({
+            "cycle": self.cycle, 
+            "collected_feedback": [f.__dict__ for f in self._collected_feedback],
+            "assignments": self._assignments
+        }, indent=2)
+        
+    def __iter__(self):
+        return self._collected_feedback.__iter__()
+    
+    def get_feedback_for(self, gh):
+        return [f for f in self._collected_feedback if f.evaluated.lower() == gh.lower()]
+    
+    def get_consolidated_feedback_for(self, gh):
+        all_pf = self.get_feedback_for(gh)
+        
+        if not all_pf:
+            import pdb; pdb.set_trace()
+            
+        question_codes = all_pf[0].scores.keys()
+        QUESTIONS = [(qc, self.QUESTIONS[qc]) for qc in question_codes]
+        
+        peer_scores = {q:{"Median":-1, "ALL":{}} for q in QUESTIONS}
+        
+        for qc, q_text in QUESTIONS:
+            peer_scores[(qc, q_text)]["ALL"] = {p.evaluator: p.scores[qc] for p in all_pf}
+            peer_scores[(qc, q_text)]["Median"] = median(s for s in peer_scores[(qc, q_text)]["ALL"].values())
+        
+            if peer_scores[(qc, q_text)]["Median"] < 0:
+                import pdb; pdb.set_trace()
+                
+        peer_comments = {}
+        
+        for k, v in self.COMMENTS.items():
+            peer_comments[(k, v)] = {p.evaluator: p.comments[k] for p in all_pf}
+        
+        return peer_scores, peer_comments
+    
 # FIXME: This technically isn't sufficient for arbitrary URLs, but it
 # seems to cover the whole GitHub API, which is enough for us.
 URL_REGEX = "http[A-Za-z0-9:/\\.\\-_]+"
@@ -2215,9 +2456,52 @@ def project_peer_upload(cycle):
     help="Which peer evaluation cycle to upload the assignment file for?",
     prompt="Which peer evaluation cycle to upload the assignment file for?",
 )
-def project_peer_collect(cycle):
-    """Extract and standardize peer feedback from Brightspace export"""
-    raise NotImplementedError
+@click.argument('brightspace_file', default=None, type=click.Path(), required=False)
+@click.option(
+    "-F",
+    "--force",
+    is_flag=True,
+    default=False,
+    help="Force re-extraction of peer feedback."
+)
+def project_peer_collect(brightspace_file, cycle, force):
+    """Collect all peer feedback in a standardized format
+    
+    After the peer feedback window ends, this function will parse all student
+    peer feedback files as submitted in 'bspf' files on Brightspace. Starting
+    Spring 2026, the use of a script to create a BSPF file seems to have smoothed
+    things out so this can be run as a 'one shot'. This command takes the zip
+    file (straight from Brightspace, not modified or unzipped) as input and puts
+    everything into a suitable archival location. 
+    
+    After running this command, run `project peer grade` to compute student grades
+    and `peer peer meta` to provide meta-review comments."""
+    
+    safe_cycle = "mid" if cycle == "Mid-Semester" else "final"
+    
+    mp_dir = Path(course_dir(), f"{safe_cycle}_peer")
+    
+    if brightspace_file is None:
+        possible_zips = list(mp_dir.glob("*zip"))
+        
+        if len(possible_zips) != 1: 
+            raise click.ClickException("Could not identify Brightspace Export file")
+        
+        brightspace_file = possible_zips[0]
+        click.confirm(f"Using {brightspace_file} to extract peer feedback. Confirm? ", abort=True)
+
+    peer_feedback_fname = _project_peer_feedback_file(safe_cycle)
+    
+    if op.exists(peer_feedback_fname) and op.getsize(peer_feedback_fname) and not force:
+        raise click.ClickException(f"Peer feedback file already present at {peer_feedback_fname}!")
+    
+    all_peer_feedback = ProjectPeerFeedbackCollection(safe_cycle).load_from_zip(brightspace_file)
+    
+    with open(peer_feedback_fname, "w") as f:
+        f.write(all_peer_feedback.to_json())
+    
+    click.echo(f"All peer feedback loaded for {cycle} Project Peer Feedback")
+    click.echo(f"You may now run 'peer grade --cycle {cycle}' to compute actual grades")
 
 @project_peer.command(name="grade")
 @click.option(
@@ -2226,9 +2510,116 @@ def project_peer_collect(cycle):
     help="Which peer evaluation cycle to upload the assignment file for?",
     prompt="Which peer evaluation cycle to upload the assignment file for?",
 )
-def project_peer_grade(cycle):
+@click.option(
+    "-F",
+    "--force",
+    is_flag=True,
+    default=False,
+    help="Force re-evaluation of peer feedback."
+)
+def project_peer_grade(cycle, force):
     """Review and grade peer feedback"""
-    raise NotImplementedError
+    
+    safe_cycle = "mid" if cycle == "Mid-Semester" else "final"
+    maximum_score = 25 if cycle == "Mid-Semester" else 50
+    
+    peer_feedback_fname = _project_peer_feedback_file(safe_cycle)
+    
+    if not op.exists(peer_feedback_fname) or not op.getsize(peer_feedback_fname) and not force:
+        raise click.ClickException(f"Peer feedback file not found at {peer_feedback_fname}!")
+    
+    all_peer_feedback = ProjectPeerFeedbackCollection(safe_cycle)
+    all_peer_feedback.load_from_json(peer_feedback_fname)
+    
+    with open(_project_peer_feedback_assignment_file(safe_cycle)) as f:
+        project_teams = yaml_load(f.read())
+    
+    ROSTER = current_roster(include_inactive=False)
+    TEAMS = current_teams()
+    BIG_ROSTER = pd.merge(
+        ROSTER,
+        TEAMS.rename(columns={"name": "team_name"}),
+        how="left",
+        left_on="project_team",
+        right_on="number",
+    )
+    
+    templates = Environment(
+        loader=FileSystemLoader("_cissoid/templates"), 
+        autoescape=select_autoescape()
+    )
+    
+    bs_template = templates.get_template("pf_project_for_brightspace.md")
+    instructor_template = templates.get_template("pf_project_instructor_prompt.md")
+    
+    total_students = BIG_ROSTER.shape[0]
+    
+    for n_student, gh in enumerate(BIG_ROSTER.github, start=1):
+        real_name = BIG_ROSTER[BIG_ROSTER["github"] == gh]["name"].item()
+        team_name = BIG_ROSTER[BIG_ROSTER["github"] == gh]["team_name"].item()
+        safe_name = real_name.lower().replace(" ", "_")
+        
+        grade_file = op.join(_project_peer_feedback_dir(safe_cycle), f"{safe_name}.txt")
+
+        if op.exists(grade_file) and not force:
+            continue
+
+        try:
+            peer_scores, peer_comments = all_peer_feedback.get_consolidated_feedback_for(gh)
+        except IndexError: 
+            click.echo(f"I found no peer feedback for {submittor}.")
+            if click.confirm("Should this person be assigned an automatic 0?"):
+                with open(grade_file, "w") as f_zero:
+                    f_zero.write("Automatic 0. No submission or submission removed upon student request.")
+            else:
+                import pdb; pdb.set_trace()
+
+        progress = f'{(n_student - 1) / total_students:.1%}'
+        overall_score = sum([v["Median"] for v in peer_scores.values()])
+        
+        instructor_prompt = instructor_template.render(
+            name=real_name, 
+            gh=gh,
+            team_name=team_name,
+            comments=peer_comments,
+            scores=peer_scores,
+            maximum_score=maximum_score,
+            overall_score=overall_score,
+            n_student=n_student,
+            total_students=total_students,
+            progress=progress
+        )
+            
+        instructor_prompt = ("\n".join(["## " + l for l in instructor_prompt.split("\n") if l]))
+        instructor_comment = click.edit(text=instructor_prompt, editor="/usr/bin/nano")
+            
+        if instructor_comment:
+            instructor_comment = instructor_comment.split("\n")
+            instructor_comment = [l for l in instructor_comment if l and not l.startswith("## ")]
+            instructor_comment = "\n".join(wrap("\n".join(instructor_comment)))
+        else:
+            raise click.ClickException(f"No instructor comment for {gh} - aborting!")
+            
+        grade_text = bs_template.render(
+            name=real_name, 
+            gh=gh, 
+            cycle=cycle, 
+            team_name=team_name, 
+            scores=peer_scores,
+            maximum_score=maximum_score,
+            overall_score=overall_score,
+            instructor_comment=instructor_comment
+        )
+            
+        # FIXME: I don't understand Jinja's whitespace rules, so just clean it directly
+        grade_text = re.sub(r'\n\s*\n', '\n\n', grade_text)
+
+        with open(grade_file, "w") as f_out:
+            f_out.write(grade_text)
+            
+    click.echo("Student grade files complete. Please upload to Brightspace:")
+    click.echo(_project_peer_feedback_dir(safe_cycle))
+    click.launch(_project_peer_feedback_dir(safe_cycle))
 
 @project.command(name="report")
 @click.option(
@@ -2983,6 +3374,30 @@ def _peer_feedback_file(project_id):
 
     return fname
 
+@cache 
+def _project_peer_feedback_dir(cycle):
+    cycle = cycle.lower().replace('-', '_')
+    pf_dir = op.join(course_dir(), f"{cycle}_peer")
+    os.makedirs(pf_dir, exist_ok=True)
+    
+    return pf_dir
+    
+
+@cache
+def _project_peer_feedback_assignment_file(cycle):
+    pf_dir = _project_peer_feedback_dir(cycle)
+    return op.join(pf_dir, f"{cycle}_peers.yaml")
+
+@cache
+def _project_peer_feedback_file(cycle):
+    pf_dir = _project_peer_feedback_dir(cycle)
+    fname = op.join(pf_dir, "ALL_PEER_FEEDBACK.json")
+    
+    if not op.exists(fname):
+        Path(fname).touch(exist_ok=True)
+
+    return fname
+
 @cache
 def _peer_feedback_meta_file(project_id):
     fname = op.join(course_dir(), f"mp{project_id:02}", "COLLECTED_META_REVIEW.json")
@@ -3022,7 +3437,7 @@ def mini_peer_list(project_id):
     resp = r.get(gh_url)
     
     if not resp.ok:
-        raise click.ClickException("Could not access {gh_url} to get peer feeback file.")
+        raise click.ClickException(f"Could not access {gh_url} to get peer feeback file.")
     
     pf_assignments = yaml_load(resp.text)
     
