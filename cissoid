@@ -39,6 +39,17 @@ from yaml.scanner import ScannerError
 from yaml.parser import ParserError
 from pandas.api.types import is_list_like
 
+def count_words_quarto(url):
+    page_resp = r.get(url)
+    page_bs = BS(page_resp.text, features="lxml")
+    
+    if page_bs.find("main"):
+        p_tags = page_bs.find("main").find_all("p")
+    else:
+        p_tags = page_bs.find_all("p")
+    
+    return sum([len(p.get_text().split()) for p in p_tags])
+
 @cache
 def course_short():
     with open("_variables.yml") as f:
@@ -90,6 +101,41 @@ def vernam_encode(nums, secret, offset=0):
         raise click.ClickException("Secret is too short!")
 
     return [n ^ ord(s) if isinstance(n, int) else "NA" for n, s in zip(nums, secret[offset:])]
+
+def has_ai_disclosure(url):
+    resp = r.get(url)
+    beautiful_soup_obj = BS(resp.text, features="lxml")
+    
+    ai_disclosure = beautiful_soup_obj.find_all(class_="callout-note")
+    
+    if ai_disclosure:
+        # Possibly found something, so look closer
+    
+        if len(ai_disclosure) > 1:
+            if sum("AI" in ai.get_text() for ai in ai_disclosure):
+                ai_disclosure = [ai for ai in ai_disclosure if "AI" in ai.get_text()][-1]
+            else:
+                import pdb; pdb.set_trace()
+        else:
+            ai_disclosure = ai_disclosure[-1]
+        
+        if "title" in ai_disclosure.attrs:
+            ai_title = ai_disclosure["title"]
+        elif ai_title_container := ai_disclosure.find(class_="callout-title-container"): 
+            ai_title = ai_title_container.find_all(string=True, recursive=False)
+            ai_title = "".join(ai_title).strip()
+        else: 
+            import pdb; pdb.set_trace()
+            
+        if ai_title != "AI Usage Statement":
+            return True
+            
+    click.echo(f"Could not identify AI Block at {url}.")
+    
+    if click.confirm("Would you like to to re-open the site for a manual check?", default=True):
+        webbrowser.open(url)
+        
+    return click.confirm("Is AI disclosure present?", default=False)
 
 class IssueStatus(IntEnum):
     NO_ISSUE = 1
@@ -2357,14 +2403,17 @@ def project_grade(element, number, skip_email):
         
         if element == "Summary-Report":
             report_url = click.prompt("What URL was used for the graded report?")
+            word_count = count_words_quarto(report_url)
             
             
         else: 
             report_url = None
+            word_count = 0
 
         SKELETON = TEMPLATE.render(team_name=TEAM_NAME, 
                                    members=TEAM.itertuples(), 
-                                   report_url=report_url)
+                                   report_url=report_url, 
+                                   word_count=word_count)
 
         FEEDBACK = click.edit(text=SKELETON, editor="/usr/bin/nano")
 
@@ -2628,7 +2677,20 @@ def project_peer_grade(cycle, force):
     multiple=True,
     help="GitHub ID to archive. Can be given multiple times. If blank, all active students in roster.",
 )
-def project_report(github):
+@click.option(
+    "--use-existing",
+    "rearchive",
+    is_flag=True,
+    default=True,
+    help="Skip archiving and use cached issue comments",
+)
+@click.option(
+    "--skip-pdf", 
+    is_flag=True, 
+    default=False, 
+    help="Skip PDF archiving"
+)
+def project_report(github, rearchive, skip_pdf):
     "Assign grades to individual final reports"
     
     ROSTER = current_roster()
@@ -2639,99 +2701,159 @@ def project_report(github):
     else: 
         process_all = False
         
+    if rearchive:
+        _final_archive(github, skip_pdf)
+        
     feedback_dir = op.join(course_dir(), "final_report_grades")
     os.makedirs(feedback_dir, exist_ok=True)
     
-    template = Environment(loader=FileSystemLoader("_cissoid/templates"), autoescape=select_autoescape()).get_template("project_final_report.md")
+    template = Environment(loader=FileSystemLoader("_cissoid/templates"), 
+                           autoescape=select_autoescape()).get_template("project_final_report.md")
     
     random.shuffle(github)
+    
+    RUBRIC_TABLE = pd.read_html("https://michael-weylandt.com/STA9750/project", 
+                                attrs={"id": "rubric-individual-report"})[0]
 
     for g in github: 
-        feedback_file = op.join(feedback_dir, f"final_report_{g}.txt")
+        full_name = ROSTER[ROSTER.github == g].name.item()
+        click.echo(f"Beginning grading of {full_name}'s ({g}) final report")
+        
+        safe_name = full_name.lower().replace(" ", "_")
+        feedback_file = op.join(feedback_dir, f"final_report_{safe_name}.txt")
 
         if op.exists(feedback_file):
             if process_all: 
                 continue # Just assume we're skipping if name not explicitly asked for
             
-            if not click.confirm(f"Final report feedback already found for {g}. Are you sure you want to overwrite?"):
+            if not click.confirm(f"Final report feedback already found for {full_name}. Are you sure you want to overwrite?"):
                 continue
-        
-        report_url = click.prompt(f"What URL was used for {g}'s final report?", default='Not Submitted')
-        
-        if report_url == 'Not Submitted': 
-            continue
-        
-        if click.confirm("Would you like me to open the report now?", default=True):
-            webbrowser.open(report_url)
+            
+        default_report_url = f'https://{g}.github.io/{course_repo()}/individual_report.html'
         
         try: 
+            resp = r.get(default_report_url)
+            
+            if not resp.ok:
+                raise ValueError("Missing Report HTML")
+            
+            report_url = default_report_url
+        except ValueError: 
+            click.echo(f"Could not find report at {default_report_url}.")
+            report_url = click.prompt(f"What URL should be used instead for {full_name}'s final report?")
+            
             resp = r.get(report_url)
-            bs = BS(resp.text, features="lxml")
-            word_count = sum([len(p.text.split()) for p in bs.find("main").findAll("p")])
+            
+            if not resp.ok:
+                raise ValueError("Second try Failed")
         except: 
             import pdb; pdb.set_trace()
             
-        full_name = ROSTER[ROSTER.github == g].name.item()
-    
-        code_quality = click.prompt("What grade should be assigned for Code Quality?", 
-                                    type=click.IntRange(min=0, max=100))
-                                    
-        code_quality_txt = click.prompt("Any particular feedback on Code Quality?", type=str, default=None)
-        code_quality_txt = f"({number_to_letter(code_quality)}) {code_quality_txt}"
+        bs = BS(resp.text, features="lxml")
         
-        data_acquisition = click.prompt("What grade should be assigned for Data Acquisition and Processing?", 
-                                    type=click.IntRange(min=0, max=100))
-                                    
-        data_acquisition_txt = click.prompt("Any particular feedback on Data Acquisition and Processing?", type=str, default=None)
-        data_acquisition_txt = f"({number_to_letter(data_acquisition)}) {data_acquisition_txt}"
+        if bs.find("main"):
+            p_tags = bs.find("main").find_all("p")
+        else:
+            p_tags = bs.find_all("p")
+        word_count = sum([len(p.text.split()) for p in p_tags])
         
-        data_analysis = click.prompt("What grade should be assigned for Data Analysis?", 
-                                    type=click.IntRange(min=0, max=100))
-                                    
-        data_analysis_txt = click.prompt("Any particular feedback on Data Analysis?", type=str, default=None)
-        data_analysis_txt = f"({number_to_letter(data_analysis)}) {data_analysis_txt}"
+        if click.confirm(f"Would you like me to open the report now? {report_url}", default=True):
+            webbrowser.open(report_url)
         
-        communication = click.prompt("What grade should be assigned for Communication and Presentation of Results?", 
-                                    type=click.IntRange(min=0, max=100))
-                                    
-        communication_txt = click.prompt("Any particular feedback on Communication and Presentation of Results?", type=str, default=None)
-        communication_txt = f"({number_to_letter(communication)}) {communication_txt}"
+        SCORES = {}
         
-        overall_grade = round(0.2 * code_quality + 0.2 * data_acquisition + 0.3 * data_analysis + 0.3 * communication, 2)
+        for major_element, element, poor, adequate, good, great, excellent in RUBRIC_TABLE.itertuples(index=False):
+            if not re.match(r"([a-zA-Z\s.,!?&-]+)\d{0,2}\s+\((\d{1,2})\)", major_element): 
+                import pdb; pdb.set_trace()
+                
+            major_element = re.match(r"([a-zA-Z\s.,!?&-]+)\d{0,2}\s+\((\d{1,2})\)", major_element).group(1).strip()
+            element_match = re.match(r"([a-zA-Z\s.,!?&-]+)\d{0,2}\s+\((\d{1,2})\)", element)
+            
+            if not element_match:
+                import pdb; pdb.set_trace()
+                
+            element_text = element_match.group(1).strip()
+            element_max_score = int(element_match.group(2))
+            click.echo(f"The next rubric element is {element_text} with a max score of {element_max_score}.")
+            click.echo(f"- Poor: {poor}")
+            click.echo(f"- Adequate: {adequate}")
+            click.echo(f"- Good: {good}")
+            click.echo(f"- Great: {great}")
+            click.echo(f"- Excellent: {excellent}")
+            
+            if "length" in element_text.lower():
+                click.echo(f"Approximate word count: {word_count}")
+            
+            element_score = click.prompt("What score should be awarded?", 
+                                         type=click.IntRange(min=0, max=element_max_score))
+                                         
+            if element_score > 0.8 * element_max_score:
+                category_message = excellent
+            elif element_score > 0.6 * element_max_score:
+                category_message = great
+            elif element_score > 0.4 * element_max_score:
+                category_message = good
+            elif element_score > 0.2 * element_max_score:
+                category_message = adequate
+            else:
+                category_message = poor
+                                         
+            element_comment = click.prompt("Any comments?", type=str, default="")
+            
+            SCORES[(major_element, element_text)] = {
+                "score": element_score,
+                "category_message": category_message, 
+                "comment": element_comment, 
+                "max_score": element_max_score
+                }
+        
+        ## Done with input
+        overall_grade = sum(s["score"] for s in SCORES.values())
+        max_overall_grade = sum(s["max_score"] for s in SCORES.values())
                                     
         click.echo(f"{g} currently has an overall grade of {overall_grade}.")
-        other = click.prompt("Should any other adjustments be applied?", 
+        other_penalty = click.prompt("Should any other adjustments be applied?", 
                              type=click.IntRange(min=-100, max=100), 
                              default=0)
                              
-        if other: 
-            other_reason = click.prompt(f"Why is this adjustment ({other}) being applied?")
-            overall_grade += other
+        if other_penalty: 
+            other_reason = click.prompt(f"Why is this adjustment ({other_penalty}) being applied?")
+            overall_grade += other_penalty
         else: 
             other_reason = None
             
+        # TODO: Require AI Disclaimer in future semesters
+        # ai_present = has_ai_disclosure(report_url)
+        # if not ai_present: 
+        #     ai_penalty = -click.prompt("No AI disclosure was found. Should a penalty be applied?", 
+        #                                type=click.IntRange(min=0, max=125), default=30)
+        # else:
+        #     ai_penalty = 0
+            
         skeleton = template.render(
-            github_id = g, 
-            full_name = full_name, 
-            overall_grade = overall_grade,
-            report_url = report_url,
-            other = other, 
-            other_reason = other_reason, 
-            code_quality = code_quality, 
-            data_acquisition = data_acquisition, 
-            data_analysis = data_analysis, 
-            code_quality_txt = code_quality_txt, 
-            data_acquisition_txt = data_acquisition_txt, 
-            data_analysis_txt = data_analysis_txt, 
-            communication = communication, 
-            communication_txt = communication_txt, 
-            word_count = word_count
+            github_id=g, 
+            full_name=full_name, 
+            overall_grade=overall_grade,
+            max_overall_grade=max_overall_grade,
+            report_url=report_url,
+            other_penalty=other_penalty, 
+            other_reason=other_reason,
+            scores=SCORES, 
+            word_count=word_count
         )
 
         final_text = click.edit(text=skeleton, editor="/usr/bin/nano")
         
         with open(feedback_file, "w") as f:
-            f.write(final_text)
+            if final_text:
+                f.write(final_text)
+            else:
+                f.write(skeleton)
+                
+        click.echo(f"Finished grading of {full_name}'s ({g}) final report.")
+        n_complete = len([f for f in os.listdir(feedback_dir) if f.endswith("txt")])
+        click.echo(f"{n_complete} of {ROSTER.shape[0]} final reports graded so far: keep going - only {ROSTER.shape[0] - n_complete} to go!")
+        click.prompt("Hit enter to continue", default=True, show_default=False)
 
     click.echo("All individual reports graded. You are now ready to return feedback to students.")
         
@@ -2775,6 +2897,85 @@ def mini_archive(project_id, github, skip_pdf):
     may be a bit tricky to get working."""
     return _mini_archive(project_id, github, skip_pdf)
 
+
+def _final_archive(github, skip_pdf=False, 
+                   archive_submissions=True, archive_issues=True):
+    "Final project archiving - TODO: Consolidate with above"
+    if not github:
+        github = current_roster().github.values
+
+    latest_dir = op.join(course_dir(), "latest")
+    os.makedirs(latest_dir, exist_ok=True)
+    now = datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S_%Z")
+    
+    if archive_submissions:
+        for gh in github:
+            click.echo(f"Archiving Final Project Submission for User {gh}")
+    
+            click.echo("Syncronizing Git Repository")
+    
+            student_dir = op.join(course_dir(), "students", gh)
+            student_git_dir = op.join(student_dir, "git")
+            # Don't worry too much about race conditions / file system issues
+            os.makedirs(student_git_dir, exist_ok=True)
+    
+            if op.exists(op.join(student_git_dir, ".git")):
+                subprocess.run(["git", "-C", student_git_dir, "pull"])
+            else:
+                student_repo_url = f"https://github.com/{gh}/{course_repo()}"
+                subprocess.run(["git", "clone", "--no-checkout", student_repo_url, student_git_dir])
+    
+            if skip_pdf:
+                continue
+    
+            click.echo("Exporting Web Page as PDF")
+    
+            student_web_dir = op.join(student_dir, "pdfs", now)
+            # Don't worry too much about race conditions / file system issues
+            os.makedirs(student_web_dir, exist_ok=True)
+            
+            student_summary_url = f"https://{gh}.github.io/{course_repo()}/summary_report.html"
+            student_summary_pdf = op.join(student_web_dir, f"summary_report.pdf")
+    
+            rr = print_web_to_pdf(student_summary_url, student_summary_pdf)
+    
+            if rr.returncode:
+                click.echo(f"Failed to export {student_summary_url} to PDF.")
+    
+            student_individual_url = f"https://{gh}.github.io/{course_repo()}/individual_report.html"
+            student_individual_pdf = op.join(student_web_dir, f"individual_report.pdf")
+    
+            rr = print_web_to_pdf(student_individual_url, student_individual_pdf)
+    
+            if rr.returncode:
+                click.echo(f"Failed to export {student_individual_url} to PDF.")
+
+    if archive_issues:
+        # Now export all comments from my course issues repository
+        issues_dir = op.join(course_dir(), "issues", now)
+        # Don't worry too much about race conditions / file system issues
+        os.makedirs(issues_dir, exist_ok=True)
+    
+        click.echo(f"Exporting GitHub Issues to {issues_dir}")
+    
+        ISSUES = IssueCollection()
+    
+        for issue in ISSUES:
+            click.echo(f" - Exporting Issue #{issue.number:03g}")
+            issue_file = op.join(issues_dir, f"issue{issue.number:03}.json")
+    
+            with open(issue_file, "w") as f:
+                f.write(issue.to_json())
+    
+        issue_symlink = op.join(latest_dir, "issues")
+        
+        try:
+            os.remove(issue_symlink)
+        except FileNotFoundError:
+            pass
+        
+        rel_issues_dir = op.relpath(issues_dir, op.dirname(issue_symlink))
+        os.symlink(rel_issues_dir, issue_symlink, target_is_directory=True)
 
 def _mini_archive(project_id, github, skip_pdf=False, 
                   archive_submissions=True, archive_issues=True):
