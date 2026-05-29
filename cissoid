@@ -50,6 +50,9 @@ def count_words_quarto(url):
     
     return sum([len(p.get_text().split()) for p in p_tags])
 
+def round_to_quarter(x):
+    return f'{round(x * 4) / 4.0:.2f}'
+
 @cache
 def course_short():
     with open("_variables.yml") as f:
@@ -623,8 +626,11 @@ class Issue(object):
 class IssueCollection(object):
     def __init__(self):
         click.echo("Acquiring all GitHub issues")
-        ALL_ISSUES = []
+        
         pagination = 1
+        self._issues = []
+        
+        ALL_ISSUES = []
     
         while((len(ALL_ISSUES) % 100) == 0): 
             resp = _gh(f"/repos/{course_owner()}/{course_repo()}/issues?state=all&per_page=100&page={pagination}")
@@ -635,14 +641,14 @@ class IssueCollection(object):
             if "status" in resp and resp["status"] != "200":
                 import pdb; pdb.set_trace()
                 raise click.ClickException("UNABLE TO ACCESS GITHUB API")
-        
-            ALL_ISSUES += resp
-            pagination += 1
             
-        self._issues = [None] * len(resp)
+            self._issues += [None] * len(resp)
         
-        for ix, r in enumerate(resp):
-            self._issues[ix] = Issue.from_gh_api_resp(r)
+            for ix, r in enumerate(resp, start=100*(pagination-1)):
+                self._issues[ix] = Issue.from_gh_api_resp(r)
+                
+            pagination += 1
+            ALL_ISSUES += resp
             
         self._issues.sort(key=lambda x: x.number)
         click.echo("Issue import complete")
@@ -661,7 +667,7 @@ class IssueCollection(object):
             click.echo(f"Issue #{u.number:03} ({u.title}) was opened by {u.opened_by}.")
             
             if ask:     
-                if click.confirm("Should this issue be considered as part of MP#{mp_num:02}?", default=False):
+                if click.confirm(f"Should this issue be considered as part of MP#{mp_num:02}?", default=False):
                     known.append(u)
                 else: 
                     click.echo(f"Omitting Issue #{u.number:03} ({u.title}) from processing.")
@@ -974,7 +980,14 @@ class PeerFeedbackCollection(object):
                 evaluator_subs = [evaluator in n for n in zip_f.namelist()]
                 
                 if sum(evaluator_subs) > 1:
-                    import pdb; pdb.set_trace()
+                    submissions = [n for n in zip_f.namelist() if evaluator in n]
+                    click.echo(f"Multiple submissions received from {evaluator}:")
+                    for s in submissions:
+                        click.echo(f"- {s}")
+                    click.confirm(f"Only processing {max(submissions)}. Is it ok to proceed?", abort=True, default=True)
+                        
+                    if f.name != max(submissions):
+                        continue 
                 
                 for k, v in pf_yaml_raw.items():
                     if k == "evaluator":
@@ -1718,24 +1731,25 @@ def roster_list(include_inactive, include_emplid, include_secret,
         full_roster = full_roster.loc[full_roster["GitHub ID"].isin(github),:]
         
     if grep_flag: 
-        all_re_flag = pd.Series([grep_and for _ in range(full_roster.shape[0])])
+        if len(grep_flag) > 1:
+            import pdb; pdb.set_trace()
         
         for gf in grep_flag: 
             gh_re_flag = full_roster["GitHub ID"].str.contains(gf, flags = re.IGNORECASE)
             nm_re_flag = full_roster["Student Name"].str.contains(gf, flags = re.IGNORECASE)
             tm_re_flag = full_roster["Project Team Name"].str.contains(gf, flags = re.IGNORECASE)
         
-            gf_re_flag = gh_re_flag | nm_re_flag | tm_re_flag
-            
             if grep_and:
-                all_re_flag = all_re_flag & gf_re_flag
+                gf_re_flag = gh_re_flag & nm_re_flag & tm_re_flag
             else:
-                all_re_flag = all_re_flag | gf_re_flag
-                
+                gf_re_flag = gh_re_flag | nm_re_flag | tm_re_flag
+            
         if grep_invert:
-            all_re_flag = ~ all_re_flag
+            gf_re_flag = ~ all_re_flag
+            
+        import pdb; pdb.set_trace()
                 
-        full_roster = full_roster.loc[all_re_flag,:]
+        full_roster = full_roster.loc[gf_re_flag,:]
     
     if github or grep_flag: 
         list_str = "match search"
@@ -2626,6 +2640,8 @@ def project_peer_grade(cycle, force):
         progress = f'{(n_student - 1) / total_students:.1%}'
         overall_score = sum([v["Median"] for v in peer_scores.values()])
         
+        overall_score = round_to_quarter(overall_score)
+        
         instructor_prompt = instructor_template.render(
             name=real_name, 
             gh=gh,
@@ -3499,6 +3515,8 @@ def mini_peer_assign(project_id, peer_count, dry_run, skip_archive, github_skip,
             vernam_code = vernam_encode(assigned_issues, student.secret, offset=project_id)
             assert assigned_issues == vernam_encode(vernam_code, student.secret, offset=project_id)
             
+            assert len(vernam_code) == peer_count
+            
             YAML_OUT["assignments"][student.github.lower()] = vernam_code
         
         with open(PF_STUDENT_FILE, "w") as f:
@@ -3877,6 +3895,10 @@ def mini_peer_grade(project_id, max_extra_credit, force, skip_instructor):
             check_penalty = False
             bs_penalty = False
             
+        # Cap overall score at 80 per instructions
+        if overall_score["Total"] > 80:
+            overall_score["Total"] = 80
+            
         if skip_instructor:
             instructor_comment = None
         else:
@@ -3931,6 +3953,8 @@ def mini_peer_grade(project_id, max_extra_credit, force, skip_instructor):
         with open(grade_file, "w") as f_out:
             f_out.write(grade_text)
             
+        click.confirm("Would you like to continue?", abort=True)
+            
     click.echo("Student grade files complete. Please upload to Brightspace:")
     click.echo(grade_dir(project_id))
     click.launch(grade_dir(project_id))
@@ -3964,11 +3988,18 @@ def mini_peer_grade(project_id, max_extra_credit, force, skip_instructor):
     default=False,
     help="Force re-evaluation of peer feedback."
 )
-def mini_peer_meta(project_id, rearchive, skip_pdf, force):
+@click.option(
+    "-S",
+    "--skip-opening",
+    is_flag=True,
+    default=False,
+    help="Skip opening assignments in browser"
+)
+def mini_peer_meta(project_id, rearchive, skip_pdf, force, skip_opening):
     """Provide a Meta-Review of Peer-Feedback
 
     After collecting peer feedback, the course staff (instructor or TAs)
-    need to assign a 'meta-review' score (0-10) on the quality of the peer
+    need to assign a 'meta-review' score (0-20) on the quality of the peer
     feedback given. This function is designed to be used repeatedly and saves
     scores throughout evaluation. Run with '--force' to force regrading from 
     the beginning.
@@ -3977,123 +4008,147 @@ def mini_peer_meta(project_id, rearchive, skip_pdf, force):
     if rearchive:
         _mini_archive(project_id, [], skip_pdf)
         
-    mp_str  = f"MP#0{project_id}"
-    pf_file = _peer_feedback_collect_file(project_id)
-    mg_file = _peer_feedback_meta_file(project_id)
+    mp_str  = f"MP#{project_id:02}"
+    mapping_file = _peer_feedback_student_file(project_id)
+    
+    if not op.exists(mapping_file):
+        raise click.ClickException(f"Assignment file not found: run `peer collect -N {project_id}` to create feedback file at {mapping_file} or check that you have the right project number")
 
+    pf_file = _peer_feedback_file(project_id)
+    
     if not op.exists(pf_file):
         raise click.ClickException(f"Peer feedback file not found: run `peer collect -N {project_id}` to create feedback file at {pf_file}")
 
-    with open(pf_file, "r") as f:
-        try:
-            ALL_PEER_FEEDBACK = json.loads(f.read())
-        except ValueError:
-            raise click.ClickException(f"Peer feedback appears to be empty. Run `peer collect -N {project_id}` to create feedback file at {pf_file}")
-        
-    NUM_PEER_FEEDBACK = sum([isinstance(v, dict) for f in ALL_PEER_FEEDBACK.values() for v in f.values()])
-
-    ROSTER   = current_roster()
-    STUDENTS = set(ROSTER["github"])
+    all_feedback = PeerFeedbackCollection(project_id)
+    all_feedback.load_from_json(pf_file)
+    all_feedback.load_assignments_from_yaml(mapping_file)
     
-    with open(mg_file, "r") as f:
+    meta_file = _peer_feedback_meta_file(project_id)
+    
+    meta_rubric = None
+    mp_rubric = None
+    
+    SCORES_STR = [str(_) for _ in range(21)]
+    
+    with open(meta_file, "r") as f:
         try: 
             META_GRADES = json.loads(f.read())
         except json.JSONDecodeError:
-            META_GRADES = {s: {} for s in STUDENTS}
+            META_GRADES = {e: {} for e in all_feedback.assignments.evaluators}
     
-    for submittor in STUDENTS: 
-        FEEDBACK   = ALL_PEER_FEEDBACK[submittor]
-        EVALUATORS = STUDENTS.intersection(FEEDBACK.keys())
-        META_RUBRIC = None
-        RUBRIC = None
+    templates = Environment(
+        loader=FileSystemLoader("_cissoid/templates"), 
+        autoescape=select_autoescape()
+    )
+    
+    instructor_template = templates.get_template("pf_meta_instructor_prompt.md")
+    n_feedback = len(all_feedback.assignments)
+    
+    STANDARD_COMMENTS = [
+        "NO COMMENTS ON THIS TOPIC FOUND", 
+        "Missing submission - no penalty to evaluator.",
+        "This is really above and beyond - thank you for making the effort.",
+        "Great suggestions - really actionable and will certainly make a difference.",
+        "Comments are directionally correct, but would be better if there was more specificity.",
+        "Solid comments - but there's always some room for constructive criticism even on the strongest projects, so think about if there's anything you would recommend improving upon.",
+        "Really useful comments. I think your scores are well-calibrated here, but try to be a bit more clear about _why_ you took off a few points in certain sections.",
+        "Good comments, focusing on just a few actionable items - thank you", 
+        "This is a difficult submission to review given the problems, but you did a good job - thank you for taking the time and handling it well", 
+        "Very detailed and thorough review - thank you"
+    ]
+    
+    for ix_feedback, (submittor, evaluator, issue_number) in enumerate(all_feedback.assignments, start=1): 
+        feedback = all_feedback.get_feedback(submittor=submittor, evaluator=evaluator)
         
-        for evaluator in EVALUATORS:
-            has_feedback = submittor in META_GRADES[evaluator]
-
-            if has_feedback and not force:
-                continue
-                
-            peer_comments = FEEDBACK[evaluator]["posts"]
-
-            if not is_nan(peer_comments) and peer_comments:
-                peer_comments = peer_comments.strip()
-                SCORES_ASSIGNED = sum([len(v.keys()) for v in META_GRADES.values()])
-                click.clear()
-                click.echo(f"Meta {SCORES_ASSIGNED}/{NUM_PEER_FEEDBACK} ({SCORES_ASSIGNED / NUM_PEER_FEEDBACK:.1%}): {evaluator} left the following comments on {submittor}'s {mp_str}")
-                click.echo("---===---")
-                click.echo(peer_comments)
-                click.echo("---===---")
-                click.echo(f"Based on the above, what meta-review grade should be assigned to {evaluator}?")
-            
-                while True: 
-                    score = click.prompt("Enter a score 0-10, r for the meta-review rubric, s for the PDF archive, i for the GitHub issue, or R for the original MP rubric:",
-                                        type=click.Choice(SCORES_STR + ['r', 's', 'i', 'R', "h"]))
-                                        
-                    if score == "r":
-                        if not META_RUBRIC:
-                            META_RUBRIC = pd.read_html(f"{course_site()}/miniprojects.html")[0]
-                        click.echo(META_RUBRIC)
-                    elif score == "s":
-                        latest_pdf = op.join(course_dir(), "latest", "pdfs", f"{submittor}_mp{project_id}.pdf")
-                        if op.exists(latest_pdf):
-                            subprocess.call(["open", latest_pdf])
-                        else: 
-                            import pdb; pdb.set_trace()
-                    elif score == "R": 
-                        if not RUBRIC:
-                            RUBRIC = pd.read_html(f"{course_site()}/mini/mini0{project_id}.html")[1]
-                        click.echo(RUBRIC.T)
-                    elif score == "i": 
-                        webbrowser.open(f"https://github.com/{course_owner()}/{course_repo()}/issues/{FEEDBACK['issue_num']}")
-                    elif score == "h": 
-                        webbrowser.open(f"https:/{submittor}.github.io/{course_repo()}/mp0{project_id}.html")
-                    else: 
-                        score = int(score)
-                        STANDARD_COMMENTS = [
-                            "NO COMMENTS ON THIS TOPIC FOUND", 
-                            "Missing submission - no penalty to evaluator.",
-                            "This is really above and beyond - thank you for making the effort.",
-                            "Great suggestions - really actionable and will certainly make a difference.",
-                            "Comments are directionally correct, but would be better if there was more specificity.",
-                            "Solid comments - but there's always some room for constructive criticism even on the strongest projects, so think about if there's anything you would recommend improving upon.",
-                            "Really useful comments. I think your scores are well-calibrated here, but try to be a bit more clear about _why_ you took off a few points in certain sections.",
-                            "Good comments, focusing on just a few actionable items - thank you"
-                        ]
-                        
-                        click.echo("Pre-canned comments:")
-                        for n, txt in enumerate(STANDARD_COMMENTS):
-                            click.echo(f"- {n}: {txt}")
-                            
-                        comment = click.prompt(f"Any comments for {evaluator}?", type=str)
-                        
-                        try: 
-                            comment = STANDARD_COMMENTS[int(comment)]
-                        except ValueError:
-                            pass
-                        
-                        format_check = click.confirm("Was the submission appropriately formatted?", default=True)
-                        
-                        if not format_check:
-                            comment += "\nPlease not that your submission was not formatted according to the provided template: https://michael-weylandt.com/STA9750/miniprojects.html#peer-feedback-template Please attempt to do so in the future or a penalty may be assessed."
-                        
-                        break
-            else:
-                score = 0
-                comment = "NO PEER FEEDBACK IDENTIFIED. CONTACT INSTRUCTOR IF YOU BELIEVE PEER FEEDBACK SUBMISSION WAS MISSED."
-            
-            if 'issue_num' in FEEDBACK: 
-                url = f"https://github.com/{course_owner()}/{course_repo()}/issues/{FEEDBACK['issue_num']}"
-            else: 
-                url = None
-
+        issue_url = f"https://github.com/{course_owner()}/{course_repo()}/issues/{issue_number}"
+        
+        if feedback is None:
             META_GRADES[evaluator][submittor] = {
-                "score": score, 
-                "comment": comment, 
-                "url": url
+                "instructor_comment": "No peer feedback received - please contact course staff if peer feedback submitted but missed", 
+                "instructor_score": 0, 
+                "issue_url": issue_url
             }
+            continue
+        
+        try:
+            has_meta_grade = META_GRADES[evaluator][submittor]
+        except KeyError:
+            has_meta_grade = False
             
-            with open(mg_file, "w") as f:
-                f.write(json.dumps(META_GRADES, indent=2))
+        if has_meta_grade and not force:
+            continue
+        
+        n_complete = sum([len(v.values()) for v in META_GRADES.values()])
+        progress = f'{(n_complete) / n_feedback:.1%}'
+            
+        instructor_prompt = instructor_template.render(
+            submittor=submittor, 
+            evaluator=evaluator,
+            comments=feedback.comments,
+            scores=feedback.scores, 
+            n_feedback=n_feedback,
+            n_complete=n_complete,
+            progress=progress, 
+            defaults=STANDARD_COMMENTS
+        )
+            
+        instructor_prompt = ("\n".join(["## " + l for l in instructor_prompt.split("\n") if l]))
+        
+        if not skip_opening:
+            click.echo(f"Opening MP submission for {submittor}")
+            
+            if project_id:
+                webbrowser.open(f"https://{submittor}.github.io/{course_repo()}/mp{project_id:02}.html")
+            else:
+                webbrowser.open(f"https://{submittor}.github.io/{course_repo()}/")
+                
+        instructor_comment = click.edit(text=instructor_prompt, editor="/usr/bin/nano")
+        
+        if instructor_comment:
+            instructor_comment = instructor_comment.split("\n")
+            instructor_comment = [l for l in instructor_comment if l and not l.startswith("## ")]
+            instructor_comment = "\n".join(wrap("\n".join(instructor_comment)))
+            
+        click.echo(f"Based on the above, what meta-review grade should be assigned to {evaluator}?")
+            
+        while True: 
+            score = click.prompt("Enter a score 0-20, r for the meta-review rubric, s for the PDF archive, i for the GitHub issue, or R for the original MP rubric:",
+                                type=click.Choice(SCORES_STR + ['r', 's', 'i', 'R', "h"]), 
+                                show_choices=False)
+                                        
+            if score == "r":
+                if not meta_rubric:
+                    meta_rubric = pd.read_html(f"{course_site()}/miniprojects.html")[0]
+                click.echo(meta_rubric)
+            elif score == "s":
+                latest_pdf = op.join(course_dir(), "latest", "pdfs", f"{submittor}_mp{project_id:02}.pdf")
+                if op.exists(latest_pdf):
+                    subprocess.call(["open", latest_pdf])
+                else: 
+                    import pdb; pdb.set_trace()
+            elif score == "R": 
+                if not mp_rubric:
+                    mp_rubric = pd.read_html(f"{course_site()}/mini/mini0{project_id}.html")[1]
+                click.echo(mp_rubric.T)
+            elif score == "i": 
+                webbrowser.open(f"https://github.com/{course_owner()}/{course_repo()}/issues/{FEEDBACK['issue_num']}")
+            elif score == "h": 
+                webbrowser.open(f"https://{submittor}.github.io/{course_repo()}/mp{project_id:02}.html")
+            else:
+                try:
+                    instructor_score = int(score)
+                    break
+                except ValueError:
+                    click.echo(f"I'm sorry. I couldn't interpret {score} - re-prompting.")
+                    
+        META_GRADES[evaluator][submittor] = {
+             "instructor_comment": instructor_comment, 
+             "instructor_score": instructor_score, 
+             "issue_url": issue_url
+        }
+         
+        with open(meta_file, "w") as f:
+            f.write(json.dumps(META_GRADES, indent=2))
             
     template = Environment(
         loader=FileSystemLoader("_cissoid/templates"), 
@@ -4101,17 +4156,18 @@ def mini_peer_meta(project_id, rearchive, skip_pdf, force):
     ).get_template("meta_review.md")
     
     # Now consolidate feedback and write to file
+    ROSTER = current_roster()
     
-    for student in STUDENTS: 
-        feedback = META_GRADES[student]
-        scores = [v['score'] for v in feedback.values()]
-        real_name = ROSTER[ROSTER["github"] == student]["name"].item()
+    for gh in META_GRADES.keys(): 
+        feedback = META_GRADES[gh]
+        scores = [v['instructor_score'] for v in feedback.values()]
+        real_name = ROSTER[ROSTER["github"].map(str.lower) == gh.lower()]["name"].item()
         safe_name = real_name.lower().replace(" ", "_")
         overall = sum(scores) / len(scores)
-        
+
         grade_text = template.render(
             name = real_name,
-            github = student, 
+            github = gh, 
             project_id = project_id, 
             feedback = feedback, 
             overall = overall

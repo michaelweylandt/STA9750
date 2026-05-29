@@ -12,7 +12,7 @@ Team Members:
 
 URL of Version Used for Grading: {{ report_url }}
 
-Word Count: NN
+Word Count: {{word_count}}
 
 Rubric Element:
 

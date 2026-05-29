@@ -1,4 +1,4 @@
-Peer Feedback {{ix_feedback}} of {{n_feedback}} ({{progress}}% completed)
+Peer Feedback {{n_complete}} of {{n_feedback}} ({{progress}}% completed)
 
 - SUBMITTED BY: {{submittor}}
 - PEER REVIEW BY: {{evaluator}}

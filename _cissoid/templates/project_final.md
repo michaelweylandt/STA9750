@@ -13,12 +13,12 @@ Presentation Length: MM:SS
 
 Rubric Element: 
 
-- Quality of Presentation (<= 20 points): NN
+- Quality of Presentation (<= 15 points): NN
 - Relationship of Motivating and Specific Questions (<= 10 points): NN
-- Discussion of Data Sources (<= 20 points): NN
-- Communication of Findings (<= 25 points): NN
-- Contextualization of Project (<= 15 points): NN
-- Timing of Presentation (<= 10 points): NN
+- Discussion of Data Sources (<= 15 points): NN
+- Communication of Findings (<= 20 points): NN
+- Contextualization of Project (<= 10 points): NN
+- Timing of Presentation (<= 5 points): NN
 
 See https://michael-weylandt.com/STA9750/project.html#rubric-final for details.
 
