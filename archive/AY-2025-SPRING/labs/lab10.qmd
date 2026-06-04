@@ -1,0 +1,1298 @@
+---
+lab_num: "`r lab <- 10; lab`"
+lab_title: "Strings and String-y Things"
+engine: knitr
+format: live-html
+---
+
+{{< include _gradethis_init.qmd >}}
+
+{{< include _setup.qmd >}}
+
+# Review and Warm-Up {#review}
+
+Apples are an essential part of the human experience, known for their ability to
+ward off medical professionals, to curry favor with educators, and to lead to 
+one being forcibly evicted from pleasant gardens. Accordingly, humanity has 
+spent many years developing a spectrum of apples, ranging from the cloyingly 
+sweet to the bracingly tart. 
+
+![Wheel of Apples Arranged by Tartness. Copied from [Reddit](https://www.reddit.com/r/traderjoes/comments/w4z32l/love_my_tjs_apple_sweetness_spectrum/)](../images/apples.webp)
+
+This cornucopia challenges the average consumer, who often struggles to find
+the best apple on any given day. Thankfully, Brian Frange of 
+[applerankings.com](https://applerankings.com) is on the task. For this warm-up
+exercise, we are going to extract his rankings of apples from 
+<https://applerankings.com/pick-an-apple/> into a
+four-column table of the following format: 
+
+|Type             |Description                     |Score |summary        |
+|:----------------|:-------------------------------|:----:|:-------------:|
+|SweeTango Apples |"The Holy Grail"                |95    |Nearly Perfect |
+|Lucy Glo Apples  |"The Breathtaking Circus Freak" |93    |Superb         |
+|Pink Lady Apples |"The Cover Girl"                |90    |Superb         |
+
+1. Create the table shown above using `rvest`. The first two columns - `Type`
+   and `Description` - are fairly straightforward, requiring only a simple
+   selector using standard elements (headers and anchors) and the use of 
+   `html_elements()`; the latter two are more complex and you will want to
+   use `SelectorGadget` or similar to get the desired outcome. 
+   
+   *Hint*: Make sure that you are getting the same number of results for
+   all four columns before building your table. If you are getting twice as
+   many results in one column, your selector needs to be more precise. 
+   
+   *Hint*: `SelectorGadget` can be a bit picky about the order in which you
+   have to select elements to get the desired answer. If you hit a dead end, 
+   clear and try again in a different order. 
+   
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| message: false
+library(tidyverse)
+library(rvest)
+APPLES_HTML <- read_html("https://applerankings.com/pick-an-apple/")
+
+
+type <- APPLES_HTML |> html_elements("h2") |> html_text2()
+description <- APPLES_HTML |> html_elements("h4 a") |> html_text2()
+score <- APPLES_HTML |> html_elements(".elementor-widget-heading:nth-child(1) div.elementor-size-default") |> html_text2() |> as.integer()
+summary <- APPLES_HTML |> html_elements(".elementor-widget-heading:nth-child(2) div.elementor-size-default") |> html_text2()
+
+APPLES <- tibble(type, description, score, summary)
+
+head(APPLES)
+```
+
+With a bit of `gt()` formatting, we can also mimic the formatting of the 
+original website:
+
+```{r}
+library(gt)
+
+APPLES |> 
+    gt(id="apples_table_small", 
+       groupname_col = "summary") |> 
+    tab_style(style=list(cell_fill("#4E79A7"),
+                         cell_text(color="white", 
+                                   weight="bold", 
+                                   align="center")), 
+              locations=cells_row_groups()) |>
+    cols_label(description="Description", 
+               score="Score",
+               type="Type") |>
+    data_color(columns=score,
+               target_columns=everything(),
+               direction="column", 
+               palette = c("#8B4513", "#FF0000", "#FFBF00", "#008000"), 
+               domain = c(0, 100))
+```
+
+:::
+
+2. If you click through to a specific type of apple, these overall scores are
+   backed up by a set of 9 specific scores, displayed as progress bars. 
+   *E.g.*, for the [Kanzi Apple](https://applerankings.com/kanzi-apple-review/),
+   we see a high score on density, with middling scores on beauty and skin.
+   
+   Using `rvest`, extract the **first seven** category names and scores for the 
+   Kanzi apple into a table like:[^seven]
+   
+   |element                | element_score|
+   |:----------------------|-------------:|
+   |Taste                  |            90|
+   |Crispness              |            90|
+   |Skin                   |            70|
+   |Flesh                  |            80|
+   |Juiciness              |           100|
+   |Density                |           100|
+   |Beauty                 |            60|
+
+   *Hint*: The _text_ for each category will be reasonably easy to get. 
+   The numeric value is hidden inside an HTML element called `data-max`
+   which you can access with `html_attr()`.
+    
+[^seven]: Because this site seems to be somewhat manually constructed, the
+names of the last two columns are not quite consistent, *e.g.*,
+`"Cost/Availability"` on one page might be `"Cost / Availability"` on another. 
+We can address this using the string manipulation tools we're focusing on today,
+but until we introduce those, it's easier just to ignore those two columns.
+    
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+KANZI_HTML <- read_html("https://applerankings.com/kanzi-apple-review/")
+
+element <- KANZI_HTML |> 
+  html_elements(".elementor-title") |> 
+  html_text2()
+element_score <- KANZI_HTML |> 
+  html_elements(".elementor-progress-bar") |> 
+  html_attr("data-max") |> 
+  as.integer()
+
+data.frame(element=element, 
+           element_score=element_score) |>
+  head(7)
+```
+
+::: 
+
+3. Now that you have the ability to parse the page for a single apple, connect
+   this to your overall table of apples. You will first need to modify your 
+   original parsing code to additionally pull out the link to each page. 
+   
+   Apply your parsing code from the previous step to get the results from
+   each page. Join your results into a large table. 
+   
+   *Hint:* There is some flexibility on the final format that will be easiest
+   to worth with, but I recommend augmenting your original 4 columns with nine
+   more sub-score columns and keeping the same number of total rows. 
+   
+   *Hint*: The `map()` + `unnest()` paradigm might be useful here. 
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+parse_page <- function(url){
+  page_html <- read_html(url)
+  
+  element <- page_html |> 
+    html_elements(".elementor-title") |> 
+    html_text2()
+  element_score <- page_html |> 
+    html_elements(".elementor-progress-bar") |> 
+    html_attr("data-max") |> 
+    as.integer()
+
+data.frame(element=element, 
+           element_score=element_score) |>
+  head(7)
+}
+
+APPLES_HTML <- read_html("https://applerankings.com/pick-an-apple/")
+
+type <- APPLES_HTML |> 
+  html_elements("h2") |> 
+  html_text2()
+
+url <- APPLES_HTML |> 
+  html_elements("h2 a") |> 
+  html_attr("href") 
+
+description <- APPLES_HTML |> 
+  html_elements("h4 a") |> 
+  html_text2()
+
+score <- APPLES_HTML |> 
+  html_elements(".elementor-widget-heading:nth-child(1) div.elementor-size-default") |>
+  html_text2() |> 
+  as.integer()
+
+summary <- APPLES_HTML |> 
+  html_elements(".elementor-widget-heading:nth-child(2) div.elementor-size-default") |>
+  html_text2()
+
+APPLES <- tibble(type, url, description, score, summary) |>
+  mutate(scores = map(url, parse_page)) |>
+  unnest(scores) |> 
+  pivot_wider(names_from=element, 
+              values_from=element_score) |>
+  rename(Overall=score)
+```
+
+We can, as before, format this nicely: 
+
+```{r}
+
+APPLES |> 
+    gt(id="apples_table_full", 
+       groupname_col = "summary") |> 
+    tab_style(style=list(cell_fill("#4E79A7"),
+                         cell_text(color="white", 
+                                   weight="bold", 
+                                   align="center")), 
+              locations=cells_row_groups()) |>
+    tab_style(locations=cells_body(columns=Overall), 
+              style=cell_text(weight="bold")) |>
+    cols_label(description="", 
+               Overall="Overall Score",
+               type="") |>
+    tab_spanner(label="Sub-Scores", 
+                columns=c(Taste, Crispness, Skin, Flesh, Juiciness, Density, Beauty)) |>
+    data_color(columns=Overall,
+               target_columns=everything(),
+               direction="column", 
+               palette = c("#8B4513", "#FF0000", "#FFBF00", "#008000"), 
+               domain = c(0, 100)) |>
+    cols_merge(columns=c(type, description, url), 
+               pattern="{1}@@{2}@@{3}") |>
+    text_transform(locations=cells_body(columns=type), 
+                   fn = \(x) {
+                       type = str_extract(x, "(.*)@@(.*)@@(.*)", group=1)
+                       desc = str_extract(x, "(.*)@@(.*)@@(.*)", group=2)
+                       url  = str_extract(x, "(.*)@@(.*)@@(.*)", group=3)
+                       glue("<a href='{url}' style='color: inherit;'> {type} ({desc}) </a>")})
+```
+
+Note that we had to use a bit of trickery in the final `text_transform()` call
+to get the links formatted how we want. Hopefully the use of `str_extract()`
+will be clearer by the end of today.
+
+:::
+
+4. Create a suitable visualization to demonstrate which of the sub-scores is 
+   most predictive of the overall score. 
+
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+Something like this would work: 
+
+```{r}
+#| message: false
+library(ggpmisc)
+APPLES |> 
+  pivot_longer(cols=Taste:Beauty) |> 
+  group_by(name) |> 
+  mutate(r2 = cor(Overall, value)) |> 
+  ungroup() |>
+  arrange(desc(r2)) |> 
+  mutate(name=factor(name, ordered=TRUE, levels=unique(name))) |> 
+  ggplot(aes(y=Overall, x=value)) + 
+    facet_wrap(~name) + 
+    geom_point() + 
+    ylab("Overall Score") + 
+    xlab("Component Score") + 
+    theme_bw() + 
+    geom_smooth(method="lm", 
+                se=FALSE, 
+                color="red4") + 
+    stat_poly_eq(
+        aes(label = paste("atop(", after_stat(eq.label), ",", 
+                          after_stat(rr.label), "*phantom(123456)", ")")),
+        # We use parse = TRUE because atop() is a plotmath command
+        # This is somewhat advanced, but it is useful for doing LaTeX-like math
+        # inside a plot
+        parse = TRUE)
+```
+
+From this, we see that both `Flesh` and `Crispness` are powerful
+predictors of overall score ($R^2\approx 0.69$) but `Crispness` might
+be the edge as it has a slightly larger regression coefficient. Note
+also that we did a bit of work here to re-arrange the categories into
+descending order by $R^2$ instead of alphabetical order: for a data set
+of this size, this might just be a matter of taste, but when dealing
+with large cardinalities, it is often good to give your buckets some
+sort of meaningful order.
+
+:::
+
+# Regular Expression Practice {#regex}
+
+Complete the following exercises using functionality from the
+`stringr` package. 
+
+1. In the following sentence, extract all *plural nouns*[^1]:
+
+```{r}
+#| eval: false
+todo <- "Yesterday, I needed to buy four cups of flour, a piece of Parmesan cheese, two gallons of ice cream, and a six-pack of bottled (non-alcoholic) beers."
+```
+
+```{webr}
+#| exercise: plural_nouns
+library(stringr)
+todo <- "Yesterday, I needed to buy four cups of flour, a piece of Parmesan cheese, two gallons of ice cream, and a six-pack of bottled (non-alcoholic) beers."
+str_extract_all(todo, ______, simplify=TRUE)
+```
+
+
+::: {.solution exercise="plural_nouns"}
+
+```{webr}
+#| exercise: plural_nouns
+#| solution: true
+library(stringr)
+todo <- "Yesterday, I needed to buy four cups of flour, a piece of Parmesan cheese, two gallons of ice cream, and a six-pack of bottled (non-alcoholic) beers."
+str_extract_all(todo, " [:alnum:]+s[., ]", simplify=TRUE)
+```
+
+If you recall character classes from the pre-assignment, this can also be written as: 
+
+```{webr}
+library(stringr)
+todo <- "Yesterday, I needed to buy four cups of flour, a piece of Parmesan cheese, two gallons of ice cream, and a six-pack of bottled (non-alcoholic) beers."
+str_extract_all(todo, "\\w+s\\W", simplify=TRUE)
+```
+
+or, if we want to trim the whitespace and punctuation: 
+
+```{webr}
+library(stringr)
+todo <- "Yesterday, I needed to buy four cups of flour, a piece of Parmesan cheese, two gallons of ice cream, and a six-pack of bottled (non-alcoholic) beers."
+str_match_all(todo, " (\\w+s)\\W")
+```
+
+This gives back our answer in a slightly weird
+format - a list of string matrices - but it will suffice for now.
+
+:::
+
+```{webr}
+#| exercise: plural_nouns
+#| check: true
+library(stringr)
+gradethis::grade_this_code()
+```
+
+
+[^1]: While English pluralization rules are tricky, you can just find the words 
+ending with an `s`. If you want to be more precise about this, look into 
+functions like `pluralize::is_plural()`, but note that even that library 
+can be tripped up by verbs ending with an `s`, *e.g.*, "goes".
+
+2. In the following sentence, compute the total number of fruits on my shopping
+list: 
+
+```{r}
+#| eval: false
+shopping <- "Today, I need to purchase 3 apples, 5 limes, and 2 lemons."
+```
+
+```{webr}
+#| exercise: numbers
+library(stringr)
+shopping <- "Today, I need to purchase 3 apples, 5 limes, and 2 lemons."
+sum(as.numeric(str_extract_all(shopping, ______, simplify=TRUE)))
+```
+
+::: {.solution exercise="numbers"}
+
+```{webr}
+#| exercise: numbers
+#| solution: true
+library(stringr)
+shopping <- "Today, I need to purchase 3 apples, 5 limes, and 2 lemons."
+sum(as.numeric(str_extract_all(shopping, "[:digit:]+", simplify=TRUE)))
+```
+:::
+
+```{webr}
+#| exercise: numbers
+#| check: true
+library(stringr)
+gradethis::grade_this_code()
+```
+
+3. The following text is adapted from the 
+[Taylor Swift wikipedia page](https://en.wikipedia.org/wiki/Taylor_Swift), 
+with some changes made to the punctuation to make things easier. 
+
+> Taylor Alison Swift (born December 13, 1989) is an American singer-songwriter. A subject of widespread public interest, she has influenced the music industry and popular culture through her artistry, especially in songwriting, and entrepreneurship. She is an advocate of artists rights and womens empowerment. Swift began professional songwriting at age 14. She signed with Big Machine Records in 2005 and achieved prominence as a country pop singer with the albums Taylor Swift (2006) and Fearless (2008). Their singles 'Teardrops on My Guitar', 'Love Story', and 'You Belong with Me' were crossover successes on country and pop radio formats and brought Swift mainstream fame. She experimented with rock and electronic styles on her next albums, Speak Now (2010) and Red (2012), respectively, with the latter featuring her first Billboard Hot 100 number-one single, 'We Are Never Ever Getting Back Together'. Swift recalibrated her image from country to pop with 1989 (2014), a synth-pop album containing the chart-topping songs 'Shake It Off', 'Blank Space', and 'Bad Blood'. Media scrutiny inspired the hip-hop-influenced Reputation (2017) and its number-one single 'Look What You Made Me Do'. After signing with Republic Records in 2018, Swift released the eclectic pop album Lover (2019) and the autobiographical documentary Miss Americana (2020). She explored indie folk styles on the 2020 albums Folklore and Evermore, subdued electropop on Midnights (2022), and re-recorded four albums subtitled Taylors Version after a dispute with Big Machine. These albums spawned the number-one songs 'Cruel Summer', 'Cardigan', 'Willow', 'Anti-Hero', 'All Too Well', and 'Is It Over Now?'. Her Eras Tour (2023-2024) and its accompanying concert film became the highest-grossing tour and concert film of all time, respectively. Swift has directed videos and films such as Folklore: The Long Pond Studio Sessions (2020) and All Too Well: The Short Film (2021). Swift is one of the worlds best-selling artists, with 200 million records sold worldwide as of 2019. She is the most-streamed artist on Spotify, the highest-grossing female touring act, and the first billionaire with music as the main source of income. Six of her albums have opened with over one million sales in a week. The 2023 Time Person of the Year, Swift has appeared on lists such as Rolling Stones 100 Greatest Songwriters of All Time, Billboards Greatest of All Time Artists, and Forbes Worlds 100 Most Powerful Women. Her accolades include 14 Grammy Awards, a Primetime Emmy Award,  40 American Music Awards, 39 Billboard Music Awards, and 23 MTV Video Music Awards; she has won the Grammy Award for Album of the Year, the MTV Video Music Award for Video of the Year, and the IFPI Global Recording Artist of the Year a record four times each.
+
+How many times does Taylor Swift's last name appear? 
+
+```{webr}
+#| exercise: swift
+library(stringr)
+swift <- "Taylor Alison Swift (born December 13, 1989) is an American singer-songwriter. A subject of widespread public interest, she has influenced the music industry and popular culture through her artistry, especially in songwriting, and entrepreneurship. She is an advocate of artists rights and womens empowerment. Swift began professional songwriting at age 14. She signed with Big Machine Records in 2005 and achieved prominence as a country pop singer with the albums Taylor Swift (2006) and Fearless (2008). Their singles 'Teardrops on My Guitar', 'Love Story', and 'You Belong with Me' were crossover successes on country and pop radio formats and brought Swift mainstream fame. She experimented with rock and electronic styles on her next albums, Speak Now (2010) and Red (2012), respectively, with the latter featuring her first Billboard Hot 100 number-one single, 'We Are Never Ever Getting Back Together'. Swift recalibrated her image from country to pop with 1989 (2014), a synth-pop album containing the chart-topping songs 'Shake It Off', 'Blank Space', and 'Bad Blood'. Media scrutiny inspired the hip-hop-influenced Reputation (2017) and its number-one single 'Look What You Made Me Do'. After signing with Republic Records in 2018, Swift released the eclectic pop album Lover (2019) and the autobiographical documentary Miss Americana (2020). She explored indie folk styles on the 2020 albums Folklore and Evermore, subdued electropop on Midnights (2022), and re-recorded four albums subtitled Taylors Version after a dispute with Big Machine. These albums spawned the number-one songs 'Cruel Summer', 'Cardigan', 'Willow', 'Anti-Hero', 'All Too Well', and 'Is It Over Now?'. Her Eras Tour (2023-2024) and its accompanying concert film became the highest-grossing tour and concert film of all time, respectively. Swift has directed videos and films such as Folklore: The Long Pond Studio Sessions (2020) and All Too Well: The Short Film (2021). Swift is one of the worlds best-selling artists, with 200 million records sold worldwide as of 2019. She is the most-streamed artist on Spotify, the highest-grossing female touring act, and the first billionaire with music as the main source of income. Six of her albums have opened with over one million sales in a week. The 2023 Time Person of the Year, Swift has appeared on lists such as Rolling Stones 100 Greatest Songwriters of All Time, Billboards Greatest of All Time Artists, and Forbes Worlds 100 Most Powerful Women. Her accolades include 14 Grammy Awards, a Primetime Emmy Award,  40 American Music Awards, 39 Billboard Music Awards, and 23 MTV Video Music Awards; she has won the Grammy Award for Album of the Year, the MTV Video Music Award for Video of the Year, and the IFPI Global Recording Artist of the Year a record four times each."
+str_count(swift, ______)
+```
+
+::: {.solution exercise="swift"}
+
+```{webr}
+#| exercise: swift
+#| solution: true
+library(stringr)
+swift <- "Taylor Alison Swift (born December 13, 1989) is an American singer-songwriter. A subject of widespread public interest, she has influenced the music industry and popular culture through her artistry, especially in songwriting, and entrepreneurship. She is an advocate of artists rights and womens empowerment. Swift began professional songwriting at age 14. She signed with Big Machine Records in 2005 and achieved prominence as a country pop singer with the albums Taylor Swift (2006) and Fearless (2008). Their singles 'Teardrops on My Guitar', 'Love Story', and 'You Belong with Me' were crossover successes on country and pop radio formats and brought Swift mainstream fame. She experimented with rock and electronic styles on her next albums, Speak Now (2010) and Red (2012), respectively, with the latter featuring her first Billboard Hot 100 number-one single, 'We Are Never Ever Getting Back Together'. Swift recalibrated her image from country to pop with 1989 (2014), a synth-pop album containing the chart-topping songs 'Shake It Off', 'Blank Space', and 'Bad Blood'. Media scrutiny inspired the hip-hop-influenced Reputation (2017) and its number-one single 'Look What You Made Me Do'. After signing with Republic Records in 2018, Swift released the eclectic pop album Lover (2019) and the autobiographical documentary Miss Americana (2020). She explored indie folk styles on the 2020 albums Folklore and Evermore, subdued electropop on Midnights (2022), and re-recorded four albums subtitled Taylors Version after a dispute with Big Machine. These albums spawned the number-one songs 'Cruel Summer', 'Cardigan', 'Willow', 'Anti-Hero', 'All Too Well', and 'Is It Over Now?'. Her Eras Tour (2023-2024) and its accompanying concert film became the highest-grossing tour and concert film of all time, respectively. Swift has directed videos and films such as Folklore: The Long Pond Studio Sessions (2020) and All Too Well: The Short Film (2021). Swift is one of the worlds best-selling artists, with 200 million records sold worldwide as of 2019. She is the most-streamed artist on Spotify, the highest-grossing female touring act, and the first billionaire with music as the main source of income. Six of her albums have opened with over one million sales in a week. The 2023 Time Person of the Year, Swift has appeared on lists such as Rolling Stones 100 Greatest Songwriters of All Time, Billboards Greatest of All Time Artists, and Forbes Worlds 100 Most Powerful Women. Her accolades include 14 Grammy Awards, a Primetime Emmy Award,  40 American Music Awards, 39 Billboard Music Awards, and 23 MTV Video Music Awards; she has won the Grammy Award for Album of the Year, the MTV Video Music Award for Video of the Year, and the IFPI Global Recording Artist of the Year a record four times each."
+str_count(swift, "Swift")
+```
+:::
+
+```{webr}
+#| exercise: swift
+#| check: true
+library(stringr)
+gradethis::grade_this_code()
+```
+
+
+4. In the above quote, how many *different years* (strings of exactly 4 digits)
+   appear?
+   
+```{webr}
+#| exercise: years
+library(stringr)
+swift <- "Taylor Alison Swift (born December 13, 1989) is an American singer-songwriter. A subject of widespread public interest, she has influenced the music industry and popular culture through her artistry, especially in songwriting, and entrepreneurship. She is an advocate of artists rights and womens empowerment. Swift began professional songwriting at age 14. She signed with Big Machine Records in 2005 and achieved prominence as a country pop singer with the albums Taylor Swift (2006) and Fearless (2008). Their singles 'Teardrops on My Guitar', 'Love Story', and 'You Belong with Me' were crossover successes on country and pop radio formats and brought Swift mainstream fame. She experimented with rock and electronic styles on her next albums, Speak Now (2010) and Red (2012), respectively, with the latter featuring her first Billboard Hot 100 number-one single, 'We Are Never Ever Getting Back Together'. Swift recalibrated her image from country to pop with 1989 (2014), a synth-pop album containing the chart-topping songs 'Shake It Off', 'Blank Space', and 'Bad Blood'. Media scrutiny inspired the hip-hop-influenced Reputation (2017) and its number-one single 'Look What You Made Me Do'. After signing with Republic Records in 2018, Swift released the eclectic pop album Lover (2019) and the autobiographical documentary Miss Americana (2020). She explored indie folk styles on the 2020 albums Folklore and Evermore, subdued electropop on Midnights (2022), and re-recorded four albums subtitled Taylors Version after a dispute with Big Machine. These albums spawned the number-one songs 'Cruel Summer', 'Cardigan', 'Willow', 'Anti-Hero', 'All Too Well', and 'Is It Over Now?'. Her Eras Tour (2023-2024) and its accompanying concert film became the highest-grossing tour and concert film of all time, respectively. Swift has directed videos and films such as Folklore: The Long Pond Studio Sessions (2020) and All Too Well: The Short Film (2021). Swift is one of the worlds best-selling artists, with 200 million records sold worldwide as of 2019. She is the most-streamed artist on Spotify, the highest-grossing female touring act, and the first billionaire with music as the main source of income. Six of her albums have opened with over one million sales in a week. The 2023 Time Person of the Year, Swift has appeared on lists such as Rolling Stones 100 Greatest Songwriters of All Time, Billboards Greatest of All Time Artists, and Forbes Worlds 100 Most Powerful Women. Her accolades include 14 Grammy Awards, a Primetime Emmy Award,  40 American Music Awards, 39 Billboard Music Awards, and 23 MTV Video Music Awards; she has won the Grammy Award for Album of the Year, the MTV Video Music Award for Video of the Year, and the IFPI Global Recording Artist of the Year a record four times each."
+str_count(swift, ______)
+```
+
+::: {.solution exercise="years"}
+
+```{webr}
+#| exercise: years
+#| solution: true
+library(stringr)
+swift <- "Taylor Alison Swift (born December 13, 1989) is an American singer-songwriter. A subject of widespread public interest, she has influenced the music industry and popular culture through her artistry, especially in songwriting, and entrepreneurship. She is an advocate of artists rights and womens empowerment. Swift began professional songwriting at age 14. She signed with Big Machine Records in 2005 and achieved prominence as a country pop singer with the albums Taylor Swift (2006) and Fearless (2008). Their singles 'Teardrops on My Guitar', 'Love Story', and 'You Belong with Me' were crossover successes on country and pop radio formats and brought Swift mainstream fame. She experimented with rock and electronic styles on her next albums, Speak Now (2010) and Red (2012), respectively, with the latter featuring her first Billboard Hot 100 number-one single, 'We Are Never Ever Getting Back Together'. Swift recalibrated her image from country to pop with 1989 (2014), a synth-pop album containing the chart-topping songs 'Shake It Off', 'Blank Space', and 'Bad Blood'. Media scrutiny inspired the hip-hop-influenced Reputation (2017) and its number-one single 'Look What You Made Me Do'. After signing with Republic Records in 2018, Swift released the eclectic pop album Lover (2019) and the autobiographical documentary Miss Americana (2020). She explored indie folk styles on the 2020 albums Folklore and Evermore, subdued electropop on Midnights (2022), and re-recorded four albums subtitled Taylors Version after a dispute with Big Machine. These albums spawned the number-one songs 'Cruel Summer', 'Cardigan', 'Willow', 'Anti-Hero', 'All Too Well', and 'Is It Over Now?'. Her Eras Tour (2023-2024) and its accompanying concert film became the highest-grossing tour and concert film of all time, respectively. Swift has directed videos and films such as Folklore: The Long Pond Studio Sessions (2020) and All Too Well: The Short Film (2021). Swift is one of the worlds best-selling artists, with 200 million records sold worldwide as of 2019. She is the most-streamed artist on Spotify, the highest-grossing female touring act, and the first billionaire with music as the main source of income. Six of her albums have opened with over one million sales in a week. The 2023 Time Person of the Year, Swift has appeared on lists such as Rolling Stones 100 Greatest Songwriters of All Time, Billboards Greatest of All Time Artists, and Forbes Worlds 100 Most Powerful Women. Her accolades include 14 Grammy Awards, a Primetime Emmy Award,  40 American Music Awards, 39 Billboard Music Awards, and 23 MTV Video Music Awards; she has won the Grammy Award for Album of the Year, the MTV Video Music Award for Video of the Year, and the IFPI Global Recording Artist of the Year a record four times each."
+str_count(swift, "[:digit:]{4}")
+```
+:::
+
+```{webr}
+#| exercise: years
+#| check: true
+library(stringr)
+gradethis::grade_this_code()
+```
+
+5. Extract the names of all songs mentioned in the biography above. (Note 
+   that song names are surrounded by single quotes.)
+
+   You will need to use a [_lazy_ regular expression](https://stringr.tidyverse.org/articles/regular-expressions.html#repetition). 
+   
+   
+```{webr}
+#| exercise: albums
+library(stringr)
+swift <- "Taylor Alison Swift (born December 13, 1989) is an American singer-songwriter. A subject of widespread public interest, she has influenced the music industry and popular culture through her artistry, especially in songwriting, and entrepreneurship. She is an advocate of artists rights and womens empowerment. Swift began professional songwriting at age 14. She signed with Big Machine Records in 2005 and achieved prominence as a country pop singer with the albums Taylor Swift (2006) and Fearless (2008). Their singles 'Teardrops on My Guitar', 'Love Story', and 'You Belong with Me' were crossover successes on country and pop radio formats and brought Swift mainstream fame. She experimented with rock and electronic styles on her next albums, Speak Now (2010) and Red (2012), respectively, with the latter featuring her first Billboard Hot 100 number-one single, 'We Are Never Ever Getting Back Together'. Swift recalibrated her image from country to pop with 1989 (2014), a synth-pop album containing the chart-topping songs 'Shake It Off', 'Blank Space', and 'Bad Blood'. Media scrutiny inspired the hip-hop-influenced Reputation (2017) and its number-one single 'Look What You Made Me Do'. After signing with Republic Records in 2018, Swift released the eclectic pop album Lover (2019) and the autobiographical documentary Miss Americana (2020). She explored indie folk styles on the 2020 albums Folklore and Evermore, subdued electropop on Midnights (2022), and re-recorded four albums subtitled Taylors Version after a dispute with Big Machine. These albums spawned the number-one songs 'Cruel Summer', 'Cardigan', 'Willow', 'Anti-Hero', 'All Too Well', and 'Is It Over Now?'. Her Eras Tour (2023-2024) and its accompanying concert film became the highest-grossing tour and concert film of all time, respectively. Swift has directed videos and films such as Folklore: The Long Pond Studio Sessions (2020) and All Too Well: The Short Film (2021). Swift is one of the worlds best-selling artists, with 200 million records sold worldwide as of 2019. She is the most-streamed artist on Spotify, the highest-grossing female touring act, and the first billionaire with music as the main source of income. Six of her albums have opened with over one million sales in a week. The 2023 Time Person of the Year, Swift has appeared on lists such as Rolling Stones 100 Greatest Songwriters of All Time, Billboards Greatest of All Time Artists, and Forbes Worlds 100 Most Powerful Women. Her accolades include 14 Grammy Awards, a Primetime Emmy Award,  40 American Music Awards, 39 Billboard Music Awards, and 23 MTV Video Music Awards; she has won the Grammy Award for Album of the Year, the MTV Video Music Award for Video of the Year, and the IFPI Global Recording Artist of the Year a record four times each."
+str_extract_all(swift, ______, simplify=TRUE)
+```
+
+::: {.solution exercise="albums"}
+
+```{webr}
+#| exercise: albums
+#| solution: true
+library(stringr)
+swift <- "Taylor Alison Swift (born December 13, 1989) is an American singer-songwriter. A subject of widespread public interest, she has influenced the music industry and popular culture through her artistry, especially in songwriting, and entrepreneurship. She is an advocate of artists rights and womens empowerment. Swift began professional songwriting at age 14. She signed with Big Machine Records in 2005 and achieved prominence as a country pop singer with the albums Taylor Swift (2006) and Fearless (2008). Their singles 'Teardrops on My Guitar', 'Love Story', and 'You Belong with Me' were crossover successes on country and pop radio formats and brought Swift mainstream fame. She experimented with rock and electronic styles on her next albums, Speak Now (2010) and Red (2012), respectively, with the latter featuring her first Billboard Hot 100 number-one single, 'We Are Never Ever Getting Back Together'. Swift recalibrated her image from country to pop with 1989 (2014), a synth-pop album containing the chart-topping songs 'Shake It Off', 'Blank Space', and 'Bad Blood'. Media scrutiny inspired the hip-hop-influenced Reputation (2017) and its number-one single 'Look What You Made Me Do'. After signing with Republic Records in 2018, Swift released the eclectic pop album Lover (2019) and the autobiographical documentary Miss Americana (2020). She explored indie folk styles on the 2020 albums Folklore and Evermore, subdued electropop on Midnights (2022), and re-recorded four albums subtitled Taylors Version after a dispute with Big Machine. These albums spawned the number-one songs 'Cruel Summer', 'Cardigan', 'Willow', 'Anti-Hero', 'All Too Well', and 'Is It Over Now?'. Her Eras Tour (2023-2024) and its accompanying concert film became the highest-grossing tour and concert film of all time, respectively. Swift has directed videos and films such as Folklore: The Long Pond Studio Sessions (2020) and All Too Well: The Short Film (2021). Swift is one of the worlds best-selling artists, with 200 million records sold worldwide as of 2019. She is the most-streamed artist on Spotify, the highest-grossing female touring act, and the first billionaire with music as the main source of income. Six of her albums have opened with over one million sales in a week. The 2023 Time Person of the Year, Swift has appeared on lists such as Rolling Stones 100 Greatest Songwriters of All Time, Billboards Greatest of All Time Artists, and Forbes Worlds 100 Most Powerful Women. Her accolades include 14 Grammy Awards, a Primetime Emmy Award,  40 American Music Awards, 39 Billboard Music Awards, and 23 MTV Video Music Awards; she has won the Grammy Award for Album of the Year, the MTV Video Music Award for Video of the Year, and the IFPI Global Recording Artist of the Year a record four times each."
+str_extract_all(swift, "'.*?'", simplify=TRUE)
+```
+:::
+
+```{webr}
+#| exercise: albums
+#| check: true
+library(stringr)
+gradethis::grade_this_code()
+```
+
+# Scraping Practice I: Quotes {#quotes}
+
+Now that we've introduced regular expressions, let's see how we can
+use them to analyze the website <https://quotes.toscrape.com>,
+a website designed to practice web-scraping. Use `stringr` and
+`rvest` tools to answer the following questions about the site. 
+
+Before you start coding, it is always a good idea to explore the
+site and to get a sense of how it is organized. For this site, 
+consider: 
+
+- How the `Next` button can be used to go to the next page (if one
+  exists)
+- How you can click on the `(about)` page for each author to get info
+  about them
+- What CSS selector can be used to select things like the quote, the
+  author, the tags, *etc.*
+  
+After doing that, it's time to take on the following questions. For 
+each of these, note that you can check your answers "by hand" to ensure
+you're getting the right answer, but you should make sure you can answer
+them all in code. 
+
+
+0. How many pages of quotes are on this site? 
+
+   *Hint*: Write code to keep paging until no more "Next" button is present.
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(rvest)
+library(tidyverse)
+
+N_PAGES <- 1
+URL <- "https://quotes.toscrape.com/"
+
+repeat{
+    missing_next_button <- request(URL) |>
+        req_url_path("page", N_PAGES) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_element(".next") |>
+        is.na()
+    
+    if(missing_next_button){
+        break
+    } else {
+        N_PAGES <- N_PAGES + 1
+    }
+}
+```
+
+There are `r N_PAGES` (i.e., `N_PAGES`) pages worth of quotes on this site.
+
+Alternatively, we can do increment the page number and check if
+`html_elements(".quote")` returns anything of use: 
+
+```{r}
+BASE_REQUEST <-  request("https://quotes.toscrape.com/page")
+QUOTES_DF <- data.frame(page=1:20) |> 
+  mutate(request= map(page, \(p) BASE_REQUEST |> req_url_path_append(p)), 
+         resp   = map(request, req_perform), 
+         quotes = map(resp, \(r) r |> resp_body_html() |> html_elements(".quote")), 
+         n_quotes = map_dbl(quotes, length)) |>
+  filter(n_quotes > 0)
+```
+
+This is a bit less natural than the coding equivalent of "click to next", but
+it will allow us to do our analysis in a bit more `dplyr`-native style. I expand
+on this approach in more detail below for those interested in this style of
+programming.
+
+:::   
+
+1. How many quotes are on this website (all pages)? 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+N_TOTAL_QUOTES <- 0
+
+for(page in 1:N_PAGES){
+    n_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote") |>
+        length()
+    
+    N_TOTAL_QUOTES <- N_TOTAL_QUOTES + n_quotes
+    
+}
+```
+
+or using `purrr`-style programming: 
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote") |>
+    map_int(length) |>
+    sum()
+```
+
+
+:::
+
+2. How many quotes are tagged "Death"?
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+N_DEATH_QUOTES <- 0
+
+for(page in 1:N_PAGES){
+    death_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote .tag") |>
+        html_text2() |>
+        str_detect("death") |>
+        sum()
+    
+    N_DEATH_QUOTES <- N_DEATH_QUOTES + death_quotes
+    
+}
+
+N_DEATH_QUOTES
+```
+
+or using `purrr`-style programming: 
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote .tag") |>
+    map(html_text2) |>
+    map_int(\(x) sum(str_detect(x, "death"))) |>
+    sum()
+```
+
+Note that this analysis _includes_ quotes that have `"death"` as a substring, 
+*e.g.*, one quote tagged as `"live-death-love"`. If you want the _exact_ tag, 
+consider using `str_equal()` instead or modify the `str_detect()` regular 
+expression to `"^death$"`.
+
+If we are willing to make some new web requests and are only ok with the literal
+string `"death"`, we might also find the
+`/tag/` part of the URL scheme: 
+
+```{r}
+request("https://quotes.toscrape.com/tag/death/page/1/") |>
+  req_perform() |> 
+  resp_body_html() |> 
+  html_elements(".quote") |> 
+  length()
+```
+
+which might be the easiest.
+
+
+:::
+
+3. How many quotes are by (or at least are attributed to) Albert Einstein?
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+N_EINSTEIN_QUOTES <- 0
+
+for(page in 1:N_PAGES){
+    einstein_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote .author") |>
+        html_text2() |>
+        str_detect("Einstein") |>
+        sum()
+    
+    N_EINSTEIN_QUOTES <- N_EINSTEIN_QUOTES + einstein_quotes
+    
+}
+
+N_EINSTEIN_QUOTES
+```
+
+or using `purrr`-style programming: 
+
+```{r}
+#| cache: true
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote .author") |>
+    map(html_text2) |>
+    map_int(\(x) sum(str_detect(x, "Einstein"))) |>
+    sum()
+```
+ 
+
+:::
+
+4. What is the longest quote (by number of characters)? The `str_length()` 
+   and `which.max()` functions will be helpful. 
+   
+   You can use them like this: 
+   
+   ```{r}
+   x <- c("short", "medium", "very quite long")
+   longest <- x[which.max(str_length(x))]
+   ```
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+LONGEST_QUOTE <- ""
+
+for(page in 1:N_PAGES){
+    all_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote .text") |>
+        html_text2()
+        
+    longest_on_page <- all_quotes[which.max(str_length(all_quotes))]
+    
+    if(str_length(longest_on_page) > str_length(LONGEST_QUOTE)){
+        LONGEST_QUOTE <- longest_on_page
+    }
+}
+```
+
+From this, we see that the longest quote is "`r LONGEST_QUOTE`"
+which is `r str_length(LONGEST_QUOTE)` characters long.
+
+If we instead wish to do this in a `purrr` style: 
+
+```{r}
+#| cache: true
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote .text") |>
+    map(html_text2) |>
+    enframe("page", "quote") |> 
+    unnest(quote) |> 
+    mutate(nchar = str_length(quote)) |> 
+    slice_max(nchar)
+```
+
+:::
+   
+5. Of all authors quoted, who has the earliest (estimated) birthday? 
+
+   *Hint:* Use the `as.Date` function to parse these dates. *E.g.*,
+   
+   ```{r}
+   x <- "March 14, 1879"
+   as.Date(x, "%b %d, %Y")
+   ```
+   
+   Here, the second string is a _format_ string, which specifies how the date
+   is written.
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+
+```{r}
+#| cache: true
+library(httr2)
+library(tidyverse)
+library(rvest)
+
+ALL_AUTHOR_LINKS <- c()
+
+for(page in 1:N_PAGES){
+    author_links <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote a") |>
+        html_attr("href") |>
+        str_subset("author")
+    
+    ALL_AUTHOR_LINKS <- c(ALL_AUTHOR_LINKS, paste0(URL, author_links))
+    
+}
+
+ALL_AUTHOR_LINKS <- unique(ALL_AUTHOR_LINKS)
+
+AUTHORS <- map(ALL_AUTHOR_LINKS, read_html) |>
+    map(\(h) data.frame(name=h |> html_element(".author-title") |> html_text2(),
+                        date=h |> html_element(".author-born-date") |> html_text2())) |>
+    list_rbind() |>
+    mutate(date = as.Date(date, "%b %d, %Y"))
+
+AUTHORS |> slice_min(date)
+```
+
+Again, in a fully `purrr` style:
+
+```{r}
+#| cache: true
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote a") |>
+    map(html_attr, "href") |> 
+    list_c() |> 
+    unique() |> 
+    str_subset("^/author") |>
+    map(\(p) request(URL) |> req_url_path(p)) |>
+    map(req_perform) |> 
+    map(resp_body_html) |>
+    map(\(h) 
+        tibble(author = h |> html_element(".author-title") |> html_text2(), 
+               birth_str = h |> html_element(".author-born-date") |> html_text2())
+    ) |>
+    list_rbind() |> 
+    mutate(birth = as.Date(birth_str, "%b %d, %Y")) |>
+    slice_min(birth)
+```
+
+:::
+
+6. When dealing with text, we may want to see what the most commonly appearing
+   words are, but a naive approach is likely to get "junk" like `the` and `a`. 
+   These are valid words, but they are essentially content-less. Such words
+   are called "stop words" and it is common to remove them before text 
+   processing.
+   
+   Find the most common words in the quote bank, after removing stopwords. Do 
+   this by: 
+   
+   - Concatenating all of the quotes on the site across all pages
+   - Splitting the quotes into a vector of words 
+   - Removing punctuation at the beginning and end of the words
+   - Using `dplyr::count()` to get a count of how often each word appears
+   - Using `dplyr::anti_join` and `tidytext::stop_words` to remove stop words
+   
+   *Hint*: The `list_c()` function will be useful to convert the output of 
+   `str_split()` back into a vector. You can also use `table()` to get counts
+   and then `enframe()` to conver the output of `table()` to a data frame.
+   
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+#| cache: true
+library(httr2)
+library(tidyverse)
+library(rvest)
+library(tidytext)
+
+ALL_QUOTES <- character()
+
+for(page in 1:N_PAGES){
+    page_quotes <- request(URL) |>
+        req_url_path("page", page) |>
+        req_perform() |>
+        resp_body_html() |>
+        html_elements(".quote .text") |>
+        html_text2()
+        
+    ALL_QUOTES <- c(ALL_QUOTES, page_quotes)
+}
+
+ALL_QUOTES |> 
+    str_split(" ") |> 
+    list_c() |>
+    str_to_lower() |> 
+    str_remove_all("^[:punct:]+") |> 
+    str_remove_all("[:punct:]+$") |> 
+    table() |> 
+    enframe(name="word", value="count") |>
+    filter(nchar(word) > 3) |> 
+    anti_join(stop_words, 
+              join_by(word == word)) |> 
+    slice_max(count, n=10)
+```
+
+In `purrr` style: 
+
+```{r}
+#| cache: true
+library(tidytext)
+seq(N_PAGES) |>
+    map(\(p) request(URL) |> req_url_path("page", p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |>
+    map(html_elements, ".quote .text") |>
+    map(html_text2) |>
+    list_c() |>
+    str_split(" ") |>
+    list_c() |> 
+    str_to_lower() |> 
+    str_remove_all("^[:punct:]+") |> 
+    str_remove_all("[:punct:]+$") |> 
+    data.frame() |> 
+    rename(word=1) |> 
+    count(word) |> 
+    filter(nchar(word) > 3) |> 
+    anti_join(stop_words, 
+              join_by(word == word)) |> 
+    slice_max(n, n=10)
+```
+
+:::
+
+::: {.callout-caution title="An Alternative Approach" collapse="true"}
+
+For those of you looking for an even more compact and `dplyr`-inflected style, 
+we can write the analysis even more compactly as:
+
+```{r}
+#| cache: true
+BASE_REQUEST <-  request("https://quotes.toscrape.com/")
+
+QUOTES_DF <- data.frame(page=1:20) |> 
+    mutate(request= map(page, \(p) BASE_REQUEST |> req_url_path_append("page", p)), 
+           resp   = map(request, req_perform), 
+           html   = map(resp, resp_body_html),
+           quotes = map(html, html_elements, ".quote"),
+           quotes_list = map(quotes, c)) |> 
+    unnest(quotes_list)  |> 
+    rename(quote = quotes_list) |> 
+    select(-request, -resp, -html, -quotes) |> 
+    mutate(text = map_chr(quote, \(q) q |> html_element(".text") |> html_text2()), 
+           tags = map(quote, \(q) q |> html_elements(".tag") |> html_text2()), 
+           about_death = map_lgl(tags, \(t) "death" %in% t), 
+           author = map(quote, html_element, ".author"), 
+           author_name = map_chr(author, html_text2), 
+           author_link = map_chr(quote, \(q) q |> html_element("small.author + a") |> html_attr("href")))
+
+AUTHORS_DF <- QUOTES_DF |> 
+    select(author_link) |> 
+    distinct() |> 
+    mutate(req  = map(author_link, \(al) BASE_REQUEST |> req_url_path(al)), 
+           resp = map(req, req_perform), 
+           html = map(resp, resp_body_html), 
+           name = map_chr(html, \(h) h |> html_element(".author-title") |> html_text2()),
+           born_str = map_chr(html, \(h) h |> html_element(".author-born-date") |> html_text2()), 
+           born = as.Date(born_str, "%b %d, %Y"))
+```
+
+and answer our questions as: 
+
+```{r}
+QUOTES_DF |> pull(page) |> max()
+QUOTES_DF |> NROW() 
+QUOTES_DF |> filter(about_death) |> NROW()
+QUOTES_DF |> filter(str_detect(author_name, "Einstein")) |> NROW()
+QUOTES_DF |> mutate(text_nchar = nchar(text)) |> slice_max(text_nchar) |> pull(text)
+AUTHORS_DF |> slice_min(born) |> pull(name)
+```
+
+This is pretty advanced - and a bit 'too clever' in parts, sacrificing clarity
+for compactness - so I wouldn't encourage you to pay too much attention to 
+this style. 
+
+For the final question, use `QUOTES_DF |> pull(text)` and then pass to the
+`str_split(" ")` pipeline as above. 
+
+:::
+
+# Scraping Practice II: Cocktails {#cocktails_finish}
+
+Last week, we began to scrape [Hadley's Cocktails](https://cocktails.hadley.nz/)
+with an (eventual) goal of creating a "spreadsheet" of recipes by ingredients.
+
+We found the following: 
+
+```{r cocktails_old}
+#| cache: true
+library(rvest)
+BASE_URL <- "https://cocktails.hadley.nz/"
+
+PAGES <- read_html(BASE_URL) |> 
+    html_elements("nav a") |> 
+    html_attr("href")
+
+read_article <- function(article){
+    title <- article |> html_element(".title h2") |> html_text()
+    ingredients <- article |> html_elements("li") |> html_text()
+    
+    data.frame(title=title, ingredient=ingredients)
+}
+
+read_page <- function(stub){
+    URL <- paste0(BASE_URL, stub)
+    COCKTAILS <- read_html(URL) |> html_elements("article")
+    
+    map(COCKTAILS, read_article) |> list_rbind()
+}
+
+RECIPES_LONG <- map(PAGES, read_page) |> list_rbind()
+```
+
+If you did not already, please [refer back](./lab09.qmd#cocktails) to 
+last week and make sure you understand this data and the processing done up
+to this point.
+
+Now that we've scraped all the different pages, we're _almost_ done, but we 
+would really like to transform a table like: 
+
+   | Name     | Ingredient           |
+   |----------|----------------------|
+   | Daiquiri | 2 oz Rum             | 
+   | Daiquiri | 1 oz Lime Juice      | 
+   | Daiquiri | 0.75 oz Simple Syrup |
+   
+into 
+
+   | Name     | Ingredient   | Amount  |
+   |----------|--------------|---------|
+   | Daiquiri | Rum          | 2       |
+   | Daiquiri | Lime Juice   | 1       |
+   | Daiquiri | Simple Syrup | 0.75    |
+
+by splitting the _amount_ (number) from the _ingredient_ (string). This type
+of manipulation is the major goal of today's class. 
+
+Take this output and use `stringr` and `tidyr` to complete the transition to
+a well-formatted "wide" set of recipes. 
+
+1. Clean up the `title` column using `str_trim()` and remove duplicate rows: 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+RECIPES_LONG <- RECIPES_LONG |>
+    mutate(title = str_trim(title)) |>
+    distinct()
+```
+
+:::
+
+2. To continue, we want to split the `ingredient` column into three new columns: 
+
+    - Amount 
+    - Unit
+    - Ingredient Name
+   
+    First, write a function to pull out the "unit" (oz, dash, leaves) *etc.*
+   
+    The units found in this data are `oz`, `dash`, `drop`, `t`, `chunk`, 
+    `leaves`, `sprig`, `twist`, and `cm`. 
+      
+    *Hint*: Use a `str_extract()` and make sure to require a space before and 
+    after the unit so you don't pick up `t`s in the names of ingredients. You
+    might also want to include an optional terminal `s` to account for both
+    `1 drop` and `2 drops`.
+      
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+RECIPES_LONG <- RECIPES_LONG |>
+    mutate(unit = str_extract(ingredient, 
+                              # Remove unit with optional plurals
+                              " (oz|dash(es)?|drops?|t|chunks?|leaves|cm) ", 
+                              group=1),
+           # Remove trailing s or es (dashes => dash)
+           unit = str_remove(unit, "e?s$"))
+```
+
+:::
+
+3. Next, pull out the "number" part at the beginning of each ingredient.
+   Note that some fractional amounts are included, so the following function
+   may be useful: 
+
+```{r}
+standardize_number <- function(x){
+    library(stringr)
+    x |> str_replace("([:digit:]+)½", "\\1.5") |> 
+         str_replace("½", "0.5") |>
+         str_replace("1/2", "0.5") |>
+         str_replace("([:digit:]+)¾", "\\1.75") |> 
+         str_replace("¾", "0.75") |>
+         str_replace("3/4", "0.75") |>
+         str_replace("([:digit:]+)¼", "\\1.25") |> 
+         str_replace("¼", "0.25") |>
+         str_replace("1/4", "0.25")
+}
+
+x <- c("½ oz allspice liqueur", "¾ oz Campari", "1¾ oz gin")
+standardize_number(x)
+```
+
+::: {.callout-tip title="Solution" collapse="true"}
+    
+```{r}
+RECIPES_LONG <- RECIPES_LONG |>
+    mutate(ingredient = standardize_number(ingredient), 
+           number = str_extract(ingredient, "(^[.[:digit:]]+) ", group=1), 
+           number = as.double(number) |> coalesce(1)) # Fill NAs with 1 
+```
+    
+:::
+
+
+4. Finally, everything that you haven't already extracted can be assumed to
+   be the name of an ingredient. Use `str_remove()` twice to get the ingredient
+   names. 
+       
+   *Hint*: `str_remove()` doesn't handle `NA`s or empty strings well, so the
+   following slightly more robust wrapper will be helpful here. 
+       
+```{r}
+str_remove_s <- function(string, pattern){
+    pattern <- as.character(pattern)
+    str_remove(string, if_else(is.na(pattern) | (nchar(pattern) == 0), "(?!)", pattern))
+}
+        
+str_remove_all_s <- function(string, pattern){
+    pattern <- as.character(pattern)
+    str_remove_all(string, if_else(is.na(pattern) | (nchar(pattern) == 0), "(?!)", pattern))
+}
+```
+       
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+RECIPES_LONG <- RECIPES_LONG |> 
+    mutate(ingredient = str_remove_s(ingredient, number), 
+           ingredient = str_remove_s(ingredient, unit),
+           ingredient = str_trim(ingredient))
+```
+
+:::   
+   
+    
+
+5.  You should wind up with a table that looks something like
+   
+    | Cocktail | Ingredient | Unit | Amount |
+    |----------|------------|------|--------|
+    | Bachelor | rum, dark  | oz   | 1      |
+    | Bachelor | Meletti    | oz   | 1      |
+    
+    Combine the ingredient and unit columns so that `Meletti` and ` oz ` in 
+    two separate columns becomes `Meletti (oz)` in a single column. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+RECIPES_LONG <- RECIPES_LONG |>
+    mutate(ingredient = paste0(ingredient, " (", unit, ")")) |> 
+    select(-unit)
+```
+
+:::   
+   
+6. Use a `pivot_*` function to create a new _wide_ table with each ingredient
+   as a column. 
+   
+   *Hint*: Which `pivot` operation do you want to use here? How should the 
+   empty cells be treated? Look at the `values_fill` argument. 
+   
+   Note that there are some duplicate rows when the same ingredient is used twice
+   in a single cocktail. You might want to simply add up the relevant numbers before
+   proceeding. 
+
+::: {.callout-tip title="Solution" collapse="true"}
+
+```{r}
+RECIPES_LONG |>
+    group_by(title, ingredient) |>
+    summarize(number = sum((number)),
+              .groups="drop") |>
+    pivot_wider(names_from = ingredient, values_from=number, values_fill=0)
+```
+
+This isn't quite perfect (see some problems with the `NA` values), but it's close.
+
+:::   
+
+
+Here is a compact solution for the whole exercise: 
+   
+::: {.callout-tip title="Combined Solution" collapse="true"}
+
+```{r}
+#| cache: true
+library(tidyverse)
+library(rvest)
+process_recipe <- function(recipe){
+    title <- recipe |> html_element(".title h2") |> html_text2()
+    ingredients <- recipe |> html_elements("li") |> html_text2()
+    
+    tibble(title=title, ingredient=ingredients)
+}
+
+BASE_URL <- "https://cocktails.hadley.nz/"
+
+RECIPES_LONG <- read_html(BASE_URL) |> 
+    html_elements("nav a") |> 
+    html_attr("href") |>
+    map(\(p) request(BASE_URL) |> req_url_path(p)) |>
+    map(req_perform) |>
+    map(resp_body_html) |> 
+    map(html_elements, "article") |> 
+    reduce(c) |>
+    map(process_recipe) |> 
+    list_rbind()
+
+standardize_number <- function(x){
+    library(stringr)
+    x |> str_replace("([:digit:]+)½", "\\1.5") |> 
+         str_replace("½", "0.5") |>
+         str_replace("1/2", "0.5") |>
+         str_replace("([:digit:]+)¾", "\\1.75") |> 
+         str_replace("¾", "0.75") |>
+         str_replace("([:digit:]+)¼", "\\1.25") |> 
+         str_replace("¼", "0.25")
+}
+
+str_remove_s <- function(string, pattern){
+    pattern <- as.character(pattern)
+    str_remove(string, if_else(is.na(pattern) | (nchar(pattern) == 0), "(?!)", pattern))
+}
+        
+str_remove_all_s <- function(string, pattern){
+    pattern <- as.character(pattern)
+    str_remove_all(string, if_else(is.na(pattern) | (nchar(pattern) == 0), "(?!)", pattern))
+}
+
+RECIPES_LONG |>
+    # Remove duplicates from import process
+    # When we import each ingredient page, we get duplicates
+    # as drinks are listed on multiple ingredient pages.
+    distinct() |>
+    mutate(title  = str_trim(title), 
+           ingredient = standardize_number(ingredient), 
+           amount = str_extract(ingredient, "(^[.[:digit:]]+) ", group=1), 
+           amount = as.double(amount), 
+           unit = str_extract(ingredient, 
+                              " (oz|dash(es)?|drops?|t|chunks?|leaves|cm) ", 
+                              group=1),
+           unit = str_remove(unit, "e?s$"), 
+           ingredient = str_remove_s(ingredient, unit), 
+           ingredient = str_remove_s(ingredient, amount),
+           # Remove any extra S / ES at the beginning from the unit stuff
+           ingredient = str_remove_s(ingredient, "^ *e?s "),
+           ingredient = str_trim(ingredient)) |>
+    # For some ingredients, e.g. a lemon twist, the implied
+    # but unstated quantity is 1
+    mutate(amount = case_when(
+        is.na(amount) ~ 1, 
+        TRUE ~ amount), 
+        ingredient = str_to_title(ingredient)) |>
+    rename(Cocktail = title, 
+           Amount = amount, 
+           Unit = unit, 
+           Ingredient = ingredient) |>
+    mutate(Ingredient = case_when(
+        is.na(Unit) ~ Ingredient, # Handle unit-less ingredients
+        TRUE ~ paste0(Ingredient, " (", Unit, ")"))) |>
+    # Spanish Coffee lists orange liqueur twice, so let's 
+    # add up repeated ingredients before pivoting.
+    # (I think this is the only one)
+    group_by(Cocktail, Ingredient) |>
+    summarize(Amount = sum(Amount), .groups="drop") |>
+    pivot_wider(id_cols = Cocktail, 
+                names_from = Ingredient, 
+                values_from = Amount, 
+                values_fill = 0) |>
+    select("Cocktail", sort(tidyselect::peek_vars()))
+```
+
+There is more that could be done here, *e.g.*, standardizing ounces and 
+teaspoons, but it's a pretty solid start.
+
+:::

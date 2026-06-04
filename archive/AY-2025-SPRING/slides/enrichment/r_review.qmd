@@ -1,0 +1,288 @@
+# Optional Review
+
+## Exercise #01
+
+::: {#q1}
+
+```{r}
+#| label: q1-cell
+#| echo: true
+f <- function(x){
+  cat("The vector has", length(x), "elements and is of type", class(x))
+}
+```
+
+:::
+
+**Q:** Write a function `f` that does the following:
+
+```{r}
+#| echo: true
+f(c(1, 2, 3))
+f(c("a", "b", "c"))
+f(1:5)
+```
+
+*Hint*: Use the `cat` function to print to screen. 
+
+. . . 
+
+{{< contents q1 >}}
+
+## Exercise #02
+
+::: {#q2}
+
+```{r}
+#| label: q2-cell
+#| echo: true
+is_even <- function(x)  (x %% 2) == 0
+```
+
+:::
+
+**Q:** Write a *vectorized* function to tell if numbers are even. 
+
+```{r}
+#| echo: true
+is_even(3)
+is_even(c(3, 4, 5))
+is_even(1:10)
+```
+
+*Hint*: Use the `%%` operator to get remainders from division
+
+. . . 
+
+{{< contents q2 >}}
+
+
+## Exercise #03
+
+::: {#q3}
+
+```{r}
+#| label: q3-cell
+#| echo: true
+count_even <- function(x)  sum(is_even(x))
+```
+
+:::
+
+**Q:** Write a function to count the even elements of a vector: 
+
+```{r}
+#| echo: true
+count_even(3)
+count_even(c(3, 4, 5))
+count_even(1:10)
+```
+
+*Hint*: Combine Q2 with the "sum of logical = count" trick. 
+
+. . . 
+
+{{< contents q3 >}}
+
+
+## Exercise #04
+
+
+**Q:** The `seq()` function lets us construct sequences. What is the average (`mean`) of the first 23 odd numbers?
+
+*Hint*: Read the documentation for `?seq` before trying this question
+
+. . . 
+
+```{r}
+#| echo: true
+mean(seq(from=1, by=2, length.out=23))
+```
+
+
+
+## Exercise #05
+
+**Q:** The *alternating harmonic series* is defined as: 
+
+$$1 - \frac{1}{2} + \frac{1}{3} - \frac{1}{4} + \frac{1}{5} + \dots$$
+
+Show that this series converges to $\ln(2)$ by taking a partial sum
+of the first one million elements. 
+
+*Hint*: Use recycling to get the signs right: 
+
+```{r}
+#| echo: true
+seq(1, 5) * c(1, -1)
+```
+
+. . . 
+
+```{r}
+#| echo: true
+sum(1/seq(1, 1e6) * c(1, -1))
+```
+
+Compare to: 
+
+```{r}
+#| echo: true
+log(2)
+```
+
+## Exercise #06
+
+**Q:** Write a function that computes the mean of a vector (Don't use the 
+built-in `mean` function)
+
+*Hint*: Use the `sum` and `length` functions
+
+. . . 
+
+```{r}
+#| echo: true
+my_mean <- function(x){
+  sum(x) / length(x)
+}
+
+my_mean(8)
+my_mean(1:10)
+```
+
+
+## Exercise #07
+
+::: {#q7}
+
+```{r}
+#| label: q7-cell
+#| echo: true
+pos_sqrt <- function(x) sqrt(pmax(0, x))
+```
+
+:::
+
+**Q:** Write a vectorized function that returns $\sqrt{x}$ if $x$ is positive and 0 otherwise. 
+
+```{r}
+#| echo: true
+pos_sqrt(c(-4, -1, 1, 4, 9, -9))
+```
+
+*Hint*: The `pmax` ("parallel max") function may be useful here: 
+
+```{r}
+#| echo: true
+x <- c(1, 3, 5,  7)
+y <- c(5, 3, 10, 1)
+pmax(x, y)
+```
+
+. . . 
+
+{{< contents q7 >}}
+
+Alternative - use the `ifelse` function for *vectorized* conditionals (but this
+has a warning because it tries to do both conditions)
+
+
+## Exercise #08
+
+::: {#q8}
+
+```{r}
+#| label: q8-cell
+#| echo: true
+long_string <- function(x)  x[which.max(nchar(x))]
+```
+
+:::
+
+**Q:** Write a function that takes in a vector of characters and returns the longest. 
+
+
+```{r}
+#| echo: true
+long_string(c("a", "bc", "def"))
+long_string(c("My", "name", "is", "Michael"))
+```
+
+*Hint*: The `nchar` and `which.max` functions may be
+helpful here. 
+
+. . . 
+
+{{< contents q8 >}}
+
+## Exercise #09
+
+**Q:** Write a function that computes the factorial of a value. (Don't use the built-in factorial function)
+
+*Hint*: Use the `seq` and `prod` functions
+
+. . . 
+
+```{r}
+#| echo: true
+my_factorial <- function(n){
+  return(prod(seq(1, n)))
+}
+
+my_factorial(8)
+```
+
+## Exercise #10
+
+**Q:** Write a function that computes the factorial of a value using a loop (instead of the `prod` function). 
+
+. . . 
+
+```{r}
+#| echo: true
+my_factorial <- function(n){
+  fact <- 1
+  for(x in seq(1, n)){
+    fact <- fact * x
+  }
+  return(fact)
+}
+
+my_factorial(8)
+```
+
+## Exercise #11
+
+**Q:** Show that: $$\sum_{k=0}^{\infty} \frac{1}{k!} = e$$
+
+Use the built-in `factorial` function since it is vectorized. 
+
+. . . 
+
+```{r}
+#| echo: true
+sum(1/factorial(seq(0, 10000)))
+```
+
+## Exercise #12
+
+**Q:** Write a function that takes a vector and returns the maximum element. (Don't use the built-in `max` function.)
+
+*Hint*: You will need to use a loop and a conditional here. 
+
+*Hint*: We started factorial at 1; start max at `-Inf` (why?)
+
+. . . 
+
+```{r}
+#| echo: true
+my_max <- function(x){
+  max_val <- -Inf
+  for(v in x){
+    if(v > max_val) max_val <- v
+  }
+  return(max_val)
+}
+
+my_max(c(1, -1, 3, -4, 10, -3))
+```

@@ -1,0 +1,85 @@
+
+$$\newcommand{\P}{\mathbb{P}} \newcommand{\E}{\mathbb{E}} \newcommand{\R}{\mathbb{R}}$$
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+set.seed(9750) # For reproducibility
+library <- function(pkg){
+    options(repos = c(CRAN = "https://cloud.r-project.org"))
+    
+    pkg <- as.character(substitute(pkg))
+        
+    if(!require(pkg, character.only=TRUE, quietly=TRUE)) 
+        install.packages(pkg)
+        
+    stopifnot(require(pkg, character.only=TRUE, quietly=TRUE))
+}
+
+library(tidyverse)
+DATES <- readr::read_csv("key_dates.csv") |>
+    rename(element=`Course Element`,
+           item=`Item Number`) |>
+    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+                          TRUE ~ paste(Date, Time)))
+```
+
+```{r}
+#| echo: false
+#| warning: false
+library(glue)
+library(rmarkdown)
+mp_id <- as.integer(rmarkdown::metadata$mp_num)
+mp <-  DATES |> filter(element == "Mini-Projects", 
+                       item == mp_id)
+mp_file <- list(qmd=glue("`mp{sprintf('%02g', mp_id)}.qmd`"), 
+                html=glue("`mp{sprintf('%02g', mp_id)}.html`"),
+                html_long=glue("`docs/mp{sprintf('%02g', mp_id)}.html`"))
+```
+
+```{r}
+#| echo: false
+#| message: false
+library(yaml)
+get_mp_yaml <- function(N){
+    fname <- glue("mini/mini0{N}.qmd")
+    lines <- readLines(fname, n=30)
+    lines_header <- which(lines == "---")
+    lines_start <- min(lines_header) + 1
+    lines_end <- max(lines_header) - 1
+    
+    lines_range <- seq(lines_start, lines_end)
+    
+    lines_yaml <- lines[lines_range]
+    
+    yaml.load(lines_yaml)
+}
+
+get_mp_skills <- function(N){
+    get_mp_yaml(N)$mp_skills
+}
+
+get_mp_rhetoric <- function(N){
+    get_mp_yaml(N)$mp_rhetoric
+}
+
+
+get_mp_application <- function(N){
+    get_mp_yaml(N)$mp_application
+}
+```
+
+### Due Dates
+
+-   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
+-   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
+-   **Peer Feedback:**
+    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
+    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
+    
+*Estimated Time to Complete: 13-15 Hours*
+
+*Estimated Time for Peer Feedback: 1 Hour*
+
+------------------------------------------------------------------------

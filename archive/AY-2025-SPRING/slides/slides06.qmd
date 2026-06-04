@@ -1,0 +1,996 @@
+---
+session: "`r session <- 6; session`"
+last_updated: "`r last_updated <- Sys.Date(); 
+                  last_updated |> format('%Y-%m-%d')`"
+class_date:
+  "`r library(tidyverse);
+    class_date <- read_csv('key_dates.csv', name_repair='universal') |>
+    filter(Course.Element == 'Class Session',
+           Item.Number == session) |>
+    pull(Date); class_date |> format('%A %Y-%m-%d')`"
+format: 
+  revealjs: 
+    echo: true
+---
+
+{{< include _setup.qmd >}}
+
+## {{< var course.short >}} Week {{< meta session >}} 
+
+Today: `r TODAY_TOPIC`
+
+# Today
+
+## Today
+
+- Mini-Projects
+- Review
+- Diving Deeper into Multi-Table Verbs
+- PA#05 FAQs
+- Wrap-Up
+  - Life Tip of the Day
+  
+## MP#01 - Deadline Soon
+
+[Mini-Project #01](../mini/mini01.qmd) due on `r get_mp_deadline(01)`
+
+. . . 
+
+::: {.small}
+
+Topics Covered: 
+
+- Reproducible Research Tooling
+- Packages and Functions 
+- Basic Data Manipulation
+- Tables for Data Display
+
+:::
+
+. . . 
+
+Make sure to complete _all_ instructor-provided 
+EDA questions and writing prompts
+
+**Be reasonable, justify, and document your analysis.** 
+
+- Do your answers pass the sniff test?  
+- At least one sentence of text per short question is a good baseline
+
+## MP#01 - Peer Feedback
+
+Assigned on GitHub - due on `r get_mp_pf_deadline(1)`
+
+- $\approx 4$ feedbacks each 
+- Take this seriously: 20\% of this assignment is "meta-review"
+- Goal: _rigorous_ _constructive_ critique
+
+Use [helper function](https://michael-weylandt.com/STA9750/tips.html) 
+to perform peer feedback assigned to you. Ask on Piazza if still having
+trouble.
+
+## MP#01 - Peer Feedback
+
+Submissions may not map perfectly to rubric - use your best judgement
+
+. . . 
+
+Be _generous_ but serious: 
+
+::: {.small}
+
+- Goal is improvement, so "everything is great, no comments" is unhelpful
+  - Nothing is completely right nor completely wrong
+- Remember, *meta-review* (instructor scores of your feedback) to follow
+
+:::
+
+. . .
+
+Learn from this! What can _you_ adapt for MP#02? 
+
+## MP#01 - Peer Feedback {.scrollable}
+
+Example of poor feedback: 
+
+::: {.smallest}
+
+```
+Comments
+Website looks really good, nice and clean!
+
+Written Communication
+Excellent and straight to the point.
+
+Project Skeleton
+Solid skeleton, well-organized .
+
+Formatting & Display
+Nicely formatted and balanced across the website.
+
+Code Quality
+Code runs like Forrest Gump in a Slump.
+
+Data Preparation
+Very great. 
+
+Extra Credit
+Added graphes for even better understanding.
+```
+
+:::
+
+- Superficial comments / no sign of actually reading work
+
+Red Flag: Repeated verbatim on several posts
+
+Reminder: Poor feedback $\neq$ poor work.
+
+## MP#01 - Peer Feedback {.scrollable}
+
+Example of medium feedback: 
+
+::: {.smallest}
+
+```
+## Comments
+
+Love the visuals for Press Releases.
+
+### Written Communication
+
+A short summary or a description of this project would be great to add.
+
+### Project Skeleton
+
+Code completes all instructor-provided tasks correctly.
+
+### Formatting & Display
+
+Tables have well-formatted column names; caption would be great.
+
+### Code Quality
+
+Code is clear and well written.
+
+### Data Preparation
+
+Automatic (10/10). Out of scope for this mini-project.
+
+### Extra Credit
+
+I found all the Press Releases very interesting. The visuals were a great touch.
+```
+
+:::
+
+- Gave actionable suggestions
+- Directionally correct, but a bit vague
+
+## MP#01 - Peer Feedback {.scrollable}
+
+Example of great feedback: 
+
+::: {.smallest}
+
+```
+### Written Communication
+
+Overall, your writing is clear and easy to follow. I noticed a few small typos, 
+but nothing major — using the built-in spell check in RStudio should catch those quickly. Everything else looks solid, and I didn’t have any major concerns based
+on my review.
+
+### Project Skeleton
+
+All tasks were completed satisfactorily. 
+
+### Formatting & Display
+
+Overall, your tables and figures are well-organized and clear. There is one 
+table in the "Data" section with column titles that could be formatted a little
+more cleanly for easier reading. I also noticed a few small typos in some of the
+table captions, but they should be easy to fix.
+
+### Code Quality
+
+The code quality is generally good, but there are a few minor linter issues. The
+comments could be more frequent and clearer in some places. For example, the
+comment `#checking dupolicate so that github will not block it` should be 
+corrected to "duplicate," and the explanation could be clarified to avoid
+confusion–what duplicate are you referring to, and how does it block GitHub? 
+It might confuse someone else reading the code.
+
+Also, I would recommend moving all library imports to the top of the script, as that is typically considered standard practice.
+
+### Data Preparation
+
+The data preparation looks solid overall. I like how you handle missing files 
+and JSON parsing failures–it demonstrates strong defensive programming.
+
+### Extra Credit
+
+Additional two points for using quarto's video support!
+```
+
+:::
+
+- Positive tone
+- Detailed comments
+- Noted issues & gave suggestions on how to fix
+- Noted unclear sections for improvement
+
+
+## MP#01 - Peer Feedback
+
+Lack of prior experience _is not a hinderance_ here: 
+
+- If something is unclear to you, that's a problem!
+- Nothing required super-complex code, so anything overly complex probably could
+  have been a simpler way (except for some above-and-beyond stuff)
+- You don't have to be definitive in comments - impressions and questions are
+  just as helpful.
+
+
+## MP FAQs
+
+Q: Why doesn't my site look the same on GitHub as it does on my laptop?
+
+. . . 
+
+A: Missing `css` and `js` files. Need to _upload_ everything in `docs`. 
+
+. . . 
+
+New helper function: 
+
+```{r}
+#| eval: false
+#| echo: true
+source("https://michael-weylandt.com/STA9750/load_helpers.R")
+mp_submission_ready()
+```
+
+Tries to make sure all 'secondary' files are present. 
+
+## MP FAQs
+
+Q: Why doesn't my submission have the right URL? 
+
+. . . 
+
+A: _Most_ computers have case-sensitive file names, Mac doesn't, and Windows is
+iffy. 
+
+. . . 
+
+New helper function: 
+
+```{r}
+#| eval: false
+#| echo: true
+source("https://michael-weylandt.com/STA9750/load_helpers.R")
+mp_start()
+```
+
+Generates a very basic `qmd` file with the correct file name and some relevant
+context. 
+
+
+## Mini-Project #02
+
+[MP#02 released](../mini/mini02.html) - `r get_mp_title(2)`
+
+. . .
+
+**Due`r get_mp_deadline(2)`**
+
+- GitHub post (used for automated checks) AND Brightspace
+- `r get_mp_deadline(2, as_d=TRUE) - class_date` days:
+  don't wait until the very end
+
+. . . 
+
+Topics covered: 
+
+- Combining Data from Different Sources
+- Data Visualization
+- Using Survey Weights for Microdata Analysis
+
+## Upcoming Mini-Projects
+
+Tentative Topics
+
+-   MP#03: State-to-State Moving - `r get_mp_deadline(3)`
+-   MP#04: Olympics Results - `r get_mp_deadline(4)`
+
+
+# Review from Last Week
+
+## Single-Table Verbs
+
+`dplyr` single-table verbs
+
+::: {.incremental}
+
+- `select`, `filter`: Selecting rows and columns
+- `rename`, `mutate`: Changing rows and columns
+- `summarize`, `group_by`: Combining multiple rows
+- `arrange`, `slice_min/max`: Re-ordering
+
+:::
+
+. . . 
+
+[Lab #05 Review Activity](../labs/lab05.qmd#review)
+
+## Breakout Rooms
+
+```{r}
+#| echo: false
+BREAKOUT_TABLE
+```
+
+# Multi-Table Verbs
+
+## Multi-Table Analysis
+
+*Multiple Tables*:
+
+- More insights than from a single table
+- Maintain 'tidy' structure throughout
+
+Will create new (compound) rows: 
+
+- Dangers: *drops* and *(over) duplication*
+
+## Primary Keys
+
+::: {.small}
+
+_Keys_ are unique identifiers for individual records
+
+- Primary (one column) or compound (multiple columns together) 
+
+:::
+
+. . . 
+
+::: {.small}
+
+The history of corporate IT is largely one of (failed) primary keys
+
+- Finance: Tickers, Tickers + Exchange, Tickers + Share Class, CUSIP, ISIN,
+  SEDOL, ... 
+  
+:::
+  
+. . . 
+
+::: {.small}
+
+Meaningful true keys are vanishingly rare - cherish them when you find them
+
+Often 'unique enough' for an analysis
+
+`dplyr::group_by() + dplyr::count()` is helpful here
+
+:::
+
+## Joins
+
+Joins combine tables _by identity_ - not simple 'stacking' 
+
+Specify a _join key_ - ideally this is an actual key, but doesn't have to be
+
+In `dplyr`, we use the `join_by` function: 
+
+```{r}
+#| eval: false
+#| echo: true
+dplyr::join_by(table_1_name == table_2_name)
+```
+
+Here `table_1_name` and `table_2_name` are column names from two tables
+
+. . . 
+
+Join rows where these values are equal (advanced joins possible)
+
+## Inner and Outer Joins
+
+When tables are perfectly matched, not an issue: 
+
+```{r}
+#| echo: false
+library(dplyr)
+cunys <- tribble(~college, ~campus_borough, 
+             "CCNY", "Manhattan",
+             "Baruch", "Manhattan", 
+             "CSI", "Staten Island",
+             "York", "Queens")
+
+routes <- tribble(~borough_name, ~bus_code,
+                  "Manhattan", "M",
+                  "Staten Island", "S", 
+                  "Queens", "Q")
+```
+
+```{r}
+cunys
+```
+
+```{r}
+routes
+```
+
+## Inner and Outer Joins
+
+When tables are perfectly matched, not an issue: 
+
+```{r}
+inner_join(cunys, routes, join_by(campus_borough == borough_name))
+```
+
+Default to `inner` but irrelevant
+
+Note automatic repetition of `"M"` row
+
+## Inner and Outer Joins
+
+How to handle 'unaligned' values?
+
+```{r}
+#| echo: true
+cunys <- tribble(~college, ~campus_borough, 
+                 "CCNY", "Manhattan",
+                 "Baruch", "Manhattan", 
+                 "CSI", "Staten Island",
+                 "York", "Queens", 
+                 "Medgar Evers", "Brooklyn")
+
+inner_join(cunys, routes, join_by(campus_borough == borough_name))
+```
+
+. . . 
+
+[MEC vanished!]{color="red"}
+
+## Inner and Outer Joins
+
+```{r}
+#| echo: true
+left_join(cunys, routes, join_by(campus_borough == borough_name))
+```
+
+MEC stays, but no bus code - `NA` value
+
+. . . 
+
+::: {.smaller}
+
+- `inner_join` - Keep only matches
+- `left_join` - Keep all rows in left (first) table even w/o matches
+- `right_join` - Keep all rows in right (second) table even w/o matches
+- `full_join` - Keep all rows from both tables, even w/o matches
+
+:::
+
+`left_` and `right_` are types of 'outer' joins
+
+## Pivoting
+
+The `pivot_*` functions change the **shape** of data
+
+::: {.incremental}
+
+- Values are not created or destroyed, just moved around
+- **wider** data sets are formed by forming multiple rows into columns
+- **longer** data sets are splitting columns from the same row into new rows
+
+:::
+
+. . . 
+
+These functions come from the `tidyr` package - not `dplyr`
+
+```{r}
+library(tidyr) # included in library(tidyverse)
+```
+
+## Pivoting
+
+Untidy example from last week: 
+
+```{r}
+#| echo: false
+library(tibble)
+BARUCH_UNTIDY <- tribble(
+    ~Semester, ~Course,      ~Number, ~Type,
+       "Fall", "Accounting",     200, "Enrollment",
+       "Fall", "Accounting",     250, "Cap",
+       "Fall", "Law",        100, "Enrollment",
+       "Fall", "Law",        125, "Cap",
+       "Fall", "Statistics", 200, "Enrollment",
+       "Fall", "Statistics", 200, "Cap",
+       "Spring", "Accounting",     300, "Enrollment",
+       "Spring", "Accounting",     350, "Cap",
+       "Spring", "Law",        50, "Enrollment",
+       "Spring", "Law",        100, "Cap",
+       "Spring", "Statistics", 400, "Enrollment",
+       "Spring", "Statistics", 400, "Cap"
+)
+BARUCH_UNTIDY
+```
+
+## Pivoting
+
+This data was untidy because it split a single unit (course) across multiple rows
+
+`pivot_wider` to get to the right format
+
+. . . 
+
+```{r}
+#| echo: true
+pivot_wider(BARUCH_UNTIDY, names_from=Type, values_from=Number)
+```
+
+## Pivots
+
+`pivot_` changes the shape of a data set. Purposes: 
+
+- Get ready for presentation
+- Prep for a join
+- Combine rows before looking at 'cross-row' structure
+
+## Pivots
+
+Which penguin species has the largest between-sex mass difference? 
+
+```{r}
+#| echo: true
+library(tidyr)
+avg_mass_tbl <- penguins |> drop_na() |> 
+    group_by(sex, species) |> 
+    summarize(avg_mass = mean(body_mass), .groups="drop")
+    # .groups="drop" is equivalent to |> ungroup()
+avg_mass_tbl
+```
+
+## Pivots
+
+We want data that is _wider_ (or at least not longer) than our current data: 
+
+| species   | male_avg | female_avg | 
+|-----------|----------|-------------
+| Adelie    |...|...|
+| Chinstrap |...|...|
+| Gentoo    |...|...|
+
+
+## Pivots
+
+For the penguins: 
+
+```{r}
+#| echo: true
+pivot_wider(avg_mass_tbl, 
+            id_cols = species, 
+            names_from=sex, 
+            values_from=avg_mass)
+```
+
+. . . 
+
+::: {.small}
+
+Put it all together:
+
+```{r}
+#| echo: true
+pivot_wider(avg_mass_tbl, 
+            id_cols = species, 
+            names_from=sex, 
+            values_from=avg_mass) |>
+    mutate(sex_diff = male - female) |>
+    slice_max(sex_diff)
+```
+
+:::
+
+## Pivots
+
+`pivot_wider` Arguments:
+
+::: {.small}
+
+- `id_cols`: kept as 'keys' for new table
+- `names_from`: existing column 'spread' to create new
+                columns names
+- `values_from`: values in new table
+
+:::
+
+. . . 
+
+`pivot_longer`: 
+
+::: {.small}
+
+- 'Inverse' operation
+- Spread one row + multiple columns => one col + multiple rows
+
+:::
+
+. . . 
+
+::: {.small}
+
+`pivot_wider` and `pivot_longer` have many additional arguments for dealing with
+repeats / missing values. The help page (+ experimenting) is your friend
+
+:::
+
+## Legos of Data Analysis
+
+These functions are like Legos: 
+
+- Simple individually
+- Combine for complex structures
+
+## Legos of Data Analysis
+
+**Q: How many distinct flights left NYC in 2013?**
+
+```{r}
+library(dplyr)
+library(nycflights13)
+flights |> 
+    n_distinct()
+```
+
+. . . 
+
+Not quite what we wanted...
+
+## Legos of Data Analysis
+
+**Q: How many distinct flights left NYC in 2013?**
+
+. . . 
+
+How many unique combinations of `carrier` + `flight` (*e.g.*, United 101)?
+
+```{r}
+flights |>
+    select(carrier, flight) |>
+    n_distinct()
+```
+
+## Legos of Data Analysis
+
+**Q: How many distinct flights left NYC in 2013?**
+
+::: {.small}
+
+💡 Did airlines re-use flight numbers for different destinations? 
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    # Find reuse of number across different destinations
+    # Shorthand for group_by + summarize(n = n())
+    count(carrier, flight) 
+```
+
+:::
+
+. . . 
+
+Seems so!
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Find examples of re-use: 
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n)
+```
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Finding most re-used flight number: 
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n) |> 
+    left_join(flights, join_by(carrier == carrier, flight == flight)) |>
+    pull(dest) |> # pull out column as vector
+    table() # frequency table
+```
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Finding most re-used flight number: 
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n)
+```
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Seeing where our most reused number went:
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n) |>
+    inner_join(flights, join_by(carrier == carrier, flight == flight)) |>
+    count(flight, carrier, dest)
+```
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Additional join to get airport information + formatting:
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n) |>
+    inner_join(flights, join_by(carrier == carrier, flight == flight)) |>
+    count(flight, carrier, dest) |> 
+    inner_join(airports, join_by(dest == faa)) |>
+    select(name, n, carrier, flight) |>
+    arrange(desc(n)) |>
+    rename(`Destination Airport` = name, 
+           `Number of Times Flown` = n, 
+           `Carrier Code` = carrier, 
+           `Flight Number`= flight)
+```
+
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+::: {.small}
+
+Extra join to match to `airlines` as well: 
+
+```{r}
+head(airlines, 3)
+```
+
+:::
+
+. . . 
+
+Also has a column named `name` - need to disambiguate!
+
+## Legos of Data Analysis {.scrollable}
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Additional join to get airport information + formatting:
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n) |>
+    inner_join(flights, join_by(carrier == carrier, flight == flight)) |>
+    count(flight, carrier, dest) |>  
+    inner_join(airports, join_by(dest == faa)) |>
+    select(name, n, carrier, flight) |>
+    rename(dest_name = name) |> 
+    inner_join(airlines, join_by(carrier == carrier)) |> 
+    arrange(desc(n)) |>
+    select(-carrier) |> 
+    rename(`Destination Airport` = dest_name, 
+           `Number of Times Flown` = n, 
+           `Carrier` = name, 
+           `Flight Number`= flight)
+```
+
+## Legos of Data Analysis
+
+Question: What does this do I can't do in `Excel`? 
+
+. . . 
+
+*Technically*, nothing. All programming languages of sufficient complexity are
+equally powerful (Turing equivalence). 
+
+</br>
+
+. . . 
+
+In actuality, quite a lot: 
+
+- `filter` allows more complex filtering than clicking on values
+- `group_by` + `summarize` extend array formulas
+- `*_join` provides more complex matching than `VLOOKUP`
+- `pivot_*` provide general formulation of pivot tables
+
++ everything else you can do in `R`. 
+
+Ability to *script* minimizes "hard-coding" of names and values. 
+
+## But truthfully
+
+```{r}
+fortunes::fortune(59)
+```
+
+. . . 
+
+```{r}
+fortunes::fortune(222)
+```
+
+
+# Diving Deeper into Multi-Table Verbs
+
+## Diving deeper Into Joins
+
+Data Set: [`nycflights13`](https://nycflights13.tidyverse.org/)
+
+Exercises: [Lab #05](../labs/lab05.html)
+
+## Additional dplyr Tricks
+
+::: {.incremental}
+
+- Ranking functions
+  - `row_number`, `min_rank`, `dense_rank`: differ in ties
+  - Use with `desc()` to flip ordering
+  - `cum_dist`, `percent_rank`: compute quantiles
+- Cumulative Statistics
+  - `cummean`, `cummax`, `cummin`, ...
+  
+:::
+
+# Multi-Table FAQs
+
+## Subqueries
+
+> [W]ill we be learning how to perform joins within a subquery?
+
+You don't need subqueries in `R` since it's an imperative language. 
+Just create a new variable to represent the result of the subquery
+and use that in the next command. 
+
+```
+SELECT first_name, last_name
+FROM collectors
+WHERE id IN (
+    SELECT collector_id
+    FROM sales
+);
+```
+
+```
+collector_ids <- sales |> pull(collector_id)
+collectors |> filter(id %in% collector_ids) |> select(first_name, last_name)
+```
+
+## Data Integrity
+
+> [H]ow can we ensure that the information [resulting from a join]
+> is accurate and not repeated? 
+
+1. If you have a true unique ID, you're usually safe
+2. Pay attention to all warnings
+3. Manually examine the result of any joins
+
+## Performance
+
+> Will joining large data sets [...] affect performance?
+
+Somewhat - larger data sets are always slower. 
+
+Bigger danger is "bad joins" creating huge data automatically. 
+
+Note that `R` is less "smart" than `SQL`, so won't optimize
+execution order for you automatically.
+
+## dplyr joins vs SQL joins
+
+> What is the difference between `dplyr` and `SQL` joins?
+
+Not too much - biggest difference is no `INDEX` or `FOREIGN KEY`
+in `R` so less guarantees of data integrity.
+
+## When to use anti_join()?
+
+Rare: looking for _unmatched_ rows. 
+
+- Useful to find data integrity issues or 'implicit' missingness. 
+- I use an `anti_join` to find students who haven't submitted an assignment.
+
+## many-to-many Warning
+
+Tricky to address, but fortunately pretty rare. 
+
+- `SQL` explicitly forbids many-to-many
+- Usually a sign that a "key" isn't really unique
+  - Check for duplicates in `x` and `y` tables
+  - Can occur with "fancy" joins (rolling, inequality)
+- Add additional join variables to break "duplication"
+
+## How to Check Efficiency? 
+
+No automatic way. Some rules of thumb: 
+
+- Don't create large tables just to filter down
+  - filter before join when possible
+- `full_outer` join is a bit dangerous
+- `cross_join` is _rarely_ the right answer
+
+## tidyr vs dplyr
+
+> Is `tidyr` more efficient than `dplyr`? 
+
+Nope - different packages from the same developers. 
+
+Designed to work together elegantly. 
+
+## Rare Joins
+
+> What are `cross_join`, filter joins, and `nest_join`?
+
+- `cross_join`: dangerous. 
+  - Creates "all pairs" of rows. Useful for 'design' problems 
+- filter joins (`anti_`, `semi_`): 
+  - Hunting down quietly missing data.
+  - Filtering to sub-samples
+- `nest_join`: beyond this course. 
+  - `left_join` with extra structure to output.
+
+# Wrap-Up
+
+## Review
+
+Multi-Table `dplyr`: 
+
+- `inner_join` and `left_join`
+- `join_by` specifications
+- `pivot_longer` and `pivot_wider` to get data into optimal formats (`tidyr`)
+
+. . . 
+
+Additional `dplyr`: 
+
+- Ranking, cumulative, and shift functions
+
+
+## Orientation
+
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R`  ✅
+- Data Visualization in `R`  ⬅️
+- Getting Data into `R`
+- Statistical Modeling in `R`
+
+{{< include _end.qmd >}}
