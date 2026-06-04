@@ -1,0 +1,39 @@
+<script type="text/javascript" id="exit-archive-script">
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.location.href.includes("archive")) {
+      // If on an 'archive' page, update archive warning bar exit
+      // to make sure it points to the associated 'current' page
+      document.getElementById('exit-archive-link').addEventListener('click', function() {
+        let currentUrl = window.location.href;
+        let newUrl = currentUrl.replace(/\/archive\/AY-\d{4}-[^\/]+\//, '/');
+        if (currentUrl !== newUrl) {
+          window.location.href = newUrl;
+        }
+        console.log("Archive URL detected: link redirect inserted.");
+      })
+    } else {
+        // Delete quarto announcement bar if not in archive
+        const exitLink = document.getElementById("exit-archive-link");
+        if (exitLink) {
+        // Find the "great-grand-div" surrounding the link, i.e., the native Quarto
+        // announcement container div
+        // Quarto's announcement bar uses the id '.quarto-announcement' for
+        // the outermost div
+        const announcementBar = exitLink.closest('#quarto-announcement');
+        if (announcementBar) {
+          // Delete the entire announcement bar element from the DOM and log
+          announcementBar.remove();
+          console.log("Current URL detected: Quarto announcement bar removed.");
+        } else {
+          // Fallback: walk up exactly two parent levels (a -> parentDiv -> grandDiv)
+          // and try to delete there
+          const grandParent = exitLink.parentElement?.pparentElement;
+          if (grandParent) {
+            grandParent.remove();
+            console.log("Current URL detected: Grandparent element removed manually.");
+          }
+        }
+      }
+    }
+});
+</script>
