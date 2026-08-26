@@ -124,7 +124,8 @@ get_pa_deadline <- function(N){
                str_detect(Details, "Due"), 
                !str_detect(Details, "Peer")) |>
         mutate(due = paste(Date, "at", Time)) |>
-        pull(due)
+        pull(due) |> 
+        max()
 }
 
 get_mp_submitted <- function(N){
@@ -307,18 +308,19 @@ if(!is.na(lecture)) I(glue("> <{url_full}>"))
 
 ## Upcoming TODO
 
-Upcoming student responsibilities:
+Upcoming student responsibilities - Tuesday Section: 
 
-```{r upcoming_table}
+```{r upcoming_table_tues}
 #| message: false
 #| echo: false
 library(gt)
-read_csv("key_dates.csv", 
+class_date_tues <- class_date[wday(class_date, label=TRUE) == "Tue"]
+read_csv("key_dates_tuesday.csv", 
          show_col_types=FALSE) |>
     filter((`Responsible Party` == "Student") | (is.na(`Responsible Party`))) |>
     mutate(Time2 = Time |> str_replace("11:", "23:") |> str_replace("6:", "18:")) |>
-    filter((Date > class_date) | 
-           ((Date == class_date) & str_detect(Time2, "23"))) |>
+    filter((Date > class_date_tues) | 
+           ((Date == class_date_tues) & str_detect(Time2, "23"))) |>
     mutate(Details = case_when(
             is.na(`Item Number`) ~ Details, 
             TRUE ~ str_replace(Details, "Due", sprintf("#%02g Due", `Item Number`))
@@ -326,8 +328,38 @@ read_csv("key_dates.csv",
     ) |>
     arrange(Date, Time2) |> 
     select(Date, Time, Details) |> 
-    filter(Date <= class_date + 28) |>
-    gt(id=glue("schedule_table_session_{SESSION}")) |>
+    filter(Date <= class_date_tues + 28) |>
+    gt(id=glue("schedule_table_session_{SESSION}_tues")) |>
     tab_options(table.width = pct(100), 
-                table.font.size = pct(80))
+                table.font.size = pct(60)) |>
+    cols_label(Details=md("**Student Responsibility**"))
+```
+
+## Upcoming TODO
+
+Upcoming student responsibilities - Thursday Section: 
+
+```{r upcoming_table_thurs}
+#| message: false
+#| echo: false
+library(gt)
+class_date_thurs <- class_date[wday(class_date, label=TRUE) == "Thu"]
+read_csv("key_dates_thursday.csv", 
+         show_col_types=FALSE) |>
+    filter((`Responsible Party` == "Student") | (is.na(`Responsible Party`))) |>
+    mutate(Time2 = Time |> str_replace("11:", "23:") |> str_replace("6:", "18:")) |>
+    filter((Date > class_date_thurs) | 
+           ((Date == class_date_thurs) & str_detect(Time2, "23"))) |>
+    mutate(Details = case_when(
+            is.na(`Item Number`) ~ Details, 
+            TRUE ~ str_replace(Details, "Due", sprintf("#%02g Due", `Item Number`))
+           )
+    ) |>
+    arrange(Date, Time2) |> 
+    select(Date, Time, Details) |> 
+    filter(Date <= class_date_thurs + 28) |>
+    gt(id=glue("schedule_table_session_{SESSION}_thurs")) |>
+    tab_options(table.width = pct(100), 
+                table.font.size = pct(60)) |>
+    cols_label(Details=md("**Student Responsibility**"))
 ```

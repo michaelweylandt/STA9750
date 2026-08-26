@@ -3,13 +3,16 @@
 #| warning: false
 #| message: false
 library(tidyverse)
-NUMBER <- as.integer(rmarkdown::metadata$pa_num)
-set.seed(9750 + NUMBER)
-LECTURE_NUMBER <- read_csv("key_dates.csv") |>
+library(glue)
+LECTURE_NUMBER <- as.integer(rmarkdown::metadata$pa_num)
+set.seed(9750 + LECTURE_NUMBER)
+CLASS_NUMBER <- read_csv("key_dates.csv") |>
     filter(`Course Element` == "Class Session") |>
     filter(str_detect(Details, 
-                      sprintf("Lecture #%02g", NUMBER))) |>
-    pull(`Item Number`)
+                      sprintf("Lecture #%02g", LECTURE_NUMBER))) |>
+    pull(`Item Number`) |> 
+    mean()
+
 due_date_str <- read_csv("key_dates.csv") |> 
     filter(`Course Element` == "Pre-Assignments", 
            `Item Number` == LECTURE_NUMBER, 
@@ -17,9 +20,51 @@ due_date_str <- read_csv("key_dates.csv") |>
     mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
     pull(dt) |>
     format("%Y-%m-%d (%A) at %I:%M%P") |>
-    paste(sprintf("(before Class Session #%02g)", LECTURE_NUMBER))
+    paste(sprintf("(before Class Session #%02g)", CLASS_NUMBER)) |>
+    max()
+
+
+available_date_str <- read_csv("key_dates.csv") |> 
+    filter(`Course Element` == "Pre-Assignments", 
+           `Item Number` == LECTURE_NUMBER, 
+           str_detect(Details, "Released")) |> 
+    mutate(dt = parse_date_time(paste(Date, Time), "%Y-%m-%d %H:%M%p")) |>
+    pull(dt) |>
+    format("%Y-%m-%d (%A) at %I:%M%P") |>
+    paste(sprintf("after Lecture #%02g", LECTURE_NUMBER - 1)) |>
+    min()
 ```
 
-**Due Date**: `{r} due_date_str`
+**Key Dates**: 
 
-**Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)
+- **Brightspace Quiz Opens**: `r available_date_str`
+
+::: {multiple_sections="true"}
+
+```{r}
+#| echo: false
+#| message: false
+tuesday_date <- read_csv("key_dates_tuesday.csv") |> 
+    filter(`Course Element` == "Class Session", 
+           str_detect(Details, sprintf("Lecture #%02g", LECTURE_NUMBER))) |>
+    pull(Date) |>
+    format("%Y-%m-%d") |>
+    paste(sprintf("before Lecture #%02g (Tuesday Section)", LECTURE_NUMBER)) |>
+    max()
+
+thursday_date <- read_csv("key_dates_thursday.csv") |> 
+    filter(`Course Element` == "Class Session", 
+           str_detect(Details, sprintf("Lecture #%02g", LECTURE_NUMBER))) |>
+    pull(Date) |>
+    format("%Y-%m-%d") |> 
+    paste(sprintf("before Lecture #%02g (Thursday Section)", LECTURE_NUMBER)) |>
+    max()
+```
+
+- **Tuesday Class Date (Recommended Completion Date)**: `r tuesday_date`
+- **Thursday Class Date (Recommended Completion Date)**: `r thursday_date`
+
+:::
+
+- **Brightspace Due Date**: `r due_date_str`
+- **Submission**: [CUNY Brightspace](https://brightspace.cuny.edu/)

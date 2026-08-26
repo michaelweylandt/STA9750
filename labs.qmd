@@ -25,14 +25,16 @@ get_class_date <- function(N){
         filter(`Course Element` == "Class Session", 
                `Item Number` == N) |>
         pull(Date) |>
-        format("%A %B %d %Y")
+        format("%B %d, %Y (%A)") |> 
+        paste(collapse = " and ")
 }
 
 get_class_topic <- function(N){
     read_csv("key_dates.csv") |>
         filter(`Course Element` == "Class Session", 
                `Item Number` == N) |>
-        pull(Details)
+        pull(Details) |>
+        unique()
 }
 
 get_lab_title <- function(N){

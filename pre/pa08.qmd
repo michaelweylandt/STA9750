@@ -1,571 +1,430 @@
 ---
-pa_num: 8
-pa_title: "Taking Plots to the Next Level"
-filters:
-  - shinylive
+pa_num: 7
+pa_title: "Flat-File Data Ingest"
 ---
 
 {{< include _pa_setup.qmd >}}
 
-```{r}
-#| echo: false
-#| eval: false
-# Make sure that figure path respects my directory structure
-# This seems to be important for gganimate + quarto
-knitr::opts_hooks$set(fig.path = function(options){
-  dirname_input <- dirname(knitr::current_input(TRUE))
+We now turn to the next "unit" of this course - acquiring data and preparing
+it for further analysis. In what follows, our goal will be go get data to a 
+"tidy" format suitable for use with `tidyverse` tools like `dplyr` and `ggplot2`.
+Unfortunately, this problem becomes a rather difficult one. While every "tidy"
+data set shares certain characteristics, non-tidy data, by definition, won't.
+
+Still - we are analysts and data scientists - so we soldier on and begin
+to work with the nasty and difficult data the real world often presents us with. 
+
+We are spending three weeks on this topic of "getting data into `R`". Roughly, 
+this will break into two sections: 
+
+1) Given a file or a web service designed to share data, 
+   how do I get it into `R`? 
+2) Given a plain text website, how do I get the text into `R`? Divided further
+   into two sections: 
+   - How do I get text from the internet into `R`?
+   - How do I get numbers and records out of unstructured text?
+
+In this pre-assignment, we're focusing on the first part of the first section:
+reading data from a file into `R`. This will be relatively fast - we've already
+done some of it this semester - but it's an essential skill set. 
+
+We will cover getting data from web services in class this week.
+
+## What is a File?
+
+Before we work on getting data from files into `R`, it's worth taking a moment
+to review what a file actually _is_. Modern technology often tries to hide the
+"true nature" of things behind ever increasing stacks of accounts and cloud
+services, but we're going back to basics. 
+
+**A file is a long series of bits, with a well-defined beginning and end.**
+
+That's it - files aren't required to have extensions, formats, or anything else.
+Computers associate each file with a name, organized into a _file system_, but
+this all lives outside the file. 
+
+That general definition - lots of bits - is not particularly helpful for sharing
+of content and data, so files are conventionally shared with _formats_. A set of
+rules that tell programs how to interpret the bits of a file. Essentially,
+a _file format_ is a _social convention_ that exists "around" the file, enabling
+us to work with it productively and easily. 
+
+A huge number of file formats exist - images, movies, text documents, financial
+transaction records, data bases - and you thankfully do not need to know them
+all. We can generally divide these into two buckets: 
+
+- Plain text formats. These are formats which are designed to be easily readable
+  across a wide range of tools. This flexibility makes plain text formats 
+  particularly popular among tech-types, as users are not forced into using a
+  piece of (typically expensive) software.[^1]
   
-  options$fig.path <- file.path(dirname_input, 
-                                options$fig.path)
-
-  options
-})
-```
-
-This week, we will dive deeper into the world of data visualization, briefly
-introducing three important topics: 
-
-- mapping; 
-- animated visualizations; and
-- interactivity. 
-
-Before getting into the new stuff, let's pause and consolidate everything we've 
-done to date: 
-
-1. If you did not finish [our previous in class plotting
-   activities](../labs/lab06.qmd), please do so now.
-
-2. Explore the [R Graphics Gallery "Best Charts"
-   collection.](https://r-graph-gallery.com/best-r-chart-examples)
-   Pick one chart from this collection and evaluate it with a critical
-   eye:
-   
-   i) Is it well styled?
-   ii) What story is it trying to tell?
-   iii) Does it tell that story effectively?
-   iv) Do you believe that story? 
-   v) How could it tell the story more effectively?
-   
-After doing that, we're ready to move on to new material. First let's make
-sure that you have all the necessary software installed. 
-
-## Software Checks
-
-This upcoming week, we will use several new `R` packages. These packages depend 
-on  additional software external to `R`; while this is not typically an issue, 
-and `R` attempts to install these additional libraries "auto-magically" for you,
-issues do occasionally arise. In preparation for class, I recommend that you
-attempt to install these additional libraries so that you will be able to easily
-follow along in class. 
-
-In particular, there are three `R` packages you should install and confirm work
-as expected: 
-
-1. `sf` - A library for working with geospatial data
-2. `gganimate` - A library for producing _animated_ graphics. 
-3. `shiny` - A library for interactive dashboard creation
-
-I provide code to install and run a small example of each software below. If
-you can run all of these without issue, you should be good to go. (You do not
-need to _understand_ this code just yet, but you are welcome to work through it.)
-If you have issues installing this software, please reach out for help on the
-course discussion board or in office hours. 
-
-### `sf`
-
-The `sf` library provides a unified interface for manipulating geospatial
-data. We will primarily use it for visualizing _spatial_ data, *i.e.*, maps.
-
-`sf` depends on several other packages, so we will make sure these are
-all installed as needed: 
-
-```{r}
-ensure_package <- function(pkg){
-    pkg <- as.character(substitute(pkg))
-    options(repos = c(CRAN = "https://cloud.r-project.org"))
-    if(!require(pkg, character.only=TRUE, quietly=TRUE)) install.packages(pkg)
-    stopifnot(require(pkg, character.only=TRUE, quietly=TRUE))
-}
-ensure_package(sf)
-```
-
-Once these packages have been installed, run the following code to confirm
-correct installation. 
-
-```{r}
-#| fig-asp: 0.3
-library(sf)
-library(ggplot2)
-system.file("shape/nc.shp", package = "sf") |>
-    sf::st_read(quiet=TRUE) |>
-    ggplot(aes(geometry=geometry, 
-               fill=NAME)) + 
-      geom_sf() + 
-      guides(fill="none")
-```
-
-This should produce a multi-colored map of North Carolina. 
-
-
-### `gganimate`
-
-The `gganimate` package can be used to create _animated_ graphics. To do so,
-it generates a series of `png` files using "standard" `ggplot2` and then
-invokes an external library to combine those `png` files into a `gif`. 
-The simplest tool for the `png`-to-`gif` transformation is called `gifski`,
-so we will try to install it first:
-
-```{r}
-ensure_package <- function(pkg){
-    pkg <- as.character(substitute(pkg))
-    options(repos = c(CRAN = "https://cloud.r-project.org"))
-    if(!require(pkg, character.only=TRUE, quietly=TRUE)) install.packages(pkg)
-    stopifnot(require(pkg, character.only=TRUE, quietly=TRUE))
-}
-ensure_package(gifski)
-ensure_package(gganimate)
-```
-
-Once installed, please run the following command to verify your installation
-was successful. 
-
-```{r}
-#| results: 'hide'
-#| message: false
-library(tidyverse)
-library(gganimate)
-
-readr::read_csv("https://michael-weylandt.com/STA9750/labs/ssa_babynames.csv.gz") |>
-    filter(name %in% c("Mary", "Ellen", "Robert", "Michael")) |>
-    summarize(n = sum(number), .by=c("year", "name")) |> 
-    mutate(name=factor(name, 
-                       levels = c("Robert", "Michael", "Mary", "Ellen"))) |>
-    ggplot(aes(x=year, y=n, color=name)) + 
-    geom_point() +
-    geom_line() + 
-    theme_bw() + 
-    theme(legend.position='bottom') +
-    xlab("Year") + 
-    ylab("Number of Registered Births") + 
-    scale_color_brewer(type="qual", palette=2, name="First Name")  + 
-    transition_reveal(year) 
-```
-
-```{r}
-#| echo: false
-anim_save("pre/pa08_ssa.gif")
-fs::file_copy("pre/pa08_ssa.gif",
-              "docs/pre/pa08_ssa.gif", 
-              overwrite=TRUE)
-```
-
-![](./pa08_ssa.gif)
-
-This should create a moving line plot showing the number of children born each year with certain names. 
-
-### `shiny`
-
-The following script will install `shiny`: 
-
-```{r}
-ensure_package <- function(pkg){
-    pkg <- as.character(substitute(pkg))
-    options(repos = c(CRAN = "https://cloud.r-project.org"))
-    if(!require(pkg, character.only=TRUE, quietly=TRUE)) install.packages(pkg)
-    stopifnot(require(pkg, character.only=TRUE, quietly=TRUE))
-}
-ensure_package(shiny)
-```
-
-Once `shiny` is installed, confirm that it works as desired by 
-running the  following code: 
-
-```{r}
-#| eval: false
-library(shiny)
-shinyApp(
-    ui = fluidPage(
-      numericInput("n", "n", 10, min=3, max=30),
-      plotOutput("plot")
-    ),
-    server = function(input, output) {
-      output$plot <- renderPlot(plot(rnorm(input$n)) )
-    }
-  )
-```
-
-If this works, it will bring up a very simple window where you can enter 
-a number and see that many random points plotted. 
-
-```{shinylive-r}
-#| standalone: true
-#| echo: false
-#| viewerHeight: 420
-library(shiny)
-library(shinylive)
-shinyApp(
-    ui = fluidPage(
-      numericInput("n", "n", 10, min=3, max=30),
-      plotOutput("plot")
-    ),
-    server = function(input, output) {
-      output$plot <- renderPlot(plot(rnorm(input$n)))
-    }
-  )
-```
-
-Note that this might take a while to load in the browser; the version that
-appears when you run the code locally should be rather quick.
-
-## Spatial Data Manipulation
-
-Above, when testing `sf`, we created a map of North Carolina. Let's now take a
-closer look at what the plotted data actually entailed: 
-
-```{r}
-nc <- system.file("shape/nc.shp", package = "sf") |>
-    sf::st_read(quiet=TRUE)
-nc
-```
-
-Here, `nc` is a `r class(nc)[1]` object: this is a _subclass_ (specialized 
-version) of a data frame that includes spatial information. If we `glimpse()`
-the object, we see that most of our columns are as expected, but the `geometry`
-column is unlike anything we've seen so far: 
-
-```{r}
-library(tidyverse)
-glimpse(nc)
-```
-
-Here the `geometry` column is of type `MULTIPOLYGON` and if we look a bit
-closer at what that means, we see that each cell (so each single 'data point')
-looks something like this: 
-
-```{r}
-#| echo: false
-nc$geometry[[1]]
-```
-
-This is a list of GPS coordinates which can be traced out
-to give the shape of a _polygon_. In this particular case,
-the first row of the `nc` object is [Ashe County, NC](https://en.wikipedia.org/wiki/Ashe_County%2C_North_Carolina) and the multipolygon is structured as: 
-
-```{r}
-#| echo: false
-nc1 <- nc$geometry[[1]]
-ggplot() + 
-  geom_sf(data=nc1, fill="lightblue", alpha=0.5) + 
-  geom_sf(data=st_cast(nc1, "MULTIPOINT"), color="red", size=2) + 
-  theme_minimal() + 
-  ggtitle("Ashe County NC - Polygon Boundary and Vertices")
-```
-
-As you see, this forms a closed shape with linear sides, *i.e.*, a polygon. 
-(Look back at that list of GPS coordinates above: it starts and ends in 
-the same place.)
-
-So why is this called a **multi**polygon? Well, not all
-geographic regions are true *contiguous* polygons. [Dare County,
-NC](https://en.wikipedia.org/wiki/Dare_County,_North_Carolina) contains some of
-NC's famous *Outer Banks* islands. 
-
-```{r}
-#| echo: false
-nc2 <- nc |> filter(NAME == "Dare") |> pull(geometry)
-ggplot() + 
-  geom_sf(data=nc2, fill="lightblue", alpha=0.5) + 
-  geom_sf(data=st_cast(nc2, "MULTIPOINT"), color="red", size=2) + 
-  theme_minimal() + 
-  ggtitle("Dare County NC - Polygon Boundary and Vertices")
-```
-
-As you can see, this isn't a super-high resolution boundary file, but it does
-pick up on the existence of several islands. Because this geographic unit is
-divided into several polygons, it is indeed a *multipolygon*. 
-
-You're probably starting to think that spatial data can be quite complicated - 
-and you're right! Programmatically dealing with geospatial data can require
-highly sophisticated GIS ("Geographic Information System") tools, but we can
-cover the easy 80% of spatial data manipulation using `R`'s `sf` package. 
-
-`sf` or "Simple Features for `R`" integrates the [simple features GIS
-paradigm](https://en.wikipedia.org/wiki/Simple_Features) into an `R` `tidyverse`
-framework. We'll run through some basic examples here to help get you started.
-
-To make our intro a bit more concrete, let's bring it home to NYC. We'll load
-up three different spatial data sets: 
-
-1) The NYC subway lines: 
-
-```{r}
-#| message: false
-library(sf)
-subway_lines <- st_read("https://data.ny.gov/resource/s692-irgq.geojson", 
-                        quiet=TRUE)
-```
-
-2) The NYC subway stations: 
-
-```{r}
-#| message: false
-subway_stations <- st_read("https://data.ny.gov/resource/39hk-dx4f.geojson", 
-                           quiet=TRUE) |>
-  select(-borough) # We're going to use borough as an example later so drop
-```
-
-3) NYC borough boundaries and populations
-
-```{r}
-#| echo: false
-options(tigris_use_cache=TRUE)
-```
-
-```{r}
-library(tidycensus)
-nyc_tracts <- get_acs(
-  geography = "tract",
-  variables = "B01003_001", 
-  state = "NY",
-  county = c("New York", "Kings", "Queens", "Bronx", "Richmond"),
-  geometry = TRUE,
-  year = 2024) |>
-  mutate(borough = case_when(
-    str_detect(NAME, "Queens County") ~ "Queens", 
-    str_detect(NAME, "Kings County") ~ "Brooklyn", 
-    str_detect(NAME, "Bronx County") ~ "Bronx", 
-    str_detect(NAME, "Richmond County") ~ "Staten Island", 
-    str_detect(NAME, "New York County") ~ "Manhattan",
-    .unmatched="error"
-  )) |>
-  rename(population = estimate) |>
-  select(-GEOID, -variable, -moe) |>
-  st_transform(crs=4326) # We'll talk about this in class
-```
-
-Let's compare these three data sets: 
-
-1)  `nyc_tracts` has a `MULTIPOLYGON` geometry, as we would expect for 
-    [NYC's Census Tracts](https://data.cityofnewyork.us/City-Government/2020-Census-Tracts-Mapped/weqx-t5xr). 
-   
-    ```{r}
-    glimpse(nyc_tracts)
-    ```
-    
-2)  NYC's Subway Stations have a `POINT` geometry type since they exist at a
-    single point in space, not as a region.[^station]
-    
-    ```{r}
-    glimpse(subway_stations)
-    ```
-    
-3)  Finally, the subway _lines_ have type `MULTILINESTRING`. This is a bit of
-    a mouthful, but it captures the essence of how we would expect subway lines
-    to be: one-dimensional paths traced on a 2D background. 
-    
-    ```{r}
-    subway_lines
-    ```
-    
-So we have three types of data: point (stations), linear (subway lines), and 
-areal (census tracts). The complexity of GIS work comes from combining these. 
-First, let's plot them. In each case, all we have to do is use the `geom_sf()`
-function from `ggplot2` with the `geometry` aesthetic and `R` will handle it
-properly for us:[^water_tracts]
-
-[^water_tracts]: You might notice that the census provided tract shapes
-include some water parts of NYC so we're not actually getting the
-expected East River between Manhattan/Bronx and Brooklyn/Queens. NYC
-Planning provides [a shoreline clipped
-shapefile](https://www.nyc.gov/content/planning/pages/resources/datasets/census-tracts) but then we'd have to match things up with the census
-data, so we're not going to worry about the water for now.
-
-```{r}
-nyc_tracts |> 
-  ggplot(aes(geometry=geometry)) + 
-  geom_sf() + 
-  theme_bw() + 
-  ggtitle("NYC Census Tracts [Areal geom_sf]")
-```
-
-
-*vs.*
-
-```{r}
-subway_stations |> 
-  ggplot(aes(geometry=geometry)) + 
-  geom_sf() + 
-  theme_bw() + 
-  ggtitle("NYC Subway Stations [Point geom_sf]")
-```
-
-and
-
-```{r}
-subway_lines |> 
-  ggplot(aes(geometry=geometry)) + 
-  geom_sf() + 
-  theme_bw() + 
-  ggtitle("NYC Subway Lines [Linear geom_sf]")
-```
-
-We can even superimpose these: 
-
-```{r}
-ggplot(mapping=aes(geometry = geometry)) + 
-  geom_sf(data=nyc_tracts) + 
-  geom_sf(data=subway_stations, col="red4") + 
-  geom_sf(data=subway_lines, col="green3", alpha=0.8) +
-  theme_bw()  + 
-  ggtitle("NYC Subway System")
-```
-
-Note that here, instead of setting the `data` for the whole plot 
-in the initial `ggplot()` call as we typically do, we have passed
-different data sets to each _layer_ of the plot. 
-
-So let's do some basic manipulation. First, we might want to _aggregate_ tracts
-to boroughs and get borough-level populations: 
-
-```{r}
-nyc_tracts |> 
-  group_by(borough) |> 
-  summarize(population = sum(population))
-```
-
-We see here that we summed the population as we might expect, but what happened
-to the `geometry` column? Because this was an `sf` and not a "regular" 
-`data.frame`, the spatial nature _persisted_ across summarization. Here, we see
-that the geometry column is essentially the _union_ of all the tracts in that 
-borough: 
-
-```{r}
-nyc_tracts |> 
-  group_by(borough) |> 
-  summarize(population = sum(population)) |>
-  ggplot(aes(geometry=geometry)) + 
-  geom_sf()
-```
-
-Pretty nifty. Our other `dplyr` operations work as we might expect: 
-
-```{r}
-nyc_tracts |> 
-  group_by(borough) |> 
-  slice_max(population) |>
-  ggplot(aes(geometry=geometry, fill=borough)) + 
-  geom_sf() + 
-  theme(legend.position="bottom") + 
-  ggtitle("Most Populous Tracts in Each Borough")
-```
-
-Not terribly attractive, but it does what we'd expect. 
-
-Things get more interesting when we want to _combine_ different bits of 
-geometry. For example, suppose we want to ask "how many subway stations are in
-each borough?" (Poor Staten Island...) To answer this, we want to do a 'join', 
-but it's not quite one of the equality joins we used from normal `dplyr`. 
-
-We need a _spatial_ join, which is implement with the `sf::st_join()` function. 
-And instead of using a `join_by(x == y)` type specification, we need to use
-one of the relevant logical predicates listed [on the help page](https://r-spatial.github.io/sf/reference/st_join.html). For us, the 
-default `st_intersects` seems to work just fine: 
-
-```{r}
-library(gt)
-st_join(subway_stations, nyc_tracts) |>
-  group_by(borough) |> 
-  count() |> 
-  arrange(desc(n)) |> 
-  gt(id="tbl_subway1") |> 
-  cols_hide("geometry") |> 
-  cols_label(borough = md("**Borough**"), 
-             n="Number of Subway Stations") |>
-  grand_summary_rows(columns=n, 
-                     fns=list("Total" ~ sum(.)))
-```
-
-This is perhaps a bit fishy - why are there 21 stations in SI which 
-(famously) does not have a subway. We should always start by seeing if our 
-join went off, but things look good here. We have 496 rows, which matches
-the 496 rows in `subway_stations`. It turns out this is just a good-old 
-"data not being what the label makes us think" problem: 
-
-```{r}
-st_join(subway_stations, nyc_tracts) |> 
-  filter(borough == "Staten Island") |>
-  gt() |>
-  cols_hide(everything()) |> 
-  cols_unhide(c(stop_name, line, division, borough)) |>
-  cols_merge(c(line, division)) |>
-  cols_label(stop_name = "Stop Name", 
-             line="Line", 
-             borough="Borough")
-```
-
-So it seems the Staten Island Railroad is listed as a subway on the
-official [MTA Subway Stations listing](https://data.ny.gov/Transportation/MTA-Subway-Stations/39hk-dx4f/about_data). Ain't life grand?
-
-There is _much_ more that can be said about spatial data, but these are
-the basic tools and all that we have time for now. If you have questions about
-using spatial techniques in your course project, please ask!
-    
-[^station]: Of course, the stations are not actually *true* points (in the sense
-of geometry) and have an extent and a shape, but we treat them as points for
-this exercise. 
-
-## Getting Started with Shiny
-
-This week, we will also explore various technologies for interactive data 
-visualization. These can be divided into two broad categories: 
-
-- Server Based: When the user makes a change to a plot, it is sent to a 
-  server where the new plot is rendered and returned to the user. 
-- Browser Based: When the user makes a change to a plot, the new plot is 
-  created _in the browser_ and re-rendered 'on site'. (This is the strategy
-  I have used through some of these notes, where you are able to type `R` code
-  and run it directly in your browser.)
+  Most of the files we have seen in this course are _plain-text_: `qmd` files,
+  `csv` files, `R` files, *etc.* We have edited them primarily in `RStudio`, 
+  but you could just as easily access them in tools like VS Code, Eclipse,
+  Jupyter, or even rather primitive tools like Notepad.
   
-Generally, server-based approaches are more flexible and a bit easier to 
-implement, while browser-based approaches are more responsive and scalable.
-Since the browser work is done locally on the user's computer (or phone or 
-tablet), they are also cheaper and safer to run as there's no need to have
-a server constantly responding to user input. 
+- Binary formats. These are typically specialized formats used to encode
+  complex data formats. Image formats, a common example of binary formats,
+  are necessarily more complex than anything we could represent in text. 
+  Because of this complexity, binary formats tend to require specialized
+  software to read and edit. For popular formats, suitable software can 
+  be found on almost any machine: *e.g.*, almost any computer you will use
+  comes with some PDF-reading software pre-installed, even if you later choose
+  to upgrade it to a more advanced tool. 
+  
+Some files blend these two elements, *e.g.*, an HTML page with a mix of
+plain text and an embedded image, but it's still a useful distinction. 
 
-This week, we will explore _a bit_ of each modality, though entire courses
-(and indeed entire careers) have been spent on both. 
+Given all that, how do our computers actually know what to do with a file? We
+open and close files all day and rarely have to tell our computers what software
+to use or how to read the file. 
 
-In the `R` ecosystem, the tool of choice for building server-based[^slive] web
-applications is `shiny`.[^py] **For this pre-assignment, work through 
-Lessons 1 and 2 of the ["Shiny 
-Basics"](https://shiny.posit.co/r/getstarted/shiny-basics/lesson1/) 
-web tutorial.** (You do not need to do the "Next Steps" in Lesson 3, but you are
-of course welcome to.)
+There are two general conventions, one more popular in Unix-type systems (MacOS
+and Linux) and one more popular on Windows-like machines. 
 
-[^slive]: There is an effort to run `shiny` fully in browser (avoiding the need
-for a web server). It is still a work-in-progress, but you can try it out on
-the [`r-shinylive`](https://posit-dev.github.io/r-shinylive/) website, with
-a full gallery of examples [here](https://shinylive.io/r/examples/). 
+Most file formats - and especially most binary formats - begin with a "magic
+string" that clearly states what format is used to encode the file. By reading
+this, the operating system can tell what type of file format is used and 
+call the appropriate software. For instance, PDF files **must** start with the
+string  `%PDF - 1.4`. When your computer reads this, it knows it has a
+found a PDF and calls the appropriate software.
 
-[^py]: If you are more of a Python person, you can also check out the Python
-versions of [`shiny`](https://shiny.posit.co/py/) and
-[`shinylive`](https://shiny.posit.co/py/docs/shinylive.html).
+Similarly, a PNG file, like 
+[the one I use for the my title slide](../images/baruch_title.png),
+starts with a magic string indicating it is a PNG file: 
 
-After finishing these activities, complete the Weekly Pre-Assignment Quiz on
-Brightspace.
+```{r}
+#| warning: false
+readLines("images/baruch_title.png")[1]
+```
 
-## Optional Enrichment: "Myth Busting and Apophenia in Data Visualization"
+::: {.callout-note collapse="true" title="readLines() on Binary Files"}
 
-For some optional extra enrichment, watch [Prof. Di
-Cook](https://www.dicook.org/)'s lecture "Myth busting and apophenia in data
-visualisation: is what you see really there?". As we discussed in class, plots 
-are an excellent way to explore data, but we always want to be careful that what
-we think find *truly exists*. For purely numeric summaries, we can often
-avoid (or at least minimize the frequency) of self-delusion with classical
-$p$-value-type techniques, but these are not so easily applied to visualization.
+The `readLines()` function is designed to read in the text of a plain text file.
+When we apply it to a binary file, as we did above, we get _lots_ of warnings
+because it sees series of bits that can't be interpreted as text. Still, this is
+a useful way of "peeking" at the magic header string. 
 
-Prof. Cook discusses relationships between effective statistical visualization
-and effective statistical practice.
+```{r}
+#| warning: false
+readLines("images/baruch_title.png")[1]
+```
 
-{{<video https://www.youtube.com/watch?v=coGeZIHCk38 >}}
+The `\x89` bit appearing before PNG in the magic header is interesting: that's a
+series of bits that _cannot_ appear in plain text, so it's a very clear sign that
+the file must be interpreted as binary. In fact, most text editing software will
+produce an error the instant it sees that first bit. 
 
+If we instead look just a bit later in the file, we see all sorts of 
+binary nonsense:
+
+```{r}
+#| warning: false
+readLines("images/baruch_title.png")[5]
+```
+
+This is clearly something other than plain text.
+:::
+
+This type of convention is powerful, though it sometimes struggles with very
+rare formats if the destination machine has never been programmed to handle
+that type of file. It has the advantage that the magic string is _inside_ the
+file. As long as the file is transferred without corruption, it's impossible to 
+"misplace" the file format information. 
+
+The other convention used to identify file formats is the _extension_. A
+file extension is a set of a few letters following a period at the end of
+the file name. We often adopt these extensions into our everyday discourse, 
+*e.g.*, a "PDF" file or a "GIF". It is important to note that the _extension_
+is not part of the file and that it is a second piece of information _in
+addition_ to the file contents. As such, this is a second place where 
+things can be corrupted and mistakes can be made. This isn't a huge problem - 
+despite our best efforts to make things hard, computers are pretty reliable -
+but it is something to be aware of.  Importantly, we can change the _extension_ 
+without ever editing the file itself; this is a double-edged sword.[^ext_security]
+
+[^ext_security]: Overreliance on file extensions is actually a very common
+security hole in user-facing applications. If a system only checks whether a 
+file claims to be, say a PDF, before accepting it and processing it,
+it's very easy to get malicious code into the system by simply changing
+the extension. Cybersecurity can be hard, but the amount of problems created by
+this simple oversight is depressing. 
+
+In an attempt to be more user-friendly, certain operating systems - especially
+Microsoft Windows - are quite dogmatic about the use of file extensions,
+sometimes even going so far as to "hide" the extension from the user. If you've
+ever seen a file with a name like "doc.html.html", it's almost always because
+a user tried to add or change an extension, but Windows hid the "true" extension
+away from them. (If you're on a Windows machine, I recommend setting Windows
+to always show the extensions to avoid this type of mistake.)
+
+Extension-based formatting is popular and, when it works well, can be quite
+efficient, but it's worth re-emphasizing: *the truth is in the bits*, not 
+the name. Pragmatically, the true test of whether a file is in a format is
+whether software designed to read that format can handle it. 
+
+## So What? 
+
+At this point, you should probably be asking yourself why any of this matters. 
+The key is to understand that a _format_ is just a set of rules for
+_interpreting_ the bits of a file. To read a file into `R`, we only then need
+to find a function that knows how to map that format into `R`. 
+
+People love `R`, and many such "reader" functions exist. We have already seen
+
+- `readr::read_csv`
+- `sf::read_sf`
+
+several times in this course. But there are _many_ others. The `readr` package
+provides functions for reading standard "plain-text" formats, including: 
+
+- `readr::read_csv` ("comma separated values")
+- `readr::read_tsv` ("tab separated values")
+- `readr::read_delim` (read files with an arbitrary delimiter, *e.g.*, 
+   semi-colon separated values)
+- `readr::read_fwf` (read files where columns have a fixed width)
+
+Some of these functions are quite advanced, and can even automatically download
+and decompress files from web services, if you pass it a URL instead of a
+(local) file name.[^2]
+
+The `readxl` package provides tools for reading both older (`xls`) and newer
+(`xlsx`) spreadsheets. While you can use the `readxl::read_xls` and 
+`readxl::read_xlsx` functions directly, it is often better to use 
+`readxl::read_excel` which will attempt to automatically determine what type
+of Excel document is present and hand it off to the specialized reader. 
+
+You won't often use it, but the `haven` package provides tools for reading 
+data formats generated by other statistical software: 
+
+- `haven::read_stata`
+- `haven::read_spss`
+- `haven::read_sas`
+
+Due to the popularity of tools like `R` and `python`, these proprietary formats
+are not widely used for data transfer any more. You will still occasionally see
+government agencies with very old technology relying on these formats, but it's 
+unlikely that you'll be interacting with that sort of older technology in this
+course.[^fda]
+
+[^fda]: The FDA, for instance, still requires `.sas` files, the data format
+used by the [SAS software](https://www.sas.com), when analyzing drug safety 
+trial data. 
+
+In general, if you are reading a not-entirely bespoke file format into `R`,
+there is almost always a function for doing so. If you come across a format
+for your course project that you are struggling to read, ask the course staff. 
+
+## Reading in Action
+
+We have already read many files in this course, and when all goes well, 
+the process is quite seamless: 
+
+```{r}
+library(readr)
+cars <- read_csv("https://github.com/tidyverse/readr/raw/main/inst/extdata/mtcars.csv")
+```
+
+If the data provider produces well-formatted files, you usually do not
+require any more thought than identifying the right `read` function (possibly
+from a package which you need to install and load as well) and finding the
+file path. Unfortunately, data providers are rarely as perfect as we might hope.
+
+Con-Ed, NYC's electric utility, provides electric usage data in 15-minute
+intervals. My usage data for 2024-10-24 looks something like this: 
+
+```{r}
+#| echo: false
+cat(readLines("mw_coned_20241024.csv")[1:20], sep="\n")
+```
+
+It's clear that this file is "CSV-ish", but is not a proper CSV file. ConEd
+includes a "header" of questionable utility. While we could edit this file
+by hand to only include the "data parts", we can also adjust our file reading
+code. 
+
+The default `read.csv` function in `R` fails on this file: 
+
+```{r}
+#| error: true
+read.csv("mw_coned_20241024.csv")
+```
+
+This message is a bit opaque, but it's essentially saying that there 
+are more columns in the middle of the file (where the data "should" be) than
+there are names in the first (blank) line of the file. 
+
+The improved `read_csv` function from the `readr` package tries harder and
+initially seems to succeed, but it also has significant problems: 
+
+```{r}
+library(readr)
+read_csv("mw_coned_20241024.csv")
+```
+
+If you look at this closely, it thinks we only have a _two column_ file. 
+But the data clearly has several more columns than that. 
+
+The warning message here is helpful: it encourages us to use the `problems()`
+function to get more information on possible issues: 
+
+```{r}
+library(readr)
+con_ed <- read_csv("mw_coned_20241024.csv")
+problems(con_ed)
+```
+
+We see here that `R` expected only two columns, based on the top section of
+the file, but every row of "substance" beyond the ConEd-metadata header actually
+has six columns. 
+
+::: {.callout-caution title="Import Warnings" collapse="true"}
+
+Note that `R` is giving us a `warning` here - it could
+conceivably continue, here by smashing together the extra columns - so it does
+so. This type of warning is not uncommon in reading malformatted data. It is
+your responsibility as an analyst to investigate the warnings and see if they
+are true signs of trouble or false positives. A particularly common warning,
+which you have already encountered in this course, is when data sets use a
+non-standard way to encode `NA` values. 
+
+While some warnings can be safely ignored, it is always good practice 
+to investigate warnings issued by your data import functions. Any issues with
+data import can corrupt all subsequent analyses, so it's important to get 
+it right.
+
+:::
+
+In this case, there's actually an easy fix - we just want to skip those
+first rows for the header:  
+
+```{r}
+library(readr)
+con_ed <- read_csv("mw_coned_20241024.csv", skip = 6)
+```
+
+We see lots of useful information in this read out. Our data has
+
+- 34 rows
+- 6 columns
+- Comma delimited fields
+- The columns types are: 
+  - Character (1)
+  - Double / Numeric (1)
+  - Logical (1)
+  - Date (1)
+  - Time (2)
+  
+Here the logical column (`NOTES`) is a bit of a red herring; it's all empty
+for this file, so `R` interprets as the simplest data type that fits. 
+(Boolean/logical values are essentially one-bit each representing TRUE / FALSE 
+-not even one byte!-so that's the baseline simplest type in `R`.)
+
+From here, I'm going to turn off printing of the data import message to keep
+this page readable, but you should always at least quickly eyeball them when
+importing a new data set. 
+
+At this point, we're ready to proceed with tidying up our data. 
+The `USAGE (kWh)` column is clearly the most important to us, but `R` doesn't
+like column names with spaces and punctuation, so let's go ahead and manually
+rename it: 
+
+```{r}
+#| warning: false
+#| message: false
+library(readr); library(dplyr)
+con_ed <- read_csv("mw_coned_20241024.csv", skip = 6) |>
+    rename(usage = `USAGE (kWh)`)
+```
+
+Recall that we have to use double back ticks to surround "weird" names. We 
+can also drop the unused `NOTES` column and clean up the start and end time
+columns as well. 
+
+```{r}
+#| warning: false
+#| message: false
+library(readr); library(dplyr)
+con_ed <- read_csv("mw_coned_20241024.csv", skip = 6) |>
+    rename(usage = `USAGE (kWh)`, 
+           start_time = `START TIME`,
+           end_time = `END TIME`) |>
+    select(-NOTES)
+```
+
+We now have nice tidy data that we can use to make a plot: 
+
+```{r}
+#| warning: false
+#| message: false
+library(readr); library(dplyr); library(ggplot2)
+read_csv("mw_coned_20241024.csv", skip = 6) |>
+    rename(usage = `USAGE (kWh)`, 
+           start_time = `START TIME`,
+           end_time = `END TIME`) |>
+    select(-NOTES) |>
+    ggplot(aes(x=start_time, y=usage)) + 
+    geom_line()
+```
+
+Can you see 
+
+i) when my phone finished charging overnight; and 
+ii) when I  started to make breakfast on my electric stovetop? 
+
+::: {.callout-tip title="ConEd Practice"}
+
+If you have your own ConEd account, download [your Energy Usage
+data file](https://www.coned.com/en/accounts-billing/my-account/energy-use) 
+by hand and import it into `R`. (If you have a different electricity provider,
+they likely provide similar usage data exports.) Can you find patterns of your 
+daily life in this data? 
+
+:::
+
+
+After finishing this document, go back through the Mini-Projects and Labs
+you have completed so far and identify what functions were used to get data into
+`R`. For each data source ask yourself: 
+
+1. Was the data available as a flat file or did the data source require 
+   more complex import logic? (If I used a function other than the `read_*`
+   sources above, it's fair to assume it was using a package to implement more 
+   complex logic.)
+2. Can you go online and find the original source? Was it a flat file or something
+   more complex? If a flat file, what type of file? How can you tell? 
+   
+   (You typically don't know how to go directly to the exact file 
+   you want, but you can find a page describing and linking to the various data
+   sets made available by that source.)
+
+   It may be useful to find any URLs hidden inside the import code. Sometimes 
+   you might not have an exact URL, but you can see how one is created, *e.g.*, 
+   if downloading multiple years from a source where we needed to access
+   `https://web.site/data/2020.csv`, `https://web.site/data/2021.csv`,
+   `https://web.site/data/2022.csv`, *etc.* 
+  
+- For the data sets where you can find a web presence for the original source,
+  can you determine how to find the actual URL we wound up using? Typically, you
+  can do this by finding a link to the data file and right-clicking on it: if
+  you copy the link, that will be a good starting point for getting the data
+  downloaded and into `R`. 
+  
+All websites organize their public data a bit differently, but it's worthwhile
+to study different sources and get a sense for the typical ways that they are
+organized. I try to use high-quality data sources in this course that make their
+data available in an organized (if sometimes complex) manner, so my code can be
+a good reference on how you might interact with similar sources.
+
+After reviewing the data import you have done so far in this semester, complete
+this week's Pre-Assignment Quiz on Brightspace.
+
+
+
+::: {.callout-note title="Additional Resources"}
+
+- DataCamp: 
+- Textbook: [*R4DS* §7](https://r4ds.hadley.nz/data-import.html) 
+  and [*R4DS* §20](https://r4ds.hadley.nz/spreadsheets.html)
+
+:::

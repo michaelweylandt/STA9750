@@ -19,6 +19,13 @@ get_pa_title <- function(N){
     
     I(header_info$pa_title %||% "TBD")
 }
+
+if(length(yaml::read_yaml("_variables.yml")$course$sections) > 1){
+  session <- "sessions"
+} else {
+  session <- "session"
+}
+
 ```
 
 ```{r}
@@ -29,7 +36,8 @@ library(tidyverse)
 DATES <- readr::read_csv("key_dates.csv") |>
     rename(element=`Course Element`,
            item=`Item Number`) |>
-    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
+    mutate(Date = strftime(Date, "%B %d, %Y (%A)"), 
+           dt = case_when(is.na(Time) ~ as.character(Date),
                           TRUE ~ paste(Date, "at", Time)))
 ```
 
@@ -44,12 +52,15 @@ In lieu of traditional homework, {{< var course.short >}} has weekly
 
 After completing the pre-assignment reading, understanding will be confirmed
 via a short quiz submitted via [CUNY Brightspace](https://brightspace.cuny.edu/).
-These are due just before class (Thursdays at 6:00pm) and are short assignments,
-typically only a few questions, so extensions will not be given outside of
-exceptional circumstances. 
+These are due just before class (Tuesdays or Thursdays at 6:00pm) and are short
+assignments, typically only a few questions, so extensions will not be given
+outside of exceptional circumstances. 
 
 These quizzes can be attempted as many teams as required on Brightspace, so it
 is expected that students will earn full credit. 
+*Don't let these slip past you - these are the 'easiest' points you'll get in 
+this class and not getting them all can lead to a disappointing result at the
+end of the term.*
 
 For students desiring additional pre-class prep, an *optional* DataCamp course
 covering that week's material will be made available. This is not required - and
@@ -70,8 +81,8 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 2)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt)`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt)`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
 
 In [this Pre-Assignment](./pre/pa02.qmd), you will familiarize yourself
 with the basics of `Markdown`, an easy way to write and format documents. In class,
@@ -87,8 +98,8 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 3)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt)`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt)`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
 
 In [this week's preassignment](./pre/pa03.qmd), you
 will familiarize yourself with some basic "calculator math"
@@ -105,19 +116,20 @@ None.
 cs <-  DATES |> filter(element == "Class Session", item == 4)
 ```
 
-The `r cs |> pull(Date)` class session will be dedicated to [Course Project Proposals](./project.qmd).
+The `r cs |> pull(Date) |> paste(collapse=" and ")` class `r session` will
+be dedicated to [Course Project Proposals](./project.qmd).
 
 #### Pre-Assignment for Week #05 / Lecture #04 - `{r} get_pa_title(4)`
 
 ```{r}
 #| echo: false
-pa <-  DATES |> filter(element == "Pre-Assignments", item == 5)
+pa <-  DATES |> filter(element == "Pre-Assignments", item == 4)
 ```
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt)`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt)`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
   
 In [this week's preassignment](./pre/pa04.qmd), you will review
 `dplyr`'s "single-table" verbs. These are functions that take a _single_ data 
@@ -133,13 +145,13 @@ these into three major groups:
 
 ```{r}
 #| echo: false
-pa <-  DATES |> filter(element == "Pre-Assignments", item == 6)
+pa <-  DATES |> filter(element == "Pre-Assignments", item == 5)
 ```
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt)`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt)`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
 
 In [this week's preassignment](./pre/pa05.qmd), you will review
 `dplyr`'s most important "multi-table" verbs, the `join` operators. These are
@@ -157,13 +169,13 @@ for downstream presentation (typically with `pivot_wider`).
 
 ```{r}
 #| echo: false
-pa <-  DATES |> filter(element == "Pre-Assignments", item == 7)
+pa <-  DATES |> filter(element == "Pre-Assignments", item == 6)
 ```
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt)`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt)`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
 
 In [this week's preassignment](./pre/pa06.qmd), we begin to explore
 the wonderful world of _statistical graphics_.
@@ -177,10 +189,43 @@ None.
 cs <-  DATES |> filter(element == "Class Session", item == 08)
 ```
 
-The `r cs |> pull(Date)` class session will be dedicated to [Course Project Mid-Semester Check-Ins](./project.qmd).
+The `r cs |> pull(Date) |> paste(collapse=" and ")` class `r session` will
+be dedicated to [Course Project Mid-Semester Check-Ins](./project.qmd).
 
 
 #### Pre-Assignment for Week #09 / Lecture #07 - `{r} get_pa_title(7)`
+
+```{r}
+#| echo: false
+pa <-  DATES |> filter(element == "Pre-Assignments", item == 7)
+```
+
+**Due Dates:**
+
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
+
+
+In [this week's preassignment](./pre/pa07.qmd), we dive deeper into
+the world of statistical graphics, moving beyond simple static plots. 
+
+#### Pre-Assignment for Week #10 / Lecture #08 - `{r} get_pa_title(08)`
+
+```{r}
+#| echo: false
+pa <-  DATES |> filter(element == "Pre-Assignments", item == 8)
+```
+
+**Due Dates:**
+
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
+
+
+In [this week's preassignment](./pre/pa08.qmd), we review the basics
+of reading data files into `R`.
+
+#### Pre-Assignment for Week #11 / Lecture #09 - `{r} get_pa_title(09)`
 
 ```{r}
 #| echo: false
@@ -189,39 +234,8 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 9)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt)`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt)`**
-
-In [this week's preassignment](./pre/pa07.qmd), we review the basics
-of reading data files into `R`.
-
-#### Pre-Assignment for Week #10 / Lecture #08 - `{r} get_pa_title(08)`
-
-```{r}
-#| echo: false
-pa <-  DATES |> filter(element == "Pre-Assignments", item == 10)
-```
-
-**Due Dates:**
-
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt)`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt)`**
-
-In [this week's preassignment](./pre/pa08.qmd), we dive deeper into
-the world of statistical graphics, watching statistical graphics in the hands
-of a master. 
-
-#### Pre-Assignment for Week #11 / Lecture #09 - `{r} get_pa_title(09)`
-
-```{r}
-#| echo: false
-pa <-  DATES |> filter(element == "Pre-Assignments", item == 11)
-```
-
-**Due Dates:**
-
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt)`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt)`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
 
 In [this week's preassignment](./pre/pa09.qmd), students are introduced
 to the basics of CSS selectors.
@@ -230,13 +244,13 @@ to the basics of CSS selectors.
 
 ```{r}
 #| echo: false
-pa <-  DATES |> filter(element == "Pre-Assignments", item == 12)
+pa <-  DATES |> filter(element == "Pre-Assignments", item == 10)
 ```
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt)`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt)`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
 
 In [this week's pre-assignment](./pre/pa10.qmd), we begin to explore 
 the world of text data. For the pre-assignment, we introduce some of the useful
@@ -253,8 +267,8 @@ None.
 cs <-  DATES |> filter(element == "Class Session", item == 13)
 ```
 
-The `r cs |> pull(Date)` class session will be dedicated to 
-[Course Project Final Presentations](./project.qmd).
+The `r cs |> pull(Date) |> paste(collapse=" and ")` class `r session`
+will be dedicated to [Course Project Final Presentations](./project.qmd).
 
 
 #### Pre-Assignment for Week #14 / Lecture #11 - `{r} get_pa_title(11)`
@@ -262,13 +276,13 @@ The `r cs |> pull(Date)` class session will be dedicated to
 
 ```{r}
 #| echo: false
-pa <-  DATES |> filter(element == "Pre-Assignments", item == 14)
+pa <-  DATES |> filter(element == "Pre-Assignments", item == 11)
 ```
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt)`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt)`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
 
 In [this week's preassignment](./pre/pa11.qmd), we briefly introduce some of 
 the basic statistical functionality of `R`.

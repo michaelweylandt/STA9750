@@ -842,7 +842,8 @@ mp_pf_perform <- function(N, github = gitcreds::gitcreds_get()$username, secret)
     invisible(outfile)
 }
 
-project_peer_evals <- function(github = gitcreds::gitcreds_get()$username, cycle=c("mid", "final")){
+project_peer_evals <- function(github = gitcreds::gitcreds_get()$username,
+                               cycle=c("mid", "final")){
     if(!require("gitcreds")) install.packages("gitcreds")
     if(!require("yaml")) install.packages("yaml"); library(yaml)
     if(!require("gh")) install.packages("gh"); library(gh)
@@ -1216,7 +1217,7 @@ lint_submission <- function(N, peer_id){
     }
 }
 
-# # Run this to update helper scripts
-# knitr::purl("tips.qmd",
-#             documentation=0L,
-#             output="docs/load_helpers.R")
+# Run this to update helper scripts
+knitr::purl("tips.qmd",
+            documentation=0L,
+            output="docs/load_helpers.R")
