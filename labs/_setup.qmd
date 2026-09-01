@@ -16,21 +16,24 @@ LECTURE_NUMBER <- read_csv("key_dates.csv") |>
     filter(`Course Element` == "Class Session") |>
     filter(str_detect(Details, 
                       sprintf("Lecture #%02g", LAB_NUMBER))) |>
-    pull(`Item Number`)
+    pull(`Item Number`) |>
+    first()
 
 LECTURE_DATE <- read_csv("key_dates.csv") |>
     filter(`Course Element` == "Class Session") |>
     filter(str_detect(Details, 
                       sprintf("Lecture #%02g", LAB_NUMBER))) |>
     pull(Date) |>
-    strftime("%A %B %d, %Y")
+    strftime("%A %B %d, %Y") |>
+    paste(collapse = " and ")
 
 get_lab_topic <- function(){
     read_csv("key_dates.csv") |>
     filter(`Course Element` == "Class Session") |>
     filter(str_detect(Details, 
                       sprintf("Lecture #%02g", LAB_NUMBER))) |>
-    pull(Details)
+    pull(Details) |>
+    first()
 }
 
 make_slide_link <- function(N=lab){
@@ -38,9 +41,12 @@ make_slide_link <- function(N=lab){
     class <- read_csv("key_dates.csv") |>
                 filter(`Course Element` == "Class Session",
                        str_detect(Details, s)) |>
-                pull(`Item Number`)
+                pull(`Item Number`) |>
+                first()
     
-    sprintf("**Class #%02d: %s (%s)** \n\n# [Slides](../slides/slides%02d.qmd)", 
+    browser()
+    
+    sprintf("**Class #%02d: %s** \n\n **%s** \n\n# [Slides](../slides/slides%02d.qmd)", 
             LECTURE_NUMBER, 
             LECTURE_DATE, 
             get_lab_topic(),
