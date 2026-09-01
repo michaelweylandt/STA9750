@@ -3,6 +3,8 @@ mp_num: "00"
 mp_title: "Course Set-Up"
 aliases: 
   - "miniprojects/mini00.html"
+filters:
+  - ../conditional_sections.lua
 ---
 
 In lieu of traditional homework, this course has a set of four *mini-projects*,
@@ -20,52 +22,22 @@ mini-projects.
 
 **NB: Mini-Project #{{< meta mp_num >}} is not graded, but it is required.
 Without completing the activities described in this section, you will not be
-able to submit later (graded) mini-projects.**
+able to submit later (graded) mini-projects, so don't skip this!** 
 
-### Due Dates
-
-```{r}
-#| echo: false
-#| message: false
-#| warning: false
-library(tidyverse)
-DATES <- readr::read_csv("key_dates.csv") |>
-    rename(element=`Course Element`,
-           item=`Item Number`) |>
-    mutate(dt = case_when(is.na(Time) ~ as.character(Date),
-                          TRUE ~ paste(Date, Time)))
-```
-
-```{r}
-#| echo: false
-#| warning: false
-library(glue)
-mp_id <- as.integer(rmarkdown::metadata$mp_num)
-mp <-  DATES |> filter(element == "Mini-Projects", 
-                       item == mp_id)
-mp_file <- list(qmd=glue("`mp{sprintf('%02g', mp_id)}.qmd`"), 
-                html=glue("`mp{sprintf('%02g', mp_id)}.html`"),
-                html_long=glue("`docs/mp{sprintf('%02g', mp_id)}.html`"))
-```
-
--   Released to Students: `{r} mp |> filter(str_detect(Details, "Mini-Project Released")) |> pull(dt)`
--   **Initial Submission: `{r} mp |> filter(str_detect(Details, "Mini-Project Due")) |> pull(dt)` on GitHub and Brightspace**
--   **Peer Feedback:**
-    -   Peer Feedback Assigned: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Assigned")) |> pull(dt)` on GitHub
-    -   **Peer Feedback Due: `{r} mp |> filter(str_detect(Details, "Mini-Project Peer Feedback Due")) |> pull(dt)` on GitHub**
+Note that this project is designed to try to have you encounter as many 
+potential issues as possible. It is better to solve these issues now (early
+in the semester, without a grade on the line) than later with deadlines fast
+approaching. "Fail fast" is good advice in programming and in life in general.
 
 
-*Estimated Time to Complete: 2 Hours*
+{{< include _mpsetup.qmd >}}
 
-*Estimated Time for Peer Feedback: 1 Hour*
-
----
-
-This course will use the industry-standard code sharing platform [`GitHub`](https://github.com). 
-Mini-projects and course-projects will be submitted by posting to a
-relevant GitHub project and creating a world-readable HTML page. A secondary
-goal of this course is to help students build a web-presence and a data science
-portfolio, giving you a place to showcase your skills to potential employers. 
+This course will use the industry-standard code sharing platform 
+[`GitHub`](https://github.com). Mini-projects and course-projects will be 
+submitted by posting to a relevant GitHub project and creating a world-readable 
+HTML page. A secondary goal of this course is to help students build a 
+web-presence and a data science portfolio, giving you a place to showcase your 
+skills to potential employers. 
 The four mini-projects and the final course project should form an excellent
 basis for a portfolio. The main aim of Mini-Project #{{< meta mp_num >}} is
 to set up the "skeleton" of this portfolio. 
@@ -77,16 +49,24 @@ choose to use a pseudonym, it will be straightforward to add your name to any
 or all coursework after the semester ends. Within the course, you
 will have the option to switch to a pseudonym as desired, but it is difficult
 to fully anonymize anything once it has been posted on the public internet. 
-With all those cautions, please take a moment to reflect as to whether you wish
-to proceed under your own name or using a pseudonym. 
+**With all those cautions, please take a moment to reflect as to whether you wish
+to proceed under your own name or using a pseudonym.**
 
 ## Step 0: Install `git`
 
 You first need to make sure you have `git` installed on your computer. You may
 already have it, but if you don't the following steps can make sure it is 
-installed. To check if it is installed, open a Terminal and run `git` (Mac)
+installed. To check if it is installed, open a Terminal[^term] and run `git` (Mac)
 or `git.exe` (Windows). If you get a message other than "not found", you should
 be good to go. 
+
+[^term]: It is important to pay attention to the distinction between the 
+"Console", where you run `R` code, and the "Terminal", where you interact 
+directly with your computer's operating system (OS). Both of these can be 
+accessed from within RStudio, by clicking either the "Console" or "Terminal" 
+tab in the bottom left corner. If you get messages about syntax errors for code
+that seems correct, this is often worth checking as its easy to get the two
+interfaces confused.
 
 For more detailed instructions, see [Chapter 6](https://happygitwithr.com/install-git)
 of the [Happy Git with R](https://happygitwithr.com) book.
@@ -104,10 +84,6 @@ If you are on a Mac, run the following command at the Terminal:
 
 This will prompt you to install the "XCode Command Line Tools" which include
 git. 
-
-
-
-
 
 ## Stage 1: GitHub Account Creation
 
@@ -191,9 +167,9 @@ discussion will take place in _my_ repository at:
 
 ### Connecting GitHub Repo to RStudio
 
-Now that you have set up an *empty* repo, you need to connect it to your personal machine
-and to RStudio. RStudio's concept of [projects](https://support.posit.co/hc/en-us/articles/200526207-Using-RStudio-Projects) roughly
-map to GitHub repos and that is what we will use here. 
+Now that you have set up an *empty* repo, you need to connect it to your 
+personal machine and to RStudio. RStudio's concept of [projects](https://support.posit.co/hc/en-us/articles/200526207-Using-RStudio-Projects) 
+roughly maps to GitHub repos and that is what we will use here. 
 
 Open RStudio and click the project menu in the top right corner: 
 
@@ -215,9 +191,9 @@ Copy the `.git` URL from the previous step into `Repository URL`.[^3]
 
 An important aspect of source code management is *access control* to your code
 repository. While it's typically no risk to make your code _world-readable_, you
-don't want just anyone being able to add code to your repository. Traditionally,
+don't want just anyone being able to add code to your repository. Historically,
 this type of access would be controlled with a username+password scheme, but
-GitHub has moved to a _Access Token_ structure. 
+GitHub has moved to a _Access Token_ structure.
 
 This process is a "one-time" task, documented in the [Connect Section](https://happygitwithr.com/connect-intro)
 of the *Happy Git with R* book, but we'll cover the highlights here. 
@@ -232,12 +208,14 @@ or install GCM via the [GitHub Desktop Client](https://desktop.github.com/downlo
 
 #### GitHub Personal Access Token
 
-Next, you need to create a Personal Access Token (PAT) for GitHub. You can think
-of this as a "special-purpose" password. Unlike your general account password, 
-a PAT can be restricted to only perform certain activities or only for a limited
-time period. Like any password, your PAT should not be shared with anyone else.
+Next, you need to create a Personal Access Token (PAT) for GitHub.[^pat] 
 
-The easiest way to do so is to run the following code: 
+[^pat]: A Personal Access Token (PAT) is a sort of "specialty" password that
+you can use to connect a specific computer to a specific service for a limited
+time period with limited permissions. Like any password, your PAT should not be 
+shared with anyone else.
+
+The easiest way to do so is to run the following `R` code: 
 
 ```{r}
 #| eval: false
@@ -259,6 +237,8 @@ Then run the following code to register the GitHub PAT on your computer:
 if(!require("gitcreds")) install.packages("gitcreds")
 gitcreds::gitcreds_set()
 ```
+
+and enter your newly created PAT when prompted.
 
 Once you do this, your PAT will be stored in your computer's password storage
 (Apple Keychain on a Mac; similar on Windows). Now that your PAT is in an
@@ -317,6 +297,8 @@ data/**
 .Rhistory
 /.quarto/*
 **/gganim*
+*bspf
+**/*bspf
 ```
 
 You may already have a `.gitignore` file created automatically for you by 
@@ -375,7 +357,6 @@ things to check are:
 - Does the token have the requisite "repo" scope? 
 - Is the "origin" set correctly for the GitHub project? 
 
-
 ::: {.callout-caution title="Default branch mismatch between local repo and remote." collapse=true}
 
 Certain older versions of `git` will use the default name
@@ -397,15 +378,14 @@ needs to be run *between* making your first commit and
 
 :::
 
-
-
 ### Initial Commit and Push
 
 Now, to make sure everything is working, let's save a basic `README` file and
 push it to GitHub. This is a plain text file with no particular structure. 
 
 To create it, click the new file button in RStudio (top left; piece of paper with
-a green plus) and select `Text File`. RStudio will open this file in the editor: type some basic content, *e.g.*, 
+a green plus) and select `Text File`l  RStudio will open this file in the 
+editor. First, type some basic content, *e.g.*, 
 
 ```
 Submission materials for {{< var course.short >}} at Baruch College. 
@@ -413,8 +393,8 @@ Submission materials for {{< var course.short >}} at Baruch College.
 Owner: <YOURNAME>
 ```
 
-(It doesn't matter what you push: whatever you type will be the default text appearing
-when someone visits your repo.)
+(It doesn't matter what you push: whatever you type will be the default 
+text appearing when someone visits your repo.)
 
 Save the file and open the `Git` pane in RStudio.
 
@@ -446,7 +426,8 @@ then have to actually "Save" in the secondary menu that comes up.
 
 :::
 
-Finally, push the  `Push` button. If everything works, you should see a screen like the below: 
+Finally, push the  `Push` button. If everything works, you should see a screen 
+like the below: 
 
 ![](../images/git_postcommit.png)
 
@@ -487,8 +468,9 @@ to use it in this course, that's fine, but it is certainly not required.
 
 ## Stage 3: Personal Website Creation
 
-Now that you created a place where you can push files to GitHub and have successfully
-pushed a basic `README`, it's time to build a webpage using [`quarto`](https://quarto.org/).
+Now that you created a place where you can push files to GitHub and have 
+successfully pushed a basic `README`, it's time to build a webpage using
+[`quarto`](https://quarto.org/).
 
 We will need three pages to build a website: 
 
@@ -546,7 +528,12 @@ in RStudio's git pane.
 Next, we'll build your home page, conventionally called `index.html`. We will
 not write the HTML code by hand - it's quite cumbersome - and will instead
 let `quarto` create it for us. Create another plain text file and save it as
-`index.qmd`. 
+`index.qmd`.[^capitalization]
+
+[^capitalization]: Make sure to store this - and indeed all files - in this
+course with an all lower-case file name. Computers are sensitive to file 
+capitalization in ways that can be quite confusing. If you are "all lower-case, 
+all the time", you will avoid many of these issues.
 
 This file will be divided into two parts, a header giving the *metadata*
 for the site, and a body, giving the *content* of the site.
@@ -567,7 +554,6 @@ headshot, a link to a full resume, or similar.
 
 As you work on this, click the "Render" button at the top of the editor pane to 
 see what your site will look like. 
-
 
 ### Additional Set-Up - Rendered Code
 
@@ -640,40 +626,89 @@ leaflet() |>
 
 TODO: If you have a copy of your resume available as a PDF...
 
+If you want to host your resume on your site, reach out to the instructor and
+I'll provide details. 
 
-### `build_site.R`
+### Build Your Site Locally
 
-Finally, open a new file - but now it's an `R` script, not a text file, in RStudio. 
-Copy the following into `build_site.R`: 
+Once you have filled out your `index.qmd` file, it's time to see what it
+looks like. Hit the `Render` button in RStudio, located in the bar just above
+the file contents, and a new window should pop up with your rendered content. 
 
-```
-#!/usr/bin/env Rscript
-if(!require("quarto")){
-    install.packages("quarto")
-}
-library(quarto)
-if(!quarto::quarto_binary_sitrep()){
-    stop("Something is wrong with your quarto installation.")
-}
-quarto::quarto_render(".")
+This is the point where you will get strange error messages if you haven't done
+the earlier parts correctly. Things to check: 
 
-system("git add docs/*")
-if(file.exists("index.qmd")){
-    system("git add index.qmd")
-}
-if(length(Sys.glob("mp0*.qmd")) > 0){
-    system("git add mp0*.qmd")
-}
+- If you're not getting a website formatted with your chosen theme and title,
+  make sure you've created your `_quarto.yml` file in the root directory (the
+  `{{< var course.repo >}}` folder) of your project. To check this, if you look
+  at the `Files` tab (bottom right of RStudio), you should see both `_quarto.yml`
+  and `index.qmd` listed in the same directory. 
+  
+  Common mistake: omitting the leading `_` in `_quarto.yml`
 
-if(!any(grepl("rstudio", search()))){q("no")}
-```
+For more help, please reach out on the Course Discussion Board. 
 
-Click the `Source` button in the top-right corner of the editor pane to run 
-this code. If everything works, it will build your website and automatically 
-stage it the built files. Stage `build_site.R` as well. 
+### Iterate to Perfection
 
-Finally, `Commit` all these staged files and `Push` them to GitHub. You have now
-created a website and just need to turn on a web server so you can access it. 
+Once you have the `Render` button working, continue to iterate and improve your
+homepage until you're ready to send it out into the world. 
+
+## Stage 4: Getting Content to GitHub
+
+Now that you like the way your site looks on _your computer_, we need to put
+it somewhere where anyone (specifically, me and your classmates) will be able
+to see it. For security reasons, it's a very bad idea to let 
+_the whole internet_ access your personal computer directly at any time, so we
+will instead use a _hosting_ service that holds these files out in a 
+'world-visible' location. In this course, our hosting service is `GitHub` and
+we will specifically be uploading your files into your {{< var course.repo >}}
+repository that you created above. 
+
+Conceptually, you already did this with your `README` file, but uploading a 
+whole site is a bit trickier as it consists of _many_ files and repeating that
+process manually for each file is a bit cumbersome. Specifically, we want to 
+make sure that _everything_ in the `docs` folder gets uploaded as they are all
+used to make your site look good.[^docs]
+
+[^docs]: You won't interact directly with most of the folders in `docs`, but 
+there will be a file in there for every page, for every color scheme, for every
+form of dynamic behavior (like drop downs or search bars), for every image, 
+for the font you use, *etc.* Even a simple site can have several hundred files. 
+
+Recall that our first step is _staging_ a file (or _adding_ it to the staging
+area), which tells Git to get ready to save that file. Earlier, you did this
+by 'checking a box' next to the name of the file you wanted to stage. 
+(Unstaged files appearing with a yellow question box in RStudio's `Git` tab.)
+You can do this manually for all the files you want to upload here (`index.qmd`
+and _everything_ in `docs`), but an easier thing to do is to just tell `git` to
+stage everything in one-go by running the command
+
+> `git add index.qmd docs/*` 
+
+at the `Terminal` (not `Console`). This will stage everything. Hopefully, 
+`RStudio` will immediately show you all of the files that are now staged, but you
+might need to press the refresh button ("circle arrow") appearing towards the
+right of the `Git` pane. (If you don't see this, make your pane a bit wider.)
+
+After this, make a `Commit` and `push` as before. Once you push, you should be
+able to see your files on GitHub by going to 
+
+> `https://github.com/YOUR_GITHUB_NAME/{{<var course.repo >}}`
+
+and clicking around. If your files (`index.qmd` and the `docs` folder) are not 
+visible you have not successfully `push`ed to GitHub. Return to `RStudio` and
+try again. 
+
+If this all works and your files are on GitHub, you should be able to see your 
+site by going to 
+
+> `https://htmlpreview.github.io/?https://github.com/YOUR_GITHUB_NAME/{{< var course.repo >}}/blob/main/docs/index.html`
+
+If this looks good, move on to the next step. If this has the basic text, but
+some of the formatting is wrong or missing, you probably didn't get _everything_
+in the `docs` folder. Return to RStudio and try again. Recall, commits are
+free, so it doesn't hurt to make as many as you need until you get things 
+working.
 
 ::: {.callout-note title="Quick Review of Sending a File to GitHub" collapse="true"}
 
@@ -740,11 +775,28 @@ source files and rendered `html`) to GitHub.
 
 :::
 
-## Stage 4: GitHub Pages Deployment
+## Stage 5: GitHub Pages Deployment
+
+After the previous step, your content is hosted on GitHub, but not (easily)
+visible to the world. In particular, that URL you used as a quick test was a bit
+cumbersome. To make things easily 'world-visible', you need a proper _web-server_, 
+that is, a computer to which anyone can connect and with the sole purpose of
+distributing your site to anyone who wants to view it. (We will talk more about
+servers later in this course.)
+
+Web servers can be quite expensive to run - especially for popular sites that 
+get a lot of traffic - but our site is simple[^static] and low-volume, so GitHub
+provides a free server, called `GitHub Pages`, that we will use. 
+
+[^static]: GitHub Pages can only be used to serve _static_ websites. That is, 
+websites that are 'just' a page (or a single page) with no meaningful 
+server-side activity. So no passwords, no accounts, no 'saving data for later', 
+but perfectly fine for document distribution.
 
 ### Activate GitHub Pages Server
 
-Return to the GitHub repo you created; recall that the URL is something like:
+Using your web browser, return to the GitHub repo you created; recall that the 
+URL is something like:
 
 > `https://github.com/YOUR_GITHUB_ID/{{< var course.repo >}}/`
 
@@ -790,19 +842,51 @@ as soon as a `docs` folder (with contents) is uploaded.
 
 :::
 
+## Stage 6: Create Placeholders for Future Mini-Projects
 
-## Stage 5: Submission
+Return to RStudio and run the following commands at the R Console: 
 
-Once your site is live, you will submit it to the instructor in three steps: 
+```{r}
+#| eval: false
+for(n in 1:4) {
+  fname <- sprintf("mp0%g.qmd", n)
+  if(file.exists(fname)) stop(fname, "found. Please contact instructor for advice.")
+  writeLines(sprintf('
+  ---
+  title: "Mini-Project Placeholder"
+  ---
+  
+  This is a placeholder for STA9750 Mini-Project %g. Check back soon for more!
+  ', n), fname)
+  quarto::quarto_render(fname)
+}
+```
 
-1) Log into the course discussion board (Piazza) and send me your GitHub
-   name so I can link it to my gradebook. 
+This will create files `mp01.qmd`, `mp02.qmd`, `mp03.qmd`, and `mp04.qmd` with
+a basic placeholder and render them all. Go through the same `git` cycle as
+before and make sure you can view them on GitHub. If everything works, they 
+should have the same 'look' and feel as your homepage and should be visible at
+
+> `https://YOUR_GITHUB_NAME.github.io/{{< var course.repo >}}/mp01.html`
+
+You don't need to do anything with these now, but it's good to set these 'shells'
+up to make sure everything is good to go for later projects. 
+
+## Stage 7: Submission
+
+After your site is live and you've confirmed all five pages (homepage plus four 
+mini-project shells) are visible, you will submit it to the instructor in three 
+steps: 
+
+1) Log into the course discussion board (Teams) and send me your GitHub
+   name so I can link it to my gradebook. There is an "Assignment" in Teams
+   that should allow this.
 2) Tag `@michaelweylandt` on GitHub to make sure I can access your repo.
 3) Submit a PDF copy of your assignment through Brightspace.
 
 All three steps must be completed to complete the assignment.
 
-### Discussion Board (Piazza)
+### Discussion Board (MS Teams)
 
 First, send me a **private** message through the course discussion board with the 
 following details:
@@ -812,12 +896,16 @@ following details:
 - CUNY email
 - GitHub user name
 
+:::: {multiple_sections="true"}
+- The section you are enrolled in (Tuesday or Thursday)
+::::
+
 This is the only place where you are required to connect your GitHub ID 
-with your  real name and CUNY credentials. I need this information to connect
+with your real name and CUNY credentials. I need this information to connect
 your public activity with my (private) gradebook and the CUNY system. 
 When I receive this information and enter it into the course back-end, I will 
 provide you a private passcode. This passcode will be used to submit anonymous
-peer feedback, so please note it and save it for later use. 
+peer feedback, so please **note it and save it for later use.** 
 
 
 ### Instructor Tagging
@@ -958,10 +1046,6 @@ functionality to improve the look of your home page. This gives you the ability
 to link to your social media (personal and professional) or personal blog, to
 include a professional headshot, *etc.*
 
-------------------------------------------------------------------------
-
-This work ©2026 by [Michael Weylandt](https://michael-weylandt.com) is licensed under a [Creative Commons BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en) license. ![](http://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc-sa.png){width="10%"}
-
 [^1]: Early in the course, I will 'scaffold' most of the analysis, leaving only
 some small steps for you to fill in. As the course progresses, the mini-projects
 will be more self-directed. 
@@ -980,3 +1064,5 @@ that you are a Baruch student, your expected graduation date, your field of
 employment (current or desired), and one or two personal facts. This, along 
 with a LinkedIn page, will quickly become one of the first things that comes up 
 when a potential employer searches your name, so make a good impression!
+
+{{< include _footer.qmd >}}

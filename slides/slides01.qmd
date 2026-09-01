@@ -8,7 +8,7 @@ class_date:
     filter(Course.Element == 'Class Session',
            Item.Number == session) |>
     pull(Date); 
-    class_date |> format('%A %Y-%m-%d')`"
+    class_date |> format('%Y-%m-%d (%a)') |> paste(collapse=' and ')`"
 format: revealjs
 ---
 
@@ -62,11 +62,14 @@ Key aims:
 
 **All course information** can be found [on the course website](../index.qmd)
 
-{{< html https://michael-weylandt.com/STA9750/ full-screen-link="false" height="300px">}}
-
+```{=html}
+<iframe src="https://michael-weylandt.com/STA9750/" width="800" height="300" style="border: none;"></iframe>
+```
 No authentication required - mobile friendly
 
 Source code [on my GitHub](https://github.com/michaelweylandt/STA9750)
+
+
 
 ## Course Website
 
@@ -110,11 +113,11 @@ See [my website](https://michael-weylandt.com) for more on me and my research
 #| message: false
 #| echo: false
 holidays <- DATES |> 
-    filter(`Course Element` == "No Class") |> 
+    filter(`Course Element` == "Holiday") |> 
     pull(Date) |> 
     unique() |>
     sort() |> 
-    format("%b %d") |> 
+    format("%b %d (%a)") |> 
     paste(collapse=" + ")
 
 presentations <- DATES |> 
@@ -122,16 +125,22 @@ presentations <- DATES |>
     pull(Date) |> 
     unique() |> 
     sort() |>
-    format("%b %d") |> 
+    format("%b %d (%a)") |> 
     paste(collapse=" + ")
+
+class_days <- DATES |> 
+  filter(`Course Element` == "Class Session") |> 
+  pull(Date) |> 
+  wday(label=TRUE, abbr = FALSE) |> 
+  unique() |> 
+  paste("s", collapse=" and ", sep="")
 ```
 
 Lecture / Lab sessions:
 
 ::: {.incremental}
 
-  - Thursdays on Zoom (here!) at 6:05pm
-    - Rescheduled class on *Tuesday* on 2026-04-21 ("Conversion Day")
+  - `r class_days` on Zoom (here!) at 6:05pm
   - 14 weeks. Holidays on `r holidays`
   - No penalty for missing class. 
     - Slides and in-class activities online
@@ -158,15 +167,12 @@ Online Office Hours:
 
 . . . 
 
-In-person Office Hours: 
-
-- Wednesdays at 5pm (on days we have class)
 
 . . . 
 
 Asynchronous
 
-  - Piazza course discussion platform
+  - Course discussion platform (MS Teams)
 
 ## DataCamp
 
@@ -180,8 +186,8 @@ This semester, I am providing free access to DataCamp courses
 
 ::: {.small}
 
-Restricted to `@baruchmail.cuny.edu` emails - Piazza message if you have a 
-different CUNY email and I'll special-case you
+Restricted to `@stu-mail.baruch.cuny.edu` emails - send a private message via the
+discussion board if you have a different CUNY email and I'll special-case you
 
 :::
 
@@ -208,7 +214,8 @@ Major Topics:
 
 . . . 
 
-Extra credit for contribution to course materials or 'above and beyond' on Piazza
+Extra credit for contribution to course materials or 'above and beyond' on 
+the Course Discussion Board
 
 . . . 
 
@@ -253,7 +260,8 @@ Pre-Assignments:
 - Mix of new material and review questions
 - Lowest 2 dropped (best 8 of 10)
 - Take as many times as needed to get 100% (30/30)
-- Brightspace configuration is fragile, so Piazza if issues
+- Brightspace configuration is fragile, so send a message via the 
+  Discussion Board if issues
 
 :::
 
@@ -462,22 +470,6 @@ I will visit rooms to provide support
 . . . 
 
 Call everyone back at 8:30pm
-
-## Mini-Project #00
-
-You can now start thinking about [Mini-Project #00](../mini/mini00.qmd)
-
-::: incremental
-
-- Create an account on GitHub + GitHub student developer pack
-- Setting up your own website using `quarto` (like my course site)
-  - Future Mini-Projects submitted here
-- 'Road test' to make sure everything is working correctly
-- Register on course discussion board (Piazza)
-
-:::
-
-Due `r get_mp_deadline(0)`
 
 # Wrap-Up
 
