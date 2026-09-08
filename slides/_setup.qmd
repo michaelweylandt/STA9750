@@ -381,8 +381,7 @@ read_csv("key_dates.csv",
          show_col_types=FALSE) |>
     filter((`Responsible Party` == "Instructor") | (is.na(`Responsible Party`))) |>
     mutate(Time2 = Time |> str_replace("11:", "23:") |> str_replace("6:", "18:")) |>
-    filter((Date > class_date_min) | 
-           ((Date == class_date_min) & str_detect(Time2, "23"))) |>
+    filter(Date >= class_date_min) |>
     mutate(Details = case_when(
             is.na(`Item Number`) ~ Details, 
             TRUE ~ str_replace(Details, "Due", sprintf("#%02g Due", `Item Number`))

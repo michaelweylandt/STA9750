@@ -74,7 +74,7 @@ function Pandoc(doc)
         end
       end
 
-      return el
+      return el.content
     end
   }
 

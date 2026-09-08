@@ -17,8 +17,9 @@ format: revealjs
 
 ```{r}
 #| include: false
-TOTAL_STUDENTS <- 24
-PIAZZA_ENROLLED <- 12
+TOTAL_STUDENTS <- 87
+SYLLABUS_QUIZ_SUBMITTED <- 52
+DISCUSSION_ENROLLED <- 46
 ```
 
 Final enrollment: `r TOTAL_STUDENTS`
@@ -42,11 +43,18 @@ First step: by `r ROSTERS`, email me your group members.
 
 Special presentation next week on finding good data sources
 
-## Piazza 
+## Syllabus Quiz
 
-- `r PIAZZA_ENROLLED` sign-ups: 
-  - `r TOTAL_STUDENTS - PIAZZA_ENROLLED` still sneed to sign up
-- Post #05 - Search for Teammates
+You must submit the Brightspace Syllabus Quiz before you can submit any
+graded assignments. 
+
+- As of my last check, `r TOTAL_STUDENTS - SYLLABUS_QUIZ_SUBMITTED` students 
+  still need to take the quiz(!)
+
+## Discussion Board 
+
+- `r DISCUSSION_ENROLLED` sign-ups on the Discussion Board: 
+  - `r TOTAL_STUDENTS - DISCUSSION_ENROLLED` still need to sign up
 
 > *Instructor Tip: Before committing to a team with someone, you can
   look up their GitHub and see how they did MP#00 (how early, how technical).
@@ -90,13 +98,16 @@ MP0_DATE <- DATES |>
 
 [Mini-Project #00](../mini/mini00.qmd)
 
-- Due (just after) our next class
-  - `r MP0_DATE |> strftime("%A, %B %d")`
+- Due (just after) `r MP0_DATE |> strftime("%A, %B %d")`
 - Possible tech issues, so start early
+
+- If you've submitted on GitHub but haven't received a 'all checks passed'
+  confirmation message, I still need your GitHub info via personal message
+  ("Assignment") on the discussion board
 
 ## Optional DataCamp
 
-New _optional_ DataCamp course: 
+_Optional_ DataCamp course: 
 
 - Reporting with R Markdown
 
@@ -109,7 +120,6 @@ R Markdown is proto-Quarto:
 ## Today
 
 - Introduction to Markdown and Quarto
-- Review of Questions from Pre-Assign #02
 - Introduction to Git and GitHub pages
 - How to ask for help
 
@@ -148,6 +158,12 @@ Lists are easy:
 
 as are links to [helpful info](https://commonmark.org).
 ```
+
+. . . 
+
+Aside, 'fixed-width font' (like the above) is used to emphasize that 
+text should be read _as code_. *Cf.* Python where indentation (and hence 
+horizontal spacing) matters and needs to be standardized
 
 
 ## Markdown 
@@ -205,6 +221,11 @@ Markdown is a WYSIWYM format:
 
 . . .
 
+- WYSIWYM: **Code**, Chat formatting (Reddit, discord, slack), Word/Google Docs (power users)
+- WYSIWYG: Image editing, Word/Google Docs (typical users), "No-Code" engines (Squarespace, Mailchimp)
+
+. . . 
+
 Extensions allow finer control of formatting
 
 - Provide _templates_ to `pandoc` for finer control (not in this class)
@@ -250,9 +271,9 @@ Official Cheat Sheets:
 
 RStudio has native Quarto support: just hit "Render"
 
-# FAQs from PA#02
+# Diving Deeper on Markdown
 
-## Q1
+## Defining md
 
 > What is Markdown? 
 
@@ -267,7 +288,7 @@ markup language specification"
 ::::
 
 
-## Q1
+---
 
 > What is Markdown? 
 
@@ -280,7 +301,7 @@ markup language specification"
   - [Pandoc](https://pandoc.org/) often powers under the hood
 ::::
 
-## Q2
+## Other Uses
 
 > Other than text formatting, does Markdown have 
   any other uses?
@@ -294,7 +315,7 @@ _reproducible research_.
 
 We can embed code-*and its output*-inside Markdown documents.
 
-## Q3 
+---
 
 > What uses Markdown? 
 
@@ -325,7 +346,7 @@ Tools like Pandoc/Quarto _render_ Markdown to:
 
 :::: 
 
-## Q4 
+## Code Blocks
 
 > What is the difference between a Code section and a Nested List? Are they just different ways of indenting?
 
@@ -348,7 +369,7 @@ ggplot(txhousing,
     ylab("Number of Sales")
 ```
 
-## Q5
+## Markdown in {{< var course.short >}}
 
 > How are we going to use Markdown?
 
@@ -371,7 +392,7 @@ presentation slides (like these!)
 
 :::
 
-## Q6
+## Tables in md
 
 > How can I create Tables in Markdown? 
 
@@ -386,7 +407,12 @@ If you are making complex tables, I recommend using the
 
 (See [`syllabus.qmd`]({{< var course.repo-url >}}/blob/main/syllabus.qmd) in course repo for examples.) 
 
-## Q7
+. . . 
+
+For _results_ tables, we will use the [`gt` `R` package](https://gt.rstudio.com/)
+starting in [MP#01](../mini/mini01.qmd)
+
+## Images and Links
 
 > How to create images and links? 
 
@@ -413,7 +439,9 @@ You can even put a link inside an image to be fancy:
 [![Elephant](elephant.png)](https://en.wikipedia.org/wiki/Elephant)
 ```
 
-## Q7
+This makes a 'clickable image'
+
+---
 
 > How to create images and links? 
 
@@ -422,15 +450,23 @@ Quarto automatically embeds the results of plotting code:
 ```{r}
 #| label: plot-example
 #| fig-align: "center"
-#| output-location: slide
-plot(1:5, main="Behold, a Plot!", 
-     col=2:6, cex=5, 
-     pch=16, xlab="", ylab="", 
-     cex.main=4)
+#| out-width: "35%"
+plot(1:5, main="Behold, a Plot!", col=2:6, cex=5, 
+     pch=16, xlab="", ylab="", cex.main=2)
 ```
 
 Here, Quarto handles all the file creation and link targeting for
 us. If I change the code, the figure will change automatically.
+
+## Other Questions?
+
+Any other questions?
+
+## Breakout Time
+
+Let's go practice using `Quarto` in [this week's lab](`r url_full`)
+
+(Random breakout rooms)
 
 # Git and GitHub Pages
 
@@ -476,7 +512,7 @@ For this course, I like the mental model of a box:
 
 From GitHub user `@design-web-victo`:
 
-![](https://design-web-victo.github.io/assets/images/git_basics_01.png)
+![](../images/git_cycle.png)
 
 ## RStudio Git Integration
 
@@ -484,17 +520,17 @@ Once you create a _project_, RStudio has built-in `git` integration
 
 :::: {.columns}
 
-::: {.column width="50%"}
+::: {.column width="20%"}
 
 - Do the same commands with buttons instead of code
 
-![](../images/git_pane_basic.png){fig-align="center" height="90%"}
+![](../images/git_pane_basic.png){fig-align="center" width="30%"}
 
 :::
 
 ::: {.column width="50%"}
 
-- Uncheck Blue `M` are files that have been **M**odified 
+- Blue `M` are files that have been **M**odified 
   since the last commit
 - Yellow `?` are files I have never told `git` to track
 
@@ -509,13 +545,16 @@ Check box next to a file name to _stage_ (or _add_) it in `git`
 - Load it in the box
 - Getting ready to save it
 
-![](../images/git_pane_added.png){fig-align="center" height=500}
+![](../images/git_pane_added.png){fig-align="center" width="40%"}
+
+See how the `M` moves over to the first column as well.
 
 ## RStudio Git Integration
 
 Create a _commit_ with the `Commit` button
 
 - You have to type a message and hit `Commit` a second time
+- *Cf* the "Save As" or "Print" menus
 
 ![](../images/git_commit_wizard.png){fig-align="center" height=500}
 
@@ -546,9 +585,10 @@ For us, `GitHub` is just a "dumping ground"
 
 . . . 
 
-**Warning**: Do not make any edits using the GitHub website. This will
-cause tons of pain. All changes should be made from one computer and 
-pushed upwards only.
+**Warning**: Do not make any edits using the GitHub website. 
+
+- This will cause you significant pain. 
+- All changes should be made from one computer and pushed upwards only.
 
 ## GitHub Pages
 
@@ -640,6 +680,8 @@ at beginning stages, the fraction is even higher.
 
 So it's important to know how to see help _the smart way_:
 
+. . . 
+
 1. Official documentation. Free software almost never becomes
    famous without great documentation: `R` and its packages
    are no exception. Everything we will use in this class has
@@ -654,6 +696,8 @@ So it's important to know how to see help _the smart way_:
 Most programming challenges have been faced by somebody 
 before, so Google it!
 
+. . . 
+
 ::: {.smaller}
 
 Tips: 
@@ -666,6 +710,11 @@ Tips:
   picture" questions
   
 :::
+
+. . . 
+
+*LLMs can do this semi-automatically for you, but advice about what to search
+still holds*
 
 ## How to Ask for Help
 
@@ -688,6 +737,10 @@ trying to create an MRE.
 
 :::
 
+. . . 
+
+*This is just as true when asking LLMs for help!*
+
 ## How to Ask for Help
 
 Tips: 
@@ -705,7 +758,26 @@ Tips:
 
 The _reprex_ `R` package helps with this: see [this talk](https://www.youtube.com/watch?v=5gqksthQ0cM).
 
-For this class, rely on Piazza!
+For this class, rely on our discussion board!
+
+
+## Mini-Project #00
+
+You should now start thinking about [Mini-Project #00](../mini/mini00.qmd)
+
+::: incremental
+
+- Create an account on GitHub + GitHub student developer pack
+- Setting up your own website using `quarto` (like my course site)
+  - Future Mini-Projects submitted here
+- 'Road test' to make sure everything is working correctly
+- Register on course discussion board (Teams)
+
+:::
+
+. . . 
+
+Due `r get_mp_deadline(0)`
 
 # Wrap-Up
 
