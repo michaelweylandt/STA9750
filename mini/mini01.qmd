@@ -1,6 +1,6 @@
 ---
 mp_num: "01"
-mp_title: "Assessing the Impact of SFFA on Campus Diversity One-Year Later"
+mp_title: "What We Watched: Exploring Netflix Viewing Data"
 mp_skills: "Data Summarization, Exploratory Analysis, Table Formatting"
 mp_application: "Official Statistics, Demography"
 mp_rhetoric: "Op-Ed Writing"
@@ -85,8 +85,8 @@ because I am providing code to download the data, load it into
 `R`, and prepare it for analysis, all reports submitted using my code will 
 receive an automatic 10/10 for the 'Data Preparation' element of the rubric. 
 Finally, reports completing all tasks described under [Data Integration and
-Exploration](#eda) below should receive a 10/10 for the 'Exploratory Data Analysis'
-rubric element. 
+Exploration](#eda) below should receive a 10/10 for the 'Exploratory 
+Data Analysis' rubric element. 
 
 Taken together, you are only really responsible for these portions of the
 rubric: 
@@ -98,13 +98,15 @@ rubric:
 - Analysis and Findings
 
 Reports completing all key steps outlined below essentially start with
-30 free points. 
+30 free points. Note however that you must submit this assignment to get these 
+points: no points are given for submitting nothing, but it's worth submitting
+*something* even if you do not have a fully complete and polished assignment.
 
 <div id="mp_rubric_auto" style="display: none;">Data Visualization;Exploratory Data Analysis;Data Preparation</div>
 
 ::: {.callout-warning title="Writing Requirements"}
 
-Note that you are evaluated*on writing and communication in these 
+Note that you are evaluated *on writing and communication* in these 
 Mini-Projects. You are required to write a report in the prescribed style, 
 culminating in an Op-Ed. A submission that performs the instructor-specified 
 tasks, but does not write and give appropriate context and commentary will 
@@ -145,141 +147,103 @@ putting unnecessary stress on the IPEDS servers.
 
 ```{r}
 #| message: false
-#' Acquire IPEDS Data for MP#01
+#' Acquire Netflix What We Watched Reports
 #' 
 #' This function will acquire and standardize all data for MP#01
-#' from IPEDS (https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx)
+#' from Netflix. Because Netflix hosts the data files behind a CDN, we
+#' are accessing the release pages and automatically extracting links to the
+#' relevant files (with CDN hash). 
 #' 
-#' We're starting in 2010 as the data seems to be reasonably complete 
-#' after that point. 
-acquire_ipeds_data <- function(start_year=2010, end_year=2024){
-    library(tidyverse)
-    library(glue)
+#' After import, files are stacked vertically and some basic cleaning is
+#' performed. 
+load_netflix_data <- function(start_year=2010, end_year=2024){
+  # Note to students: Make sure you have installed the tidyverse and fs packages
+  #                   before beginning this assignment. If you aren't sure,
+  #                   simply run `library(tidyverse)` at your R Console and, if
+  #                   you don't see an error message, `tidyverse` has been 
+  #                   installed. (Same for `fs`) If you still need to install
+  #                   either package, use the `install.packages` function as 
+  #                   demonstrated in class.
+  library(tidyverse)
+  library(rvest)
+  library(readxl)
+  library(fs)
+  
+  data_dir <- path("data", "mp01")
     
-    data_dir <- file.path("data", "mp01")
-    
-    if(!dir.exists(data_dir)){
-        dir.create(data_dir, showWarnings=FALSE, recursive=TRUE)
+  if(!dir_exists(data_dir)){
+    dir_create(data_dir, showWarnings=FALSE, recurse=TRUE)
+  }
+  
+  NETFLIX_URLS <- list(
+    `2023H1` = "https://about.netflix.com/news/what-we-watched-a-netflix-engagement-report",
+    `2023H2` = "https://about.netflix.com/news/what-we-watched-the-second-half-of-2023",
+    `2024H1` = "https://about.netflix.com/news/what-we-watched-the-first-half-of-2024",
+    `2024H2` = "https://about.netflix.com/news/what-we-watched-the-second-half-of-2024",
+    `2025H1` = "https://about.netflix.com/news/what-we-watched-the-first-half-of-2025",
+    `2025H2` = "https://about.netflix.com/news/what-we-watched-the-second-half-of-2025",
+    `2026H1` = "https://about.netflix.com/news/what-we-watched-the-first-half-of-2026"
+  )
+  
+  download_if_needed <- function(url, local){
+    if(!file_exists(local)){
+      download.file(url, local, quiet = TRUE, mode = "wb")
     }
     
-    YEARS <- seq(start_year, end_year)
+    return(local)
+  }
     
-    EFA_ALL <- map(YEARS, function(yy){
-        if(yy <= 2022){
-            ef_url <- glue("https://nces.ed.gov/ipeds/datacenter/data/EF{yy}A.zip")
-            
-        } else {
-            ef_url <- glue("https://nces.ed.gov/ipeds/data-generator?year={yy}&tableName=EF{yy}A&HasRV=0&type=csv")
-        }
-        
-        ef_file <- file.path(data_dir, glue("ef{yy}a.csv.zip"))
-        
-        if(!file.exists(ef_file)){
-            message(glue("Downloading Enrollment Data for {yy} from {ef_url}"))
-            download.file(ef_url, destfile = ef_file, quiet=TRUE, mode="wb")    
-        }
-        
-        read_csv(ef_file, 
-                 show_col_types=FALSE) |>
-            mutate(year = yy, 
-                   # American Indian or Alaskan Native
-                   enrollment_m_aian = EFAIANM, 
-                   enrollment_f_aian = EFAIANW, 
-                   # Asian
-                   enrollment_m_asia = EFASIAM, 
-                   enrollment_f_asia = EFASIAW, 
-                   # Black or African-American, 
-                   enrollment_m_bkaa = EFBKAAM, 
-                   enrollment_f_bkaa = EFBKAAW, 
-                   # Hispanic 
-                   enrollment_m_hisp = EFHISPM, 
-                   enrollment_f_hisp = EFHISPW, 
-                   # Native Hawaiian or Other Pacific Islander 
-                   enrollment_m_nhpi = EFNHPIM, 
-                   enrollment_f_nhpi = EFNHPIW, 
-                   # White
-                   enrollment_m_whit = EFWHITM, 
-                   enrollment_f_whit = EFWHITW, 
-                   # Two or More Races
-                   enrollment_m_2mor = EF2MORM, 
-                   enrollment_f_2mor = EF2MORW, 
-                   # Unknown / Undisclosed Race
-                   enrollment_m_unkn = EFUNKNM, 
-                   enrollment_f_unkn = EFUNKNW, 
-                   # US Non-Resident
-                   enrollment_m_nral = EFNRALM, 
-                   enrollment_f_nral = EFNRALW, 
-            ) |> filter(
-                (EFALEVEL %in% c(2, 12)) | (LINE %in% c(1, 15))
-                # Per 2024 Data Dictionary, 
-                # - EFALEVEL 2 = undergrad 
-                # - EFALELVE 12 = grad
-                # - Line 1 = first year first time full-time undergrad
-                # - Line 15 = first year first time part-time undergrad
-            ) |> mutate(level = case_when(
-                       EFALEVEL == 2 ~ "all undergrad", 
-                       EFALEVEL == 12 ~ "all graduate",
-                       LINE %in% c(1, 15) ~ "first year undergrad"
-                   )
-            ) |>
-            select(institution_id = UNITID, 
-                   year, 
-                   level,
-                   starts_with("enrollment_")) |>
-            group_by(institution_id, 
-                     year, 
-                     level) |>
-            summarize(across(starts_with("enrollment_"), sum), 
-                      .groups = "drop")
-        
-    }) |> bind_rows()
-    
-    DESC_ALL <- map(YEARS, function(yy){
-        if(yy <= 2022){
-            hd_url <- glue("https://nces.ed.gov/ipeds/datacenter/data/HD{yy}.zip")
-            
-        } else {
-            hd_url <- glue("https://nces.ed.gov/ipeds/data-generator?year={yy}&tableName=HD{yy}&HasRV=0&type=csv")
-        }
-        
-        hd_file <- file.path(data_dir, glue("hd{yy}.csv.zip"))
-        
-        if(!file.exists(hd_file)){
-            message(glue("Downloading Institutional Descriptions for {yy} from {hd_url}"))
-            download.file(hd_url, destfile = hd_file, quiet=TRUE, mode="wb")    
-        }
-        
-        suppressWarnings(
-            read_csv(hd_file, 
-                 show_col_types=FALSE, 
-                 locale=locale(encoding=if_else(yy==2024, "utf-8", "windows-1252"))) |>
-            mutate(year = yy, 
-                   INSTNM) |> 
-            select(institution_id = UNITID, 
-                   institution_name = INSTNM, 
-                   state = STABBR, 
-                   year)
-        )
-        
-    }) |> bind_rows()
-    
-    inner_join(EFA_ALL, 
-               DESC_ALL, 
-               join_by(institution_id == institution_id, 
-                       year == year))
+  NETFLIX_URLS |> 
+    map(read_html) |> 
+    map(html_element, xpath = "//a[contains(@href, '.xlsx')]") |> 
+    map_chr(html_attr, "href") |> 
+    enframe("period", "url") |> 
+    mutate(path = path(data_dir, paste0(period, ".xlsx")), 
+           data = map(path, read_excel, skip=3, na="*"), 
+           data = map(data, \(x) x |> mutate(`Release Date` = as.Date(`Release Date`)))) |>
+    unnest(data) |> 
+    select(-url, -path) |> 
+    mutate(year=str_sub(period, 1, 4), 
+           half=str_sub(period, start=6), 
+           period_start = make_date(year, if_else(half==1, 1, 7), 1), 
+           period_end = make_date(year, if_else(half==1, 7, 12), if_else(half==1, 30, 31))) |> 
+    filter(!is.na(`Hours Viewed`)) |> 
+    mutate(live_event = !is.na(Runtime) & str_detect(Runtime, "\\d+:\\d+\\*"), 
+           clean_time = str_remove(Runtime, fixed("*")),
+           Runtime = 60 * hour(hm(clean_time)) + minute(hm(clean_time))) |>
+    select(-clean_time) |>
+    mutate(Runtime = coalesce(Runtime, mean(Runtime, na.rm=TRUE)), 
+           .by=Title, 
+           Title = stringi::stri_trans_general(Title, "Latin-ASCII"),
+           Title = str_remove(Title, " // .*"), 
+           Title = str_remove(Title, "[^[:ascii:]].*"), 
+           Title = str_trim(Title)) |>
+    filter_out(Title == "") |>
+    select(year, 
+           period, 
+           period_start, 
+           period_end, 
+           Title, 
+           -half, 
+           Runtime, 
+           Views, 
+           `Hours Viewed`, 
+           `Release Date`,
+           `Available Globally?`, 
+           live_event)
 }
 
-IPEDS <- acquire_ipeds_data()
+NETFLIX_DATA <- load_netflix_data()
 ```
 
-This creates a data frame called `IPEDS` that has `r NROW(IPEDS)` rows and
-`r NCOL(IPEDS)` columns in your local environment. This data will be used for
-the remainder of this mini-project. 
+This creates a data frame called `NETFLIX_DATA` that has `r NROW(NETFLIX_DATA)` 
+rows and `r NCOL(NETFLIX_DATA)` columns in your local environment. This data 
+will be used for the remainder of this mini-project. 
 
 ::: {.callout-tip title="Task 1: Data Acquisition"}
 
-Using the code above, acquire the IPEDS data. Copy the code into
-your Quarto document and make sure it runs successfully. 
+Using the code above, acquire the Netflix "What We Watched" data. Copy the code 
+into your Quarto document and make sure it runs successfully. 
 
 :::
 
@@ -298,146 +262,182 @@ into a bad state!
 
 ### Data Cleaning and Preparation
 
-IPEDS provides *many* different pieces of information, so I have provided you
-a subset of interesting variables. These include: 
+The Netflix "What We Watched" reports provide a high-level view of Netflix's
+internal viewership data. While still interesting for our analysis, this data
+has several limitations, you keep in mind throughout this Mini-Project. I note
+some of them below in the description of each column. 
 
-- A unique institutional ID code (`institution_id`)
-- The name of the institution (`institution_name`)
-- The state in which the institution's principal campus is located
-- The year of reporting. Note that, for enrollment data, these are the enrollment
-  as of the *Fall* semester, so, *e.g.*, Year 2010 is for the first semester 
-  of the 2010-2011 academic year. 
-- The "level" of students being considered: 
-  - `"all graduate"` refers to all graduate students on campus (both full-time
-     and part-time)
-  - `"all undergraduate"` refers to all undergraduate students on campus (both
-    full-time and part-time)
-  - `"first year undergrad"` refers to "stereotypical" first year college 
-    students. These are students (either full-time or part-time) who are in 
-    their first year of study during their first undergraduate enrollment (*i.e.*,
-    excluding students who took time off and re-enrolled, students who 
-    transferred from another institution, and students who previously studied at
-    a different institution earning an associates' degree or similar credential)
-- Number of enrolled students in various demographic groups: these 18 variables
-  are formatted as: `enrollment_X_YYYY`, where
-  
-  - `X` is `m` or `f` for male or female students
-  - `YYYY` is a racial/ethnic group identifier:
-    - `aian`: American Indian or Alaskan Native
-    - `asia`: Asian-American
-    - `bkaa`: Black or African-American
-    - `hisp`: Hispanic
-    - `nhpi`: Native Hawaiian or Pacific Islander
-    - `whit`: White
-    - `2mor`: Two or More Races
-    - `unkn`: Unknown / Unreported
-    - `nral`: Not a US Resident before enrollment ("Non-Resident Alien")
-    
-  Note that these are somewhat non-standard identifiers and do not match other
-  official sources. (*E.g.*, the US Census considers Hispanic ancestry a 
-  separate axis so it is possible to have Non-Hispanic White, Hispanic Black, 
-  *etc.*) We use these as given since they are what IPEDS provides. 
-  
-  Together these give *18* enrollment categories that, when summed, give the
-  total enrollment at an institution. 
-  
-Before proceeding, we will create two additional variables for our analyses: 
+The `NETFLIX_DATA` from above has several columns: 
 
-- `is_cuny`: A Boolean (True/False) variable indicating whether an institution
-  is part of the CUNY system. 
-- `is_calpublic`: A variable indicating whether an institution is a public
-  college or university of the state of California
-  
-::: {.callout-tip title="Task 2: Identify CUNY Schools"}
+- `year`, `period`, `period_start`, and `period_end`. These reflect the period
+  over which the viewership data was aggregated, *e.g.*, `2024H1` refers to the
+  first half of 2024 (January 1, 2024 to June 30, 2024). I have created the
+  `period_start` and `period_end` columns as dates which may be more useful for
+  filtering and comparing against the published release dates. 
+- `Title`. The title of the show or movie, roughly standardized.[^ascii] Note 
+  that Netflix is a bit inconsistent in how it represents different seasons
+  of TV shows; we have `Seinfeld: Season 1` and `Seinfeld: Season 3`, but
+  `Stranger Things` and `Stranger Things 3`.
+- `Runtime`. The run time in minutes of the show or movie (aggregated across all
+   episodes for a show). It is not clear why certain catalog entries do not
+   have a published run time (*e.g.*, Season 1 of Suits has no run time, but 
+   later seasons do). Here, we can only work with what Netflix gives us.
+- `Hours Viewed`. The global aggregate view time (in hours) during the period
+   for that title. Note that this seems to be rounded to the nearest 100,000 
+   hours and low viewership shows (those with less than 50,000 hours of view time)
+   are omitted. This makes it hard to compare the popularity of two not-so
+   popular shows, but we can still make some sense of major titles.
+-  `Views`. The approximate number of views, again rounded. Note that these are
+   "implied views" (computed by dividing Hours Viewed by Runtime) that assume
+   all viewers watched a title in its entirety. This measure of `Views` cannot
+   distinguish 600 people watching 10 minutes of a show and turning it off from
+   one person watching the entirety of a 100 hour documentary.[^views]
+- `Release Date`: The date on which a title was released. This is inconsistently
+  available and should be used with caution. 
+- `Available Globally?`: Was this title available in all Netflix territories 
+  (typical for Netflix Originals) or only in certain territories (typical for
+  content made available under license from a different creator).
+- `live_event`: Was the title a live sporting event (a new area of focus for 
+  Netflix)?
+   
+[^ascii]: To keep this analysis simple, I have restricted the data set to shows
+with titles that are fully-ASCII (roughly, English language characters). We will
+discuss the challenges associated with non-English characters later in the 
+semester. For now, just be aware that your results are restricted to shows with
+an English title, so if a show is popular in a country with a non-ASCII alphabet
+(*e.g.*, Japan or Korea) but was never released with an English title, it may
+be excluded from our analysis. 
 
-Create a new column `is_cuny` in your IPEDS data. For our
-purposes, we will assume that CUNY schools all have "CUNY" in
-their institution name. 
+[^views]: Netflix defines "Views" differently in other contexts. At one point,
+a user was said to have "viewed" a show if they watched two or more minutes of
+it. This, predictably, lead Netflix to debut the "most viewed show ever" with
+surprising regularity. 
 
-The `str_detect` function can be used to test whether a string (like a name)
-contains a substring:[^re] *e.g.*, 
 
-```{r}
-# True because "CUNY" (2nd arg) is in the longer string (1st arg)
-str_detect("CUNY Bernard M. Baruch College", "CUNY")
+Before we can begin to look more closely at this data, we have a little bit more
+clean-up we need to complete to get this data in its most usable form. 
 
-# False because "Hunter" is nowhere in the first argument
-str_detect("CUNY Bernard M. Baruch College", "Hunter")
-```
 
-As with other functions in `R`, `str_detect` is vectorized, making it easy
-to use inside of other functions. 
+One requirement for data to be easily manipulated is easy column names. Since we
+use base column names in many `tidyverse` functions, including all of the `dplyr`
+functions we have covered to this point, we want to ensure that our column names
+are valid `R` variable names and easily typed. This means that we want: 
 
-```{r}
-names <- c("City College-Miami", "CUNY City College", "CUNY Hunter College")
-str_detect(names, "CUNY")
-```
+- Only numbers and simple letters, no punctuation or accents
+- Starting with a letter
+- All lower-case
+- If multi-word, separated by underscores (`_`) not spaces
 
-Use this function, in conjunction with a `mutate` function, to create a new
-column called `is_cuny` inside the IPEDS data. Make sure to assign your mutated
-data frame so that you can use it later. 
+So a column name like `Flipper Length (mm)` will be hard to work with, while one
+like `flipper_length_mm` will be fine.[^var_len] Compare the column names of
+the `penguins` data set, which have been "tidied up" for easy use, to those of 
+the `penguins_raw` which reflect the original data source. 
 
-Your code should look something like: 
+To get nice tidy names, we will use the `rename()` function from the `dplyr` 
+package. The `rename()` function works similarly to the `mutate` function, but 
+we can _only_ rename and cannot perform transformations. This might seem like
+a limitation, but it makes the point of our code clearer. 
+
+The `rename` function works like this: 
 
 ```{r}
 #| eval: false
-IPEDS <- IPEDS |>
-    mutate(is_cuny = ...)
+library(tidyverse)
+iris |>
+  rename(petal_length = Petal.Length, 
+         petal_width  = Petal.Width, 
+         ...)
 ```
 
-where the `...` is some code using the string `"CUNY"`, the existing column 
-names in `IPEDS` and the `str_detect` function. 
+Each argument is a pair of the form `NEW_NAME = OLD_NAME` and, by adding more
+names in the `...`, we can perform even more renamings at once. If the old names
+are sufficiently nasty that they are not even valid (but ugly) names, we need
+to surround them with backticks (`), such as: 
+
+```{r}
+#| eval: false
+library(tidyverse)
+iris |>
+  rename(petal_length = `Petal.Length`, # Note backticks around old names
+         petal_width  = `Petal.Width`, 
+         ...)
+```
+
+Anything placed between two backticks will be interpreted as a name. 
+
+[^var_len]: Don't worry too much about the length of variable names: 
+tab-completion is a wonderful thing and code is read more than written)
+
+
+::: {.callout-tip title="Task 2: Fix Column Titles"}
+
+Modify the code you copied in Task 1 to ensure that we have nice "tidy" column
+names satisfying the four rules listed above. 
+
+You can do this by either: 
+
+i) Adding a `rename()` step to the end of the pipeline in my 
+   `acquire_netflix_data()` function. (Recommended)
+ii) Adding a `rename()` line after my `acquire_netflix_data()` function. 
+    (If you do this, make sure to assign your modified data back into a 
+    variable.)
 
 :::
 
-[^re]: `str_detect` can actually be used to perform significantly more complex
-string analysis than simple "does it contain this subset of letters" but we
-won't cover that sort of string processing for a [few more weeks](../pre/pa10.qmd). 
+Additionally, we want to make sure our data is all reasonably typed. I have done
+most of the clean-up work for you and only two columns need to be modified. 
+Because you are actually changing the values from one type to another, we have
+to actually use the `mutate()` function, and not `rename()`, but this idiom will
+work well: 
 
-The public colleges and universities of the state of California are an 
-interesting test case. Persuant to 
-[California Proposition 209 (1996)](https://en.wikipedia.org/wiki/1996_California_Proposition_209),
-public institutions of higher education in the state were specifically not
-allowed to implement any sort of Affirmative Action program, so the ending of
-Affirmative Action would theoretically have no impact on their admissions 
-practices. We will investigate this possibility below. For now, we need to 
-create an additional variable which identifies the California public 
-institutions in our data set. 
+```{r}
+#| eval: false
+data |>
+  mutate(column = some_function(column))
+```
 
-Unlike the CUNY system, which combines community colleges, senior (four-year)
-colleges, and specialized graduate institutions into a single system, California
-has *three* separate public systems: 
+Here, the new column is created by calling a function (`some_function`) but then
+assigned back to the old name, having the effect of changing the column's values
+in place. 
 
-- the [*University of California* System](https://en.wikipedia.org/wiki/University_of_California)
-- the [*California State* System](https://en.wikipedia.org/wiki/California_State_University) and
-- the [*California Community Colleges*](https://en.wikipedia.org/wiki/California_Community_Colleges) system. 
+::: {.callout=tip title="Task 3: Fix Column Types"}
 
-Because of this, we will need to do a bit more work to create our `is_calpublic`
-variable. Because the Community Colleges are open-enrollment, we can ignore them
-from our analysis and focus exclusively on the UC system and the Cal State 
-system. 
+To proceed, we need to fix the `year` column and the `Available Globally?` 
+column (which will have a slightly different name after Task 2). 
 
-::: {.callout-tip title="Task 3: Identify UC and Cal State Schools"}
+The `year` column is rather easy. Right now, it is _string_ values ("2023", 
+"2024", *etc.*) but we want to convert these to numbers so that they can be used
+as such. This is a simple "like-for-like" change that can be done with the
+`as.integer()` (or `as.numeric()`) coercion function. 
 
-Add a new variable `is_calpublic` to the `IPEDS` data that is `TRUE` for 
-institutions that are part of the University of California System or the 
-California State system. 
+The global availability column requires a bit more touch. At the end of my code,
+it consists of the string values `"Yes"` and `"No"`, but we would really like
+to use logical `TRUE` / `FALSE` values. Unfortunately, the `as.logical()` 
+function does not do what we want here: 
 
-To do this, you will need to use `str_detect` (see the previous task) and one
-of the Boolean logical operators (`!`, `&`, `|`). 
+```{r}
+as.logical("Yes") # We want TRUE
+```
 
-Once you have created your variable, use a combination of `dplyr` functions to
-get a list of the institutions identified by your new variable. You may wish to
-compare this against the Wikipedia articles linked above to ensure your results
-are accurate. 
+Instead, we want to use a _vectorized_ check to see whether the value is
+`"Yes"`, in which case we will convert to `TRUE`, or something else that will
+be converted to `FALSE`. 
 
-*Note:* If you know what a *regular expression* is, you know that you can use
-only a single `str_detect` call here and avoid the use of a Boolean operator. 
-Do **not** do this - you must use some Boolean logic to get full credit for this
-task. If you do not know what a regular expression is, you can disregard this
-note. 
+Complete the following code snippet to perform these two conversions: 
+
+```{r}
+#| eval: false
+|> mutate(
+  ... = as.integer(...), 
+  ... = ... == ... # Recall that double equals (==) checks for equality
+)
+```
+
+As in the previous task, either insert your code into the end of my 
+`acquire_netflix_data()` function or call it on the output of my code.
 
 :::
+
 
 ### Initial Data Exploration {#eda}
 
@@ -447,7 +447,7 @@ quality control, hypothesis generation, outlier identification, *etc.*--but
 perhaps the most important is simply knowing what information can be found in a 
 novel data set. Now that our data is imported and cleaned, it's almost 
 time to start our EDA. Before we do EDA, however, we should pause briefly to
-consider how we want to display data. 
+think about how we want to display data. 
 
 #### Displaying Data in Tables
 
@@ -455,12 +455,13 @@ While we could continue investigating our data using `R`'s basic print-outs,
 this is a good time to introduce the [`gt` package](https://gt.rstudio.com/) 
 which can be used to create complex tables natively in `R`.
 
-What follows here is a very brief introduction to the `gt` package. You 
-do not need to copy this into your submission - it is provided only as background. 
-You will use the `gt` package to format your answers to the next few tasks. 
+What follows here is a very brief introduction to the `gt` package. **You 
+do not need to copy this into your submission - it is provided only as 
+background.** You will use the `gt` package to format your answers to the 
+next few tasks. 
 
 For this introduction, I am going to use the `penguins` data, but the same
-functions can be applied to the IPEDS data that you are analyzing. 
+functions can be applied to any data that you are analyzing. 
 
 Let's first look at what a "basic" or "raw" display of a data frame gives us: 
 
@@ -480,11 +481,16 @@ This has *several* problems:
    are pretty terrible: `bill_len` is not an English word, the underscore
    exists only to separate two words "in code" (recall `R`'s restrictions on 
    variable names), and the unit isn't clear. In this case, a column name like
-   `Bill Length (mm)` would be far preferable. 
+   `Bill Length (mm)` would be far preferable.[^names]
+   
+[^names]: I know this is the opposite of the advice given about names earlier. 
+The "best practices" for code are not the "best practices" for final 
+presentations.
    
 3. The row numbers are essentially pointless and just take up space, adding no
    value. Any content that is not adding value is simply distracting the reader
    from the content that has value. 
+   
 4. The "point" of the table is unclear. What is a reader supposed to get from
    this? As a data analyst - doing work on behalf of a reader who may not be a
    data analyst - you have a responsibility to clearly convey the "story" of
@@ -561,16 +567,16 @@ penguins |>
                n_species = "Number of Penguins in Sample") 
 ```
 
-Here, we used the `cols_move_to_end` function to move the `n_species` column
+Here, we used the `cols_move_to_end()` function to move the `n_species` column
 to the end (no surprise!). In other contexts, we might want to use the 
-`cols_move_to_start` function to move a column to the leftmost side of a table
-or `cols_move` to put a column in the middle of the table. 
+`cols_move_to_start()` function to move a column to the leftmost side of a table
+or `cols_move()` to put a column in the middle of the table. 
 
-The `cols_label` function essentially serves as a renaming operation: the 
+The `cols_label()` function essentially serves as a renaming operation: the 
 left side of each parentheses is the old column name in the table and the right 
 side gives the new name. (Note, a bit confusingly, that this is the *reverse*
-of `dplyr::rename`.) While we can just pass a basic string here, we can also
-use the `md` function to pass _Markdown_ which lets us do some custom formatting: 
+of `dplyr::rename()`.) While we can just pass a basic string here, we can also
+use the `md()` function to pass _Markdown_ which lets us do some custom formatting: 
 
 ```{r}
 penguins |> 
@@ -639,7 +645,7 @@ penguins |>
                        [`palmerpenguins`](https://allisonhorst.github.io/palmerpenguins/)"))
 ```
 
-A small, but lovely, quality of life feature here is the fact that `md` will
+A small, but lovely, quality of life feature here is the fact that `md()` will
 automatically re-align the text to the fit the dimensions of the rendered
 table. This lets us put new lines within our citation text so that our code 
 doesn't exceed the 80 characters-per-line guideline. 
@@ -653,7 +659,7 @@ family of functions.
 Each `fmt_` function takes one or more column names and applies a formatting
 transformation to that column. The specifics of the formatting can be controlled
 with additional optional arguments. For example, if we want to round the average
-weight to the nearest gram, we would use the `fmt_number` function with the
+weight to the nearest gram, we would use the `fmt_number()` function with the
 argument `deicmals=0`:
 
 ```{r}
@@ -680,7 +686,7 @@ penguins |>
 ```
 
 In this case, it may be more appropriate to display the body mass in *kilograms*
-and we can do so semi-automatically with the `format_number_si` formatter: 
+and we can do so semi-automatically with the `format_number_si()` formatter: 
 
 ```{r}
 penguins |> 
@@ -707,7 +713,7 @@ penguins |>
                   unit = "g")
 ```
 
-Note that, because `fmt_number_si` automatically includes the unit and transforms
+Note that, because `fmt_number_si()` automatically includes the unit and transforms
 it to the most natural scale (here `kg`), we can remove the unit from the column
 name. `gt` has many more advanced options that can be used for further 
 customization; refer to the package documentation for more details or ask on the
@@ -719,7 +725,7 @@ When faced with a new data set, it is tempting to look only at the first few
 rows to get a sense of the data: `R` does this by default. In practice, I 
 recommend viewing a _random_ selection of rows instead. This won't guarantee you
 find any issues, but it increases the probability of finding issues in 
-older parts of a data set. The `slice_sample` function can be used for this. 
+older parts of a data set. The `slice_sample()` function can be used for this. 
 
 While EDA can be an extensive activity on its own, at an *absolute minimum*,
 I recommend you always do at least two basic checks: 
@@ -738,9 +744,8 @@ I recommend you always do at least two basic checks:
   a line summary of each column giving its name, type, and the first few values
   in the table. 
   
-  In this case, since I prepared the data for you, all columns are of the 
-  correct type (mostly numeric, with a few character columns for institution name
-  and state name, and the two Boolean columns you created earlier), but this is
+  In this case, since I did most of the data prep for you, all columns should be
+  of the correct type after you complete Task 3, but this is
   a quick and easy check. If there are issues with your data types, it's better
   to catch them early than to have silent and hard to identify errors further
   down the line. ("Fail fast" is *great* advice in any programming exercise.)
@@ -782,15 +787,15 @@ a popular news summary is
 
 ::: {.callout-tip title="Task 4: Initial EDA Pass"}
 
-Perform the two checks described above on the IPEDS data you 
-loaded and processed above. Include the code to perform the checks, 
-the output of the checks, and describe what you see. 
+Perform the two checks described above on the Netflix data you 
+loaded and processed above. **Include the code to perform the checks, 
+the output of the checks, and describe what you see.**
 
 In general, you shouldn't include this in analysis reports, but we're making
-an exception here to practice a good habit. I won't ask you to include this
-analysis in future mini-projects or your course project reports, but these
-checks are easy and very valuable, so I recommend you make them part of all
-analyses. 
+an exception here to practice a good habit. I would advise against including this
+step in future mini-projects or your course project reports, but these
+checks are easy and very valuable, so I recommend you make them part of your 
+EDA workflow. 
 
 :::
 
@@ -804,33 +809,63 @@ to organize your EDA in other fashions.
 
 ::: {.callout-tip title="Task 5: Exploratory Questions - Inline Values"}
 
-Using `dplyr` tools, answer the following questions:
-
-1. How many distinct institutions appear in this data set? 
-2. How many graduate students were enrolled at Baruch in 2024? 
-
-   *Hint:* Use the `str_detect` function discussed above inside a `filter`
-   command to identify Baruch. 
-3. How many _total_ students were enrolled at Baruch in 2024? 
-
-   *Hint:* Make sure to avoid double-counting first-year undergraduates. 
-4. Which institution had the highest number of enrolled female students in 2019?
-
-   Report at least both the institution and the total number of female students. 
-5. Which institution with over 1000 total students *admitted* the highest 
-   *proportion* of Native Hawaiian or Pacific Islander (`nhpi`) *first-year*
-   undergraduates in 2024? 
-   
-   Report at least both the institution and the fraction of relevant students. 
-
-As you go through these questions, you may find it useful to create new 
-variables in the `IPEDS` data to avoid repeated lengthy calculations, *e.g.*,
-a new variable for the total number of enrolled students. 
-
+Using `dplyr` tools, answer the following six questions. 
 Each of these questions can be answered with one or two scalar values. Use 
 Quarto's [inline code](https://quarto.org/docs/computations/inline-code.html)
 functionality to place the values in a sentence; that is, you should answer in
 complete sentences, written as normal text with inline code for computed values.
+
+1. What date range is covered by this data set? 
+2. How many different shows and movies are covered in this data set? 
+
+   (Don't worry about combining seasons for now: you can treat "Stranger Things
+   2" and "Stranger Things 3" as different shows.)
+3. How many total hours have been spent watching shows from the *Bridgerton* 
+   universe? 
+   
+   *Hint:* The `str_detect` function can be used to test whether a string 
+   (like a name) contains a substring:[^re] *e.g.*, 
+
+    ```{r}
+# True because "CUNY" (2nd arg) is in the longer string (1st arg)
+str_detect("CUNY Bernard M. Baruch College", "CUNY")
+
+# False because "Hunter" is nowhere in the first argument
+str_detect("CUNY Bernard M. Baruch College", "Hunter")
+    ```
+
+    As with other functions in `R`, `str_detect` is vectorized, making it easy
+    to use inside of other functions, such as `filter()`.
+
+    ```{r}
+    names <- c("City College-Miami", "CUNY City College", "CUNY Hunter College")
+    str_detect(names, "CUNY")
+    ```
+
+[^re]: `str_detect` can actually be used to perform significantly more complex
+string analysis than simple "does it contain this subset of letters" but we
+won't cover that sort of string processing for a [few more weeks](../pre/pa10.qmd). 
+
+4. How many total hours have been spent watching the five seasons of 
+   *Stranger Things*? For this question, we only want the "real" *Stranger Things*
+   shows and not the companion behind-the-scenes show ("Beyond Stranger Things"), 
+   the animated spin-off ("Tales from '85"), or the background music 
+   ("Stranger Things: Fireplace"). 
+   
+   To answer this question, you will need to use a combination of `filter()`
+   and `filter_out()` statements to sequentially apply multiple `str_detect()`
+   steps. 
+   
+   *Hint*: Recall that you generally shouldn't combine multiple steps in a single
+   `filter_out()` as the results can be a bit unintuitive.
+5. What percentage of total watch time was spent on the Top 10 titles of 2026H1?
+6. What fraction of Netflix's catalog is globally available? (Answer this both
+   by title and weighted by hours viewed)
+
+As you go through these questions, you may find it useful to create new 
+variables in the data to avoid repeated lengthy calculations, *e.g.*, 
+`is_stranger_things`. Do this is you find it useful, but it is not strictly
+required. 
 
 Where appropriate, the `scales` package can be used to format numbers 
 attractively: *e.g.*, 

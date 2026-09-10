@@ -60,6 +60,16 @@ def course_short():
 
     return course_config["course"]["short"]
 
+@cache
+def course_sections():
+    with open("_variables.yml") as f:
+        course_config = yaml_load(f)
+        
+    return course_config["course"]["sections"]
+
+@cache
+def course_has_multiple_sections():
+    return course_sections() and (len(course_sections()) > 1)
 
 @cache
 def course_dir():
@@ -71,7 +81,7 @@ def course_dir():
     course_dir = op.expanduser(course_config["gradedir"])
 
     if not op.isdir(course_dir):
-        os.makekdirs(course_dir)
+        os.makedirs(course_dir)
         
     return course_dir
 
@@ -149,8 +159,9 @@ class IssueStatus(IntEnum):
     PAGE_404 = 6
     MISSING_SOURCE = 7
     MISSING_FILES = 8
-    MISSING_AI = 9
-    OK = 10
+    MISSING_FUTURE_MP = 9
+    MISSING_AI = 10
+    OK = 11
     
     @property
     def ok(self):
@@ -391,50 +402,63 @@ class Issue(object):
         
         page_bs =  BS(page_resp.text, features="lxml")
         ai_disclosure = page_bs.find_all(class_="callout-note")
-
-        if not ai_disclosure:
-            self._status = IssueStatus.MISSING_AI
-            self._status_message = "Could not locate your AI Usage Statement - No '.callout-note' block."
-            
-            self._fix_advice = dedent("""
-            See MP instructions for how to use a suitable block for AI Usage 
-            Statement. Please update your qmd file, re-render the 
-            document, and `git push` to update your GitHub repository. You 
-            do not need to open a new issue or re-post here (though adding a
-            new comment won't hurt) - simply pushing the updated and 
-            corrected files will automatically propogate through to this 
-            issue thread.""")
-            return self._status
         
-        if len(ai_disclosure) > 1:
-            if sum("AI" in ai.get_text() for ai in ai_disclosure):
-                ai_disclosure = [ai for ai in ai_disclosure if "AI" in ai.get_text()][-1]
-            else:
-                import pdb; pdb.set_trace()
+        if self.mp_num == 0:
+            # No need to check AI disclosure, but instead we check for other 
+            # files existing
+            for future_mp_n in range(1, 5):
+                future_mp_url = f"{self.expected_url}/mp0{future_mp_n}.html"
+                future_mp_check = r.get(future_mp_url)
+                
+                if not future_mp_check.ok:
+                    self._status = IssueStatus.MISSING_FUTURE_MP
+                    self._status_message = f"Could not access placeholder for MP#0{future_mp_n} which was expected at {future_mp_url}"
+                    return self._status
+                
         else:
-            ai_disclosure = ai_disclosure[-1]
-        
-        if "title" in ai_disclosure.attrs:
-            ai_title = ai_disclosure["title"]
-        elif ai_title_container := ai_disclosure.find(class_="callout-title-container"): 
-            ai_title = ai_title_container.find_all(string=True, recursive=False)
-            ai_title = "".join(ai_title).strip()
-        else: 
-            import pdb; pdb.set_trace()
+            if not ai_disclosure:
+                self._status = IssueStatus.MISSING_AI
+                self._status_message = "Could not locate your AI Usage Statement - No '.callout-note' block."
+                
+                self._fix_advice = dedent("""
+                See MP instructions for how to use a suitable block for AI Usage 
+                Statement. Please update your qmd file, re-render the 
+                document, and `git push` to update your GitHub repository. You 
+                do not need to open a new issue or re-post here (though adding a
+                new comment won't hurt) - simply pushing the updated and 
+                corrected files will automatically propogate through to this 
+                issue thread.""")
+                return self._status
             
-        if ai_title != "AI Usage Statement":
-            self._status = IssueStatus.MISSING_AI
-            self._status_message = "Could not locate your AI Usage Statement - '.callout-note' block title incorrect."
-            self._fix_advice = dedent(f"""
-            No '.callout-note' with title 'AI Usage Statement' identified,
-            though I did find one with the title '{ai_title}' instead. If this 
-            is your AI Usage Statement, please update your qmd file, re-render 
-            the document, and `git push` to update your GitHub repository. You 
-            do not need to open a new issue or re-post here (though adding a
-            new comment won't hurt) - simply pushing the updated and 
-            corrected files will automatically propogate through to this 
-            issue thread.""")
-            return self._status
+            if len(ai_disclosure) > 1:
+                if sum("AI" in ai.get_text() for ai in ai_disclosure):
+                    ai_disclosure = [ai for ai in ai_disclosure if "AI" in ai.get_text()][-1]
+                else:
+                    import pdb; pdb.set_trace()
+            else:
+                ai_disclosure = ai_disclosure[-1]
+            
+            if "title" in ai_disclosure.attrs:
+                ai_title = ai_disclosure["title"]
+            elif ai_title_container := ai_disclosure.find(class_="callout-title-container"): 
+                ai_title = ai_title_container.find_all(string=True, recursive=False)
+                ai_title = "".join(ai_title).strip()
+            else: 
+                import pdb; pdb.set_trace()
+                
+            if ai_title != "AI Usage Statement":
+                self._status = IssueStatus.MISSING_AI
+                self._status_message = "Could not locate your AI Usage Statement - '.callout-note' block title incorrect."
+                self._fix_advice = dedent(f"""
+                No '.callout-note' with title 'AI Usage Statement' identified,
+                though I did find one with the title '{ai_title}' instead. If this 
+                is your AI Usage Statement, please update your qmd file, re-render 
+                the document, and `git push` to update your GitHub repository. You 
+                do not need to open a new issue or re-post here (though adding a
+                new comment won't hurt) - simply pushing the updated and 
+                corrected files will automatically propogate through to this 
+                issue thread.""")
+                return self._status
 
         
         self._status = IssueStatus.OK
@@ -465,6 +489,8 @@ class Issue(object):
             return f"Could not identify qmd source document\n - " + self._status_message
         elif status == IssueStatus.MISSING_FILES:
             return self._status_message
+        elif status == IssueStatus.MISSING_FUTURE_MP:
+            return self._status_message
         elif status == IssueStatus.MISSING_AI:
             return self._status_message
         elif status == IssueStatus.OK:
@@ -482,11 +508,12 @@ class Issue(object):
                   "Submission URL Accessible",
                   "Source File Accessible",
                   "All Supporting Files Present",
-                  "AI Disclosure Present",]
+                  "AI Disclosure Present" if self.mp_num else "Future MP Placeholders Found",]
                   
         OUT_TEXT = ""
                   
-        assert len(CHECKS) + 1 == IssueStatus.OK # +1 b/c top status is OK (no check)
+        assert len(CHECKS) + 2 == IssueStatus.OK # +1 b/c top status is OK (no check)
+                                                 # +1 b/c we skip placeholder / AI checks on MP#00
         
         for check_ix, check_text in enumerate(CHECKS, start=1):
             if self.status > check_ix:
@@ -751,7 +778,12 @@ def check_quarto_support_files(url):
         # Skip embedded elements
         if sf_url.startswith("data:") or sf_url.startswith("javascript:"):
             LINKS_OK.append(sf_url)
-            continue 
+            continue
+        
+        # Skip email links
+        if sf_url.startswith("mailto:"):
+            LINKS_OK.append(sf_url)
+            continue
         
         if r.get(sf_url).ok:
             LINKS_OK.append(sf_url)
@@ -1475,7 +1507,6 @@ def gh_issue_create(title, text):
         title=title,
         body=text)
 
-
 @cache 
 def latest_issues_dir():
     return op.join(course_dir(), "latest", "issues")
@@ -1501,14 +1532,11 @@ def load_issues():
 
     return ALL_ISSUES
 
-
-
 @cache
 def roster_file():
     filename = Path(op.join(course_dir(), "roster.json")).resolve(strict=True)
     filename.touch(exist_ok=True)
     return filename
-
 
 @cache
 def grades_file():
@@ -1516,13 +1544,11 @@ def grades_file():
     filename.touch(exist_ok=True)
     return filename
 
-
 @cache
 def teams_file():
     filename = Path(op.join(course_dir(), "teams.json")).resolve()
     filename.touch(exist_ok=True)
     return filename
-
 
 @cache
 def team_grades_file():
@@ -1530,13 +1556,11 @@ def team_grades_file():
     filename.touch(exist_ok=True)
     return filename
 
-
 @cache
 def mapping_file():
     filename = Path(op.join(course_dir(), "master_mapping.json"))
     filename.touch(exist_ok=True)
     return filename.resolve(strict=True)
-
 
 @cache
 def mapping_index_file():
@@ -1691,6 +1715,11 @@ def roster_list(include_inactive, include_emplid, include_secret,
         raise click.ClickException("Cannot pass -g and -G flags simultaneously")
     
     roster = current_roster(include_inactive=include_inactive)
+    
+    if roster.empty:
+        click.echo("No students currently in roster")
+        return 
+    
     teams = current_teams(include_pending=False)
 
     if teams.size:
@@ -1721,10 +1750,11 @@ def roster_list(include_inactive, include_emplid, include_secret,
         "github": "GitHub ID", 
         "email": "Student Email", 
         "name": "Student Name", 
-        "team_name": "Project Team Name", 
+        "project_team": "Project Team Name", 
         "active": "Status",
         "emplid": "Student ID", 
-        "secret": "Secret Code"
+        "secret": "Secret Code",
+        "section": "Section"
     })
     
     if github:
@@ -1803,7 +1833,14 @@ def roster_list(include_inactive, include_emplid, include_secret,
     help="Student's Secret Code (Used for peer feedback assignments)",
     prompt="What is the student's secret code?"
 )
-def roster_add(github, email, emplid, name, secret):
+@click.option(
+    "--section",
+    help="Student Section (Day of Week)",
+    type=click.Choice(course_sections(), case_sensitive=False), 
+    prompt="Which section is the student in?",
+    default=course_sections()[0] if course_has_multiple_sections() else None
+)
+def roster_add(github, email, emplid, name, secret, section):
     """Add a new student to the roster.
 
     This function is intended for use following MP00. As part of MP00,
@@ -1819,6 +1856,7 @@ def roster_add(github, email, emplid, name, secret):
             "secret": secret,
             "active": True,
             "project_team": None,
+            "section": section
         },
         index=[emplid],
     )
@@ -4054,7 +4092,8 @@ def mini_peer_meta(project_id, rearchive, skip_pdf, force, skip_opening):
         "Really useful comments. I think your scores are well-calibrated here, but try to be a bit more clear about _why_ you took off a few points in certain sections.",
         "Good comments, focusing on just a few actionable items - thank you", 
         "This is a difficult submission to review given the problems, but you did a good job - thank you for taking the time and handling it well", 
-        "Very detailed and thorough review - thank you"
+        "Very detailed and thorough review - thank you",
+        "What specific improvements are you referring to? The scores seem pretty solid, but the text is too vague (if you say 'could be improved' - how and where?)"
     ]
     
     for ix_feedback, (submittor, evaluator, issue_number) in enumerate(all_feedback.assignments, start=1): 
@@ -4164,6 +4203,7 @@ def mini_peer_meta(project_id, rearchive, skip_pdf, force, skip_opening):
         real_name = ROSTER[ROSTER["github"].map(str.lower) == gh.lower()]["name"].item()
         safe_name = real_name.lower().replace(" ", "_")
         overall = sum(scores) / len(scores)
+        overall = round_to_quarter(overall)
 
         grade_text = template.render(
             name = real_name,
