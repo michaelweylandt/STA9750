@@ -71,10 +71,11 @@ function Pandoc(doc)
             return {}
           end
           debug_print("RESULT: Match. Keeping block.")
+          return el.content
         end
       end
 
-      return el.content
+      return el
     end
   }
 
