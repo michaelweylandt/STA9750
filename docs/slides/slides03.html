@@ -10,7 +10,7 @@
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.10.18">
 
-  <title>STA 9750 – Software Tools for Data AnalysisSTA 9750Michael WeylandtWeek 3 – Tuesday 2026-09-15, Thursday 2026-09-17Last Updated: 2026-09-14</title>
+  <title>STA 9750 – Software Tools for Data AnalysisSTA 9750Michael WeylandtWeek 3 – Tuesday 2026-09-15, Thursday 2026-09-17Last Updated: 2026-09-15</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -199,7 +199,7 @@
     <div class="slides">
 
 <section id="title-slide" data-background-image="../images/baruch_title.png" data-background-size="100% 100%" class="quarto-title-block center">
-  <h1 class="title"><span class="r-fit-text"><br><br><br><br><br>Software Tools for Data Analysis<br>STA 9750<br>Michael Weylandt<br>Week 3 – Tuesday 2026-09-15, Thursday 2026-09-17<br>Last Updated: 2026-09-14</span></h1>
+  <h1 class="title"><span class="r-fit-text"><br><br><br><br><br>Software Tools for Data Analysis<br>STA 9750<br>Michael Weylandt<br>Week 3 – Tuesday 2026-09-15, Thursday 2026-09-17<br>Last Updated: 2026-09-15</span></h1>
 
 <div class="quarto-title-authors">
 </div>
@@ -1749,7 +1749,7 @@
 <li>Grading rubrics</li>
 </ul>
 <p>Please send me questions!</p>
-<p>Team rosters due at soon - keep posting online to find a team.</p>
+<p>Team rosters due at 2026-09-24 - keep posting online to find a team.</p>
 </section>
 <section id="course-project-1" class="slide level2">
 <h2>Course Project</h2>
@@ -1970,7 +1970,7 @@
 <section id="execution-model" class="slide level2">
 <h2>Execution Model</h2>
 <p>Three models of executing code:</p>
-<div class="small">
+<div class="smaller">
 <ol type="1">
 <li class="fragment">Line-by-line at <code>Console</code>
 <ul>
@@ -2078,7 +2078,7 @@
 <pre><code>function (x, na.rm = FALSE, type = 7) 
 diff(quantile(as.numeric(x), c(0.25, 0.75), na.rm = na.rm, names = FALSE, 
     type = type))
-&lt;bytecode: 0x10fc837e8&gt;
+&lt;bytecode: 0x127ff6320&gt;
 &lt;environment: namespace:stats&gt;</code></pre>
 </div>
 </div>
@@ -2089,7 +2089,7 @@ diff(quantile(as.numeric(x), c(0.25, 0.75), na.rm = na.rm, names = FALSE,
 <pre><code>function (x, na.rm = FALSE) 
 sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x), 
     na.rm = na.rm))
-&lt;bytecode: 0x11801f5b8&gt;
+&lt;bytecode: 0x1323f4d30&gt;
 &lt;environment: namespace:stats&gt;</code></pre>
 </div>
 </div>
@@ -2160,7 +2160,13 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 </div>
 </div>
 </section>
-<section id="vector-semantics-1" class="slide level2">
+<section class="slide level2">
+<h2>Vector Semantics</h2>
+<p>“Vectorization” comes from math (linear algebra):</p>
+<p><span class="math display">\[\begin{pmatrix} 1 \\ 2 \\ 3 \end{pmatrix} + \begin{pmatrix} 4 \\ 5 \\ 6 \end{pmatrix} = \begin{pmatrix} 5 \\ 7 \\ 9 \end{pmatrix}\]</span></p>
+<p>but extends beyond just vector addition</p>
+</section>
+<section class="slide level2">
 <h2>Vector Semantics</h2>
 <p>Most functions in <code>R</code> try to vectorize, but not always possible</p>
 <div class="cell">
@@ -2192,50 +2198,53 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 </div>
 </div>
 </section>
-<section id="vectorized-semantics" class="slide level2">
-<h2>Vectorized Semantics</h2>
-<p>The <code>[1]</code> you sometimes see is <code>R</code> just letting you know where in a vector you are</p>
+<section id="vector-index-printing" class="slide level2">
+<h2>Vector Index Printing</h2>
+<p>The <code>[1]</code> you sometimes see is <code>R</code> just letting you know where in a vector you are:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a aria-label="1"></a><span class="fu">sqrt</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a aria-label="1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1]  1  2  3  4  5  6  7  8  9 10</code></pre>
+</div>
+</div>
+<p>Each line gets a new index:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a aria-label="1"></a><span class="fu">sqrt</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] 1.000000 1.414214 1.732051 2.000000 2.236068 2.449490 2.645751 2.828427
- [9] 3.000000 3.162278 3.316625 3.464102 3.605551 3.741657 3.872983 4.000000
-[17] 4.123106 4.242641 4.358899 4.472136 4.582576 4.690416 4.795832 4.898979
-[25] 5.000000</code></pre>
+ [9] 3.000000 3.162278</code></pre>
 </div>
 </div>
-<div class="fragment">
-<p>When we do 2D data (later), we get column and row indices</p>
+<p>More complex objects have alternate print styles:</p>
 <div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a aria-label="1"></a><span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">9</span>, <span class="at">nrow=</span><span class="dv">3</span>, <span class="at">ncol=</span><span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>     [,1] [,2] [,3] [,4] [,5]
-[1,]    1    6   11   16   21
-[2,]    2    7   12   17   22
-[3,]    3    8   13   18   23
-[4,]    4    9   14   19   24
-[5,]    5   10   15   20   25</code></pre>
+<pre><code>     [,1] [,2] [,3]
+[1,]    1    4    7
+[2,]    2    5    8
+[3,]    3    6    9</code></pre>
 </div>
 </div>
-</div>
+<p>Print width is controlled by <code>getOption("width")</code>.</p>
 </section>
 <section id="variables" class="slide level2">
 <h2>Variables</h2>
 <p>Often, we want to save a several values as a single ‘thing’</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="fragment">
 <p>This is an <em>assignment</em> operator. <em>Vector</em> formed by <code>1:5</code> is labeled <code>x</code></p>
 <p>Naming <code>x</code> later gives us this vector</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a aria-label="1"></a>x</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a aria-label="1"></a>x</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1 2 3 4 5</code></pre>
 </div>
 </div>
 <p>Can be used in functions</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a aria-label="1"></a><span class="fu">sqrt</span>(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a aria-label="1"></a><span class="fu">sqrt</span>(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1.000000 1.414214 1.732051 2.000000 2.236068</code></pre>
 </div>
@@ -2246,15 +2255,15 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 <h2>Vectors and Variables</h2>
 <p>If you need to write a vector ‘by hand’, use the <code>c</code> function:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">4</span>, <span class="dv">9</span>, <span class="dv">16</span>, <span class="dv">25</span>)</span>
-<span id="cb39-2"><a aria-label="2"></a>x</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">4</span>, <span class="dv">9</span>, <span class="dv">16</span>, <span class="dv">25</span>)</span>
+<span id="cb42-2"><a aria-label="2"></a>x</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1]  1  4  9 16 25</code></pre>
 </div>
 </div>
 <p>then</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a aria-label="1"></a><span class="fu">sqrt</span>(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a aria-label="1"></a><span class="fu">sqrt</span>(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1 2 3 4 5</code></pre>
 </div>
@@ -2270,8 +2279,8 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 <h2>Vector Access</h2>
 <p>Use <code>[]</code> operator to get individual elements of a vector:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>)</span>
-<span id="cb43-2"><a aria-label="2"></a>x[<span class="dv">4</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>)</span>
+<span id="cb46-2"><a aria-label="2"></a>x[<span class="dv">4</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 2</code></pre>
 </div>
@@ -2279,15 +2288,15 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 <div class="fragment">
 <p>Can do more complex indexing, but we won’t use it much:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a aria-label="1"></a>x[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a aria-label="1"></a>x[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1.000000 1.414214 1.732051 2.000000 2.236068</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a aria-label="1"></a>x[<span class="dv">6</span><span class="sc">:</span><span class="dv">10</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a aria-label="1"></a>x[<span class="dv">6</span><span class="sc">:</span><span class="dv">10</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 2.449490 2.645751 2.828427 3.000000 3.162278</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a aria-label="1"></a>x[<span class="sc">-</span><span class="dv">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a aria-label="1"></a>x[<span class="sc">-</span><span class="dv">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1.414214 1.732051 2.000000 2.236068 2.449490 2.645751 2.828427 3.000000
 [9] 3.162278</code></pre>
@@ -2321,22 +2330,22 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 <div class="fragment">
 <p>All vectors elements must have the same class - this is the vector’s class</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span></span>
-<span id="cb51-2"><a aria-label="2"></a>y <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(x)</span>
-<span id="cb51-3"><a aria-label="3"></a></span>
-<span id="cb51-4"><a aria-label="4"></a><span class="fu">class</span>(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span></span>
+<span id="cb54-2"><a aria-label="2"></a>y <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(x)</span>
+<span id="cb54-3"><a aria-label="3"></a></span>
+<span id="cb54-4"><a aria-label="4"></a><span class="fu">class</span>(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "integer"</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a aria-label="1"></a><span class="fu">class</span>(y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a aria-label="1"></a><span class="fu">class</span>(y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "numeric"</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a aria-label="1"></a><span class="fu">class</span>(letters)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a aria-label="1"></a><span class="fu">class</span>(letters)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "character"</code></pre>
 </div>
@@ -2347,7 +2356,7 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 <h2>Using Packages</h2>
 <p>A <em>package</em> is a set of code (and data) packaged up for distribution and use</p>
 <div class="fragment">
-<p><code>R</code> has <em>many</em> helpful packages - these are distributed via <code>CRAN</code> (presently 24992)</p>
+<p><code>R</code> has <em>many</em> helpful packages - these are distributed via <code>CRAN</code> (presently 25015)</p>
 </div>
 <div class="fragment">
 <p>Using packages is a two-step process:</p>
@@ -2362,13 +2371,13 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 <h2>Using Packages</h2>
 <p>The <code>install.packages</code> function will download and install a package:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a aria-label="1"></a><span class="fu">install.packages</span>(<span class="st">"ggplot2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a aria-label="1"></a><span class="fu">install.packages</span>(<span class="st">"ggplot2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>If that package uses other packages, <code>R</code> will sort that out automatically</p>
 <div class="fragment">
 <p>When ready to use a package, use the <code>library()</code> command to ‘start’ it:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a aria-label="1"></a><span class="fu">library</span>(ggplot2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a aria-label="1"></a><span class="fu">library</span>(ggplot2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Now I have access to everything in that package</p>
 </div>
@@ -2382,7 +2391,7 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 <div class="fragment">
 <p>Compare</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a aria-label="1"></a><span class="fu">tan</span>(<span class="dv">45</span> <span class="sc">*</span> pi <span class="sc">/</span> <span class="dv">180</span>) Compute the tangent of <span class="dv">45</span> degrees</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a aria-label="1"></a><span class="fu">tan</span>(<span class="dv">45</span> <span class="sc">*</span> pi <span class="sc">/</span> <span class="dv">180</span>) Compute the tangent of <span class="dv">45</span> degrees</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-error">
 <pre><code>Error in parse(text = input): &lt;text&gt;:1:20: unexpected symbol
 1: tan(45 * pi / 180) Compute
@@ -2391,7 +2400,7 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 </div>
 <p>with</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a aria-label="1"></a><span class="fu">tan</span>(<span class="dv">45</span> <span class="sc">*</span> pi <span class="sc">/</span> <span class="dv">180</span>) <span class="co"># Compute the tangent of 45 degrees</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a aria-label="1"></a><span class="fu">tan</span>(<span class="dv">45</span> <span class="sc">*</span> pi <span class="sc">/</span> <span class="dv">180</span>) <span class="co"># Compute the tangent of 45 degrees</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1</code></pre>
 </div>
@@ -2405,43 +2414,14 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 <p>More discussion of comments later as we write more complex code</p>
 </div>
 </section>
-<section id="vector-index-printing" class="slide level2">
-<h2>Vector Index Printing</h2>
-<p>Default vector printing:</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a aria-label="1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> [1]  1  2  3  4  5  6  7  8  9 10</code></pre>
-</div>
-</div>
-<p>Each line gets a new index:</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a aria-label="1"></a><span class="fu">sqrt</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> [1] 1.000000 1.414214 1.732051 2.000000 2.236068 2.449490 2.645751 2.828427
- [9] 3.000000 3.162278</code></pre>
-</div>
-</div>
-<p>More complex objects have alternate print styles:</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb67"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a aria-label="1"></a><span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">9</span>, <span class="at">nrow=</span><span class="dv">3</span>, <span class="at">ncol=</span><span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>     [,1] [,2] [,3]
-[1,]    1    4    7
-[2,]    2    5    8
-[3,]    3    6    9</code></pre>
-</div>
-</div>
-<p>Print width is controlled by <code>getOption("width")</code>.</p>
-</section>
 <section id="recycling-rules" class="slide level2">
 <h2>Recycling Rules</h2>
 <div class="smaller">
 <p>Alignment by default:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb69"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span></span>
-<span id="cb69-2"><a aria-label="2"></a>y <span class="ot">&lt;-</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">6</span></span>
-<span id="cb69-3"><a aria-label="3"></a>x <span class="sc">+</span> y</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span></span>
+<span id="cb66-2"><a aria-label="2"></a>y <span class="ot">&lt;-</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">6</span></span>
+<span id="cb66-3"><a aria-label="3"></a>x <span class="sc">+</span> y</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 5 7 9</code></pre>
 </div>
@@ -2449,9 +2429,9 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 <div class="fragment">
 <p>Recycling by default:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb71"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb71-2"><a aria-label="2"></a>y <span class="ot">&lt;-</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">6</span></span>
-<span id="cb71-3"><a aria-label="3"></a>x <span class="sc">+</span> y</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb68-2"><a aria-label="2"></a>y <span class="ot">&lt;-</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">6</span></span>
+<span id="cb68-3"><a aria-label="3"></a>x <span class="sc">+</span> y</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 5 6 7</code></pre>
 </div>
@@ -2460,9 +2440,9 @@ sqrt(var(if (is.vector(x) || is.factor(x)) x else as.double(x),
 <div class="fragment">
 <p>Recycle warning when vectors don’t fit together cleanly:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb73"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span></span>
-<span id="cb73-2"><a aria-label="2"></a>y <span class="ot">&lt;-</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">6</span></span>
-<span id="cb73-3"><a aria-label="3"></a>x <span class="sc">+</span> y</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb70"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span></span>
+<span id="cb70-2"><a aria-label="2"></a>y <span class="ot">&lt;-</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">6</span></span>
+<span id="cb70-3"><a aria-label="3"></a>x <span class="sc">+</span> y</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning in x + y: longer object length is not a multiple of shorter object
 length</code></pre>
@@ -2477,9 +2457,9 @@ length</code></pre>
 <section id="recycling-warning" class="slide level2">
 <h2>Recycling Warning</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb76"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span></span>
-<span id="cb76-2"><a aria-label="2"></a>y <span class="ot">&lt;-</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">6</span></span>
-<span id="cb76-3"><a aria-label="3"></a>x <span class="sc">+</span> y</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb73"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a aria-label="1"></a>x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span></span>
+<span id="cb73-2"><a aria-label="2"></a>y <span class="ot">&lt;-</span> <span class="dv">4</span><span class="sc">:</span><span class="dv">6</span></span>
+<span id="cb73-3"><a aria-label="3"></a>x <span class="sc">+</span> y</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning in x + y: longer object length is not a multiple of shorter object
 length</code></pre>
@@ -2514,22 +2494,22 @@ length</code></pre>
 <p>Most built-in functions can’t / shouldn’t be changed.</p>
 <p>Some allow alternate behavior via additional arguments:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb79"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a aria-label="1"></a><span class="fu">log</span>(<span class="dv">10</span>) <span class="co"># Default is natural (base e) logarithm</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb76"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a aria-label="1"></a><span class="fu">log</span>(<span class="dv">10</span>) <span class="co"># Default is natural (base e) logarithm</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 2.302585</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb81"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a aria-label="1"></a><span class="fu">log</span>(<span class="dv">10</span>, <span class="at">base=</span><span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb78"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a aria-label="1"></a><span class="fu">log</span>(<span class="dv">10</span>, <span class="at">base=</span><span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1</code></pre>
 </div>
 </div>
 <p>If you want different behavior, write your own function:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb83"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a aria-label="1"></a>cosd <span class="ot">&lt;-</span> <span class="cf">function</span>(x){</span>
-<span id="cb83-2"><a aria-label="2"></a>    <span class="do">## Cosine in degrees</span></span>
-<span id="cb83-3"><a aria-label="3"></a>    <span class="fu">cos</span>(x <span class="sc">*</span> pi <span class="sc">/</span> <span class="dv">180</span>)</span>
-<span id="cb83-4"><a aria-label="4"></a>}</span>
-<span id="cb83-5"><a aria-label="5"></a><span class="fu">cosd</span>(<span class="dv">90</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb80"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a aria-label="1"></a>cosd <span class="ot">&lt;-</span> <span class="cf">function</span>(x){</span>
+<span id="cb80-2"><a aria-label="2"></a>    <span class="do">## Cosine in degrees</span></span>
+<span id="cb80-3"><a aria-label="3"></a>    <span class="fu">cos</span>(x <span class="sc">*</span> pi <span class="sc">/</span> <span class="dv">180</span>)</span>
+<span id="cb80-4"><a aria-label="4"></a>}</span>
+<span id="cb80-5"><a aria-label="5"></a><span class="fu">cosd</span>(<span class="dv">90</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 6.123234e-17</code></pre>
 </div>
@@ -2554,7 +2534,7 @@ length</code></pre>
 </section>
 <section id="orientation" class="slide level2">
 <h2>Orientation</h2>
-<div class="smaller">
+<div class="small">
 <ul>
 <li>Communicating Results (<code>quarto</code>) ✅</li>
 <li><code>R</code> Basics ⬅️</li>
@@ -2567,7 +2547,7 @@ length</code></pre>
 </section>
 <section id="next-time" class="slide level2">
 <h2>Next Time</h2>
-<div class="smaller">
+<div class="small">
 <ul>
 <li>Communicating Results (<code>quarto</code>) ✅</li>
 <li><code>R</code> Basics ✅</li>
@@ -2588,7 +2568,7 @@ length</code></pre>
 <li>table operations with <code>dplyr</code></li>
 </ul>
 <!-- TODO: Adjust for fall semester (not directly applicable) -->
-<!-- {{< include ../advice/taxes.qmd >}} -->
+<!-- {{< include ./advice/taxes.qmd >}} -->
 </div>
 </section>
 <section id="life-tip-of-the-week-2" class="slide level2">
@@ -2614,6 +2594,10 @@ length</code></pre>
 <li><strong>5 City Charter Amendments</strong> (<a href="https://www.nycvotes.org/whats-on-the-ballot">Official NYC-CFB Voter Guide</a>)</li>
 </ul>
 <p>for more see <a href="https://findmypollsite.vote.nyc/" class="uri">https://findmypollsite.vote.nyc/</a>.</p>
+</section>
+<section id="from-the-mayor" class="slide level2">
+<h2>From the Mayor</h2>
+<iframe data-external="1" src="https://www.youtube.com/embed/P9Saz6melz4" width="800" height="400" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
 </section>
 <section id="musical-treat" class="slide level2">
 <h2>Musical Treat</h2>
