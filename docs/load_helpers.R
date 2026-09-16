@@ -1216,8 +1216,3 @@ lint_submission <- function(N, peer_id){
         lintr::lint(tf)
     }
 }
-
-# Run this to update helper scripts
-knitr::purl("tips.qmd",
-            documentation=0L,
-            output="docs/load_helpers.R")
