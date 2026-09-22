@@ -8,7 +8,7 @@ as_pdf () {
 }
 
 
-declare -a PAGES=("syllabus" "resources" "objectives" "project" "miniprojects")
+declare -a PAGES=("syllabus" "resources" "objectives" "project")
 PDFS=("${PAGES[@]}")
 
 mkdir _tmp_syllabuspacket

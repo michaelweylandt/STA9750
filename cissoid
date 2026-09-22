@@ -53,6 +53,18 @@ def count_words_quarto(url):
 def round_to_quarter(x):
     return f'{round(x * 4) / 4.0:.2f}'
 
+def suggest_secret():
+    roster = current_roster(include_inactive=True)
+    with open("_cissoid/EXAMPLE_SECRETS") as f: 
+        possible_secrets = f.read().strip().split("\n")
+        
+    available = set(possible_secrets) - set(roster.secret)
+    
+    if available: 
+        return random.choice(tuple(available))
+    else:
+        return None
+
 @cache
 def course_short():
     with open("_variables.yml") as f:
@@ -1831,7 +1843,8 @@ def roster_list(include_inactive, include_emplid, include_secret,
     "-S", 
     "--secret",
     help="Student's Secret Code (Used for peer feedback assignments)",
-    prompt="What is the student's secret code?"
+    prompt="What is the student's secret code?", 
+    default=suggest_secret()
 )
 @click.option(
     "--section",
