@@ -2,9 +2,9 @@
 mp_num: "01"
 mp_title: "What We Watched: Exploring Netflix Viewing Data"
 mp_skills: "Data Summarization, Exploratory Analysis, Table Formatting"
-mp_application: "Official Statistics, Demography"
-mp_rhetoric: "Op-Ed Writing"
-mp_max_ec: 6
+mp_application: "Media, Internet"
+mp_rhetoric: "Strategy Memo"
+mp_max_ec: 4
 aliases: 
   - "/miniprojects/mini01.html"
 ---
@@ -20,47 +20,50 @@ expected to be far more extensive than any single MP.)
 
 ## Introduction
 
-On June 29, 2023, The US Supreme Court handed down its decision in the closely
-watched case of [*Students for Fair Admissions v. 
-Harvard*](https://en.wikipedia.org/wiki/Students_for_Fair_Admissions_v._Harvard)
-("SFFA"). In *SFFA*, the court found that the admissions programs at Harvard
-and at the University of North Carolina violated the Equal Protection Clause
-of the Fourteenth Amendment to the US Constitution and engaged in impermissible
-race-conscious admissions practices. While the court had explicitly disallowed
-race-conscious practices in other contexts, Harvard argued that the admissions
-process served a compelling governmental interest - educational benefits from a 
-diverse student body - that had been recognized by the court as [recently as 
-2016](https://en.wikipedia.org/wiki/Fisher_v._University_of_Texas_(2016)). 
+The global streaming giant Netflix needs no introduction. Following Netflix's
+original pivot-to-streaming (2010-2011) and move into original content (2013
+*House of Cards*), Netflix has defined a new type of media company that 
+leverages an enormous library of licensed and original content in a bid to 
+capture as much viewing time as possible. For years, Netflix's actual viewership
+data was a closely guarded secret, but in recent years, two factors have forced
+Netflix to be more transparent: 
 
-While the *SFFA* case touched on many aspects of law, one important factual
-question was the practical impact of the programs in question: were they 
-essential to maintaining a diverse student body or were they merely a slight
-"thumb on the scale" that had only a minor impact?
+- The rise of an _advertising_ tier: advertisers want to know how many people
+  are likely to actually see their ads and to know which shows drive the most
+  eyeballs
+- The development of profit participation for creators: historically, Hollywood
+  allowed creatives to own some of the equity in their products, so more
+  successful productions would lead to higher pay on the backend. Netflix 
+  resisted this model for a long time-preferring to provide larger 'up-front'
+  payments to talent-but recent pressure from the creative community has forced
+  Netflix to relent. In order to ensure that creators receive fair and accurate
+  backend compensation, Netflix has had to share data with the larger Hollywood
+  community. 
+  
+To make this data available, Netflix has published a "What We Watched" report
+every six months starting in 2023.[^top10] These WWW reports aggregate total
+global viewership for almost the entire Netflix catalog over six month periods.[^small] Netflix has argued that these statistics show the depth and
+success of their programming, but they have also recently announced their
+intent to [release data less frequently and not at the same time as financial
+statements](https://deadline.com/2026/07/netflix-viewership-data-reports-change-to-annual-1236982322/)
+so you can judge for yourself. 
 
-Now that the first set of post-*SFFA* admissions data has been released,[^year] 
-you are going to attempt to analyze the extent to which post-*SFFA* admissions 
-differ from pre-*SFFA* practice. You will use admissions data distributed via 
-*IPEDS*, the Integrated Postsecondary Education Data System, managed by the 
-National Center for Education Statistics within the Federal Department of 
-Education. 
+In this mini-project, you will explore the WWW data to get a sense of what types
+of programming captures the bulk of Netflix watch time. Along the way, you will
+use your `dplyr` data manipulation skills and the `gt` package to provide 
+sophisticated well-formatted insights. Your findings will be summarized in a 
+"strategy memo" for Netflix senior leadership, in which you advise them on how
+to most effectively spend their 2027 budget to maximize leadership. 
 
-After some initial analysis, you will write a brief (750) word 
-[Op-Ed](https://en.wikipedia.org/wiki/Op-ed) from the perspective of a college
-president describing the impact of *SFFA* on the demographics of admitted 
-students at your college and at colleges across the country. 
+[^top10]: The WWW reports give _global_ data for _all_ of Netflix. Netflix also
+releases country-specific Top 10 data. See
+<https://michael-weylandt.com/STA9750/archive/AY-2025-FALL/miniprojects/mini01.html>
+for a prior mini-project using this data. 
 
-In this mini-project, you will: 
-
-1) Practice use of `dplyr` for analysis of tabular data
-2) Practice use of `quarto` and Reproducible Research Tools for Effective
-   Communication of Data Analysis Results
-3) Begin your professional data science portfolio. 
-
-[^year]: Following the decision in June 2023, universities were first applying
-post-*SFFA* admissions policies for the undergraduate class entering in Fall 
-2024. Due to reporting lags, these data were released in late 2025 and are 
-currently the latest available. As data from more admissions cycles are
-released in IPEDS, the impact (or not) of *SFFA* will become clearer. 
+[^small]: Shows with less than 100,000 hours of watch time are omitted and 
+viewership is founded to the nearest 100,000, so this data doesn't capture
+small differences in unpopular shows. The 'winners' are still quite clear in
+this data. 
 
 ### Student Responsibilities
 
@@ -136,14 +139,21 @@ This is particularly useful if you want to include a figure or table in an
 
 ### Data Acquisition
 
-The following code can be used to acquire data from
-[IPEDS](https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx). Specifically, 
-once run, this code will download the fall enrollment ("EF") and institution
-description ("HD") files for the previous 15 years. To be efficient, this
-function will save a copy of the downloaded data in a folder called
-`data/mp01` and use that copy to avoid re-downloading a file if it is already
-present on your computer. This will make your code faster to run and will avoid
-putting unnecessary stress on the IPEDS servers. 
+The following code can be used to acquire data from Netflix's corporate
+relations website. Specifically, once run, this code will download and aggregate
+the previous seven WWW reports (first-half 2023 `2023H1` to first-half 2026
+`2026H1`). Netflix provides slightly different data from each report, so this
+function standardizes on a small set of key features including: the 
+'watch window', the title of the program, the runtime, the total hours viewed, 
+the original release date of the program, whether the program is available in 
+all countries in which Netflix is available, and whether the program is
+pre-recorded or live. 
+
+
+To be efficient, this function will save a copy of the downloaded 
+data in a folder called `data/mp01` and use that copy to avoid re-downloading a
+file if it is already present on your computer. This will make your code faster
+to run and will avoid putting unnecessary stress on the Netflix servers. 
 
 ```{r}
 #| message: false
@@ -156,7 +166,7 @@ putting unnecessary stress on the IPEDS servers.
 #' 
 #' After import, files are stacked vertically and some basic cleaning is
 #' performed. 
-load_netflix_data <- function(start_year=2010, end_year=2024){
+load_netflix_data <- function(){
   # Note to students: Make sure you have installed the tidyverse and fs packages
   #                   before beginning this assignment. If you aren't sure,
   #                   simply run `library(tidyverse)` at your R Console and, if
@@ -198,9 +208,10 @@ load_netflix_data <- function(start_year=2010, end_year=2024){
     map(html_element, xpath = "//a[contains(@href, '.xlsx')]") |> 
     map_chr(html_attr, "href") |> 
     enframe("period", "url") |> 
-    mutate(path = path(data_dir, paste0(period, ".xlsx")), 
-           data = map(path, read_excel, skip=3, na="*"), 
-           data = map(data, \(x) x |> mutate(`Release Date` = as.Date(`Release Date`)))) |>
+   mutate(path = path(data_dir, paste0(period, ".xlsx")), 
+          path = map2(url, path, download_if_needed), 
+          data = map(path, read_excel, skip=3, na="*"), 
+          data = map(data, \(x) x |> mutate(`Release Date` = as.Date(`Release Date`)))) |>
     unnest(data) |> 
     select(-url, -path) |> 
     mutate(year=str_sub(period, 1, 4), 
@@ -400,7 +411,7 @@ Here, the new column is created by calling a function (`some_function`) but then
 assigned back to the old name, having the effect of changing the column's values
 in place. 
 
-::: {.callout=tip title="Task 3: Fix Column Types"}
+::: {.callout-tip title="Task 3: Fix Column Types"}
 
 To proceed, we need to fix the `year` column and the `Available Globally?` 
 column (which will have a slightly different name after Task 2). 
@@ -410,7 +421,7 @@ The `year` column is rather easy. Right now, it is _string_ values ("2023",
 as such. This is a simple "like-for-like" change that can be done with the
 `as.integer()` (or `as.numeric()`) coercion function. 
 
-The global availability column requires a bit more touch. At the end of my code,
+The global availability column requires a bit more care At the end of my code,
 it consists of the string values `"Yes"` and `"No"`, but we would really like
 to use logical `TRUE` / `FALSE` values. Unfortunately, the `as.logical()` 
 function does not do what we want here: 
@@ -438,7 +449,6 @@ As in the previous task, either insert your code into the end of my
 
 :::
 
-
 ### Initial Data Exploration {#eda}
 
 Before moving to our final analysis, we will do a bit of 
@@ -458,10 +468,13 @@ which can be used to create complex tables natively in `R`.
 What follows here is a very brief introduction to the `gt` package. **You 
 do not need to copy this into your submission - it is provided only as 
 background.** You will use the `gt` package to format your answers to the 
-next few tasks. 
+next few tasks. Click on the blue bar below to read the introduction to `gt`.
+
+::: {.callout-note collapse="true" title="Making Attractive Tables in R"}
 
 For this introduction, I am going to use the `penguins` data, but the same
 functions can be applied to any data that you are analyzing. 
+
 
 Let's first look at what a "basic" or "raw" display of a data frame gives us: 
 
@@ -719,6 +732,8 @@ name. `gt` has many more advanced options that can be used for further
 customization; refer to the package documentation for more details or ask on the
 course discussion board.
 
+:::
+
 #### Exploratory Analysis
 
 When faced with a new data set, it is tempting to look only at the first few
@@ -732,9 +747,12 @@ I recommend you always do at least two basic checks:
 
 - Ensure that you know what `R` *thinks* your data is. You might see a value like
   `"2025-12-01"` and think that `R` is reading it as a date value, but `R`
-  might instead by interpreting it as a string value.[^excel] You have several
-  options for this in `R`, but when working with a data frame, I'd recommend the
-  `glimpse` function: *e.g.*
+  might instead interpret it as a string value.[^excel] Then, when you try to do
+  "date things" you will run into trouble. To avoid this, you often need to 
+  explicitly convert object types in `R`, but knowing when to convert requires
+  you to first know what type `R` thinks something is. You have several
+  options for determining object type in `R`, but when working with a data 
+  frame, I'd recommend the `glimpse()` function from the `dplyr` package: *e.g.*
   
   ```{r}
   glimpse(penguins)
@@ -757,7 +775,8 @@ I recommend you always do at least two basic checks:
   summary(penguins)
   ```
   
-  But I actually like the `skim` function from the `skimr` package: 
+  But I actually prefer the `skim()` function from the `skimr` package as it
+  provides a bit more type-specific information and has more handsome formatting:
   
   ```{r}
   #| warning: false
@@ -792,20 +811,23 @@ loaded and processed above. **Include the code to perform the checks,
 the output of the checks, and describe what you see.**
 
 In general, you shouldn't include this in analysis reports, but we're making
-an exception here to practice a good habit. I would advise against including this
-step in future mini-projects or your course project reports, but these
-checks are easy and very valuable, so I recommend you make them part of your 
-EDA workflow. 
+an exception here to practice a good habit. I would advise *against* including 
+code in your *future* mini-project or course project reports, but these steps
+are easy and very valuable, so I recommend you make them part of your standard
+EDA workflow. (Remember, not everything you do as part of EDA needs to be 
+included in your final submission, especially outside of a classroom setting. 
+Make sure you are maximizing signal-to-noise for your intended readers.)
 
 :::
 
-We are now ready to begin some EDA. Analysts organize their EDA in a variety of
-ways, but one of my favorites is to think of a variety of interesting questions
-and to answer them. When the answers don't match my intuition, I know I've found
-somewhere I want to dig deeper. For the first few mini-projects, I will provide
-these exploratory questions. Later in the course, particularly after we have
-discussed the role of plotting and graphics in EDA, you will have opportunities
-to organize your EDA in other fashions. 
+We are finally ready to begin some EDA. Analysts organize their EDA in a variety
+of ways, but one of my favorites is to think of a variety of interesting 
+questions relevant to the data set and to attempt to answer them. When the 
+answers don't match my intuition, I know I've found somewhere I want to dig 
+deeper. For the first few mini-projects, I will provide these exploratory 
+questions. Later in the course, particularly after we have discussed the role of
+plotting and graphics in EDA, you will have opportunities to organize your EDA 
+in other fashions. 
 
 ::: {.callout-tip title="Task 5: Exploratory Questions - Inline Values"}
 
@@ -815,16 +837,16 @@ Quarto's [inline code](https://quarto.org/docs/computations/inline-code.html)
 functionality to place the values in a sentence; that is, you should answer in
 complete sentences, written as normal text with inline code for computed values.
 
-1. What date range is covered by this data set? 
-2. How many different shows and movies are covered in this data set? 
+1.  What date range is covered by this data set? 
+2.  How many different shows and movies are covered in this data set? 
 
-   (Don't worry about combining seasons for now: you can treat "Stranger Things
-   2" and "Stranger Things 3" as different shows.)
-3. How many total hours have been spent watching shows from the *Bridgerton* 
-   universe? 
+    (Don't worry about combining seasons for now: you can treat "Stranger Things
+    2" and "Stranger Things 3" as different shows.)
+3.  How many total hours have been spent watching shows from the *Bridgerton* 
+    universe? 
    
-   *Hint:* The `str_detect` function can be used to test whether a string 
-   (like a name) contains a substring:[^re] *e.g.*, 
+    *Hint:* The `str_detect()` function can be used to test whether a string 
+    (like a name) contains a substring:[^re] *e.g.*, 
 
     ```{r}
 # True because "CUNY" (2nd arg) is in the longer string (1st arg)
@@ -834,7 +856,7 @@ str_detect("CUNY Bernard M. Baruch College", "CUNY")
 str_detect("CUNY Bernard M. Baruch College", "Hunter")
     ```
 
-    As with other functions in `R`, `str_detect` is vectorized, making it easy
+    As with other functions in `R`, `str_detect()` is vectorized, making it easy
     to use inside of other functions, such as `filter()`.
 
     ```{r}
@@ -842,25 +864,25 @@ str_detect("CUNY Bernard M. Baruch College", "Hunter")
     str_detect(names, "CUNY")
     ```
 
-[^re]: `str_detect` can actually be used to perform significantly more complex
+[^re]: `str_detect()` can actually be used to perform significantly more complex
 string analysis than simple "does it contain this subset of letters" but we
 won't cover that sort of string processing for a [few more weeks](../pre/pa10.qmd). 
 
-4. How many total hours have been spent watching the five seasons of 
-   *Stranger Things*? For this question, we only want the "real" *Stranger Things*
-   shows and not the companion behind-the-scenes show ("Beyond Stranger Things"), 
+4.  How many total hours have been spent watching the five seasons of 
+    *Stranger Things*? For this question, we only want the "real" *Stranger Things*
+    shows and not the companion behind-the-scenes show ("Beyond Stranger Things"), 
    the animated spin-off ("Tales from '85"), or the background music 
-   ("Stranger Things: Fireplace"). 
+    ("Stranger Things: Fireplace"). 
    
-   To answer this question, you will need to use a combination of `filter()`
-   and `filter_out()` statements to sequentially apply multiple `str_detect()`
-   steps. 
+    To answer this question, you will need to use a combination of `filter()`
+    and `filter_out()` statements to sequentially apply multiple `str_detect()`
+    steps. 
    
-   *Hint*: Recall that you generally shouldn't combine multiple steps in a single
-   `filter_out()` as the results can be a bit unintuitive.
-5. What percentage of total watch time was spent on the Top 10 titles of 2026H1?
-6. What fraction of Netflix's catalog is globally available? (Answer this both
-   by title and weighted by hours viewed)
+    *Hint*: Recall that you generally shouldn't combine multiple steps in a single
+    `filter_out()` as the results can be a bit unintuitive.
+5.  What percentage of total watch time was spent on the Top 10 titles of 2026H1?
+6.  What fraction of Netflix's catalog is globally available? (Answer this both
+    by title and weighted by hours viewed)
 
 As you go through these questions, you may find it useful to create new 
 variables in the data to avoid repeated lengthy calculations, *e.g.*, 
@@ -890,354 +912,154 @@ use to create plots as well.
 
 ::: {.callout-tip title="Task 6: Exploratory Questions - Table Answers"}
 
-Using `dplyr` tools, answer the following questions:
+Using `dplyr` tools, answer the following questions. Each of these questions can
+be answered with a table of just a few rows. Use the `gt` package, as introduced
+above, to present your results in an attractive 'publication-quality' format, 
+not just a "raw" `R` output.
 
-1. Which 5 states had the highest number of graduate students across all 
-   institutions located in that state? 
+1. What was the top show (by total hours viewed) in each period and what 
+   fraction of total viewership did it capture? 
 
-2. In 2024, how many first year undergraduate students were enrolled at CUNY 
-   colleges and which colleges did they attend? Report both absolute enrollment 
-   numbers and percent of total first-year undergraduates? 
+
+2.  How has Netflix's catalog changed in size over the periods for which we 
+    have questions? You should consider both the number of titles and the 
+    total runtime of content. 
+
+3.  Which shows have had the most consistently high viewership across all 
+    periods? These shows are likely to be 'staples' that viewers fall back
+    on as 'comfort food', *e.g.*, re-runs of *Friends*. 
+    
+    *Hint*: To answer this question, you might want to compute the average
+    veiwership, the minimum viewership, and the standard deviation of viewership
+    across different periods and develop a filter using some combination of
+    these quantities.
+
+4. Within each period, what fraction of time was spent on 'shows' vs movies?
    
-   *Hint*: The `fmt_percent` and `fmt_number` functions will be useful here.
-3. How has Baruch's total undergraduate enrollment changed over the study 
-   period? Report both enrollment numbers and percent change year-over-year. 
+   Unfortunately our data does not clearly delineate shows from movies, so you
+   will need to come up with a heuristic for doing so. I'd recommend some 
+   combination of: 
    
-   *Hint*: The `lag` function will be helpful here. 
-4. At what 5 institutions did the *fraction of white students* decrease the most
-   over the period from 2010 to 2020? 
+   - Length: anything over 4-ish hours is almost certainly a TV show, not a 
+     movie
+   - "Season": if a title has "Season" in it, it is almost certainly a TV show
    
-   *Hint*: You may want to pre-filter by total enrollment to make sure you are
-   not only reporting very small institutions in your analysis, as these are
-   more prone to large fluctuations.
-5. In which 3 states did the *fraction of female undergraduates* increase the
-   most over the period from 2010 to 2024?
+   You might think of other filters or thresholds that make sense and can
+   incorporate them into your analysis. 
    
-Each of these questions can be answered with a table of just a few rows. Use the
-`gt` package, as introduced above, to present your results in an attractive
-'publication-quality' format, not just a "raw" `R` output.
+   This is a problem that commonly arises in real data analysis: the data is
+   _not quite_ what we might want to answer a question, but we could definitely
+   construct the feature manually if we were willing to put in the effort. In
+   this case, we have to come up with an _approximate_ way of implementing our
+   feature that (roughly) captures our human intuition.[^llm]
+   
+   [^llm]: This is an interesting place where LLMs can _augment_ data analysts.
+   It would be pretty easy - but a bit beyond this assignment - to query your
+   favorite LLM to classify these titles as TV shows or movies. See
+   <https://tidydesign.substack.com/i/214337800/structured-data> for a 
+   discussion of these ideas. 
+
+5. How does the performance of live events compare to pre-taped content? Does
+   the average live event draw more viewership than an average piece of 
+   pre-taped content? How about a 'top tier' live event vs 'top tier' pre-taped
+   content?
+   
+There are **many ways** you might choose to approach these questions, and there
+isn't a single correct answer. Make sure to _clearly explain_ any analytical 
+choices you make. 
+    
 
 :::
 
 
-### Final Deliverable: College Newpaper Op-Ed
+### Final Deliverable: Platform Strategy Memo
 
 At this point, you have acquired your data, cleaned and prepared it, and
 performed your EDA. Now, you are ready to get to work on the final deliverable
 of your analysis. Everything that comes before this is important, but typically
 less visible to your final customer. 
 
+::: {.callout-tip title="Task 7: Corporate Strategy Memo"}
 
-::: {.callout-tip title="Task 7: Op-Ed"}
+Write a brief (no more than 750 words) _corporate strategy memo_ addressed to
+Netflix leadership. Your memo should help inform Netflix's original content
+strategy for 2027 and beyond. 
 
-Write a brief (no more than 750 words) Op-Ed from the perspective of a college 
-president to be published in the campus newspaper. You can be the president of 
-any institution you want, so long as it has a meaningful undergraduate population, 
-(*i.e.*, not stand-alone graduate schools like the CUNY School of Law), so
-have some fun with choosing your persona. 
+You can use the calculations performed above - or something similar - to include
+specific _numerical_ evidence in support of your recommendations. For example,
+you should not say "live events are an increasingly large share of viewership" and should instead prefer a more specific claim like "live events have risen from X%
+to Y% of total watch time."
 
-Your Op-Ed should include (at a minimum) the following information: 
+Your memo should touch on **at least 2** of the following possible topics: 
 
-- The definition of diversity you are using
-- Some brief statistics about the size and make-up of the student body at your
-  institution
-- A year-over-year comparison of the entering first-year first-time 
-  undergraduate class. 
-- A year-over-year comparison of the demographics of the entire student body
-- A discussion of long-term diversity trends at your institution
-- A comparison of changes at your institution to one-or-more of the California
-  public institutions. 
+- Globally available *vs.* regionally licensed content
+- TV shows *vs.* movies
+- 'Big hits' *vs.* the long-tail of smaller titles
+- Shorter 'bite sized' *vs.* longer content 
+- 'Burstiness' of viewership: do titles have a _rush_ of viewership immediately 
+  after release (to partially answer this, you can use the period end and release
+  date columns to get a "days available" value; combine this with a focus on
+  titles that release near a period end)
+- Trends over time: identify time changes in the data, don't simply aggregate
+  2023 to the present. 
   
-  (Think of these as a 'critical value' in a statistical
-  test for a change: if your change is smaller than a California change, when
-  the California schools shouldn't have had to change their policy at all, your
-  change is likely just noise.)
+You may also address other structure or trends in the data you find interesting.
 
 :::
 
-You may include optionally additional tables or even visualizations if you want, 
-but these do not replace the requirement to write an Op-Ed. Your Op-Ed should 
-stand  "alone" and not be mixed in with your code. Place the code necessary to
-perform the op-ed calculations in a separate section and use inline code chunks
-to include results of your analysis in the text of your op-ed. Op-Eds that 
-hard-code calculated values will be penalized. 
-
-For purposes of this exercise, you can measure "diversity" as the fraction of
-non-White/non-Asian-American students in your undergraduate class. If you want
-to use a more sophisticated metric, see the first extra credit opportunity below.
-It is up to you whether you want to consider gender diversity or not in your
-analysis: if you don't want to consider gender diversity, simply sum 
-corresponding `m` and `f` columns within each racial group.
+You may include additional tables or even visualizations if you want, 
+but these do not replace the requirement to write the core strategy memo. Your
+memo should stand "alone" and not be mixed in with your code. Place the code
+necessary to perform the relevant supporting calculations in a separate section
+and use inline code chunks to include results of your analysis in the text of 
+your strategy memo. Deliverables that hard-code calculated values will be
+penalized. 
 
 {{< include _aidisclosure.qmd >}}
 
 
 {{< include _echeader.qmd >}}
 
-### Entropy Analysis (Up to 2 Points)
+### Gini Analysis (Up to 2 Points)
 
-Diversity of a population is a difficult quantity to measure. While simple 
-statistics ("percent female" or "percent underrepresented minority") are often
-used, they suffer from various challenges in an increasingly diverse world.
-(For example, NYC does not have a racial majority, so what does it mean to be
-an underrepresented minority in the context of city politics?) History and 
-social context can guide the choice of diversity metric, but for this extra 
-credit opportunity, you can use a *statistical* measure of diversity known as
-[entropy](https://en.wikipedia.org/wiki/Entropy_(information_theory)). 
+When analyzing data with a 'long tail', it is often interesting to look at
+_inequality_ in the data. We know that viewership data will be 'top-heavy' and
+that some shows will be major hits with meaningful cultural footprints, while
+others will be watched by only a small number of viewers. To wit, 
 
-Op-Eds that use the concept of entropy may be awarded up to two points of
-extra credit. Specifically, entropy must be used to answer all of the questions
-specified in Task 7 above. 
+{{< video https://www.youtube.com/watch?v=lqRQ5Y6OYi4 >}}
 
-Entropy of a distribution measures how hard it is to predict. Consider two 
-scenarios: 
+To put some numbers of this phenomenon, we can adapt the idea of a 
+[Gini coefficient](https://en.wikipedia.org/wiki/Gini_coefficient) from
+economics. Wikipedia gives several useful formulas for the Gini coefficient. 
+For example, suppose a country has only 5 citizens, and their incomes are as
+follows: 
 
-i) An urn filled with 99% red balls and 1% green balls; 
-ii) An urn filled with an equal mix of red and green balls. 
+| Citizen | Income |
+|---------|--------|
+| Alice   |  $20K  |
+| Barbara | $200K  |
+| Carol   |   $0K  |
+| Debbie  |  $50K  |
+| Emily   |  $40K  |
 
-If you are asked repeatedly to guess the color of the next ball drawn from an urn,
-knowing only the baseline mixture, your predictions for the first urn will be 
-correct 99% of the time (assuming you use the obvious "always guess red" strategy),
-while no strategy can be correct more than 50% of the time for the second urn. 
+The Gini coefficient of this distribution can be computed as: 
 
-Entropy formalizes this concept as follows: given a (discrete) random variable 
-$X$ taking values in a set $\mathcal{X}$, each with probability $p(\cdot)$. The
-entropy of $X$ is given by: 
+$$G = \frac{2}{n} \frac{\sum_{i=1}^n i y_{(i)}}{\sum_{i=1}^n y_{(i)}} - \frac{n+1}{n}$$
 
-$$H(X) = -\sum_{x \in \mathcal{X}: p(x) > 0} p(x) \log p(x)$$
+where $y_{(i)}$ are the _ordered_ incomes ($y_{(1)} = 0 \leq y_{(2)} = 20 \leq y_{(3)} = 40 \leq y_{(4)} = 50 \leq y_{(5)} = 200$). This gives a Gini 
+coefficient of around 55.5% for this country.  (Make sure you can replicate
+this number.)
 
-The sum is taken over all outcomes $x$ with non-zero probability. For our two
-urns above: 
+Up to two points of extra credit will be given to submissions that include
+a Gini-coefficient analysis in their strategy memo. Submissions must (briefly)
+define the Gini coefficient in non-technical language. When computing the 
+Gini coefficient, make sure to consider whether it makes sense to look at
+raw view time or some sort of length-normalized viewership metric. 
 
-$$\begin{align*}
-H(\text{Urn 1}) = -\left(0.99 * \log(0.99) + 0.01 * \log(0.01)\right) = 0.056 \\
-H(\text{Urn 2}) = -\left(0.50 * \log(0.50) + 0.50 * \log(0.50)\right) = 0.693 \\
-\end{align*}$$
+### Data Visualization (2 point)
 
-This tells us that Urn 2 is quite a bit more random than Urn 1.[^units] Entropy
-is particularly helpful in our context as it applies naturally to *categorial*
-quantities like race where numerical measures of randomness like variance don't
-naturally fit. 
-
-This definition can be extended straightforwardly to multi-category quantities. 
-Consider these demographics of Bronx and Queens counties in the 2020 census: 
-
-```{r}
-#| echo: false
-demos <- tribble(
-    ~County, ~`Asian`, ~`Black`, ~`Hispanic`, ~`White`, ~`Other`,
-    "Bronx",   0.0460,   0.2848,      0.5476,   0.0888,  0.0336,
-    "Queens",  0.2730,   0.1585,      0.2276,   0.2284,  0.0625
-) 
-
-demos |> 
-    gt() |> 
-    cols_label(County = "County / Borough", 
-               Other  = "All Other") |>
-    tab_source_note(md("Percentages from relevant 
-                       [Queens](https://en.wikipedia.org/wiki/Demographics_of_Queens#Race_and_ethnicity) 
-                       and 
-                       [Bronx](https://en.wikipedia.org/wiki/Demographics_of_the_Bronx#Race_and_ethnicity) 
-                       Wikipedia articles")) |>
-    tab_footnote(md("Asian, Black, and White percentages correspond to census 
-                 estimates of Asian (only, non-hispanic), *etc.* Hispanic 
-                 percentage corresponds to census estimates of Hispanic (any 
-                 race), and All Other was calculated to values would sum to 
-                 100%.")) |>
-    tab_header("Demographics of Two NYC Boroughs", 
-               "Data from 2020 Census") |>
-    fmt_percent(-County)
-```
-If you repeat the entropy calculation here (with five terms in the sum), you 
-find that the Bronx has an entropy of approximately 1.16 while Queens has an 
-entropy of 1.49, indicating a more diverse population, even though the Bronx has
-a higher proportion of Black and Hispanic residents.  
-
-*Hint*: When computing entropy, it is useful to take $0 * \log(0) = 0$ so that
-impossible outcomes are automatically discarded. As such, code like this is 
-useful to avoid `NA` issues: 
-
-```{r}
-bronx_demos <- c(0.046, 0.2848, 0.5476, 0.0888, 0.0336)
--sum(bronx_demos * log(bronx_demos + 1e-10))
-```
-
-The small 'nugget' term (`1e-10`) has no real impact on most probabilities, but
-prevents issues arising from $\log(0)$ being undefined. 
-
-[^units]: The units of entropy are somewhat tricky to understand. For us, 
-it suffices to know that a larger entropy means more randomness. 
-
-### Advanced `dplyr` Programming (Up to 3 Points)
-
-For up to three extra credit points, add the following question to your Task 6 
-EDA: In 2024, which 3 institutions of at least 1000 undergraduates had student 
-populations that were 'most representative' of the US undergraduate population
-as a whole?
-
-Extra credit will be determined on the basis of how accurately and how
-efficiently the KL divergence is calculated, in addition to how well it is 
-explained and presented in table format. 
-   
-The *Kullback–Leibler divergence* or KL divergence can be used to 
-measure the difference between two different probability distributions. For
-this problem, you can use the enrollment counts at each institution to define
-a probability distribution (*e.g.*, $\mathbb{P}(\text{White Male}) = 20\%$,
-$\mathbb{P}(\text{White Female}) = 22\%$, *etc.*) for that campus and compare
-it to the national undergraduate population. 
-   
-The following example may help: suppose I have categorized my personal 
-library into three categories of books: i) fiction; ii) non-fiction; and
-iii) textbooks. Furthermore, my books are unorganized and spread randomly
-across 5 shelves as follows: 
-   
-```{r}
-#| echo: false
-books <- tribble(
-    ~shelf, ~fiction, ~nonfiction, ~textbook, 
-    1,       15,          20,         5,
-    2,       20,          10,        10,
-    3,       40,          20,        20,
-    4,       10,          10,        30,
-    5,       15,          20,        20
-)
-   
-books_base_counts <- books |> 
-    select(-shelf) |>
-    summarize(across(everything(), sum)) 
-
-books_base_probs <- books_base_counts |> 
-    mutate(total = rowSums(across(everything())), 
-           across(everything(), \(x) x/total)) |> 
-    select(-total)
-
-shelf_probs <- books |> 
-    group_by(shelf) |>
-    mutate(total = rowSums(across(everything())), 
-           # No need to `-shelf` here as grouping variables aren't included in `everything()` 
-           across(everything(), \(x) x/total)) |>
-    select(-total)
-     
-shelf1_probs <- shelf_probs |> filter(shelf == 1)
-     
-# KL can be computed in two ways
-#
-# This is simpler, but requires some tools not yet introduced (joins and pivots)
-kl <- inner_join(
-    pivot_longer(shelf_probs, 
-                 -shelf, 
-                 names_to="category",
-                 values_to="shelf_prob"), 
-    pivot_longer(books_base_probs, 
-                 everything(), 
-                 values_to="collection_prob", 
-                 names_to="category"), 
-    join_by(category)) |>
-    summarize(kl=sum(collection_prob * log(collection_prob / shelf_prob)))
-
-# This avoids joins and pivots, but is pretty fragile and requires 
-# rather advanced use of the across() idiom
-kl_alt <- books |> 
-    mutate(shelf_total = rowSums(across(-shelf)), 
-           # Count total # of books per genre
-           across(-contains("shelf"), 
-                  \(x) sum(x), 
-                  .names="{.col}_collection"), 
-           # Compute total # of books total, to get collection probabilities
-           collection = rowSums(across(contains("collection"))), 
-           # Compute collection-wide probabilities
-           across(-c(contains("shelf"), 
-                     contains("collection")), 
-                  \(x) x / shelf_total, 
-                  .names="{.col}_p"),
-           # Compute per shelf probabilities of each genre
-           across(ends_with("_collection"), 
-                  \(x) x/collection, 
-                  .names="{.col}_p")
-    )|>
-    # We can now work with probabilities only
-    select(shelf, ends_with("_p")) |>
-    mutate(across(contains("collection"), 
-                  # This is some nasty magic to let us access the population (collection)
-                  # and shelf probabilities jointly
-                  # cur_column() will give a string like "fiction_collection_p", so
-                  # removing "_collection" leaves us with the string "fiction_p". 
-                  # Passing this to get() gives access to the shelf-level `fiction_p`
-                  # variable that we can then use to get the relevant term of the KL sum
-                  \(x) x * log(x / get(str_remove(cur_column(), "_collection"))), 
-                  .names="{.col}_kl"), 
-           # Sum across individual KL terms for overall KL
-           kl=rowSums(across(ends_with("_kl")))) |>
-    select(shelf, kl)
-
-# Check two approaches give the same result
-stopifnot(all.equal(kl, kl_alt))
-
-   
-books |> 
-    gt() |> 
-    cols_label_with(fn=str_to_title)
-```
-   
-Comparing these shelves is a bit tricky since there aren't the same 
-number of books on each shelf and a purely 'numbers-based' comparison
-might treat Shelf 2 as more representative than Shelf 3 simply because it
-has fewer books. The KL divergence things of these as probabilities (*e.g.*,
-Shelf 2 is 50% fiction) and can be used to compare them to the overall 
-probabilities of the whole collection. 
-   
-Adding up the columns, I have `r books_base_counts$fiction` fiction books, 
-`r books_base_counts$nonfiction` non-fiction books, and 
-`r books_base_counts$textbook` textbooks,  so my collection is about
-`r percent(books_base_probs$fiction)` fiction, 
-`r percent(books_base_probs$nonfiction)` non-fiction, and 
-`r percent(books_base_probs$textbook)` textbooks. 
-   
-We use these probabilities to compare each row against the overall 
-population using the KL divergence formula: 
- 
-$$\mathcal{D}(P \| Q) = \sum_{x} P(x) \log \frac{P(x)}{Q(x)}$$
-   
-where the sum $x$ is taken over all categories and $P, Q$ are different 
-probability distributions. Here $P$ is the "baseline" (correct) distribution and
-$Q$ is the approximation. So the KL divergence between Shelf 1, which is about
-`r percent(shelf1_probs$fiction)` fiction, 
-`r percent(shelf1_probs$nonfiction)` non-fiction, and 
-`r percent(shelf1_probs$textbook)` textbooks, and the collection as a whole
-is given by
-   
-$$
-   `r books_base_probs$fiction` \log \frac{`r books_base_probs$fiction`}{`r shelf1_probs$fiction`} + 
-   `r books_base_probs$nonfiction` \log \frac{`r books_base_probs$nonfiction`}{`r shelf1_probs$nonfiction`} + 
-   `r books_base_probs$textbook` \log \frac{`r books_base_probs$textbook`}{`r shelf1_probs$textbook`} \approx
-   `r kl |> filter(shelf == 1) |> pull(kl)`
-$$
-   
-We can repeat this analysis across all 5 shelves to get the following KL table
-   
-```{r}
-#| echo: false
-kl |> 
-    gt() |>
-    cols_label(shelf="Shelf", 
-              kl="KL Divergence from Entire Collection") |>
-    fmt_number(kl, decimals=4)
-    
-```
-   
-From which we see that Shelf `r kl |> slice_min(kl) |> pull(shelf)` is 
-"most representative" of my whole collection. Note also that Shelves 2
-and 3 have the same KL Divergence because they are (proportionally) the same.
-
-*Hint*: Note that this is a *significantly* more complex analysis than we have
-performed so far and requires some ideas that won't be covered until Week 6 and
-some column selection functionality that will not be covered in lecture. 
-Make sure to access the source code for this assignment and use it as a guide
-for completing this extra credit task.
-
-### Data Visualization (1 point)
-
-Inclusion of a well-formatted visual element to accompany your op-ed will get
-one extra credit point. 
+Inclusion of a well-formatted visual element to accompany your memo may earn up
+to 2 points of extra credit. 
 
 {{< include _footer.qmd >}}
