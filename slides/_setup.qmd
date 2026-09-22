@@ -127,24 +127,33 @@ get_pa_deadline <- function(N){
         pull(due) |> 
         max()
 }
-
 get_mp_submitted <- function(N){
     ISSUES <- read_json(glue("https://api.github.com/repos/michaelweylandt/{REPO_NAME}/issues?per_page=100&state=open"))
     
-    KEEP_ISSUES <- ISSUES |> keep(\(x) x |> 
-                                      pluck("labels") |> 
-                                      map_chr("name") |>
-                                      str_detect(glue("Mini-Project #0{N}")) |>
-                                      any()
-                                  )
+    REGEX <- glue("Mini-?Project #0{N}") |> 
+        as.character() |> 
+        regex(ignore_case=TRUE)
+    
+    has_mp_label <- function(x) {
+        x |> pluck("labels") |> 
+            map_chr("name") |> 
+            str_detect(REGEX) |>
+            any()
+    }
+    
+    has_mp_title <- function(x) {
+        x |> pluck("title") |> str_detect(REGEX)
+    }
+    
+    KEEP_ISSUES <- ISSUES |> keep(\(x) has_mp_label(x) | has_mp_title(x))
     
     
     PASSED_CHECKS <- KEEP_ISSUES |> keep(\(x) x |> 
-                                      pluck("labels") |> 
-                                      map_chr("name") |>
-                                      str_detect("Passed Automated Checks") |>
-                                      any()
-                                  )
+                                             pluck("labels") |> 
+                                             map_chr("name") |>
+                                             str_detect("Passed Automated Checks") |>
+                                             any()
+    )
     
     
     N_SUBMITTED <- length(KEEP_ISSUES)

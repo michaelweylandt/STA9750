@@ -13,9 +13,10 @@ format: revealjs
 
 {{< include _setup.qmd >}}
 
+
 ## Course Project Proposals
 
-Today: Course project proposal presentations ([Official Description](../project.qmd#project-proposal-presentations))
+Next week: Course project proposal presentations ([Official Description](../project.qmd#project-proposal-presentations))
 
 - **6 minute presentation**
 - Key topics:
@@ -39,548 +40,1335 @@ Extra Review of `R` Basics - 100% Optional
 - Variables, Vectors, Types, Control Flow
 
 
-## Mini-Project #00
 
-MP#00 due last Friday - Course Infrastructure Set-Up
+## Presentation Hints
 
-::: {.incremental}
-
-- Setup RStudio Project
-- Create GitHub Account and Repo
-- Connect Local Computer to GitHub
-- Deploy GitHub Pages
-
-:::
-
-. . . 
-
-I enjoyed getting to know (a bit more about) you!
+- Longest time $\neq$ most important
+- Story, story, story! _Why_ are you making these choices? 
+- Hourglass Structure
+  - Start big
+  - Motivate _your_ overarching question
+  - Specific questions
+  - Tie specific to overarching
+  - From overarching back to big motivation
+- No less than one figure every other slide
 
 ## Mini-Project #00 
 
-[Mini-Project #00](../mini/mini00.qmd) peer feedback assigned
+[Mini-Project #00](../mini/mini00.qmd) is due `r get_mp_deadline(00)`
 
-- Due `r get_mp_pf_deadline(0)`
-- 3 peer feedback assignments per student
-  - Give 3 comments, get 3 comments
-  
-. . . 
-
-[Peer Feedback Instructions](../miniprojects.qmd#peer-feedback)
-can be found online
-
-## Mini-Project #00
-
-Interactive script automates this process: 
+- Automatic grace period until Sunday at midnight
 
 ```{r}
-#| eval: false
-#| echo: true
-source("https://michael-weylandt.com/STA9750/load_helpers.R")
-mp_pf_perform(0, github="YOUR_GITHUB_ID")
+#| echo: false
+MP_SUBMISSIONS <- get_mp_submitted(0)
+ROSTER_FILE <- read_yaml("_teaching.yml") |> 
+    pluck("gradedir") |>
+    file.path("roster.json")
+
+if(file.exists(ROSTER_FILE)){
+    N_STUDENTS <- ROSTER_FILE |> read_json() |> length()
+} else {
+    N_STUDENTS <- NA
+}
 ```
 
-Will request the secret code I gave you *via* Piazza when you completed MP#00
+::: {.smaller}
 
-. . . 
+As of `r Sys.Date()`: 
 
-Will ask you a series of questions and save your 
-responses in a specifically formatted file
-
-## MP#00 Peer Feedback
-
-Ungraded assignment, so simple feedback: 
-
-- One strength, one weakness, one suggestion for improvement (3x)
-
-After completion, upload `bspf` file to Brightspace (for privacy / confidentiality)
-
-## MP PF Cycle
-
-Aims of Mini-Project Peer Feedback:
-
-::: {.small}
-
-- Learn to _read_ and _evaluate_ code
-- In analysis, rarely _right_ and _wrong_; 
-  definitely _better_ and _worse_
-- Learn tricks to improve your own site
-
-:::
-
-> "Good artists copy; great artists steal." -- Steve Jobs
-
-. . . 
-
-*Most* coding is reading - *most* reading is reading _your own old code_
-
-## Course Support
-
-Asynchronous Support: Piazza
-
-- All registered now in Piazza!
-- **Sub-1 Hour** average time to response
-
-. . . 
-
-Synchronous Support: Office Hours
-
-- Wednesdays (in person) and Thursdays (Zoom) at 5pm
-
-## Pre-Assignments
-
-. . .
-  
-`r (session + 1) |> sprintf("Pre-Assignment #%02d", x= _)` - Due `r get_pa_deadline(session+1)`
-
-::: {.small}
-
-  - Day before class at 6:00pm
-  - Available on course website + Brightspace after 9pm
-  - Unlimited re-tries so make sure you get 30/30!
+- `r N_STUDENTS` Users registered via Teams Post
+- `r MP_SUBMISSIONS$n_submitted` Posts on GitHub
+  - `r MP_SUBMISSIONS$n_completed` pass automated tests
+  - `r MP_SUBMISSIONS$n_need_work` need more work (see comments)
   
 :::
+  
+. . . 
 
-# Quick Review
+Recall that you need to submit *via* GitHub, Brightspace, and Teams for this 
+assignment - sending GitHub ID is **most important**
 
-## Values
+## MP #00 Goals
 
-Basic "things" in `R` ("scalars"): 
+Mini-Project #00 is ungraded to: 
 
 ::: {.incremental}
 
-- Numeric values: `10`, `3.14`, `0.0002`, `1.234e5`, `3 + 4i`
-  - `R` distinguishes between `integer` and `numeric` / `double` but you don't need to
-- Character values: `"Baruch"`, `"Michael Weylandt"`, 
-  - Arbitrary length - matched quotes (double or single)
-  - Mix quotes to put quotes inside a string: `"He said to me: 'Code is great!'"`
-- Logical values: `TRUE`, `FALSE` (no quotes)
+i)   Sort out tech trouble
+ii)  Show danger of waiting to the last minute
 
 :::
 
-## Values
+. . . 
 
-Use the `class()` function to see types:
-
-```{r}
-#| echo: true
-class(3)
-```
+Lessons learned will be helpful in future assignments
 
 . . . 
 
-```{r}
-#| echo: true
-class(3.14159)
-```
+Some sites look really great - excited to see headshots, resumes, *etc.* and to
+learn more about you
+
+## MP #00 Peer Feedback
+
+On `r get_mp_pf_assigned(0)`, I will assign _peer-feedback_:
+
+- For MP #00, no real scores (give all 10s!): practice with process
+- I will provide an `R` function to solicit your peer feedback
+  - You provide your GitHub ID and your secret phrase
+  - Answer questions
+  - Upload result file to Brightspace
+- Full details to follow via Brightspace announcement
+
+## MP #00 Peer Feedback
+
+Aims: 
+
+- Learn to _read_ and _evaluate_ code
+- In analysis, rarely _right_ and _wrong_; definitely _better_ and _worse_
+- Learn tricks to improve your own site
+
+> "Good artists copy; great artists steal." -- Steve Jobs
+
+More discussion in advance of MP #01 feedback cycle
+
+## CISSOID
+
+`cissoid`: `CIS Scripts for Organizing Instructional Delivery`
 
 . . . 
 
-```{r}
-#| echo: true
-class("I love R!")
-```
-
-## Variables and Assignment
-
-We can assign a name to a value: 
-
-```{r}
-#| echo: true
-x <- 3
-```
+Course robot to help guarantee submissions are complete and to provide automated
+help where possible
 
 . . . 
 
-Now anywhere we use `x`, the value `3` automatically is introduced:
+Feature requests welcome 
 
-```{r}
-#| echo: true
-x^2
-```
 
-## Variables and Assignment
+## Mini-Project #01
 
-Variable names must be: 
+[Mini-Project #01](../mini/mini01.qmd) officially released today
 
-- One word (no spaces)
-- All alpha, numeric, or underscores
-- Start with a letter
+::: {.incremental}
 
-Avoid special "reserved words": `if`, `else`, `for`, *etc*
+- Due `r get_mp_deadline(01)` 
+  (`r min(get_mp_deadline(01, as_date_obj=TRUE) - class_date)` Days)
+- Topic: `r get_mp_title(01)`
+- Analysis of Netflix Watch Time Data
+- Graded out of 80
+  - 30 points for completed submissions
 
-## Variables and Assignment
+:::
 
-Assignment (`<-`) is the _last_ operation, so can use to save results for later use
 
-```{r}
-#| echo: true
-five_factorial <- 5 * 4 * 3 * 2 * 1
-five_factorial
-```
+## Mini-Project #01
+
+7 'Tasks' covering: 
+
+- data import (#1), 
+- data preparation / feature engineering (#2-3)
+- Exploratory Data Analysis (#4-6), and 
+- writing up your analysis (#7)
 
 . . . 
 
-Then
+For this MP, you are advising Netflix on new content for the streaming service
 
-```{r}
-#| echo: true
-six_factorial <- 6 * five_factorial
-six_factorial
-```
+
+## Mini-Project #01
+
+[Mini-Project #01](../mini/mini01.qmd) due on `r get_mp_deadline(01)`: 
+
+`r get_mp_title(01)`
+
+. . . 
+
+Topics Covered: 
+
+- Reproducible Research Tooling (Quarto)
+- Packages and Functions 
+- Basic Data Manipulation (Today, `dplyr`)
+- Tables for Data Display (In assignment, `gt`)
+
+. . . 
+
+**Not everything has a _single_ right answer - be reasonable, justify, and document**
+
+
+## MP#01 Formatting
+
+Formatting: 
+
+- `qmd` document
+- Final Deliverable + supporting analysis
+  - Put Deliverable at beginning or end, clearly identified
+  
+. . .
+
+Submission: 
+
+- Push to `GitHub` 
+- Tag on GitHub issues (`mp_submission_create`)
+- Print to PDF + Submit on Brightspace (no Teams needed)
+
+. . . 
+
+See [general instructions](../miniprojects.qmd##mini-project-formatting) for
+additional advice
+
+## MP#01 Rubric
+
+[Rubric online](../mini/mini01.qmd#mp_rubric)
+
+- 8 graded sections (out of 10)
+- 3 automatic 10 as long as you copy+paste my code and follow my EDA
+
+# Today
+
+## Today
+
+- Brief Review
+- Single-Table Verbs
+- Introduction to MP#01
+- `r lecture |> sprintf(fmt="Pre-Assignment #%02g FAQs")`
+- Wrap-Up
+
+# Brief Review
 
 ## Vectors
 
-An ordered collection of the same type is called a *vector*:
+A _vector_ is `R`'s basic data type: 
 
-- Create with `c` ("concatenate"): 
+- Fixed length, ordered, same _class_
 
 ```{r}
 #| echo: true
 x <- c(1, 2, 3)
-```
 
-. . . 
-
-```{r}
-#| echo: true
 class(x)
-```
-
-. . . 
-
-```{r}
-#| echo: true
 length(x)
 ```
 
 ## Vectors
 
-Vectors are everywhere in `R`: 
-
-- The "single" values we saw earlier are just vectors of length `1`
-
-```{r}
-#| echo: true
-length(3)
-```
-
-## Vectors
-
-Access specific elements of a vector with `[]`: 
-
-```{r}
-#| echo: true
-x <- c("a", "b", "c")
-x[2]
-```
-
-. . . 
-
-Or give a vector of indices: 
-
-```{r}
-#| echo: true
-x[c(2, 1, 3)]
-```
-
-. . . 
-
-```{r}
-#| echo: true
-x[c(2, 1, 2, 1, 3, 3)]
-```
-
-## Vectors
-
-Negative indices _drop_: 
-
-```{r}
-#| echo: true
-x[-2]
-```
-
-. . . 
-
-This is different from Python: not count backwards!
-
-## Functions
-
-Functions take input ("arguments") and produce results and side-effects: 
-
-```{r}
-#| echo: true
-x <- c(1, 4, 9, 16)
-sqrt(x)
-```
-
-. . . 
-
-`x` is an input to the function `sqrt`
-
-`sqrt` doesn't "see" the name `x`; it sees the vector `1, 4, 9, 16`
-
-. . . 
-
-::: {.small}
-
-Not 100% true, but close enough!
-
-:::
-
-## Functions
-
-Some examples: 
-
-- Print to screen with some formatting: `print`
-- "Pure" print to screen (no formatting): `cat`
-- Combine strings: `paste`
-- Math: `sin`, `sqrt`
-- Load a package: `library`
-
-## Vectorization
-
-Where possible, functions are *vectorized*: 
+By default, `R` tries to respect vector structure in calculations: 
 
 ```{r}
 #| echo: true
 x <- c(1, 2, 3)
 y <- c(4, 5, 6)
 
-x * y
+x + y
+
+sin(x) + cos(y)
+```
+
+## Packages
+
+Packages provide additional functionality: 
+
+- `install.packages` _one time_ to download from CRAN (online repository)
+- `library` _each time_ to _activate_ package before use
+
+. . . 
+
+No 'cost' to running `library` repeatedly - include as needed if uncertain
+
+## Not Found Errors
+
+Common error: 
+
+```{r}
+#| echo: true
+#| error: true
+z
 ```
 
 . . . 
 
-Operations occur "in parallel" on matched elements
+Three checks: 
 
-## Control Flow
+1) Spelling errors
+2) Do you need to load a package?
+3) Did you run code to define variable above? 
 
-Two useful operations for small code snippets: 
+. . . 
+
+Particularly common when moving code into `quarto` since `quarto` runs 
+everything "fresh": _all_ of the code in the `qmd` and _only_ the code 
+in the `qmd`
+
+# Single-Table Verbs
+
+## data.frame
+
+Last week: Vectors 
+
+- 1D structures of _same type_
+- Vectorized semantics
+- Building blocks of more complex structures
+
+. . . 
+
+Today: `data.frame`s
+
+## data.frame
+
+`penguins` is a data frame included in recent versions of `R`
 
 ```{r}
-#| eval: false
 #| echo: true
-if(condition){
-  do_if_true
-} else { # Optional - can omit this 'side'
-  do_if_false
-}
+penguins
+```
+
+## Penguins
+
+Artwork by `@allison_horst`
+
+![](../images/penguin_species.png){width="60%" fig-align="center"}
+
+---
+
+Artwork by `@allison_horst`
+
+![](../images/penguin_measurements.png){width="50%" fig-align="center"}
+
+## data.frame
+
+A data frame is a
+
+- Rectangular array of data; where
+- Each row corresponds to a single observation
+- Each column is a single 'feature' implemented as a vector
+  - Same type within columns; different types across columns
+
+. . . 
+
+An inherently **tidy** data structure
+
+## Tidy Data
+
+The concept of "tidyness": 
+
+- Principles to make data manipulation *safe* and *easy*
+- Decrease chance of errors
+- Increase productivity
+
+. . . 
+
+Standard format used by all `tidyverse` packages
+
+
+## Tidy Data
+
+Recall our penguins: 
+
+```{r}
+#| echo: false
+head(penguins)[,c(1,3, 5, 6, 7)]
 ```
 
 . . . 
 
-This is a *conditional* operator: 
+Key features: 
 
-::: {.incremental .small}
+::: incremental
 
-- Used to run code _sometimes_ 
-  - Download a missing file, but not a file already present
-  - Throw an error if something bad happens
-  - Turn off parts of code with (`if(FALSE){}`)
-- _Everything_ between `{` and `}` is handled
-- `else` branch is optional
-::: 
+- Each row is one observation (🐧)
+- Each column has _one and only one_ fact
+- All values are in the table 
+  - Not hiding in row and column names
 
-## Compound Conditions
+:::
 
-Can do 'compound' or nested `if/else`: 
+## Tidy Data
+
+[![](https://r4ds.had.co.nz/images/tidy-1.png)](https://r4ds.hadley.nz/data-tidy.html)
+
+> Figure from [*`R` for Data Science*](https://r4ds.hadley.nz/) by H. Wickham
+
+<!-- Not sure why this is needed, but without it image above doesn't render -->
+
+![](https://allisonhorst.github.io/palmerpenguins/logo.png){width=00%}
+
+## Tidy - Why? 
+
+Why emphasize tidy data? 
+
+. . . 
+
+Minimize distractions: 
+
+- Free to focus on _analysis_ not _code_ 
+
+. . . 
+
+Once data is "tidy", you can focus on the real questions
+
+. . . 
+
+First goal for data pre-processing ("tidying up")
+
+## Tidy - Who (and When)?
+
+The name and principles of "tidy data" were popularized by H. Wickham (2014)
+
+. . . 
+
+Core ideas are much older, dating back to (at least) Codd's 
+*Relational Model* in the 1970s, now ubiquitous in relational 
+databases (SQL)
+
+. . . 
+
+Now found in: 
+
+- Python (`pandas`)
+- Julia (`DataFrames`)
+- Rust (`polars`) 
+- and more
+
+## dplyr vs SQL/Pandas
+
+`dplyr` is _heavily_ inspired by `SQL` (standard query language for data bases)
+
+- MW (2014): "Why bother? Can't folks just use SQL"
+
+. . . 
+
+`pandas` (in Python) inspired by `R` `data.frame` and `SQL`: 
+ 
+- A bit older than `dplyr` (cousins?)
+- "New hotness" (`polars`) directly inspired by `dplyr`
+
+## Tidy - How (and Where)?
+
+`tidyverse` - Packages for Manipulating Tidy Data: 
+
+::: {.incremental}
+
+- `ggplot2`: Visualization
+- `dplyr`: `SQL`-like operations
+- `tidyr`: Reshaping and cleaning data
+- `readr`: Ingest tidy data into `R`
+- Tidy manipulation of different data types: 
+  - `stringr`, `forcats`, `lubridate`
+
+:::
+
+. . . 
+
+More helpers in the background (`tibble`, `vctrs`, ...)
+
+## Aside: tibbles
+
+You will sometimes see `tibble` (`tbl_df`) as a synonym for `data.frame`
+
+- Minor differences in output formatting
+- Fewer edge cases
+
+## Some Untidy Examples
+
+Baruch college business core enrollment:
 
 ```{r}
-#| echo: true
-#| eval: false
-if(x > 10){
-  cat("x is very positive.")
-} else if(x > 0) {
-  cat("x is a little positive.\n")
-} else {
-  cat("x is negative.\n")
-}
+#| echo: false
+#| message: false
+#| warning: false
+library(tidyverse)
+D <- tribble(
+    ~Semester, ~Course,      ~Enrollment, ~Cap,
+       "Fall", "Accounting",         200,  250,
+       "Fall", "Law",                100,  125,
+       "Fall", "Statistics",         200,  200,
+     "Spring", "Accounting",         300,  350,
+     "Spring", "Law",                50,   100,
+     "Spring", "Statistics",         400,  400
+)
+```
+
+```{r}
+#| echo: false
+print(D)
 ```
 
 . . . 
 
+Tidy! ✅ 
 
+. . . 
 
-## Control Flow
+- Each row is one unit (a class) 👍
+- Columns are well-typed 👍
+- One piece of information per column 👍
 
-Two useful operations for small code snippets: 
+## Some Untidy Examples
+
+A different structure: 
 
 ```{r}
-#| eval: false
-#| echo: true
-for(element in vector){
-  process_one_at_a_time(element)
-}
+#| echo: false
+tribble(
+    ~Semester, ~Course,      ~Enrollment,
+       "Fall", "Accounting", "200 of 250",
+       "Fall", "Law",        "100 of 125",
+       "Fall", "Statistics", "200 of 200",
+     "Spring", "Accounting", "300 of 350",
+     "Spring", "Law",        " 50 of 100",
+     "Spring", "Statistics", "400 of 400"
+)
 ```
 
 . . . 
 
-Goes through `vector` taking out one `element` at a time: 
+Untidy! ❌
+
+. . . 
+
+Multiple pieces of information per cell (`Enrollment`)
+
+## Some Untidy Examples
+
+A different structure: 
 
 ```{r}
-#| echo: true
-nums <- c(1, 2, 3, 4, 5)
-for(n in nums){
-  cat(n, "squared is", n^2, "\n")
-}
+#| echo: false
+tribble(
+    ~Semester, ~Course,      ~Number, ~Type,
+       "Fall", "Accounting",     200, "Enrollment",
+       "Fall", "Accounting",     250, "Cap",
+       "Fall", "Law",        100, "Enrollment",
+       "Fall", "Law",        125, "Cap",
+       "Fall", "Statistics", 200, "Enrollment",
+       "Fall", "Statistics", 200, "Cap",
+       "Spring", "Accounting",     300, "Enrollment",
+       "Spring", "Accounting",     350, "Cap",
+       "Spring", "Law",        50, "Enrollment",
+       "Spring", "Law",        100, "Cap",
+       "Spring", "Statistics", 400, "Enrollment",
+       "Spring", "Statistics", 400, "Cap"
+)
 ```
 
-*Don't focus on these too much - better alternatives coming soon!*
+. . . 
 
-## Control Flow
-
-By default, the last line of a function is the returned value:
-
-```{r}
-#| echo: true
-my_absolute_value <- function(x){
-  if(x > 0){
-    x
-  } else {
-    -x
-  }
-}
-
-my_absolute_value(-3)
-my_absolute_value(3)
-```
-
-## Control Flow
-
-Can override with `return` statement - instantly returns and 'exits' function:
-
-```{r}
-#| echo: true
-say_hello <- function(name, scream=FALSE, quiet=FALSE){
-  text <- paste("Hello", name)
-  
-  if(scream){
-    text <- paste(toupper(text), "!!!")
-  }
-  
-  if(quiet){return(text)} # Stop here if quiet and skip print
-  
-  print(text)
-}
-```
+Untidy! ❌
 
 . . . 
 
 ::: {.smaller}
 
-```{r}
-#| echo: true
-say_hello("Michael")
-```
+Mixing two pieces of information (Enrollments and Caps)
+
+*Tip*: When one unit spans multiple rows, likely untidy
+
+:::
+
+## Some Untidy Examples
 
 ```{r}
-#| echo: true
-say_hello("Michael", scream=TRUE)
+#| echo: false
+library(tidyverse)
+D <- tribble(
+    ~Semester, ~Course,      ~Enrollment, ~Cap,
+       "Fall", "Accounting",         200,  250,
+       "Fall", "Law",                100,  125,
+       "Fall", "Statistics",         200,  200,
+     "Spring", "Accounting",         300,  350,
+     "Spring", "Law",                50,   100,
+     "Spring", "Statistics",         400,  400
+)
 ```
 
+A different structure: 
+
+::: {.columns}
+
+::: {.column width="40%"}
+
 ```{r}
-#| echo: true
-say_hello("Michael", quiet=TRUE)
+#| echo: false
+print(D |> select(Semester, Course, Enrollment), n=3)
 ```
 
 :::
 
-## Control Flow
+::: {.column width="15%"}
 
-Overly complicated $\text{sign}(x)$ function:
+and
+
+:::
+
+::: {.column width="40%"}
 
 ```{r}
-#| echo: true
-sign <- function(x){
-  if(x > 0){
-    1
-  } else {
-    if(x < 0){
-      -1
-    } else {
-      0
-    }
-  }
-}
+#| echo: false
+print(D |> select(Semester, Course, Cap), n=3)
 ```
 
-## Control Flow
+:::
 
-Somewhat better $\text{sign}(x)$ function:
+::::
+
+. . . 
+
+[A little bit] Untidy! ❌
+
+. . . 
+
+Data spread across multiple tables - we will handle this next week
+
+## dplyr
+
+The `dplyr` package exists for SQL-type manipulations of `data.frame`s
+
+. . . 
+
+Can load directly 
+
+> `library(dplyr)`
+
+or with the `tidyverse` *meta-package*
+
+> `library(tidyverse)`
+
+. . . 
+
+`tidyverse` will give some messages about name conflicts - these are harmless
+
+## Data Frame Structure
+
+Use the `glimpse` function to get a high-level summary of a data frame: 
 
 ```{r}
 #| echo: true
-sign <- function(x){
-  if(x > 0){
-    1
-  } else if(x < 0){
-      -1
-  } else {
-      0
-  }
-}
+glimpse(penguins)
 ```
 
-## Control Flow
+## select and rename
 
-Decent $\text{sign}(x)$ function:
+How can we select certain _columns_? 
+
+. . . 
+
+`select()` will pick columns
 
 ```{r}
 #| echo: true
-sign <- function(x){
-  if(x > 0) return(1) # Use 'return' to stop function here
-  if(x < 0) return(-1)
-  return(0)
-}
+penguins |> select(species, island, bill_dep)
+```
+
+## Pipe Syntax
+
+Pipe syntax (`|>`) is *syntactic sugar* - read as "and then"
+
+Just makes code easier to read: 
+
+```{r}
+#| echo: true
+#| eval: false
+penguins |> select(species, island, bill_dep)
+# vs
+select(penguins, species, island, bill_dep)
+```
+
+_Exactly_ the same execution: improved UX
+
+. . . 
+
+`%>%` is an older way of doing essentially the same thing - avoid it
+
+## Pipe Syntax
+
+Pipe syntax is useful for _longer_ multi-step operations: 
+
+```{r}
+#| echo: true
+#| eval: false
+penguins |> 
+  drop_na() |>
+  select(species, island, bill_dep) |>
+  group_by(species, island) |>
+  summarize(bill_dep = mean(bill_dep))
+# vs
+summarize(group_by(select(drop_na(penguins), 
+                          species, island, bill_dep), 
+                   species, island), 
+          bill_dep = mean(bill_dep))
+```
+
+Read top to bottom instead of inside out
+
+## select and rename
+
+Can also use `select` to drop columns: 
+
+```{r}
+#| echo: true
+penguins |> select(-species, -island, -bill_dep)
+```
+
+## select and rename
+
+You can but **shouldn't** mix select and drop - results non-intuitive
+
+```{r}
+#| echo: true
+penguins |> select(species, -island, -bill_dep)
+```
+
+## select and rename
+
+To avoid printing too much, let's take a smaller subset of rows: 
+
+```{r}
+#| echo: true
+five_penguins <- slice_head(penguins, n=5) # First 5 rows
 ```
 
 . . . 
 
-Would be even better to vectorize
 
-## Optional Review
-
-Programming exercises to practice these concepts
-
-# Proposal Presentations
-
-## Presentation Order
+To _rename_ a column, pass a _named_ argument to `rename`
 
 ```{r}
-#| echo: false
-BREAKOUT_TABLE
+#| echo: true
+five_penguins |> 
+    select(species, island, bill_dep) |>
+    rename(Species = species)
 ```
+
+## tidyselect
+
+`dplyr` has many more selection functions for getting groups of 
+related columns
+
+See [`tidyselect`](https://tidyselect.r-lib.org/reference/index.html) for
+details
+
+## Creating Columns
+
+The `mutate` command can be used to create new columns from old: 
+
+```{r}
+#| echo: true
+five_penguins |> 
+  select(body_mass, flipper_len) |> 
+  mutate(body_mass_kg = body_mass / 1000)
+```
+
+## Named Arguments
+
+`mutate` (and later `summarize`) create new columns:
+
+ - `mutate` creates "one-to-one"
+ - `summarize` creates "one-per-group"
+
+If you want to name them (so you can use them later), use _named argument_
+
+## Named Arguments
+
+Default name is tricky to use: 
+
+::: {.smaller}
+
+```{r}
+#| echo: true
+five_penguins |> select(-sex) |> mutate(n())
+```
+
+:::
+
+vs
+
+::: {.smaller}
+
+```{r}
+#| echo: true
+five_penguins |> select(-sex) |> mutate(n_penguins = n())
+```
+
+:::
+
+. . . 
+
+Provide a "valid" variable name for easiest use (alphanumeric, no punctuation other than `_`, starts with a letter)
+
+## mutate
+
+Can create and use variables in order with `mutate`: 
+
+```{r}
+#| echo: true
+five_penguins |> 
+  select(body_mass, flipper_len, sex) |> 
+  mutate(body_mass_kg = body_mass / 1000, 
+         flipper_len_m = flipper_len / 1000, 
+         penguin_bmi = body_mass_kg / flipper_len_m^2)
+```
+
+. . . 
+
+BMI probably isn't accurate for penguins
+
+## mutate
+
+![](https://jgoode.com/wp-content/uploads/2009/12/vitruvian-man-penguin.jpg){fig-align="center"}
+
+Image from [jgoode.com](https://jgoode.com/wp-content/uploads/2009/12/vitruvian-man-penguin.jpg)
+
+## mutate
+
+Variables are created in order (top to bottom) - this fails: 
+
+```{r}
+#| echo: true
+#| error: true
+five_penguins |> 
+  select(body_mass, flipper_len, sex) |> 
+  mutate(penguin_bmi = body_mass_kg / flipper_len_m^2, 
+         body_mass_kg = body_mass / 1000, 
+         flipper_len_m = flipper_len / 1000)
+```
+
+
+## mutate helpers
+
+Helper functions for working with complex `mutate` commands: 
+
+```{r}
+#| echo: true
+five_penguins |> 
+  select(body_mass, flipper_len, sex) |> 
+  mutate(body_mass_kg = body_mass / 1000, 
+         flipper_len_m = flipper_len / 1000, 
+         penguin_bmi = body_mass_kg / flipper_len_m^2, 
+         is_husky = if_else(penguin_bmi > 120, TRUE, FALSE))
+```
+
+. . . 
+
+*Vectorized* analogue of the `if`/`else` conditional construct
+
+## mutate helpers {.scrollable}
+
+`case_when` for multiple conditions:
+
+::: {.smaller}
+
+```{r}
+#| echo: true
+five_penguins |> select(body_mass, flipper_len, sex) |> 
+  mutate(body_mass_kg = body_mass / 1000, 
+         flipper_len_m = flipper_len / 1000, 
+         penguin_bmi = body_mass_kg / flipper_len_m^2, 
+         is_big_guy = case_when(
+           sex == "female" ~ FALSE, 
+           penguin_bmi < 120 ~ FALSE, 
+           .default = TRUE))
+```
+
+:::
+
+. . . 
+
+Defines a _sequence_ of tests: first to pass takes value from RHS of `~`
+
+## mutate helpers
+
+More advanced helpers for recoding and replacing in dplyr v1.2 (February 2026)
+
+- `case_when`
+- `replace_when`
+- `recode_values`
+- `replace_values`
+
+- See [announcement](https://tidyverse.org/blog/2026/02/dplyr-1-2-0/#reaching-recoding-nirvana)
+  for more details
+
+## filter Operations
+
+While `select` is used to isolate columns, `filter` is used to isolate _rows_: 
+
+```{r}
+#| echo: true
+penguins |> filter(species == "Adelie")
+```
+
+## filter Operations
+
+Pass multiple arguments to get the _intersection_
+
+```{r}
+#| echo: true
+penguins |> filter(species == "Adelie", island=="Biscoe")
+```
+
+## filter Operations
+
+Can compute quantities inside of `filter`
+
+. . . 
+
+To select heavier than average penguins: 
+
+```{r}
+#| echo: true
+five_penguins |> filter(body_mass > mean(body_mass, na.rm=TRUE))
+```
+
+. . . 
+
+Reminder: Why do we need `na.rm=TRUE`? 
+
+## slice_min and slice_max
+
+The `slice_min` and `slice_max` functions replace and extend
+the common `filter(x == max(x))` idiom: 
+
+. . . 
+
+```{r}
+#| echo: true
+# Instead of penguins |> filter(body_mass == max(body_mass, na.rm=TRUE))
+penguins |> slice_max(body_mass)
+```
+
+## slice_min and slice_max
+
+Arguments: 
+
+- `n`: _How many_ rows to return (top/bottom $k$)
+- `prop`: _Percent_ of rows to return
+
+. . . 
+
+*E.g.*, 2.5% lightest
+
+```{r}
+#| echo: true
+penguins |> slice_min(body_mass, prop=0.025)
+```
+
+## slice_sample
+
+`slice_sample()` generates a _random_ subset: 
+
+- Useful for getting a smaller and faster "exploratory set"
+
+. . . 
+
+```{r}
+#| echo: true
+penguins |> slice_sample(n=25)
+```
+
+## summarize Operations
+
+The `summarize` function is used to combine rows: 
+
+- $n$ rows down to 1
+- Computes specified *summary statistics*
+
+. . . 
+
+```{r}
+#| echo: true
+penguins |> summarize(avg_body_mass = mean(body_mass, na.rm=TRUE))
+```
+
+New column name comes from right hand side - guessed if not provided
+
+## summarize Operations
+
+Can provide multiple summaries - and even multiple summaries of the same column: 
+
+```{r}
+#| echo: true
+penguins |> summarize(avg_body_mass = mean(body_mass, na.rm=TRUE), 
+                      max_body_mass = max(body_mass, na.rm=TRUE), 
+                      min_body_mass = min(body_mass, na.rm=TRUE), 
+                      avg_flipper_len = mean(flipper_len, na.rm=TRUE), 
+                      max_flipper_len = max(flipper_len, na.rm=TRUE), 
+                      min_flipper_len = min(flipper_len, na.rm=TRUE))
+```
+
+. . . 
+
+Advanced: Use [`across` to avoid this type of repetition](https://dplyr.tidyverse.org/articles/colwise.html)
+
+## Counting Rows
+
+Very common summarization: counting
+
+- `tally` to get straight counts (equivalent to `|> summarize(n = n())`)
+- `add_tally` adds count column without summarizing (equivalent to `|> mutate(n = n())`)
+- `n_distinct` to get number of unique values (equivalent to `|> distinct() |> tally()`)
+
+## Counting Rows
+
+Row count functions:
+
+```{r}
+#| echo: true
+penguins |> tally()
+```
+
+. . . 
+
+```{r}
+#| echo: true
+five_penguins |> add_tally()
+```
+
+. . . 
+
+```{r}
+#| echo: true
+penguins |> n_distinct()
+```
+
+. . . 
+
+```{r}
+#| echo: true
+penguins |> select(island, sex, species) |> n_distinct()
+```
+
+## Comparisons
+
+Column Operations: 
+
+- `select`: get a _subset_ of existing columns
+- `mutate`: create new columns from old (keeps old)
+
+. . . 
+
+Row Operations: 
+
+- `filter`: get a _subset_ of existing rows
+- `summarize`: create new rows from old (combines and discards)
+
+## Sorting
+
+The `arrange` function will sort the rows without changing anything: 
+
+```{r}
+#| echo: true
+penguins |> 
+  select(species, island, sex, body_mass) |> 
+  arrange(body_mass)
+```
+
+. . . 
+
+Increasing by default
+
+## Sorting
+
+Use `desc` wrapper to sort in _descending_ order: 
+
+```{r}
+#| echo: true
+penguins |> 
+  select(species, island, sex, body_mass) |> 
+  arrange(desc(body_mass))
+```
+
+## Sorting
+
+Pass additional arguments to break ties
+
+```{r}
+#| echo: true
+penguins |> 
+  select(species, island, sex, body_mass) |> 
+  arrange(species, island, sex)
+```
+
+## Grouped Operations
+
+So far, we have operated on the whole data set - what if there is meaningful
+substructure? 
+
+(In statistics-speak, non "IID")
+
+. . . 
+
+
+Exercise: [Lab #04](../labs/lab04.html)
+
+Data Set: [`nycflights13`](https://nycflights13.tidyverse.org/)
+
+. . . 
+
+Will review after returning from breakout rooms
+
+## Adding Group Structure
+
+`group_by` is an _adverb_. On its own, it does nothing; it changes the
+behavior of later functionality. 
+
+::: {.small}
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> slice_head(n=2)
+```
+
+:::
+
+. . . 
+
+::: {.small}
+
+Compare to: 
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species) |> slice_head(n=2)
+```
+
+:::
+
+
+2 **per group**
+
+## Group Summaries
+
+No `group_by` - full summarization:
+
+::: {.small}
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> summarize(mean(body_mass))
+```
+
+:::
+
+. . . 
+
+With `group_by` - summary within groups: 
+
+::: {.small}
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species) |> summarize(mean(body_mass))
+```
+:::
+
+## Group Summaries
+
+With multiple grouping - "cross-tabs" of results: 
+
+::: {.small}
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species, sex) |> summarize(mean(body_mass))
+```
+:::
+
+. . . 
+
+Note that result of multi-`group_by` is still grouped
+
+## Multiple Groups
+
+Persistent multiple groupings change **subsequent** call to `summarize`:
+
+::: {.small}
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species, sex) |> 
+    summarize(mbmg = mean(body_mass)) |> summarize(mbmg = mean(mbmg))
+```
+
+:::
+
+. . . 
+
+::: {.small}
+
+Order matters:
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(species, sex) |> 
+    summarize(mbmg = mean(body_mass)) |> summarize(mean(mbmg))
+```
+
+```{r}
+#| echo: true
+penguins |> drop_na() |> group_by(sex, species) |> 
+    summarize(mbmg = mean(body_mass)) |> summarize(mean(mbmg))
+```
+
+:::
+
+## Order of group_by
+
+- No change to first "grouped" operations
+- Change in grouping structure of result
+- Last group "removed" by `summarize`
+- No impact on grouped operations performed by `mutate` or `filter` 
+
+. . . 
+
+Note: `group_by` impacts `filter` and `mutate` if "implicit"
+summarization is used: `filter(x > mean(x))` will use a groupwise
+mean
+
+## ungroup
+
+`ungroup()` function:
+
+- Remove all grouping structure
+- Defensive to keep group structure from "propogating" unwantedly
+
+```{r}
+#| echo: true
+#| eval: false
+sum_penguins <- penguins |> 
+    group_by(sex, species) |> 
+    summarize(mbmg = mean(body_mass))
+
+... # Lots of code 
+
+sum_penguins |> filter(mbmg == max(mbmg)) # Still grouped!!
+```
+
+## ungroup
+
+Alternatively, use `.by` and `.groups` argument to
+`summarize`: 
+
+::: {.small}
+
+```{r}
+#| echo: true
+penguins |> 
+    group_by(sex, species) |> 
+    summarize(mbmg = mean(body_mass), 
+              .groups="drop") # Drop all groups
+```
+
+::: 
+
+. . . 
+
+::: {.small}
+
+```{r}
+#| echo: true
+penguins |> 
+    summarize(mbmg = mean(body_mass), # Groups summarize() _only_,
+              .by=c(sex, species))    # Not earlier or later funcs
+```
+
+:::
+
+
+## Assignment of Pipelines
+
+When to start a pipeline with `NAME <-`? 
+
+Creating a new variable: 
+
+. . . 
+
+::: {.smaller}
+
+- Data you intend to reuse
+- Assignment operator 'up front' indicates __important__
+- My rules of thumb for names:
+  - New names for "new complete thoughts" - whole summary in one pipeline
+  - _Overwrite_ existing names for "like-for-like improvements" (`USAGE <- USAGE |> code(...)`)
+    - Recoding variable names, fixing typos, *etc.*
+    - Use name repeatedly so downstream code picks up effects 'for free'
+    
+:::
+
+
+## Performance
+
+`dplyr` is _fast_, but advanced options: 
+
+- `dbplyr`: translates `dplyr` syntax to SQL and executes in DB
+- `dtplyr`: uses alternate `data.table` back-end (HFT)
+
+Hard to have bad performance in single-table analysis
+
+- Danger of accidentally creating 'extra' data in multi-table context
+- Will discuss more next week
+
+## Performance
+
+Tools for slow code: 
+
+- Profiler: [`profvis`](https://profvis.r-lib.org/)
+- Benchmarking: [`bench`](https://bench.r-lib.org/)
+
+Don't worry about improving code performance until: 
+
+1) You're sure it's right
+2) You're sure it's slow
+
+Incorrect code is _infinitely slow_.
 
 # Wrap-Up
 
+## Review
+
+Introduction to `dplyr`: 
+
+- Data Frames
+- Selecting Columns and Rows
+  - `select` columns
+  - `filter` rows
+- Creating New Columns
+  - `mutate`
+- Groupwise Analysis
+  - `group_by`
+
 ## Orientation
+
+::: {.small}
 
 - Communicating Results (`quarto`)  ✅
 - `R` Basics  ✅
-- Data Manipulation in `R`
+- Data Manipulation in `R` ⬅️
+  - Single-Table Data Manipulation ⬅️
+  - Multiple-Table Data Manipulation
 - Data Visualization in `R`
 - Getting Data into `R` 
 - Statistical Modeling in `R`
 
+:::
 
 ## Next Time
 
-**Data Frames**: 
+::: {.small}
 
-- Organizing several 'connected' vectors into a table
-- Table operations with `dplyr`
-
-## Upcoming Work
-
-Upcoming work from [course calendar](../index.qmd#calendar)
-
-::: {.incremental}
-
-- Weekly Pre-Assignment
-- [Mini-Project #00](../mini/mini00.qmd) peer feedback
-- [Mini-Project #01](../mini/mini01.qmd) due on `r get_mp_deadline(1)`
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R` ⬅️
+  - Single-Table Data Manipulation  ✅
+  - Multi-Table Data Manipulation ⬅️ 
+- Data Visualization in `R`
+- Getting Data into `R` 
+- Statistical Modeling in `R`
 
 :::
+
+
+. . . 
+
+**Joins and Pivots** 
+
+- Combining multiple tidy tables into one 'analysis-ready' data set
+- Rearranging data for ease of use
 
 {{< include _end.qmd >}}
