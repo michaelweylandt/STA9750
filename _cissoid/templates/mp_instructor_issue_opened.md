@@ -6,7 +6,11 @@ I am opening this issue on your behalf.
 
 Your submission can be found at:
 
+{% if project_id %}
 <https://{{gh}}.github.io/{{course_repo}}/mp0{{project_id}}.html>
+{% else %}
+<https://{{gh}}.github.io/{{course_repo}}/mp0{{project_id}}.html>
+{% endif %}
 
 Your work will still be included in the peer feedback cycle, but a small
 penalty may be applied for lack of proper submission, as specified in the 

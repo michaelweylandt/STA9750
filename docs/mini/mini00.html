@@ -645,8 +645,36 @@ Warning
 <span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section><section id="resume-hosting" class="level4"><h4 class="anchored" data-anchor-id="resume-hosting">Resume Hosting</h4>
-<p>TODO: If you have a copy of your resume available as a PDF…</p>
-<p>If you want to host your resume on your site, reach out to the instructor and I’ll provide details.</p>
+<p>While you can put the contents of your resume directly into your <code>qmd</code> file, it’s common to maintain your resume as a stand-alone PDF. You can host this file within your course site and link to it directly from your <code>index.qmd</code>.</p>
+<p>I recommend coming back to this and doing it as a ‘second-pass’ after you have the main functionality of your site working.</p>
+<p>The steps are quite simple:</p>
+<ol type="1">
+<li>
+<p>Put a copy of your resume in your <code>STA9750-2026-FALL</code> directory. This should go into the <em>top</em> level (main folder), not the <code>docs</code> subfolder. (If you look at the <code>Files</code> tab in <code>RStudio</code>, you should see <code>index.qmd</code> and your resume in the same directory.)</p>
+<p>As with all files, I <em>strongly</em> recommend you have an all lower-case no-spaces name. So <code>resume_public_2026.pdf</code> is good, while <code>Resume Public (2026).pdf</code> might cause you problems down the road.</p>
+</li>
+<li>
+<p>Link to your resume from your <code>index.qmd</code> file. <em>E.g.</em>, if your resume were saved in a file called <code>resume_public_2026.pdf</code>, you could include a link that looks like:</p>
+<p><code>Click [here](./resume_public_2026.pdf) to view my resume.</code></p>
+<p>The <code>./</code> prefix isn’t strictly necessary, but it’s useful.</p>
+<p>Note that you need to include the suffix (<code>.pdf</code>), not just the <code>resume_public_2026</code> part.</p>
+</li>
+<li>
+<p>Render your <code>index.qmd</code> as normal.</p>
+<p>When you render the file, Quarto will see the linked <code>pdf</code> and “process” it as well. Because there’s nothing to do with the file (it’s already a PDF), Quarto will just copy it into the <code>docs</code> folder.<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a></p>
+<p>Hopefully, when the preview comes up, you will be able to click the link and see your resume.</p>
+</li>
+<li>
+<p>Finally, you need to make sure <code>git</code> will track this <code>pdf</code> file. Since PDFs are typically output in this class, we told <code>git</code> to ignore them in the <code>.gitignore</code> file you created earlier. Here we have to make an exception.</p>
+<p>Go into the <code>Terminal</code> (not <code>Console</code>) in RStudio and run the command</p>
+<p><code>git add -f your_resume_name.pdf docs/your_resume_name.pdf</code></p>
+<p>substituting <code>your_resume_name.pdf</code> both times for the actual file name.</p>
+<p>This will tell <code>git</code> to ignore our prior instructions and to track <em>this</em> PDF. (It will still ignore others by default.)</p>
+<p>Now create a <code>git commit</code> as before that captures the update. (Check the <code>index.qmd</code>, <code>docs/index.html</code> boxes and other related files in RStudio; make a commit using the <code>Commit</code> modal (pop-up) window.)</p>
+</li>
+</ol>
+<p>Now, the next time you push your content to <code>GitHub</code>, the resume file will be included in the update.</p>
+<p>Other files you might want to include, <em>e.g.</em>, a headshot, will follow the same process.</p>
 </section></section><section id="build-your-site-locally" class="level3"><h3 class="anchored" data-anchor-id="build-your-site-locally">Build Your Site Locally</h3>
 <p>Once you have filled out your <code>index.qmd</code> file, it’s time to see what it looks like. Hit the <code>Render</code> button in RStudio, located in the bar just above the file contents, and a new window should pop up with your rendered content.</p>
 <p>This is the point where you will get strange error messages if you haven’t done the earlier parts correctly. Things to check:</p>
@@ -661,7 +689,7 @@ Warning
 <p>Once you have the <code>Render</code> button working, continue to iterate and improve your homepage until you’re ready to send it out into the world.</p>
 </section></section><section id="stage-4-getting-content-to-github" class="level2"><h2 class="anchored" data-anchor-id="stage-4-getting-content-to-github">Stage 4: Getting Content to GitHub</h2>
 <p>Now that you like the way your site looks on <em>your computer</em>, we need to put it somewhere where anyone (specifically, me and your classmates) will be able to see it. For security reasons, it’s a very bad idea to let <em>the whole internet</em> access your personal computer directly at any time, so we will instead use a <em>hosting</em> service that holds these files out in a ‘world-visible’ location. In this course, our hosting service is <code>GitHub</code> and we will specifically be uploading your files into your STA9750-2026-FALL repository that you created above.</p>
-<p>Conceptually, you already did this with your <code>README</code> file, but uploading a whole site is a bit trickier as it consists of <em>many</em> files and repeating that process manually for each file is a bit cumbersome. Specifically, we want to make sure that <em>everything</em> in the <code>docs</code> folder gets uploaded as they are all used to make your site look good.<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a></p>
+<p>Conceptually, you already did this with your <code>README</code> file, but uploading a whole site is a bit trickier as it consists of <em>many</em> files and repeating that process manually for each file is a bit cumbersome. Specifically, we want to make sure that <em>everything</em> in the <code>docs</code> folder gets uploaded as they are all used to make your site look good.<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a></p>
 <p>Recall that our first step is <em>staging</em> a file (or <em>adding</em> it to the staging area), which tells Git to get ready to save that file. Earlier, you did this by ‘checking a box’ next to the name of the file you wanted to stage. (Unstaged files appearing with a yellow question box in RStudio’s <code>Git</code> tab.) You can do this manually for all the files you want to upload here (<code>index.qmd</code> and <em>everything</em> in <code>docs</code>), but an easier thing to do is to just tell <code>git</code> to stage everything in one-go by running the command</p>
 <blockquote class="blockquote">
 <p><code>git add index.qmd docs/*</code></p>
@@ -720,7 +748,7 @@ Warning
 </div>
 </section><section id="stage-5-github-pages-deployment" class="level2"><h2 class="anchored" data-anchor-id="stage-5-github-pages-deployment">Stage 5: GitHub Pages Deployment</h2>
 <p>After the previous step, your content is hosted on GitHub, but not (easily) visible to the world. In particular, that URL you used as a quick test was a bit cumbersome. To make things easily ‘world-visible’, you need a proper <em>web-server</em>, that is, a computer to which anyone can connect and with the sole purpose of distributing your site to anyone who wants to view it. (We will talk more about servers later in this course.)</p>
-<p>Web servers can be quite expensive to run - especially for popular sites that get a lot of traffic - but our site is simple<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a> and low-volume, so GitHub provides a free server, called <code>GitHub Pages</code>, that we will use.</p>
+<p>Web servers can be quite expensive to run - especially for popular sites that get a lot of traffic - but our site is simple<a href="#fn12" class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a> and low-volume, so GitHub provides a free server, called <code>GitHub Pages</code>, that we will use.</p>
 <section id="activate-github-pages-server" class="level3"><h3 class="anchored" data-anchor-id="activate-github-pages-server">Activate GitHub Pages Server</h3>
 <p>Using your web browser, return to the GitHub repo you created; recall that the URL is something like:</p>
 <blockquote class="blockquote">
@@ -792,7 +820,7 @@ Warning
 <li>Real Name</li>
 <li>CUNY EmplID (8 digit ID code)</li>
 <li>
-<strong>CUNY Email</strong><a href="#fn12" class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a>
+<strong>CUNY Email</strong><a href="#fn13" class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a>
 </li>
 <li>GitHub user name</li>
 </ul>
@@ -803,7 +831,7 @@ Warning
 </div>
 <p>This is the only place where you are required to connect your GitHub ID with your real name and CUNY credentials. I need this information to connect your public activity with my (private) gradebook and the CUNY system. When I receive this information and enter it into the course back-end, I will provide you a private passcode. This passcode will be used to submit anonymous peer feedback, so please <strong>note it and save it for later use.</strong></p>
 </section><section id="instructor-tagging" class="level3"><h3 class="anchored" data-anchor-id="instructor-tagging">Instructor Tagging</h3>
-<p>Next, you’re going to contact me through <code>GitHub</code>: go to<a href="#fn13" class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a></p>
+<p>Next, you’re going to contact me through <code>GitHub</code>: go to<a href="#fn14" class="footnote-ref" id="fnref14" role="doc-noteref"><sup>14</sup></a></p>
 <p><code>https://github.com/michaelweylandt/STA9750-2026-FALL/issues/new</code></p>
 <p>to open a new issue. Title the issue <code>STA 9750 YOUR_GITHUB_ID  MiniProject #00</code> and fill in the following text for the issue:</p>
 <div id="submission-text">
@@ -865,10 +893,11 @@ https://YOUR_GITHUB_ID.github.io/STA9750-2026-FALL/</code></pre>
 <li id="fn7"><p>A Personal Access Token (PAT) is a sort of “specialty” password that you can use to connect a specific computer to a specific service for a limited time period with limited permissions. Like any password, your PAT should not be shared with anyone else.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn8"><p>Make sure to store this - and indeed all files - in this course with an all lower-case file name. Computers are sensitive to file capitalization in ways that can be quite confusing. If you are “all lower-case, all the time”, you will avoid many of these issues.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn9"><p>If you choose to complete the course using a pseudonym, make up something fun. If you are using your real name, this is a great place to state that you are a Baruch student, your expected graduation date, your field of employment (current or desired), and one or two personal facts. This, along with a LinkedIn page, will quickly become one of the first things that comes up when a potential employer searches your name, so make a good impression!<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>You won’t interact directly with most of the folders in <code>docs</code>, but there will be a file in there for every page, for every color scheme, for every form of dynamic behavior (like drop downs or search bars), for every image, for the font you use, <em>etc.</em> Even a simple site can have several hundred files.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn11"><p>GitHub Pages can only be used to serve <em>static</em> websites. That is, websites that are ‘just’ a page (or a single page) with no meaningful server-side activity. So no passwords, no accounts, no ‘saving data for later’, but perfectly fine for document distribution.<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn12"><p>Please send me a CUNY email - typically an <code>@login.cuny.edu</code> or <code>@stu-mail.CAMPUS.cuny.edu</code> email. Under FERPA, the federal law about student privacy, it is better for me to email all course info to CUNY emails to avoid accidentally sharing personal grading info to third parties, <em>e.g.</em> Google if you use a <code>@gmail</code> account. You can however use any email you want for your GitHub account.<a href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn13"><p>Throughout this course, make sure to replace <code>YOUR_GITHUB_ID</code> with your recently created GitHub ID. Note that the automated course infrastructure will be looking for precise formatting, so follow these instructions closely.<a href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>Remember, <em>only</em> those files in the <code>docs</code> folder will be actually part of your website, but you don’t want to mess with them directly and should let Quarto manage that folder. Hence, we let Quarto “process” (copy) the file from <code>resume_public_2026.pdf</code> (input) to <code>docs/resume_public_2026.pdf</code> (output).<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>You won’t interact directly with most of the folders in <code>docs</code>, but there will be a file in there for every page, for every color scheme, for every form of dynamic behavior (like drop downs or search bars), for every image, for the font you use, <em>etc.</em> Even a simple site can have several hundred files.<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12"><p>GitHub Pages can only be used to serve <em>static</em> websites. That is, websites that are ‘just’ a page (or a single page) with no meaningful server-side activity. So no passwords, no accounts, no ‘saving data for later’, but perfectly fine for document distribution.<a href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn13"><p>Please send me a CUNY email - typically an <code>@login.cuny.edu</code> or <code>@stu-mail.CAMPUS.cuny.edu</code> email. Under FERPA, the federal law about student privacy, it is better for me to email all course info to CUNY emails to avoid accidentally sharing personal grading info to third parties, <em>e.g.</em> Google if you use a <code>@gmail</code> account. You can however use any email you want for your GitHub account.<a href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn14"><p>Throughout this course, make sure to replace <code>YOUR_GITHUB_ID</code> with your recently created GitHub ID. Note that the automated course infrastructure will be looking for precise formatting, so follow these instructions closely.<a href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></div></main><!-- /main --><script type="text/javascript" id="exit-archive-script">
 document.addEventListener("DOMContentLoaded", function() {
     if (window.location.href.includes("archive")) {

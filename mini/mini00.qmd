@@ -638,10 +638,70 @@ leaflet() |>
 
 #### Resume Hosting
 
-TODO: If you have a copy of your resume available as a PDF...
+While you can put the contents of your resume directly into your `qmd` file, 
+it's common to maintain your resume as a stand-alone PDF. You can host this
+file within your course site and link to it directly from your `index.qmd`.
 
-If you want to host your resume on your site, reach out to the instructor and
-I'll provide details. 
+I recommend coming back to this and doing it as a 'second-pass' after you
+have the main functionality of your site working. 
+
+The steps are quite simple: 
+
+1) Put a copy of your resume in your `{{< var course.repo >}}` directory. 
+   This should go into the _top_ level (main folder), not the `docs` subfolder.
+   (If you look at the `Files` tab in `RStudio`, you should see `index.qmd` and
+   your resume in the same directory.)
+   
+   As with all files, I *strongly* recommend you have an all lower-case 
+   no-spaces name. So `resume_public_2026.pdf` is good, while 
+   `Resume Public (2026).pdf` might cause you problems down the road. 
+   
+2) Link to your resume from your `index.qmd` file. *E.g.*, if your resume 
+   were saved in a file called `resume_public_2026.pdf`, you could include a 
+   link that looks like: 
+   
+   `Click [here](./resume_public_2026.pdf) to view my resume.`
+   
+   The `./` prefix isn't strictly necessary, but it's useful. 
+   
+   Note that you need to include the suffix (`.pdf`), not just the 
+   `resume_public_2026` part. 
+3) Render your `index.qmd` as normal. 
+
+   When you render the file, Quarto will see the linked `pdf` and "process" it
+   as well. Because there's nothing to do with the file (it's already a PDF), 
+   Quarto will just copy it into the `docs` folder.[^d3]
+
+   Hopefully, when the preview comes up, you will be able to click the link
+   and see your resume. 
+4) Finally, you need to make sure `git` will track this `pdf` file. Since PDFs 
+   are typically output in this class, we told `git` to ignore them in the
+   `.gitignore` file you created earlier. Here we have to make an exception. 
+   
+   Go into the `Terminal` (not `Console`) in RStudio and run the command
+   
+   `git add -f your_resume_name.pdf docs/your_resume_name.pdf`
+   
+   substituting `your_resume_name.pdf` both times for the actual file name. 
+   
+   This will tell `git` to ignore our prior instructions and to track _this_ 
+   PDF. (It will still ignore others by default.)
+   
+   Now create a `git commit` as before that captures the update. (Check the 
+   `index.qmd`, `docs/index.html` boxes and other related files in RStudio; 
+   make a commit using the `Commit` modal (pop-up) window.)
+   
+Now, the next time you push your content to `GitHub`, the resume file will be
+included in the update. 
+
+Other files you might want to include, *e.g.*, a headshot, will follow the
+same process.
+   
+[^d3]: Remember, _only_ those files in the `docs` folder will be actually part
+of your website, but you don't want to mess with them directly and should let
+Quarto manage that folder. Hence, we let Quarto "process" (copy) the file from
+`resume_public_2026.pdf` (input) to `docs/resume_public_2026.pdf` (output). 
+
 
 ### Build Your Site Locally
 
