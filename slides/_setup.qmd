@@ -265,18 +265,49 @@ if(file.exists(TEAMS_FILE) & file.info(TEAMS_FILE)$size > 0){
 TEAMS <- inner_join(TEAMS, INITIALS, join_by(number == project_team)) |>
     slice_sample(prop=1)
 
-BREAKOUT_TABLE <- TEAMS |> 
+if(length(read_yaml("_variables.yml")$course$sections) > 1){
+  BREAKOUT_TABLE_TUESDAY <- TEAMS |> 
+    filter(str_detect(name, fixed("(T)"))) |>
     mutate(breakout = row_number(), 
-           display = if_else(name == "TBD", 
+           display = if_else((name == "TBD"), 
                              initials, 
                              glue("{name} ({initials})"))) |>
     select(breakout, display) |>
-    gt(id="team_room_assignments") |>
+    gt(id="team_room_assignments_t") |>
+    tab_header("Tuesday") |> 
     cols_label(breakout = if(is.na(lecture)) md("**Presentation Order**") else md("**Breakout Room**"), 
                display = md("**Team**")) |>
     cols_align(everything(), align="center") |>
     tab_options(table.width = pct(100), 
                 table.font.size = pct(80))
+    BREAKOUT_TABLE_THURSDAY <- TEAMS |> 
+      filter(str_detect(name, fixed("(R)"))) |>
+      mutate(breakout = row_number(), 
+             display = if_else((name == "TBD"), 
+                               initials, 
+                               glue("{name} ({initials})"))) |>
+      select(breakout, display) |>
+      gt(id="team_room_assignments_r") |>
+      tab_header("Thursday") |> 
+      cols_label(breakout = if(is.na(lecture)) md("**Presentation Order**") else md("**Breakout Room**"), 
+                 display = md("**Team**")) |>
+      cols_align(everything(), align="center") |>
+      tab_options(table.width = pct(100), 
+                  table.font.size = pct(80))
+} else {
+  BREAKOUT_TABLE <- TEAMS |> 
+      mutate(breakout = row_number(), 
+             display = if_else(name == "TBD", 
+                               initials, 
+                               glue("{name} ({initials})"))) |>
+      select(breakout, display) |>
+      gt(id="team_room_assignments") |>
+      cols_label(breakout = if(is.na(lecture)) md("**Presentation Order**") else md("**Breakout Room**"), 
+                 display = md("**Team**")) |>
+      cols_align(everything(), align="center") |>
+      tab_options(table.width = pct(100), 
+                  table.font.size = pct(80))
+}
 ```
 
 ## {{< var course.short >}} Week {{< meta session >}} 
