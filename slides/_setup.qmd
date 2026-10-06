@@ -294,6 +294,36 @@ if(length(read_yaml("_variables.yml")$course$sections) > 1){
       cols_align(everything(), align="center") |>
       tab_options(table.width = pct(100), 
                   table.font.size = pct(80))
+    
+  BREAKOUT_TABLE <- TEAMS |> 
+    filter(team_status == "Active") |> 
+    mutate(section = if_else(str_detect(name, fixed("(T)")), "Tuesday", "Thursday"))|>
+    group_by(section) |>
+    mutate(number = row_number()) |>
+    ungroup() |> 
+    select(-initials, -team_status) |> 
+    pivot_wider(values_from=name, 
+                names_from=section) |> 
+    mutate(joint = coalesce(str_c(Tuesday, " + ", Thursday), Tuesday, Thursday, "")) |>
+    mutate(row_string = glue::glue("Breakout #{sprintf('%02g', row_number())}: {joint}")) |>
+    select(row_string) |>
+    mutate(col = paste0("Col", row_number() %% 2 + 1), 
+           row = (row_number() +1 )%/% 2) |>
+    pivot_wider(names_from=col, 
+                values_from=row_string) |>
+    gt(id="breakout_tbl", 
+       rowname_col=NULL) |>
+    cols_hide(row) |>
+    cols_label(Col1="",
+               Col2="") |>
+    cols_align("left") |>
+    tab_options(column_labels.hidden=TRUE, 
+                table.width = pct(100), 
+                table.font.size = pct(80)) |>
+    tab_header("Breakout Rooms", 
+               "Please join the Breakout Room for your Project Team")
+      
+    
 } else {
   BREAKOUT_TABLE <- TEAMS |> 
       mutate(breakout = row_number(), 

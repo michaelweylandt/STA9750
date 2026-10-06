@@ -25,10 +25,9 @@ Today: `r TODAY_TOPIC`
 
 - Mini-Projects
 - Review
-- Diving Deeper into Multi-Table Verbs
-- PA#05 FAQs
+- Multi-Table Verbs
+- Pivots and Data Reshaping
 - Wrap-Up
-  - Life Tip of the Day
   
 ## MP#01 - Deadline Soon
 
@@ -57,254 +56,194 @@ EDA questions and writing prompts
 - Do your answers pass the sniff test?  
 - At least one sentence of text per short question is a good baseline
 
-## MP#01 - Peer Feedback
+## MP#01 - What to Write
 
-Assigned on GitHub - due on `r get_mp_pf_deadline(1)`
+In MP#01, you are not just submitting code, but a full documented analysis.
 
-- $\approx 4$ feedbacks each 
-- Take this seriously: 20\% of this assignment is "meta-review"
-- Goal: _rigorous_ _constructive_ critique
-
-Use [helper function](https://michael-weylandt.com/STA9750/tips.html) 
-to perform peer feedback assigned to you. Ask on Piazza if still having
-trouble.
-
-## MP#01 - Peer Feedback
-
-Submissions may not map perfectly to rubric - use your best judgement
+- Code intermixed with text throughout
+- But what to write? 
 
 . . . 
 
-Be _generous_ but serious: 
+Always explain *why* you are taking particular steps; sometimes (high-level) 
+_what_; rarely _how_
 
-::: {.small}
+- Clean code should (generally) be _self-documenting_
 
-- Goal is improvement, so "everything is great, no comments" is unhelpful
-  - Nothing is completely right nor completely wrong
-- Remember, *meta-review* (instructor scores of your feedback) to follow
+---
 
-:::
+Unnecessary: 
 
-. . .
+````{md}
+Next, we rename columns in the data set: 
 
-Learn from this! What can _you_ adapt for MP#02? 
-
-## MP#01 - Peer Feedback {.scrollable}
-
-Example of poor feedback: 
-
-::: {.smallest}
-
+```{{r}}
+data_set <- data_set |> rename(...)
 ```
-Comments
-Website looks really good, nice and clean!
-
-Written Communication
-Excellent and straight to the point.
-
-Project Skeleton
-Solid skeleton, well-organized .
-
-Formatting & Display
-Nicely formatted and balanced across the website.
-
-Code Quality
-Code runs like Forrest Gump in a Slump.
-
-Data Preparation
-Very great. 
-
-Extra Credit
-Added graphes for even better understanding.
-```
-
-:::
-
-- Superficial comments / no sign of actually reading work
-
-Red Flag: Repeated verbatim on several posts
-
-Reminder: Poor feedback $\neq$ poor work.
-
-## MP#01 - Peer Feedback {.scrollable}
-
-Example of medium feedback: 
-
-::: {.smallest}
-
-```
-## Comments
-
-Love the visuals for Press Releases.
-
-### Written Communication
-
-A short summary or a description of this project would be great to add.
-
-### Project Skeleton
-
-Code completes all instructor-provided tasks correctly.
-
-### Formatting & Display
-
-Tables have well-formatted column names; caption would be great.
-
-### Code Quality
-
-Code is clear and well written.
-
-### Data Preparation
-
-Automatic (10/10). Out of scope for this mini-project.
-
-### Extra Credit
-
-I found all the Press Releases very interesting. The visuals were a great touch.
-```
-
-:::
-
-- Gave actionable suggestions
-- Directionally correct, but a bit vague
-
-## MP#01 - Peer Feedback {.scrollable}
-
-Example of great feedback: 
-
-::: {.smallest}
-
-```
-### Written Communication
-
-Overall, your writing is clear and easy to follow. I noticed a few small typos, 
-but nothing major — using the built-in spell check in RStudio should catch those quickly. Everything else looks solid, and I didn’t have any major concerns based
-on my review.
-
-### Project Skeleton
-
-All tasks were completed satisfactorily. 
-
-### Formatting & Display
-
-Overall, your tables and figures are well-organized and clear. There is one 
-table in the "Data" section with column titles that could be formatted a little
-more cleanly for easier reading. I also noticed a few small typos in some of the
-table captions, but they should be easy to fix.
-
-### Code Quality
-
-The code quality is generally good, but there are a few minor linter issues. The
-comments could be more frequent and clearer in some places. For example, the
-comment `#checking dupolicate so that github will not block it` should be 
-corrected to "duplicate," and the explanation could be clarified to avoid
-confusion–what duplicate are you referring to, and how does it block GitHub? 
-It might confuse someone else reading the code.
-
-Also, I would recommend moving all library imports to the top of the script, as that is typically considered standard practice.
-
-### Data Preparation
-
-The data preparation looks solid overall. I like how you handle missing files 
-and JSON parsing failures–it demonstrates strong defensive programming.
-
-### Extra Credit
-
-Additional two points for using quarto's video support!
-```
-
-:::
-
-- Positive tone
-- Detailed comments
-- Noted issues & gave suggestions on how to fix
-- Noted unclear sections for improvement
-
-
-## MP#01 - Peer Feedback
-
-Lack of prior experience _is not a hinderance_ here: 
-
-- If something is unclear to you, that's a problem!
-- Nothing required super-complex code, so anything overly complex probably could
-  have been a simpler way (except for some above-and-beyond stuff)
-- You don't have to be definitive in comments - impressions and questions are
-  just as helpful.
-
-
-## MP FAQs
-
-Q: Why doesn't my site look the same on GitHub as it does on my laptop?
+````
 
 . . . 
 
-A: Missing `css` and `js` files. Need to _upload_ everything in `docs`. 
+Your target audience is a competent working data scientist, so explaining that
+`rename()` _renames_ things is unhelpful. 
 
 . . . 
 
-New helper function: 
+::: {.smaller}
+
+To be fair, there are some times in life where gnarly non-self-documenting code
+is required, but you shouldn't be encountering those in this class
+
+:::
+
+---
+
+Better: 
+
+
+````{md}
+Next, we update column names to include SI units and to more closely reflect the 
+terminology of Gorman *et al* (2014):
+
+```{{r}}
+better_penguins <- penguins |> 
+  rename(culmen_depth_mm = bill_dep, 
+         ...)
+```
+````
+
+. . . 
+
+This explains _what_ you are doing at a level _beyond the code_ (not just 
+renaming, but _aligning_ with other data sources). 
+
+## EDA Functions
+
+In MP#01, I ask you to run `glimpse()` and `skim()` on your data. These functions
+give summaries of the data set (column types, means, ranges, *etc.*)
+
+. . . 
+
+These _EDA_ functions help you get oriented with new data; normally, you wouldn't
+document them, but I'm asking you to run and discuss them (in MP#01 only)
+
+--- 
+
+Example: 
+
+````{md}
+After an initial survey of our data, 
+
+```{{r}}
+glimpse(penguins)
+```
+
+we note that this data has a mix of categorial and numeric columns, as well as 
+one column (`year`) that should transformed from numeric to factor (categorical)
+for modeling (ANOVA) purposes.
+````
+
+## Documentation Sandwich
+
+Documentation sandwich: 
+
+- _Before_: _Why_ are you doing something? 
+
+- _After_: _What_ does this tell you? _What_ does it imply about next steps? 
+
+. . . 
+
+The latter is particularly important with tables and figures. You have a _story_
+to tell your audience. Don't just dump a bunch of numbers and expect them to 
+figure it out
+
+. . . 
+
+Not always necessary to have both. Use your best judgment 
+
+---
+
+To assess whether automated penguin sexing is possible, we need to compare 
+typical male and female body masses across our three species of interest: 
 
 ```{r}
-#| eval: false
-#| echo: true
-source("https://michael-weylandt.com/STA9750/load_helpers.R")
-mp_submission_ready()
+#| echo: false
+#| message: false
+#| warning: false
+library(tidyverse)
+library(gt)
+penguins |> 
+    select(species, sex, body_mass) |> 
+    drop_na() |> 
+    group_by(species, sex) |> 
+    summarize(body_mass_kg_mean = mean(body_mass / 1000), 
+              body_mass_kg_sd = sd(body_mass / 1000), 
+              .groups="drop") |>
+    pivot_wider(names_from="sex", 
+                values_from=starts_with("body_mass_kg")) |>
+    gt(id="penguins_tbl1") |>
+    fmt_number(
+        columns=starts_with("body_mass"), 
+        decimals=2
+    ) |> 
+    cols_merge(
+        columns=c(body_mass_kg_mean_male, body_mass_kg_sd_male), 
+        pattern = "{1} ± {2}"
+    ) |>
+    cols_merge(
+        columns=c(body_mass_kg_mean_female, body_mass_kg_sd_female), 
+        pattern = "{1} ± {2}"
+    ) |>
+    cols_label(
+        body_mass_kg_mean_male="Body Mass (Male)",
+        body_mass_kg_mean_female="Body Mass (Female)",
+        species="Species"
+    ) |>
+    tab_header("Inter-Sex Differences in Penguin Body Mass by Species") |>
+    tab_source_note(md("Data originally published in by K.B. Gorman, T.D. Williams, 
+                       and W. R. Fraser in 'Ecological Sexual Dimorphism and 
+                       Environmental Variability within a Community of Antarctic 
+                       Penguins (Genus *Pyogscelis*). *PLoS One* 9(3): e90081.
+                       <https://doi.org/10.1371/journal.pone.0090081>. Later 
+                       popularized via the `R` package
+                       [`palmerpenguins`](https://allisonhorst.github.io/palmerpenguins/)"))
 ```
 
-Tries to make sure all 'secondary' files are present. 
+We note that typical inter-sex differences range from 1.25 (Chinstrap) to 2.6 
+(Gentoo) times the intra-sex variability, indicating that a simple sex classifier 
+based on sex and body mass is likely to perform well for Gentoo penguins, but
+struggle for Chinstraps. 
 
-## MP FAQs
 
-Q: Why doesn't my submission have the right URL? 
+--- 
 
-. . . 
-
-A: _Most_ computers have case-sensitive file names, Mac doesn't, and Windows is
-iffy. 
-
-. . . 
-
-New helper function: 
+Examining the same data graphically, we see that it is 
+indeed difficult to distinguish Chinstrap penguins by body mass alone, as the 
+significant overlap in the central panel below confirms. 
 
 ```{r}
-#| eval: false
-#| echo: true
-source("https://michael-weylandt.com/STA9750/load_helpers.R")
-mp_start()
+#| echo: false
+#| fig-align: "center"
+penguins |> 
+    select(sex, species, body_mass) |> 
+    drop_na() |> 
+    mutate(body_mass = body_mass / 1000, 
+           sex=str_to_title(sex)) |> 
+    ggplot(aes(x=body_mass, fill=sex)) + 
+    geom_density(color=NA, alpha=0.6) + 
+    facet_wrap(~species) + 
+    theme_bw() + 
+    scale_fill_brewer(name="Sex", palette = 2, type="qual") + 
+    xlab("Body Mass (kg)") + 
+    theme(legend.position="bottom") + 
+    ylab(NULL) + 
+    theme(axis.text.y = element_blank()) + 
+    ggtitle("Distribution of Measured Body Mass by Sex and Species") + 
+    labs(subtitle="Significant distributional overlap for Chinstrap penguins suggest a body-mass based sex classifier will have poor performance", 
+         caption="Penguins data originally collected by Gorman et al.")
 ```
 
-Generates a very basic `qmd` file with the correct file name and some relevant
-context. 
-
-
-## Mini-Project #02
-
-[MP#02 released](../mini/mini02.html) - `r get_mp_title(2)`
-
-. . .
-
-**Due`r get_mp_deadline(2)`**
-
-- GitHub post (used for automated checks) AND Brightspace
-- `r get_mp_deadline(2, as_d=TRUE) - class_date` days:
-  don't wait until the very end
-
-. . . 
-
-Topics covered: 
-
-- Combining Data from Different Sources
-- Data Visualization
-- Using Survey Weights for Microdata Analysis
-
-## Upcoming Mini-Projects
-
-Tentative Topics
-
--   MP#03: State-to-State Moving - `r get_mp_deadline(3)`
--   MP#04: Olympics Results - `r get_mp_deadline(4)`
-
-
-# Review from Last Week
+# Review 
 
 ## Single-Table Verbs
 
@@ -323,12 +262,7 @@ Tentative Topics
 
 [Lab #05 Review Activity](../labs/lab05.qmd#review)
 
-## Breakout Rooms
-
-```{r}
-#| echo: false
-BREAKOUT_TABLE
-```
+{{< include _chunks/breakout.qmd >}}
 
 # Multi-Table Verbs
 
@@ -345,34 +279,42 @@ Will create new (compound) rows:
 
 ## Primary Keys
 
-::: {.small}
-
 _Keys_ are unique identifiers for individual records
 
 - Primary (one column) or compound (multiple columns together) 
 
-:::
 
 . . . 
 
-::: {.small}
 
 The history of corporate IT is largely one of (failed) primary keys
 
 - Finance: Tickers, Tickers + Exchange, Tickers + Share Class, CUSIP, ISIN,
   SEDOL, ... 
   
-:::
   
 . . . 
-
-::: {.small}
 
 Meaningful true keys are vanishingly rare - cherish them when you find them
 
 Often 'unique enough' for an analysis
 
 `dplyr::group_by() + dplyr::count()` is helpful here
+
+
+---
+
+What _primary keys_ and _compound keys_ are used to identify you? 
+
+. . . 
+
+::: {.incremental}
+
+- CUNY EmplID
+- Name
+- Name + Birthday
+- Name + Birthday + ???
+- National ID Number (SSN?)
 
 :::
 
@@ -476,6 +418,198 @@ MEC stays, but no bus code - `NA` value
 :::
 
 `left_` and `right_` are types of 'outer' joins
+
+## Legos of Data Analysis {.scrollable}
+
+These functions are like Legos: 
+
+- Simple individually
+- Combine for complex structures
+
+---
+
+**Q: How many distinct flights left NYC in 2013?**
+
+```{r}
+library(dplyr)
+library(nycflights13)
+flights |> 
+    n_distinct()
+```
+
+. . . 
+
+Not quite what we wanted...
+
+---
+
+**Q: How many distinct flights left NYC in 2013?**
+
+. . . 
+
+How many unique combinations of `carrier` + `flight` (*e.g.*, United 101)?
+
+```{r}
+flights |>
+    select(carrier, flight) |>
+    n_distinct()
+```
+
+---
+
+**Q: How many distinct flights left NYC in 2013?**
+
+::: {.small}
+
+💡 Did airlines re-use flight numbers for different destinations? 
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    # Find reuse of number across different destinations
+    # Shorthand for group_by + summarize(n = n())
+    count(carrier, flight) 
+```
+
+:::
+
+. . . 
+
+Seems so!
+
+BTW: This is [bad and dangerous](https://viewfromthewing.com/airlines-are-running-out-of-flight-numbers-and-they-dont-know-what-to-do-about-it/)! 
+
+---
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Find examples of re-use: 
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n)
+```
+
+---
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Finding most re-used flight number: 
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n) |> 
+    left_join(flights, join_by(carrier == carrier, flight == flight)) |>
+    pull(dest) |> # pull out column as vector
+    table() # frequency table
+```
+
+---
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Finding most re-used flight number: 
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n)
+```
+
+---
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Seeing where our most reused number went:
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n) |>
+    inner_join(flights, join_by(carrier == carrier, flight == flight)) |>
+    count(flight, carrier, dest)
+```
+
+---
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Additional join to get airport information + formatting:
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n) |>
+    inner_join(flights, join_by(carrier == carrier, flight == flight)) |>
+    count(flight, carrier, dest) |> 
+    inner_join(airports, join_by(dest == faa)) |>
+    select(name, n, carrier, flight) |>
+    arrange(desc(n)) |>
+    rename(`Destination Airport` = name, 
+           `Number of Times Flown` = n, 
+           `Carrier Code` = carrier, 
+           `Flight Number`= flight)
+```
+
+
+---
+
+**Q: How many distinct flights left NYC in 2013?**
+
+::: {.small}
+
+Extra join to match to `airlines` as well: 
+
+```{r}
+head(airlines, 3)
+```
+
+:::
+
+. . . 
+
+Also has a column named `name` - need to disambiguate!
+
+---
+
+**Q: How many distinct flights left NYC in 2013?**
+
+Additional join to get airport information + formatting:
+
+```{r}
+flights |>
+    distinct(carrier, flight, dest) |>
+    count(carrier, flight) |> 
+    slice_max(n) |>
+    inner_join(flights, join_by(carrier == carrier, flight == flight)) |>
+    count(flight, carrier, dest) |>  
+    inner_join(airports, join_by(dest == faa)) |>
+    select(name, n, carrier, flight) |>
+    rename(dest_name = name) |> 
+    inner_join(airlines, join_by(carrier == carrier)) |> 
+    arrange(desc(n)) |>
+    select(-carrier) |> 
+    rename(`Destination Airport` = dest_name, 
+           `Number of Times Flown` = n, 
+           `Carrier` = name, 
+           `Flight Number`= flight)
+```
+
+
+## Diving deeper Into Joins
+
+Data Set: [`nycflights13`](https://nycflights13.tidyverse.org/)
+
+Return to your breakout rooms and continue [Lab #05](../labs/lab05.html)
+
+# Pivoting
 
 ## Pivoting
 
@@ -631,186 +765,6 @@ repeats / missing values. The help page (+ experimenting) is your friend
 
 :::
 
-## Legos of Data Analysis
-
-These functions are like Legos: 
-
-- Simple individually
-- Combine for complex structures
-
-## Legos of Data Analysis
-
-**Q: How many distinct flights left NYC in 2013?**
-
-```{r}
-library(dplyr)
-library(nycflights13)
-flights |> 
-    n_distinct()
-```
-
-. . . 
-
-Not quite what we wanted...
-
-## Legos of Data Analysis
-
-**Q: How many distinct flights left NYC in 2013?**
-
-. . . 
-
-How many unique combinations of `carrier` + `flight` (*e.g.*, United 101)?
-
-```{r}
-flights |>
-    select(carrier, flight) |>
-    n_distinct()
-```
-
-## Legos of Data Analysis
-
-**Q: How many distinct flights left NYC in 2013?**
-
-::: {.small}
-
-💡 Did airlines re-use flight numbers for different destinations? 
-
-```{r}
-flights |>
-    distinct(carrier, flight, dest) |>
-    # Find reuse of number across different destinations
-    # Shorthand for group_by + summarize(n = n())
-    count(carrier, flight) 
-```
-
-:::
-
-. . . 
-
-Seems so!
-
-## Legos of Data Analysis {.scrollable}
-
-**Q: How many distinct flights left NYC in 2013?**
-
-Find examples of re-use: 
-
-```{r}
-flights |>
-    distinct(carrier, flight, dest) |>
-    count(carrier, flight) |> 
-    slice_max(n)
-```
-
-## Legos of Data Analysis {.scrollable}
-
-**Q: How many distinct flights left NYC in 2013?**
-
-Finding most re-used flight number: 
-
-```{r}
-flights |>
-    distinct(carrier, flight, dest) |>
-    count(carrier, flight) |> 
-    slice_max(n) |> 
-    left_join(flights, join_by(carrier == carrier, flight == flight)) |>
-    pull(dest) |> # pull out column as vector
-    table() # frequency table
-```
-
-## Legos of Data Analysis {.scrollable}
-
-**Q: How many distinct flights left NYC in 2013?**
-
-Finding most re-used flight number: 
-
-```{r}
-flights |>
-    distinct(carrier, flight, dest) |>
-    count(carrier, flight) |> 
-    slice_max(n)
-```
-
-## Legos of Data Analysis {.scrollable}
-
-**Q: How many distinct flights left NYC in 2013?**
-
-Seeing where our most reused number went:
-
-```{r}
-flights |>
-    distinct(carrier, flight, dest) |>
-    count(carrier, flight) |> 
-    slice_max(n) |>
-    inner_join(flights, join_by(carrier == carrier, flight == flight)) |>
-    count(flight, carrier, dest)
-```
-
-## Legos of Data Analysis {.scrollable}
-
-**Q: How many distinct flights left NYC in 2013?**
-
-Additional join to get airport information + formatting:
-
-```{r}
-flights |>
-    distinct(carrier, flight, dest) |>
-    count(carrier, flight) |> 
-    slice_max(n) |>
-    inner_join(flights, join_by(carrier == carrier, flight == flight)) |>
-    count(flight, carrier, dest) |> 
-    inner_join(airports, join_by(dest == faa)) |>
-    select(name, n, carrier, flight) |>
-    arrange(desc(n)) |>
-    rename(`Destination Airport` = name, 
-           `Number of Times Flown` = n, 
-           `Carrier Code` = carrier, 
-           `Flight Number`= flight)
-```
-
-
-## Legos of Data Analysis {.scrollable}
-
-**Q: How many distinct flights left NYC in 2013?**
-
-::: {.small}
-
-Extra join to match to `airlines` as well: 
-
-```{r}
-head(airlines, 3)
-```
-
-:::
-
-. . . 
-
-Also has a column named `name` - need to disambiguate!
-
-## Legos of Data Analysis {.scrollable}
-
-**Q: How many distinct flights left NYC in 2013?**
-
-Additional join to get airport information + formatting:
-
-```{r}
-flights |>
-    distinct(carrier, flight, dest) |>
-    count(carrier, flight) |> 
-    slice_max(n) |>
-    inner_join(flights, join_by(carrier == carrier, flight == flight)) |>
-    count(flight, carrier, dest) |>  
-    inner_join(airports, join_by(dest == faa)) |>
-    select(name, n, carrier, flight) |>
-    rename(dest_name = name) |> 
-    inner_join(airlines, join_by(carrier == carrier)) |> 
-    arrange(desc(n)) |>
-    select(-carrier) |> 
-    rename(`Destination Airport` = dest_name, 
-           `Number of Times Flown` = n, 
-           `Carrier` = name, 
-           `Flight Number`= flight)
-```
 
 ## Legos of Data Analysis
 
@@ -849,13 +803,6 @@ fortunes::fortune(222)
 ```
 
 
-# Diving Deeper into Multi-Table Verbs
-
-## Diving deeper Into Joins
-
-Data Set: [`nycflights13`](https://nycflights13.tidyverse.org/)
-
-Exercises: [Lab #05](../labs/lab05.html)
 
 ## Additional dplyr Tricks
 
@@ -870,7 +817,7 @@ Exercises: [Lab #05](../labs/lab05.html)
   
 :::
 
-# Multi-Table FAQs
+# FAQs
 
 ## Subqueries
 
@@ -983,14 +930,43 @@ Additional `dplyr`:
 
 - Ranking, cumulative, and shift functions
 
-
 ## Orientation
+
+::: {.small}
 
 - Communicating Results (`quarto`)  ✅
 - `R` Basics  ✅
-- Data Manipulation in `R`  ✅
-- Data Visualization in `R`  ⬅️
-- Getting Data into `R`
+- Data Manipulation in `R` ⬅️
+  - Single-Table Data Manipulation ✅
+  - Multiple-Table Data Manipulation ⬅️
+- Data Visualization in `R`
+- Getting Data into `R` 
 - Statistical Modeling in `R`
+
+:::
+
+
+## Next Time
+
+::: {.small}
+
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R` ✅
+- Data Visualization in `R` ⬅️ 
+- Getting Data into `R` 
+- Statistical Modeling in `R`
+
+:::
+
+
+. . . 
+
+**Data Visualization** 
+
+- Grammar of Graphics
+- `ggplot2`
+- EDA Plots vs Publication-Ready Plots
+
 
 {{< include _end.qmd >}}
