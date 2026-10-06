@@ -763,6 +763,201 @@ You can also pass more complex operations to the `join_by` operator:
 
 :::
 
+# Pivot Exercises
+
+Using the `pivot_wider()` and `pivot_longer()` functions from the `tidyr` 
+package (which is automatically loaded by the `tidyverse` metapackage), answer
+the following questions. 
+
+1.  Construct a table that reports the number of flights each carrier flew out
+    of the three origin airports. 
+   
+    Your results should look something like: 
+   
+    | Carrier           | EWR | JFK | LGA |
+    |-------------------|-----|-----|-----|
+    | Alaska Airlines   | 700 | 0   | 0   |
+    | Frontier Airlines | 0   | 0   | 500 |
+    
+    *Hint*: Make sure to use the `values_fill` argument to your pivot function.
+   
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    ```{webr}
+    library(tidyverse)
+    library(nycflights13)
+    flights |> 
+      count(carrier, origin) |> 
+      pivot_wider(names_from = origin, values_from = n, values_fill = 0) |>
+      left_join(airlines, join_by(carrier)) |> 
+      select(name, EWR, JFK, LGA) |>
+      rename(carrier_name = name)
+    ```
+    
+    :::
+    
+2.  Compute the average departure delay for each origin airport for each month. 
+
+    Your results should look something like: 
+   
+    | Month | EWR | JFK | LGA |
+    |-------|-----|-----|-----|
+    | 1     | 1.3 | 2.4 | 5.7 |
+    | 2     | 0.8 | 9.1 | 6.8 |
+   
+    (Values are not correct)
+    
+    *Hint*: Make sure to handle `NA` values suitably. 
+    
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    ```{webr}
+    library(tidyverse)
+    library(nycflights13)
+    flights |> 
+      group_by(origin, month) |> 
+      summarize(mean_delay = mean(dep_delay, na.rm=TRUE)) |>
+      pivot_wider(names_from=origin, values_from=mean_delay)
+    ```
+    
+    If you want to change the month numbers to names, you can use the `month()`
+    function. The following works, but is admittedly a bit 'magic':
+    
+    ```{webr}
+    library(tidyverse)
+    library(nycflights13)
+    flights |> 
+      group_by(origin, month) |> 
+      summarize(mean_delay = mean(dep_delay, na.rm=TRUE)) |>
+      pivot_wider(names_from=origin, values_from=mean_delay) |> 
+      mutate(month = month(month, label=TRUE))
+    ```
+    
+    :::
+    
+3.  A common use of `pivot_longer()` is to combine several columns so that they
+    can be summarized without too much repetition. For instance, instead of 
+    
+    ```{r}
+    #| warning: false
+    #| message: false
+    penguins |> 
+    group_by(species) |>
+    summarize(mean_bill_len=mean(bill_len, na.rm=TRUE), 
+              sd_bill_len=sd(bill_len, na.rm=TRUE), 
+              max_bill_len=max(bill_len, na.rm=TRUE),
+              min_bill_len=min(bill_len, na.rm=TRUE), 
+              mean_bill_dep=mean(bill_dep, na.rm=TRUE), 
+              sd_bill_dep=sd(bill_dep, na.rm=TRUE), 
+              max_bill_dep=max(bill_dep, na.rm=TRUE),
+              min_bill_dep=min(bill_dep, na.rm=TRUE),
+              mean_flipper_len=mean(flipper_len, na.rm=TRUE), 
+              sd_flipper_len=sd(flipper_len, na.rm=TRUE), 
+              max_flipper_len=max(flipper_len, na.rm=TRUE),
+              min_flipper_len=min(flipper_len, na.rm=TRUE),
+              mean_body_mass=mean(body_mass, na.rm=TRUE), 
+              sd_body_mass=sd(body_mass, na.rm=TRUE), 
+              max_body_mass=max(body_mass, na.rm=TRUE),
+              min_body_mass=min(body_mass, na.rm=TRUE))
+    ```
+    
+    We can instead use `pivot_longer` to do something like this: 
+    
+    ```{r}
+    #| warning: false
+    #| message: false
+    penguins |> 
+      pivot_longer(cols=c(bill_len, bill_dep, flipper_len, body_mass), 
+                   names_to="measurement_type",
+                   values_to="measurement") |>
+      filter(!is.na(measurement)) |>
+      group_by(species, measurement_type) |>
+      summarize(mean=mean(measurement), 
+                sd=sd(measurement),
+                max=max(measurement),
+                min=min(measurement))
+    ```
+    
+    and, if needed, we can then `pivot_wider()` back into a more familiar form: 
+    
+    ```{r}
+    #| warning: false
+    #| message: false
+    penguins |> 
+      pivot_longer(cols=c(bill_len, bill_dep, flipper_len, body_mass), 
+                   names_to="measurement_type",
+                   values_to="measurement") |>
+      filter(!is.na(measurement)) |>
+      group_by(species, measurement_type) |>
+      summarize(mean=mean(measurement), 
+                sd=sd(measurement),
+                max=max(measurement),
+                min=min(measurement)) |>
+      ungroup() |> 
+      pivot_wider(id_cols=species, 
+                  names_from=measurement_type,
+                  values_from=c(mean, sd, max, min))
+    ```
+    
+    Make sure you understand this example before going further. 
+    
+    Use this technique to compute and month-average (`mean`), minimum, 
+    maximum, and sample standard deviations for each the following measurements 
+    at Newark (`EWR`) in the `weather` data frame: `temp`, `dewp`, `humid`, 
+    `wind_speed`, `precip`.
+    
+    ::: {.callout-tip collapse="true" title="Solution"}
+    
+    ```{webr}
+    library(tidyverse)
+    library(nycflights13)
+    
+    weather |>
+      filter(origin=="EWR") |>
+      select(month, temp, dewp, humid, wind_dir, wind_speed, precip) |>
+      pivot_longer(cols=-month, # Everything except month! 
+                   names_to="measurement_type",
+                   values_to="measurement") |>
+      filter(!is.na(measurement)) |>
+      group_by(month, measurement_type) |>
+      summarize(mean=mean(measurement), 
+              sd=sd(measurement),
+              max=max(measurement),
+              min=min(measurement)) |>
+    ungroup() |> 
+    pivot_wider(id_cols=month, 
+                names_from=measurement_type,
+                values_from=c(mean, sd, max, min))
+    ```
+    
+    The `across()` function can be used to `mutate()` or `summarize()` several 
+    columns at the same time: 
+    
+    ```{webr}
+    library(tidyverse)
+    library(nycflights13)
+    
+    weather |>
+      filter(origin == "EWR") |> 
+      group_by(month) |>
+      summarize(
+        across(
+          c(temp, dewp, humid, wind_dir, wind_speed, precip),
+          list(
+            mean = \(x) mean(x, na.rm=TRUE),
+            sd   = \(x) sd(x, na.rm=TRUE),
+            max  = \(x) max(x, na.rm=TRUE),
+            min  = \(x) min(x, na.rm=TRUE)
+          ),
+          .names = "{.col}_{.fn}"
+      ))
+    ```
+    
+    This is a bit more advanced, so we won't go too deep into this idiom in
+    this course. 
+    
+    :::
+
 # Additional `dplyr` functionality
 
 `dplyr` provides some additional functionality that is often useful. While these
