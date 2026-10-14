@@ -201,7 +201,7 @@ class Issue(object):
         self._branch_confirmed = False
         self._default_branch = "main"
 
-    TITLE_REGEX = r'STA +9750 +(\S*) +[Mm]ini-?[Pp]roject #\*{,2}?0(\d)\*{,2}'
+    TITLE_REGEX = r'STA +9750 +(\S*) +[Mm]ini-?[Pp]roject ?#\*{,2}?0(\d)\*{,2}'
 
     def to_json(self):
         return json.dumps({
@@ -520,14 +520,24 @@ class Issue(object):
                   "Submission URL Accessible",
                   "Source File Accessible",
                   "All Supporting Files Present",
-                  "AI Disclosure Present" if self.mp_num else "Future MP Placeholders Found",]
+                  "Future MP Placeholders Found",
+                  "AI Disclosure Present"]
                   
         OUT_TEXT = ""
                   
-        assert len(CHECKS) + 2 == IssueStatus.OK # +1 b/c top status is OK (no check)
+        assert len(CHECKS) + 1 == IssueStatus.OK # +1 b/c top status is OK (no check)
                                                  # +1 b/c we skip placeholder / AI checks on MP#00
         
         for check_ix, check_text in enumerate(CHECKS, start=1):
+            # Skip MP Placeholders on graded MPs
+            if check_ix == len(CHECKS) - 1 and self.number: 
+                continue 
+            
+            # Skip AI disclosure on MP0
+            if check_ix == len(CHECKS) and self.number == 0:
+                continue
+            
+            
             if self.status > check_ix:
                 OUT_TEXT += "- [✅] "+  check_text + "\n"
             elif self.status == check_ix:
@@ -1762,7 +1772,7 @@ def roster_list(include_inactive, include_emplid, include_secret,
         "github": "GitHub ID", 
         "email": "Student Email", 
         "name": "Student Name", 
-        "project_team": "Project Team Name", 
+        "team_name": "Project Team Name", 
         "active": "Status",
         "emplid": "Student ID", 
         "secret": "Secret Code",
@@ -3352,8 +3362,12 @@ def _mini_verify(project_id, github, dry_run=True, force=False):
 
 def _possible_open_instructor_issue(github_id, project_id):
     click.echo("Opening HTML file")
-    webbrowser.open(f"https://{github_id}.github.io/{course_repo()}/mp{project_id:02}.html")
     
+    if project_id: 
+        webbrowser.open(f"https://{github_id}.github.io/{course_repo()}/mp{project_id:02}.html")
+    else: 
+        webbrowser.open(f"https://{github_id}.github.io/{course_repo()}/index.html")
+        
     if not click.prompt("Was a working HTML file submitted?", type=bool, default=True):
         return False
     
