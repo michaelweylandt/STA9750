@@ -6,7 +6,7 @@ mp_application: "Media, Internet"
 mp_rhetoric: "Strategy Memo"
 mp_max_ec: 4
 aliases: 
-  - "/miniprojects/mini01.html"
+  - "../miniprojects/mini01.html"
 ---
 
 {{< include _mpsetup.qmd >}}
@@ -208,21 +208,28 @@ load_netflix_data <- function(){
     map(html_element, xpath = "//a[contains(@href, '.xlsx')]") |> 
     map_chr(html_attr, "href") |> 
     enframe("period", "url") |> 
-   mutate(path = path(data_dir, paste0(period, ".xlsx")), 
-          path = map2(url, path, download_if_needed), 
-          data = map(path, read_excel, skip=3, na="*"), 
-          data = map(data, \(x) x |> mutate(`Release Date` = as.Date(`Release Date`)))) |>
+    mutate(path = path(data_dir, paste0(period, ".xlsx")), 
+           path = map2(url, path, download_if_needed), 
+           sheets = map(path, excel_sheets)) |>
+    unnest(sheets) |> 
+    mutate(data = map2(path, sheets, \(x, y) read_excel(x, sheet=y, skip=3, na="*")), 
+           data = map(data, \(x) x |> mutate(`Release Date` = as.Date(`Release Date`))), 
+           data = map2(data, sheets, \(x, y) x |> mutate(sheet=y))) |> 
     unnest(data) |> 
-    select(-url, -path) |> 
+    select(-url, -path, -sheets) |> 
     mutate(year=str_sub(period, 1, 4), 
            half=str_sub(period, start=6), 
            period_start = make_date(year, if_else(half==1, 1, 7), 1), 
            period_end = make_date(year, if_else(half==1, 6, 12), if_else(half==1, 30, 31))) |> 
-    filter(!is.na(`Hours Viewed`)) |> 
+    filter(!is.na(`Hours Viewed`)) |>
     mutate(live_event = !is.na(Runtime) & str_detect(Runtime, "\\d+:\\d+\\*"), 
            clean_time = str_remove(Runtime, fixed("*")),
-           Runtime = 60 * hour(hm(clean_time)) + minute(hm(clean_time))) |>
-    select(-clean_time) |>
+           Runtime = 60 * hour(hm(clean_time)) + minute(hm(clean_time)),
+           title_type = replace_values(sheet, 
+                                      "Shows" ~ "TV",
+                                      "Film" ~ "Movies",
+                                      "Engagement" ~ NA)) |>
+    select(-clean_time, -sheet) |>
     mutate(Runtime = coalesce(Runtime, mean(Runtime, na.rm=TRUE)), 
            .by=Title, 
            Title = stringi::stri_trans_general(Title, "Latin-ASCII"),
@@ -241,7 +248,12 @@ load_netflix_data <- function(){
            `Hours Viewed`, 
            `Release Date`,
            `Available Globally?`, 
-           live_event)
+           live_event, 
+           title_type) |> 
+    group_by(Title) |> 
+    fill(title_type,
+         .direction="updown") |>
+    ungroup()
 }
 
 NETFLIX_DATA <- load_netflix_data()
@@ -933,11 +945,15 @@ not just a "raw" `R` output.
     across different periods and develop a filter using some combination of
     these quantities.
 
-4. Within each period, what fraction of time was spent on 'shows' vs movies?
+4. **This question reflected an earlier version of this assignment where TV 
+   shows and movies were not clearly delineated in the data. This has since been
+   rectified, so this question is now less interesting.**
+   
+   Within each period, what fraction of time was spent on 'shows' vs movies?
    
    Unfortunately our data does not clearly delineate shows from movies, so you
    will need to come up with a heuristic for doing so. I'd recommend some 
-   combination of: 
+   combination of:
    
    - Length: anything over 4-ish hours is almost certainly a TV show, not a 
      movie
