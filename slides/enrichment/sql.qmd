@@ -77,7 +77,7 @@ RDMS has a fixed number of _tables_ (roughly `data.frame`s). DDL specifies
 - Constraints (non-negative, `a < b`, *etc.*)
 - Relationships to other tables (Foreign Keys)
 
-## DDL 
+---
 
 Basic command is the `CREATE TABLE` statement.
 
@@ -94,7 +94,7 @@ CREATE TABLE table_name (
 `TYPE` can be `INTEGER`, `DECIMAL`, `CHAR`, `VARCHAR`, `DATE`, 
 `TIMESTAMP` and more
 
-## DDL 
+---
 
 Our beloved `penguins`: 
 
@@ -118,7 +118,7 @@ Compare:
 glimpse(penguins)
 ```
 
-## DDL 
+---
 
 We can add a _constraint_ so the year is 2007-2009: 
 
@@ -136,12 +136,12 @@ CREATE TABLE penguins (
 );
 ```
 
-## DDL 
+---
 
 Constraints for categorical variables (`R` `factor`s) can be tricky. 
 Create a _normalized_ set of tables: 
 
-::: {.smaller}
+::: {.small}
 
 | Sex ID | Name   | 
 |--------|--------|
@@ -160,7 +160,7 @@ Create a _normalized_ set of tables:
 
 We want to make sure each `Sex ID` in table 2 matches a row of the first table
 
-## DDL 
+---
 
 Constraints for categorical variables (`R` `factor`s) can be tricky. 
 Create a _normalized_ set of tables: 
@@ -222,7 +222,7 @@ SELECT * FROM penguins;
 
 `SELECT *` means _all columns_ which matches `R`'s default
 
-## DML 
+---
 
 **Data Manipulation Language** is for DB users. 
 
@@ -241,7 +241,7 @@ penguins |> select(species, island, bill_dep)
 SELECT species, island, bill_dep FROM penguins; 
 ```
 
-## DML 
+---
 
 **Data Manipulation Language** is for DB users. 
 
@@ -260,7 +260,7 @@ penguins |> select(species, island, bill_dep) |> filter(bill_dep > 20)
 SELECT species, island, bill_dep FROM penguins WHERE bill_dep > 20; 
 ```
 
-## DML 
+---
 
 Note that
 
@@ -291,7 +291,7 @@ Why?
 
 They *commute* -- same result in either order
 
-## DML 
+---
 
 - `R` is an *imperative* paradigm - you say _what to do_
 - `SQL` is a *declarative* paradigm - you say _what you want_ 
@@ -305,7 +305,7 @@ are more restrictive
 
 For a well-defined paradigm like SQL, _much_ work has gone into query optimization
 
-## DML 
+---
 
 - Compare: 
 
@@ -323,7 +323,7 @@ SELECT species, AVERAGE(body_mass) FROM penguins GROUP BY species;
 
 `summarize()` is implicit in `SELECT` clause when we have a `GROUP BY`
 
-## DML 
+---
 
 But:
 
@@ -347,7 +347,7 @@ SELECT species, AVERAGE(body_mass) AS avg_mass FROM penguins
 
 Why not `WHERE` again? 
 
-## DML 
+---
 
 In `SQL`:
 
@@ -393,7 +393,7 @@ Easiest RDMS to use is `SQLite`
 
 [Excellent documentation](https://sqlite.org/lang.html)
 
-## dbplyr
+## dbplyr {.scrollable}
 
 Can use `dbplyr` (extra `b`!) to put `dplyr`-UX on DB
 
@@ -405,16 +405,14 @@ my_db <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 copy_to(my_db, penguins) # Copy penguins data into a temporary SQLite DB
 ```
 
-
-## dbplyr
+---
 
 ```{r}
 penguins_db <- tbl(my_db, "penguins") # Connect to my_db and load penguins table
 penguins_db
 ```
 
-
-## dbplyr
+---
 
 ```{r}
 penguins_db |> 
@@ -426,13 +424,14 @@ penguins_db |>
 Extra step - `show_query` to see SQL or `collect()` to run in DB:
 
 ```{r}
+#| eval: false
 penguins_db |> 
   group_by(species) |> 
   summarize(mean_mass = mean(body_mass, na.rm=TRUE)) |> 
   collect()
 ```
 
-## dbplyr
+---
 
 ::: {.smaller}
 
