@@ -2,17 +2,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.37">
+<meta name="generator" content="quarto-1.10.18">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>STA 9750 Lecture #11 In-Class Activity: Predictive Modeling - Inference and Prediction in R – STA 9750</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
 */
-code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -71,10 +74,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-f7b58eee2202a58c8e0dc5967ec053ef.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+<link href="../site_libs/bootstrap/bootstrap-f755b185985a6dd5cfcae12724477981.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
@@ -100,7 +103,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script><script type="text/javascript">
 const typesetMath = (el) => {
   if (window.MathJax) {
     // MathJax Typeset
@@ -175,6 +178,10 @@ window.Quarto = {
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-prior-offerings">
 <li>
+    <a class="dropdown-item" href=".././archive/AY-2025-SPRING/">
+ <span class="dropdown-text">Spring 2026</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href=".././archive/AY-2025-FALL/">
  <span class="dropdown-text">Fall 2025</span></a>
   </li>  
@@ -193,7 +200,12 @@ window.Quarto = {
             <div class="quarto-navbar-tools">
 </div>
       </div> <!-- /container-fluid -->
-    </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+    </nav><div id="quarto-announcement" data-announcement-id="150402652995a384475e7e813773d159" class="alert alert-danger hidden">
+<i class="bi bi-exclamation-triangle-fill quarto-announcement-icon"></i><div class="quarto-announcement-content">
+<p><strong>Warning</strong> - This page is for a prior offering of STA 9750. For the latest offering, click <a href="#" id="exit-archive-link">here</a>.</p>
+</div>
+</div>
+</header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">On this page</h2>
    
@@ -240,7 +252,8 @@ window.Quarto = {
   
 
 
-</header><p><strong>Class #14: Thursday May 14, 2026 (Lecture #11: Statistical Modeling in R)</strong></p>
+</header><p><strong>Class #14: Tuesday December 08, 2026 and Thursday December 10, 2026</strong></p>
+<p><strong>Lecture #11: Statistical Modeling in R</strong></p>
 <section id="slides" class="level1"><h1><a href="../slides/slides14.html">Slides</a></h1>
 </section><section id="review" class="level1"><h1>Review Exercise</h1>
 <p>For this final warm-up exercise, you are going to use a combination of the skills learned over the semester to create a map of the countries of the world, colored by population density.</p>
@@ -1848,7 +1861,7 @@ window.Quarto = {
 <span>   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarize</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">density</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  sd(density)
-1    1476.741</code></pre>
+1    1476.746</code></pre>
 </div>
 </div>
 <p>But how can we get a sense of the variance of this quantity? Ideally, we would have <em>many</em> sets of countries and could compute standard deviation <em>within</em> each set and then compute a variance <em>across</em> sets. Resampling will get us there:</p>
@@ -2436,14 +2449,14 @@ window.Quarto = {
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb65"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="va">rf_fitted</span>, new_data<span class="op">=</span><span class="va">DATA</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">5</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 5 × 7
-  .pred PERCENT_PROFICIENT SUBGROUP_NAME          ASSESSMENT_NAME LUNCH_DISCOUNT
-  &lt;dbl&gt;              &lt;dbl&gt; &lt;chr&gt;                  &lt;chr&gt;                    &lt;dbl&gt;
-1  92.8                 96 Female                 Regents NF Glo…              2
-2  89.0                 87 Male                   Regents US His…             38
-3  39.0                 47 Male                   Science8                    41
-4  56.6                 50 Not Economically Disa… MATH3                       80
-5  82.9                 85 Economically Disadvan… Regents Phy Se…             16
+<pre><code># A tibble: 5 × 8
+  .pred .resid PERCENT_PROFICIENT SUBGROUP_NAME   ASSESSMENT_NAME LUNCH_DISCOUNT
+  &lt;dbl&gt;  &lt;dbl&gt;              &lt;dbl&gt; &lt;chr&gt;           &lt;chr&gt;                    &lt;dbl&gt;
+1  69.6   1.38                 71 Not Economical… Regents Common…             74
+2  29.6  -4.61                 25 Female          ELA3                        94
+3  94.5   1.54                 96 Female          Regents Phy Se…             12
+4  25.6  -4.63                 21 Economically D… ELA7                        54
+5  30.3 -10.3                  20 Not Economical… Regents Phy Se…             90
 # ℹ 2 more variables: STUDENT_TEACHER_RATIO &lt;dbl&gt;, FUNDING_PER_STUDENT &lt;dbl&gt;</code></pre>
 </div>
 </div>
@@ -2466,13 +2479,13 @@ window.Quarto = {
 <pre><code># A tibble: 4 × 3
   .metric .estimator .estimate
   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;
-1 rmse    standard      10.2  
-2 rsq     standard       0.880
-3 mae     standard       7.96 
+1 rmse    standard      10.3  
+2 rsq     standard       0.874
+3 mae     standard       8.09 
 4 mape    standard     Inf    </code></pre>
 </div>
 </div>
-<p>So that last row – “percent error” – goes a bit janky just because we have 105 tests on which 0% of students were at grade level. We can exclude these from our analysis and use other <code>tidyverse</code> techniques to see how our model performs on different tests:</p>
+<p>So that last row – “percent error” – goes a bit janky just because we have 95 tests on which 0% of students were at grade level. We can exclude these from our analysis and use other <code>tidyverse</code> techniques to see how our model performs on different tests:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb69"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://gt.rstudio.com">gt</a></span><span class="op">)</span></span>
 <span><span class="va">rf_fitted</span> <span class="op">|&gt;</span> </span>
@@ -2952,227 +2965,220 @@ window.Quarto = {
 <tbody class="gt_table_body">
 <tr class="odd">
 <th id="stub_1_1" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Combined6Math</th>
-<td class="gt_row gt_right" headers="stub_1_1 rmse">11.63</td>
-<td class="gt_row gt_right" headers="stub_1_1 rsq">82.96%</td>
-<td class="gt_row gt_right" headers="stub_1_1 mae">9.28</td>
-<td class="gt_row gt_right" headers="stub_1_1 mape">25.65%</td>
+<td class="gt_row gt_right" headers="stub_1_1 rmse">13.49</td>
+<td class="gt_row gt_right" headers="stub_1_1 rsq">79.52%</td>
+<td class="gt_row gt_right" headers="stub_1_1 mae">10.85</td>
+<td class="gt_row gt_right" headers="stub_1_1 mape">33.30%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Combined7Math</th>
-<td class="gt_row gt_right" headers="stub_1_2 rmse">9.95</td>
-<td class="gt_row gt_right" headers="stub_1_2 rsq">81.62%</td>
-<td class="gt_row gt_right" headers="stub_1_2 mae">7.86</td>
-<td class="gt_row gt_right" headers="stub_1_2 mape">22.30%</td>
+<td class="gt_row gt_right" headers="stub_1_2 rmse">10.72</td>
+<td class="gt_row gt_right" headers="stub_1_2 rsq">85.67%</td>
+<td class="gt_row gt_right" headers="stub_1_2 mae">8.44</td>
+<td class="gt_row gt_right" headers="stub_1_2 mape">27.35%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Combined8Math</th>
-<td class="gt_row gt_right" headers="stub_1_3 rmse">9.78</td>
-<td class="gt_row gt_right" headers="stub_1_3 rsq">87.85%</td>
-<td class="gt_row gt_right" headers="stub_1_3 mae">7.99</td>
-<td class="gt_row gt_right" headers="stub_1_3 mape">19.98%</td>
+<td class="gt_row gt_right" headers="stub_1_3 rmse">10.91</td>
+<td class="gt_row gt_right" headers="stub_1_3 rsq">86.86%</td>
+<td class="gt_row gt_right" headers="stub_1_3 mae">8.82</td>
+<td class="gt_row gt_right" headers="stub_1_3 mape">52.64%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">CombinedScience</th>
-<td class="gt_row gt_right" headers="stub_1_4 rmse">8.47</td>
-<td class="gt_row gt_right" headers="stub_1_4 rsq">93.57%</td>
-<td class="gt_row gt_right" headers="stub_1_4 mae">6.92</td>
-<td class="gt_row gt_right" headers="stub_1_4 mape">25.39%</td>
+<td class="gt_row gt_right" headers="stub_1_4 rmse">8.52</td>
+<td class="gt_row gt_right" headers="stub_1_4 rsq">91.23%</td>
+<td class="gt_row gt_right" headers="stub_1_4 mae">6.62</td>
+<td class="gt_row gt_right" headers="stub_1_4 mape">20.34%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">ELA3</th>
-<td class="gt_row gt_right" headers="stub_1_5 rmse">10.95</td>
-<td class="gt_row gt_right" headers="stub_1_5 rsq">81.46%</td>
-<td class="gt_row gt_right" headers="stub_1_5 mae">8.71</td>
-<td class="gt_row gt_right" headers="stub_1_5 mape">31.21%</td>
+<td class="gt_row gt_right" headers="stub_1_5 rmse">10.81</td>
+<td class="gt_row gt_right" headers="stub_1_5 rsq">79.79%</td>
+<td class="gt_row gt_right" headers="stub_1_5 mae">8.72</td>
+<td class="gt_row gt_right" headers="stub_1_5 mape">29.36%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_6" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">ELA4</th>
-<td class="gt_row gt_right" headers="stub_1_6 rmse">9.91</td>
-<td class="gt_row gt_right" headers="stub_1_6 rsq">86.10%</td>
-<td class="gt_row gt_right" headers="stub_1_6 mae">8.10</td>
-<td class="gt_row gt_right" headers="stub_1_6 mape">26.12%</td>
+<td class="gt_row gt_right" headers="stub_1_6 rmse">10.97</td>
+<td class="gt_row gt_right" headers="stub_1_6 rsq">82.10%</td>
+<td class="gt_row gt_right" headers="stub_1_6 mae">8.72</td>
+<td class="gt_row gt_right" headers="stub_1_6 mape">27.59%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_7" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">ELA5</th>
-<td class="gt_row gt_right" headers="stub_1_7 rmse">9.76</td>
-<td class="gt_row gt_right" headers="stub_1_7 rsq">85.53%</td>
-<td class="gt_row gt_right" headers="stub_1_7 mae">7.77</td>
-<td class="gt_row gt_right" headers="stub_1_7 mape">29.77%</td>
+<td class="gt_row gt_right" headers="stub_1_7 rmse">9.83</td>
+<td class="gt_row gt_right" headers="stub_1_7 rsq">85.04%</td>
+<td class="gt_row gt_right" headers="stub_1_7 mae">7.70</td>
+<td class="gt_row gt_right" headers="stub_1_7 mape">33.28%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_8" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">ELA6</th>
-<td class="gt_row gt_right" headers="stub_1_8 rmse">9.62</td>
-<td class="gt_row gt_right" headers="stub_1_8 rsq">86.11%</td>
-<td class="gt_row gt_right" headers="stub_1_8 mae">7.57</td>
-<td class="gt_row gt_right" headers="stub_1_8 mape">25.83%</td>
+<td class="gt_row gt_right" headers="stub_1_8 rmse">9.20</td>
+<td class="gt_row gt_right" headers="stub_1_8 rsq">87.68%</td>
+<td class="gt_row gt_right" headers="stub_1_8 mae">7.55</td>
+<td class="gt_row gt_right" headers="stub_1_8 mape">25.58%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_9" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">ELA7</th>
-<td class="gt_row gt_right" headers="stub_1_9 rmse">9.69</td>
-<td class="gt_row gt_right" headers="stub_1_9 rsq">86.63%</td>
-<td class="gt_row gt_right" headers="stub_1_9 mae">7.44</td>
-<td class="gt_row gt_right" headers="stub_1_9 mape">21.48%</td>
+<td class="gt_row gt_right" headers="stub_1_9 rmse">9.26</td>
+<td class="gt_row gt_right" headers="stub_1_9 rsq">87.10%</td>
+<td class="gt_row gt_right" headers="stub_1_9 mae">7.31</td>
+<td class="gt_row gt_right" headers="stub_1_9 mape">25.85%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_10" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">ELA8</th>
-<td class="gt_row gt_right" headers="stub_1_10 rmse">8.08</td>
-<td class="gt_row gt_right" headers="stub_1_10 rsq">88.49%</td>
-<td class="gt_row gt_right" headers="stub_1_10 mae">6.40</td>
-<td class="gt_row gt_right" headers="stub_1_10 mape">15.61%</td>
+<td class="gt_row gt_right" headers="stub_1_10 rmse">8.67</td>
+<td class="gt_row gt_right" headers="stub_1_10 rsq">87.63%</td>
+<td class="gt_row gt_right" headers="stub_1_10 mae">6.79</td>
+<td class="gt_row gt_right" headers="stub_1_10 mape">15.57%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_11" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">MATH3</th>
-<td class="gt_row gt_right" headers="stub_1_11 rmse">11.24</td>
-<td class="gt_row gt_right" headers="stub_1_11 rsq">84.82%</td>
-<td class="gt_row gt_right" headers="stub_1_11 mae">9.04</td>
-<td class="gt_row gt_right" headers="stub_1_11 mape">25.46%</td>
+<td class="gt_row gt_right" headers="stub_1_11 rmse">12.16</td>
+<td class="gt_row gt_right" headers="stub_1_11 rsq">81.84%</td>
+<td class="gt_row gt_right" headers="stub_1_11 mae">9.74</td>
+<td class="gt_row gt_right" headers="stub_1_11 mape">31.43%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_12" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">MATH4</th>
-<td class="gt_row gt_right" headers="stub_1_12 rmse">11.58</td>
-<td class="gt_row gt_right" headers="stub_1_12 rsq">81.36%</td>
-<td class="gt_row gt_right" headers="stub_1_12 mae">9.30</td>
-<td class="gt_row gt_right" headers="stub_1_12 mape">23.95%</td>
+<td class="gt_row gt_right" headers="stub_1_12 rmse">12.15</td>
+<td class="gt_row gt_right" headers="stub_1_12 rsq">80.40%</td>
+<td class="gt_row gt_right" headers="stub_1_12 mae">9.65</td>
+<td class="gt_row gt_right" headers="stub_1_12 mape">26.03%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_13" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">MATH5</th>
-<td class="gt_row gt_right" headers="stub_1_13 rmse">11.53</td>
-<td class="gt_row gt_right" headers="stub_1_13 rsq">83.30%</td>
-<td class="gt_row gt_right" headers="stub_1_13 mae">9.10</td>
-<td class="gt_row gt_right" headers="stub_1_13 mape">33.97%</td>
+<td class="gt_row gt_right" headers="stub_1_13 rmse">11.11</td>
+<td class="gt_row gt_right" headers="stub_1_13 rsq">83.81%</td>
+<td class="gt_row gt_right" headers="stub_1_13 mae">8.84</td>
+<td class="gt_row gt_right" headers="stub_1_13 mape">33.76%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_14" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">MATH6</th>
-<td class="gt_row gt_right" headers="stub_1_14 rmse">11.07</td>
-<td class="gt_row gt_right" headers="stub_1_14 rsq">84.45%</td>
-<td class="gt_row gt_right" headers="stub_1_14 mae">8.86</td>
-<td class="gt_row gt_right" headers="stub_1_14 mape">27.02%</td>
+<td class="gt_row gt_right" headers="stub_1_14 rmse">10.65</td>
+<td class="gt_row gt_right" headers="stub_1_14 rsq">84.74%</td>
+<td class="gt_row gt_right" headers="stub_1_14 mae">8.57</td>
+<td class="gt_row gt_right" headers="stub_1_14 mape">25.05%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_15" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">MATH7</th>
-<td class="gt_row gt_right" headers="stub_1_15 rmse">11.29</td>
-<td class="gt_row gt_right" headers="stub_1_15 rsq">81.90%</td>
-<td class="gt_row gt_right" headers="stub_1_15 mae">8.81</td>
-<td class="gt_row gt_right" headers="stub_1_15 mape">23.02%</td>
+<td class="gt_row gt_right" headers="stub_1_15 rmse">8.79</td>
+<td class="gt_row gt_right" headers="stub_1_15 rsq">86.89%</td>
+<td class="gt_row gt_right" headers="stub_1_15 mae">7.09</td>
+<td class="gt_row gt_right" headers="stub_1_15 mape">18.64%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_16" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">MATH8</th>
-<td class="gt_row gt_right" headers="stub_1_16 rmse">10.99</td>
-<td class="gt_row gt_right" headers="stub_1_16 rsq">85.79%</td>
-<td class="gt_row gt_right" headers="stub_1_16 mae">8.80</td>
-<td class="gt_row gt_right" headers="stub_1_16 mape">38.37%</td>
+<td class="gt_row gt_right" headers="stub_1_16 rmse">11.56</td>
+<td class="gt_row gt_right" headers="stub_1_16 rsq">85.82%</td>
+<td class="gt_row gt_right" headers="stub_1_16 mae">9.15</td>
+<td class="gt_row gt_right" headers="stub_1_16 mape">43.78%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_17" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Algebra I</th>
-<td class="gt_row gt_right" headers="stub_1_17 rmse">10.94</td>
-<td class="gt_row gt_right" headers="stub_1_17 rsq">87.53%</td>
-<td class="gt_row gt_right" headers="stub_1_17 mae">8.72</td>
-<td class="gt_row gt_right" headers="stub_1_17 mape">20.58%</td>
+<td class="gt_row gt_right" headers="stub_1_17 rmse">12.48</td>
+<td class="gt_row gt_right" headers="stub_1_17 rsq">85.79%</td>
+<td class="gt_row gt_right" headers="stub_1_17 mae">10.21</td>
+<td class="gt_row gt_right" headers="stub_1_17 mape">26.22%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_18" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Common Core Algebra I</th>
-<td class="gt_row gt_right" headers="stub_1_18 rmse">9.56</td>
-<td class="gt_row gt_right" headers="stub_1_18 rsq">90.64%</td>
-<td class="gt_row gt_right" headers="stub_1_18 mae">7.98</td>
-<td class="gt_row gt_right" headers="stub_1_18 mape">38.58%</td>
+<td class="gt_row gt_right" headers="stub_1_18 rmse">9.81</td>
+<td class="gt_row gt_right" headers="stub_1_18 rsq">89.50%</td>
+<td class="gt_row gt_right" headers="stub_1_18 mae">7.89</td>
+<td class="gt_row gt_right" headers="stub_1_18 mape">36.35%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_19" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Common Core Algebra II</th>
-<td class="gt_row gt_right" headers="stub_1_19 rmse">8.68</td>
-<td class="gt_row gt_right" headers="stub_1_19 rsq">91.86%</td>
-<td class="gt_row gt_right" headers="stub_1_19 mae">6.51</td>
-<td class="gt_row gt_right" headers="stub_1_19 mape">24.32%</td>
+<td class="gt_row gt_right" headers="stub_1_19 rmse">8.36</td>
+<td class="gt_row gt_right" headers="stub_1_19 rsq">93.03%</td>
+<td class="gt_row gt_right" headers="stub_1_19 mae">6.32</td>
+<td class="gt_row gt_right" headers="stub_1_19 mape">18.57%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_20" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Common Core English Language Art</th>
-<td class="gt_row gt_right" headers="stub_1_20 rmse">7.43</td>
-<td class="gt_row gt_right" headers="stub_1_20 rsq">85.20%</td>
-<td class="gt_row gt_right" headers="stub_1_20 mae">5.62</td>
-<td class="gt_row gt_right" headers="stub_1_20 mape">8.30%</td>
+<td class="gt_row gt_right" headers="stub_1_20 rmse">7.39</td>
+<td class="gt_row gt_right" headers="stub_1_20 rsq">84.36%</td>
+<td class="gt_row gt_right" headers="stub_1_20 mae">5.61</td>
+<td class="gt_row gt_right" headers="stub_1_20 mape">7.91%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_21" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Common Core Geometry</th>
-<td class="gt_row gt_right" headers="stub_1_21 rmse">10.79</td>
-<td class="gt_row gt_right" headers="stub_1_21 rsq">91.44%</td>
-<td class="gt_row gt_right" headers="stub_1_21 mae">8.49</td>
-<td class="gt_row gt_right" headers="stub_1_21 mape">51.51%</td>
+<td class="gt_row gt_right" headers="stub_1_21 rmse">10.07</td>
+<td class="gt_row gt_right" headers="stub_1_21 rsq">92.75%</td>
+<td class="gt_row gt_right" headers="stub_1_21 mae">8.18</td>
+<td class="gt_row gt_right" headers="stub_1_21 mape">42.13%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_22" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Living Environment</th>
-<td class="gt_row gt_right" headers="stub_1_22 rmse">9.90</td>
-<td class="gt_row gt_right" headers="stub_1_22 rsq">88.62%</td>
-<td class="gt_row gt_right" headers="stub_1_22 mae">7.73</td>
-<td class="gt_row gt_right" headers="stub_1_22 mape">17.83%</td>
+<td class="gt_row gt_right" headers="stub_1_22 rmse">10.45</td>
+<td class="gt_row gt_right" headers="stub_1_22 rsq">88.42%</td>
+<td class="gt_row gt_right" headers="stub_1_22 mae">8.08</td>
+<td class="gt_row gt_right" headers="stub_1_22 mape">21.15%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_23" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents NF Global History</th>
-<td class="gt_row gt_right" headers="stub_1_23 rmse">7.97</td>
-<td class="gt_row gt_right" headers="stub_1_23 rsq">85.41%</td>
-<td class="gt_row gt_right" headers="stub_1_23 mae">6.22</td>
-<td class="gt_row gt_right" headers="stub_1_23 mape">9.72%</td>
+<td class="gt_row gt_right" headers="stub_1_23 rmse">7.66</td>
+<td class="gt_row gt_right" headers="stub_1_23 rsq">87.04%</td>
+<td class="gt_row gt_right" headers="stub_1_23 mae">5.98</td>
+<td class="gt_row gt_right" headers="stub_1_23 mape">9.09%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_24" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Phy Set/Chemistry</th>
-<td class="gt_row gt_right" headers="stub_1_24 rmse">9.05</td>
-<td class="gt_row gt_right" headers="stub_1_24 rsq">91.17%</td>
-<td class="gt_row gt_right" headers="stub_1_24 mae">6.98</td>
-<td class="gt_row gt_right" headers="stub_1_24 mape">34.82%</td>
+<td class="gt_row gt_right" headers="stub_1_24 rmse">10.45</td>
+<td class="gt_row gt_right" headers="stub_1_24 rsq">90.43%</td>
+<td class="gt_row gt_right" headers="stub_1_24 mae">8.28</td>
+<td class="gt_row gt_right" headers="stub_1_24 mape">41.01%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_25" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Phy Set/Earth Sci</th>
-<td class="gt_row gt_right" headers="stub_1_25 rmse">9.28</td>
-<td class="gt_row gt_right" headers="stub_1_25 rsq">89.44%</td>
-<td class="gt_row gt_right" headers="stub_1_25 mae">7.19</td>
-<td class="gt_row gt_right" headers="stub_1_25 mape">20.20%</td>
+<td class="gt_row gt_right" headers="stub_1_25 rmse">8.37</td>
+<td class="gt_row gt_right" headers="stub_1_25 rsq">91.44%</td>
+<td class="gt_row gt_right" headers="stub_1_25 mae">6.62</td>
+<td class="gt_row gt_right" headers="stub_1_25 mape">15.70%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_26" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Phy Set/Physics</th>
-<td class="gt_row gt_right" headers="stub_1_26 rmse">9.48</td>
-<td class="gt_row gt_right" headers="stub_1_26 rsq">87.18%</td>
-<td class="gt_row gt_right" headers="stub_1_26 mae">7.86</td>
-<td class="gt_row gt_right" headers="stub_1_26 mape">13.96%</td>
+<td class="gt_row gt_right" headers="stub_1_26 rmse">9.42</td>
+<td class="gt_row gt_right" headers="stub_1_26 rsq">84.62%</td>
+<td class="gt_row gt_right" headers="stub_1_26 mae">6.74</td>
+<td class="gt_row gt_right" headers="stub_1_26 mape">14.63%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_27" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents US History&amp;Gov't (Framework)</th>
-<td class="gt_row gt_right" headers="stub_1_27 rmse">7.92</td>
-<td class="gt_row gt_right" headers="stub_1_27 rsq">86.79%</td>
-<td class="gt_row gt_right" headers="stub_1_27 mae">5.88</td>
-<td class="gt_row gt_right" headers="stub_1_27 mape">10.48%</td>
+<td class="gt_row gt_right" headers="stub_1_27 rmse">7.49</td>
+<td class="gt_row gt_right" headers="stub_1_27 rsq">88.84%</td>
+<td class="gt_row gt_right" headers="stub_1_27 mae">5.68</td>
+<td class="gt_row gt_right" headers="stub_1_27 mape">9.27%</td>
 </tr>
 <tr class="even">
-<th id="stub_1_28" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">RegentsMath7</th>
-<td class="gt_row gt_right" headers="stub_1_28 rmse">9.12</td>
-<td class="gt_row gt_right" headers="stub_1_28 rsq">44.14%</td>
-<td class="gt_row gt_right" headers="stub_1_28 mae">7.63</td>
-<td class="gt_row gt_right" headers="stub_1_28 mape">7.85%</td>
+<th id="stub_1_28" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">RegentsMath8</th>
+<td class="gt_row gt_right" headers="stub_1_28 rmse">9.98</td>
+<td class="gt_row gt_right" headers="stub_1_28 rsq">87.24%</td>
+<td class="gt_row gt_right" headers="stub_1_28 mae">7.46</td>
+<td class="gt_row gt_right" headers="stub_1_28 mape">14.92%</td>
 </tr>
 <tr class="odd">
-<th id="stub_1_29" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">RegentsMath8</th>
-<td class="gt_row gt_right" headers="stub_1_29 rmse">9.86</td>
-<td class="gt_row gt_right" headers="stub_1_29 rsq">88.53%</td>
-<td class="gt_row gt_right" headers="stub_1_29 mae">6.63</td>
-<td class="gt_row gt_right" headers="stub_1_29 mape">19.68%</td>
+<th id="stub_1_29" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">RegentsScience8</th>
+<td class="gt_row gt_right" headers="stub_1_29 rmse">8.27</td>
+<td class="gt_row gt_right" headers="stub_1_29 rsq">94.37%</td>
+<td class="gt_row gt_right" headers="stub_1_29 mae">6.15</td>
+<td class="gt_row gt_right" headers="stub_1_29 mape">15.50%</td>
 </tr>
 <tr class="even">
-<th id="stub_1_30" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">RegentsScience8</th>
-<td class="gt_row gt_right" headers="stub_1_30 rmse">8.37</td>
-<td class="gt_row gt_right" headers="stub_1_30 rsq">86.42%</td>
-<td class="gt_row gt_right" headers="stub_1_30 mae">5.97</td>
-<td class="gt_row gt_right" headers="stub_1_30 mape">10.93%</td>
+<th id="stub_1_30" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Science5</th>
+<td class="gt_row gt_right" headers="stub_1_30 rmse">8.13</td>
+<td class="gt_row gt_right" headers="stub_1_30 rsq">86.13%</td>
+<td class="gt_row gt_right" headers="stub_1_30 mae">6.24</td>
+<td class="gt_row gt_right" headers="stub_1_30 mape">27.08%</td>
 </tr>
 <tr class="odd">
-<th id="stub_1_31" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Science5</th>
-<td class="gt_row gt_right" headers="stub_1_31 rmse">8.26</td>
-<td class="gt_row gt_right" headers="stub_1_31 rsq">86.88%</td>
-<td class="gt_row gt_right" headers="stub_1_31 mae">6.45</td>
-<td class="gt_row gt_right" headers="stub_1_31 mape">29.09%</td>
-</tr>
-<tr class="even">
-<th id="stub_1_32" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Science8</th>
-<td class="gt_row gt_right" headers="stub_1_32 rmse">8.26</td>
-<td class="gt_row gt_right" headers="stub_1_32 rsq">86.13%</td>
-<td class="gt_row gt_right" headers="stub_1_32 mae">6.46</td>
-<td class="gt_row gt_right" headers="stub_1_32 mape">39.53%</td>
+<th id="stub_1_31" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Science8</th>
+<td class="gt_row gt_right" headers="stub_1_31 rmse">9.55</td>
+<td class="gt_row gt_right" headers="stub_1_31 rsq">86.39%</td>
+<td class="gt_row gt_right" headers="stub_1_31 mae">7.39</td>
+<td class="gt_row gt_right" headers="stub_1_31 mape">40.76%</td>
 </tr>
 </tbody>
 </table>
@@ -3194,11 +3200,11 @@ window.Quarto = {
 <pre><code># A tibble: 5 × 5
   id    .metric .estimator .estimate .config        
   &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;          
-1 Fold1 rmse    standard      18.7   pre0_mod0_post0
-2 Fold1 rsq     standard       0.480 pre0_mod0_post0
+1 Fold1 rmse    standard      18.5   pre0_mod0_post0
+2 Fold1 rsq     standard       0.499 pre0_mod0_post0
 3 Fold2 rmse    standard      18.6   pre0_mod0_post0
-4 Fold2 rsq     standard       0.522 pre0_mod0_post0
-5 Fold3 rmse    standard      18.9   pre0_mod0_post0</code></pre>
+4 Fold2 rsq     standard       0.500 pre0_mod0_post0
+5 Fold3 rmse    standard      18.6   pre0_mod0_post0</code></pre>
 </div>
 </div>
 <p>If we want to use all four metrics from before, we can pass the <code>metrics</code> argument to <code><a href="https://tune.tidymodels.org/reference/fit_resamples.html">fit_resamples()</a></code>. This gives us a sense of error bars on our metrics, which we can compute by hand or with the help of the <code><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_metrics()</a></code>:</p>
@@ -3208,10 +3214,10 @@ window.Quarto = {
 <pre><code># A tibble: 4 × 6
   .metric .estimator    mean     n   std_err .config        
   &lt;chr&gt;   &lt;chr&gt;        &lt;dbl&gt; &lt;int&gt;     &lt;dbl&gt; &lt;chr&gt;          
-1 mae     standard    14.7       5   0.146   pre0_mod0_post0
+1 mae     standard    14.7       5   0.0854  pre0_mod0_post0
 2 mape    standard   Inf         5 NaN       pre0_mod0_post0
-3 rmse    standard    18.6       5   0.180   pre0_mod0_post0
-4 rsq     standard     0.504     5   0.00852 pre0_mod0_post0</code></pre>
+3 rmse    standard    18.6       5   0.0786  pre0_mod0_post0
+4 rsq     standard     0.494     5   0.00616 pre0_mod0_post0</code></pre>
 </div>
 </div>
 <p>If we want to get group-wise statistics as before, we still need to do a bit of work by hand.</p>
@@ -3726,227 +3732,220 @@ window.Quarto = {
 <tbody class="gt_table_body">
 <tr class="odd">
 <th id="stub_1_1" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Combined6Math</th>
-<td class="gt_row gt_right" headers="stub_1_1 mean_metric_mae">14.98±0.89</td>
-<td class="gt_row gt_right" headers="stub_1_1 mean_metric_mape">41.32%±8.45%</td>
-<td class="gt_row gt_right" headers="stub_1_1 mean_metric_rmse">18.17±0.91</td>
-<td class="gt_row gt_right" headers="stub_1_1 mean_metric_rsq">41.79%±9.02%</td>
+<td class="gt_row gt_right" headers="stub_1_1 mean_metric_mae">16.70±0.68</td>
+<td class="gt_row gt_right" headers="stub_1_1 mean_metric_mape">54.71%±5.09%</td>
+<td class="gt_row gt_right" headers="stub_1_1 mean_metric_rmse">20.27±1.13</td>
+<td class="gt_row gt_right" headers="stub_1_1 mean_metric_rsq">27.05%±7.60%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Combined7Math</th>
-<td class="gt_row gt_right" headers="stub_1_2 mean_metric_mae">12.95±0.55</td>
-<td class="gt_row gt_right" headers="stub_1_2 mean_metric_mape">38.92%±8.47%</td>
-<td class="gt_row gt_right" headers="stub_1_2 mean_metric_rmse">15.73±0.49</td>
-<td class="gt_row gt_right" headers="stub_1_2 mean_metric_rsq">39.41%±6.75%</td>
+<td class="gt_row gt_right" headers="stub_1_2 mean_metric_mae">16.13±1.19</td>
+<td class="gt_row gt_right" headers="stub_1_2 mean_metric_mape">48.99%±9.59%</td>
+<td class="gt_row gt_right" headers="stub_1_2 mean_metric_rmse">20.04±1.43</td>
+<td class="gt_row gt_right" headers="stub_1_2 mean_metric_rsq">34.79%±7.40%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Combined8Math</th>
-<td class="gt_row gt_right" headers="stub_1_3 mean_metric_mae">15.29±1.34</td>
-<td class="gt_row gt_right" headers="stub_1_3 mean_metric_mape">38.14%±4.81%</td>
-<td class="gt_row gt_right" headers="stub_1_3 mean_metric_rmse">18.14±1.69</td>
-<td class="gt_row gt_right" headers="stub_1_3 mean_metric_rsq">48.79%±7.02%</td>
+<td class="gt_row gt_right" headers="stub_1_3 mean_metric_mae">16.68±1.71</td>
+<td class="gt_row gt_right" headers="stub_1_3 mean_metric_mape">105.96%±41.24%</td>
+<td class="gt_row gt_right" headers="stub_1_3 mean_metric_rmse">20.33±2.24</td>
+<td class="gt_row gt_right" headers="stub_1_3 mean_metric_rsq">34.53%±7.23%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">CombinedScience</th>
-<td class="gt_row gt_right" headers="stub_1_4 mean_metric_mae">12.17±0.98</td>
-<td class="gt_row gt_right" headers="stub_1_4 mean_metric_mape">44.98%±6.25%</td>
-<td class="gt_row gt_right" headers="stub_1_4 mean_metric_rmse">14.91±1.29</td>
-<td class="gt_row gt_right" headers="stub_1_4 mean_metric_rsq">67.33%±5.25%</td>
+<td class="gt_row gt_right" headers="stub_1_4 mean_metric_mae">11.95±1.12</td>
+<td class="gt_row gt_right" headers="stub_1_4 mean_metric_mape">36.55%±8.68%</td>
+<td class="gt_row gt_right" headers="stub_1_4 mean_metric_rmse">15.81±1.00</td>
+<td class="gt_row gt_right" headers="stub_1_4 mean_metric_rsq">50.04%±8.22%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">ELA3</th>
-<td class="gt_row gt_right" headers="stub_1_5 mean_metric_mae">14.48±0.53</td>
-<td class="gt_row gt_right" headers="stub_1_5 mean_metric_mape">53.94%±4.81%</td>
-<td class="gt_row gt_right" headers="stub_1_5 mean_metric_rmse">17.92±0.66</td>
-<td class="gt_row gt_right" headers="stub_1_5 mean_metric_rsq">30.72%±2.35%</td>
+<td class="gt_row gt_right" headers="stub_1_5 mean_metric_mae">13.93±0.70</td>
+<td class="gt_row gt_right" headers="stub_1_5 mean_metric_mape">47.00%±1.37%</td>
+<td class="gt_row gt_right" headers="stub_1_5 mean_metric_rmse">17.12±0.95</td>
+<td class="gt_row gt_right" headers="stub_1_5 mean_metric_rsq">29.55%±4.68%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_6" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">ELA4</th>
-<td class="gt_row gt_right" headers="stub_1_6 mean_metric_mae">14.70±0.33</td>
-<td class="gt_row gt_right" headers="stub_1_6 mean_metric_mape">47.83%±2.80%</td>
-<td class="gt_row gt_right" headers="stub_1_6 mean_metric_rmse">17.85±0.53</td>
-<td class="gt_row gt_right" headers="stub_1_6 mean_metric_rsq">33.51%±3.19%</td>
+<td class="gt_row gt_right" headers="stub_1_6 mean_metric_mae">14.85±0.54</td>
+<td class="gt_row gt_right" headers="stub_1_6 mean_metric_mape">46.79%±1.62%</td>
+<td class="gt_row gt_right" headers="stub_1_6 mean_metric_rmse">18.55±0.80</td>
+<td class="gt_row gt_right" headers="stub_1_6 mean_metric_rsq">25.11%±3.62%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_7" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">ELA5</th>
-<td class="gt_row gt_right" headers="stub_1_7 mean_metric_mae">13.89±0.32</td>
-<td class="gt_row gt_right" headers="stub_1_7 mean_metric_mape">54.20%±6.13%</td>
-<td class="gt_row gt_right" headers="stub_1_7 mean_metric_rmse">17.33±0.56</td>
-<td class="gt_row gt_right" headers="stub_1_7 mean_metric_rsq">32.62%±5.44%</td>
+<td class="gt_row gt_right" headers="stub_1_7 mean_metric_mae">13.49±0.34</td>
+<td class="gt_row gt_right" headers="stub_1_7 mean_metric_mape">57.76%±4.66%</td>
+<td class="gt_row gt_right" headers="stub_1_7 mean_metric_rmse">17.08±0.35</td>
+<td class="gt_row gt_right" headers="stub_1_7 mean_metric_rsq">33.62%±3.22%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_8" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">ELA6</th>
-<td class="gt_row gt_right" headers="stub_1_8 mean_metric_mae">13.97±0.76</td>
-<td class="gt_row gt_right" headers="stub_1_8 mean_metric_mape">49.58%±4.69%</td>
-<td class="gt_row gt_right" headers="stub_1_8 mean_metric_rmse">17.24±0.75</td>
-<td class="gt_row gt_right" headers="stub_1_8 mean_metric_rsq">35.19%±2.68%</td>
+<td class="gt_row gt_right" headers="stub_1_8 mean_metric_mae">13.86±0.54</td>
+<td class="gt_row gt_right" headers="stub_1_8 mean_metric_mape">47.66%±2.80%</td>
+<td class="gt_row gt_right" headers="stub_1_8 mean_metric_rmse">16.65±0.63</td>
+<td class="gt_row gt_right" headers="stub_1_8 mean_metric_rsq">40.28%±4.51%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_9" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">ELA7</th>
-<td class="gt_row gt_right" headers="stub_1_9 mean_metric_mae">13.52±0.35</td>
-<td class="gt_row gt_right" headers="stub_1_9 mean_metric_mape">38.96%±1.70%</td>
-<td class="gt_row gt_right" headers="stub_1_9 mean_metric_rmse">17.14±0.56</td>
-<td class="gt_row gt_right" headers="stub_1_9 mean_metric_rsq">32.97%±1.95%</td>
+<td class="gt_row gt_right" headers="stub_1_9 mean_metric_mae">12.53±0.43</td>
+<td class="gt_row gt_right" headers="stub_1_9 mean_metric_mape">42.56%±5.48%</td>
+<td class="gt_row gt_right" headers="stub_1_9 mean_metric_rmse">15.45±0.55</td>
+<td class="gt_row gt_right" headers="stub_1_9 mean_metric_rsq">45.24%±6.26%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_10" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">ELA8</th>
-<td class="gt_row gt_right" headers="stub_1_10 mean_metric_mae">12.15±0.46</td>
-<td class="gt_row gt_right" headers="stub_1_10 mean_metric_mape">29.97%±2.51%</td>
-<td class="gt_row gt_right" headers="stub_1_10 mean_metric_rmse">15.22±0.57</td>
-<td class="gt_row gt_right" headers="stub_1_10 mean_metric_rsq">39.35%±3.69%</td>
+<td class="gt_row gt_right" headers="stub_1_10 mean_metric_mae">12.69±0.76</td>
+<td class="gt_row gt_right" headers="stub_1_10 mean_metric_mape">29.36%±3.15%</td>
+<td class="gt_row gt_right" headers="stub_1_10 mean_metric_rmse">16.04±0.81</td>
+<td class="gt_row gt_right" headers="stub_1_10 mean_metric_rsq">36.00%±5.35%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_11" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">MATH3</th>
-<td class="gt_row gt_right" headers="stub_1_11 mean_metric_mae">16.04±0.41</td>
-<td class="gt_row gt_right" headers="stub_1_11 mean_metric_mape">45.41%±6.06%</td>
-<td class="gt_row gt_right" headers="stub_1_11 mean_metric_rmse">19.65±0.45</td>
-<td class="gt_row gt_right" headers="stub_1_11 mean_metric_rsq">25.42%±2.13%</td>
+<td class="gt_row gt_right" headers="stub_1_11 mean_metric_mae">16.16±0.62</td>
+<td class="gt_row gt_right" headers="stub_1_11 mean_metric_mape">52.48%±5.75%</td>
+<td class="gt_row gt_right" headers="stub_1_11 mean_metric_rmse">20.03±0.67</td>
+<td class="gt_row gt_right" headers="stub_1_11 mean_metric_rsq">25.16%±2.93%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_12" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">MATH4</th>
-<td class="gt_row gt_right" headers="stub_1_12 mean_metric_mae">15.15±0.48</td>
-<td class="gt_row gt_right" headers="stub_1_12 mean_metric_mape">39.17%±1.77%</td>
-<td class="gt_row gt_right" headers="stub_1_12 mean_metric_rmse">18.63±0.61</td>
-<td class="gt_row gt_right" headers="stub_1_12 mean_metric_rsq">32.85%±3.09%</td>
+<td class="gt_row gt_right" headers="stub_1_12 mean_metric_mae">15.00±0.33</td>
+<td class="gt_row gt_right" headers="stub_1_12 mean_metric_mape">39.35%±3.94%</td>
+<td class="gt_row gt_right" headers="stub_1_12 mean_metric_rmse">18.38±0.43</td>
+<td class="gt_row gt_right" headers="stub_1_12 mean_metric_rsq">37.61%±1.85%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_13" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">MATH5</th>
-<td class="gt_row gt_right" headers="stub_1_13 mean_metric_mae">15.29±0.35</td>
-<td class="gt_row gt_right" headers="stub_1_13 mean_metric_mape">58.56%±4.91%</td>
-<td class="gt_row gt_right" headers="stub_1_13 mean_metric_rmse">19.26±0.43</td>
-<td class="gt_row gt_right" headers="stub_1_13 mean_metric_rsq">32.14%±3.09%</td>
+<td class="gt_row gt_right" headers="stub_1_13 mean_metric_mae">15.72±0.72</td>
+<td class="gt_row gt_right" headers="stub_1_13 mean_metric_mape">61.57%±7.09%</td>
+<td class="gt_row gt_right" headers="stub_1_13 mean_metric_rmse">19.47±0.75</td>
+<td class="gt_row gt_right" headers="stub_1_13 mean_metric_rsq">28.55%±1.83%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_14" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">MATH6</th>
-<td class="gt_row gt_right" headers="stub_1_14 mean_metric_mae">15.30±0.23</td>
-<td class="gt_row gt_right" headers="stub_1_14 mean_metric_mape">47.25%±5.26%</td>
-<td class="gt_row gt_right" headers="stub_1_14 mean_metric_rmse">18.78±0.45</td>
-<td class="gt_row gt_right" headers="stub_1_14 mean_metric_rsq">35.12%±2.85%</td>
+<td class="gt_row gt_right" headers="stub_1_14 mean_metric_mae">15.89±0.58</td>
+<td class="gt_row gt_right" headers="stub_1_14 mean_metric_mape">47.83%±4.01%</td>
+<td class="gt_row gt_right" headers="stub_1_14 mean_metric_rmse">19.14±0.52</td>
+<td class="gt_row gt_right" headers="stub_1_14 mean_metric_rsq">30.81%±4.71%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_15" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">MATH7</th>
-<td class="gt_row gt_right" headers="stub_1_15 mean_metric_mae">15.47±0.55</td>
-<td class="gt_row gt_right" headers="stub_1_15 mean_metric_mape">40.77%±4.30%</td>
-<td class="gt_row gt_right" headers="stub_1_15 mean_metric_rmse">19.35±0.48</td>
-<td class="gt_row gt_right" headers="stub_1_15 mean_metric_rsq">28.15%±2.98%</td>
+<td class="gt_row gt_right" headers="stub_1_15 mean_metric_mae">13.29±0.61</td>
+<td class="gt_row gt_right" headers="stub_1_15 mean_metric_mape">35.76%±4.25%</td>
+<td class="gt_row gt_right" headers="stub_1_15 mean_metric_rmse">16.39±0.49</td>
+<td class="gt_row gt_right" headers="stub_1_15 mean_metric_rsq">36.17%±3.04%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_16" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">MATH8</th>
-<td class="gt_row gt_right" headers="stub_1_16 mean_metric_mae">17.66±1.21</td>
-<td class="gt_row gt_right" headers="stub_1_16 mean_metric_mape">81.95%±12.04%</td>
-<td class="gt_row gt_right" headers="stub_1_16 mean_metric_rmse">21.90±1.76</td>
-<td class="gt_row gt_right" headers="stub_1_16 mean_metric_rsq">16.36%±6.04%</td>
+<td class="gt_row gt_right" headers="stub_1_16 mean_metric_mae">17.20±0.91</td>
+<td class="gt_row gt_right" headers="stub_1_16 mean_metric_mape">81.48%±10.76%</td>
+<td class="gt_row gt_right" headers="stub_1_16 mean_metric_rmse">21.15±1.12</td>
+<td class="gt_row gt_right" headers="stub_1_16 mean_metric_rsq">12.77%±3.74%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_17" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Algebra I</th>
-<td class="gt_row gt_right" headers="stub_1_17 mean_metric_mae">17.82±0.31</td>
-<td class="gt_row gt_right" headers="stub_1_17 mean_metric_mape">42.82%±4.10%</td>
-<td class="gt_row gt_right" headers="stub_1_17 mean_metric_rmse">22.08±0.40</td>
-<td class="gt_row gt_right" headers="stub_1_17 mean_metric_rsq">37.00%±2.90%</td>
+<td class="gt_row gt_right" headers="stub_1_17 mean_metric_mae">18.98±0.38</td>
+<td class="gt_row gt_right" headers="stub_1_17 mean_metric_mape">48.81%±4.43%</td>
+<td class="gt_row gt_right" headers="stub_1_17 mean_metric_rmse">22.86±0.25</td>
+<td class="gt_row gt_right" headers="stub_1_17 mean_metric_rsq">36.46%±3.83%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_18" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Common Core Algebra I</th>
-<td class="gt_row gt_right" headers="stub_1_18 mean_metric_mae">16.59±0.31</td>
-<td class="gt_row gt_right" headers="stub_1_18 mean_metric_mape">78.45%±7.91%</td>
-<td class="gt_row gt_right" headers="stub_1_18 mean_metric_rmse">19.89±0.39</td>
-<td class="gt_row gt_right" headers="stub_1_18 mean_metric_rsq">38.37%±5.87%</td>
+<td class="gt_row gt_right" headers="stub_1_18 mean_metric_mae">16.26±1.37</td>
+<td class="gt_row gt_right" headers="stub_1_18 mean_metric_mape">75.77%±9.66%</td>
+<td class="gt_row gt_right" headers="stub_1_18 mean_metric_rmse">19.69±1.52</td>
+<td class="gt_row gt_right" headers="stub_1_18 mean_metric_rsq">19.01%±4.52%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_19" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Common Core Algebra II</th>
-<td class="gt_row gt_right" headers="stub_1_19 mean_metric_mae">13.01±0.90</td>
-<td class="gt_row gt_right" headers="stub_1_19 mean_metric_mape">47.31%±8.48%</td>
-<td class="gt_row gt_right" headers="stub_1_19 mean_metric_rmse">16.75±1.25</td>
-<td class="gt_row gt_right" headers="stub_1_19 mean_metric_rsq">65.66%±4.81%</td>
+<td class="gt_row gt_right" headers="stub_1_19 mean_metric_mae">12.71±0.21</td>
+<td class="gt_row gt_right" headers="stub_1_19 mean_metric_mape">38.14%±2.90%</td>
+<td class="gt_row gt_right" headers="stub_1_19 mean_metric_rmse">16.71±0.15</td>
+<td class="gt_row gt_right" headers="stub_1_19 mean_metric_rsq">66.74%±2.12%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_20" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Common Core English Language Art</th>
-<td class="gt_row gt_right" headers="stub_1_20 mean_metric_mae">10.94±0.34</td>
-<td class="gt_row gt_right" headers="stub_1_20 mean_metric_mape">16.01%±0.70%</td>
-<td class="gt_row gt_right" headers="stub_1_20 mean_metric_rmse">13.91±0.40</td>
-<td class="gt_row gt_right" headers="stub_1_20 mean_metric_rsq">49.61%±4.33%</td>
+<td class="gt_row gt_right" headers="stub_1_20 mean_metric_mae">11.12±0.97</td>
+<td class="gt_row gt_right" headers="stub_1_20 mean_metric_mape">15.74%±1.05%</td>
+<td class="gt_row gt_right" headers="stub_1_20 mean_metric_rmse">14.16±1.21</td>
+<td class="gt_row gt_right" headers="stub_1_20 mean_metric_rsq">49.30%±6.36%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_21" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Common Core Geometry</th>
-<td class="gt_row gt_right" headers="stub_1_21 mean_metric_mae">16.75±0.95</td>
-<td class="gt_row gt_right" headers="stub_1_21 mean_metric_mape">97.12%±9.08%</td>
-<td class="gt_row gt_right" headers="stub_1_21 mean_metric_rmse">20.58±1.12</td>
-<td class="gt_row gt_right" headers="stub_1_21 mean_metric_rsq">57.41%±4.29%</td>
+<td class="gt_row gt_right" headers="stub_1_21 mean_metric_mae">15.94±0.51</td>
+<td class="gt_row gt_right" headers="stub_1_21 mean_metric_mape">85.45%±13.08%</td>
+<td class="gt_row gt_right" headers="stub_1_21 mean_metric_rmse">19.53±0.62</td>
+<td class="gt_row gt_right" headers="stub_1_21 mean_metric_rsq">62.16%±3.47%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_22" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Living Environment</th>
-<td class="gt_row gt_right" headers="stub_1_22 mean_metric_mae">15.71±0.34</td>
-<td class="gt_row gt_right" headers="stub_1_22 mean_metric_mape">36.54%±3.14%</td>
-<td class="gt_row gt_right" headers="stub_1_22 mean_metric_rmse">19.90±0.49</td>
-<td class="gt_row gt_right" headers="stub_1_22 mean_metric_rsq">39.31%±4.13%</td>
+<td class="gt_row gt_right" headers="stub_1_22 mean_metric_mae">16.32±0.59</td>
+<td class="gt_row gt_right" headers="stub_1_22 mean_metric_mape">43.02%±6.20%</td>
+<td class="gt_row gt_right" headers="stub_1_22 mean_metric_rmse">20.89±0.82</td>
+<td class="gt_row gt_right" headers="stub_1_22 mean_metric_rsq">39.78%±5.56%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_23" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents NF Global History</th>
-<td class="gt_row gt_right" headers="stub_1_23 mean_metric_mae">12.11±0.42</td>
-<td class="gt_row gt_right" headers="stub_1_23 mean_metric_mape">18.79%±1.20%</td>
-<td class="gt_row gt_right" headers="stub_1_23 mean_metric_rmse">15.20±0.41</td>
-<td class="gt_row gt_right" headers="stub_1_23 mean_metric_rsq">46.96%±4.48%</td>
+<td class="gt_row gt_right" headers="stub_1_23 mean_metric_mae">12.21±0.46</td>
+<td class="gt_row gt_right" headers="stub_1_23 mean_metric_mape">18.73%±1.08%</td>
+<td class="gt_row gt_right" headers="stub_1_23 mean_metric_rmse">15.60±0.44</td>
+<td class="gt_row gt_right" headers="stub_1_23 mean_metric_rsq">46.54%±3.33%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_24" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Phy Set/Chemistry</th>
-<td class="gt_row gt_right" headers="stub_1_24 mean_metric_mae">14.55±0.65</td>
-<td class="gt_row gt_right" headers="stub_1_24 mean_metric_mape">65.14%±19.61%</td>
-<td class="gt_row gt_right" headers="stub_1_24 mean_metric_rmse">18.31±0.65</td>
-<td class="gt_row gt_right" headers="stub_1_24 mean_metric_rsq">51.85%±4.85%</td>
+<td class="gt_row gt_right" headers="stub_1_24 mean_metric_mae">16.45±0.65</td>
+<td class="gt_row gt_right" headers="stub_1_24 mean_metric_mape">83.09%±13.62%</td>
+<td class="gt_row gt_right" headers="stub_1_24 mean_metric_rmse">20.49±0.68</td>
+<td class="gt_row gt_right" headers="stub_1_24 mean_metric_rsq">46.75%±1.23%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_25" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Phy Set/Earth Sci</th>
-<td class="gt_row gt_right" headers="stub_1_25 mean_metric_mae">14.71±0.60</td>
-<td class="gt_row gt_right" headers="stub_1_25 mean_metric_mape">41.38%±8.72%</td>
-<td class="gt_row gt_right" headers="stub_1_25 mean_metric_rmse">18.90±0.83</td>
-<td class="gt_row gt_right" headers="stub_1_25 mean_metric_rsq">43.17%±5.02%</td>
+<td class="gt_row gt_right" headers="stub_1_25 mean_metric_mae">13.18±0.40</td>
+<td class="gt_row gt_right" headers="stub_1_25 mean_metric_mape">31.68%±2.27%</td>
+<td class="gt_row gt_right" headers="stub_1_25 mean_metric_rmse">16.58±0.58</td>
+<td class="gt_row gt_right" headers="stub_1_25 mean_metric_rsq">59.28%±3.43%</td>
 </tr>
 <tr class="even">
 <th id="stub_1_26" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents Phy Set/Physics</th>
-<td class="gt_row gt_right" headers="stub_1_26 mean_metric_mae">15.90±0.92</td>
-<td class="gt_row gt_right" headers="stub_1_26 mean_metric_mape">27.59%±3.12%</td>
-<td class="gt_row gt_right" headers="stub_1_26 mean_metric_rmse">19.19±0.85</td>
-<td class="gt_row gt_right" headers="stub_1_26 mean_metric_rsq">29.19%±7.40%</td>
+<td class="gt_row gt_right" headers="stub_1_26 mean_metric_mae">13.55±1.85</td>
+<td class="gt_row gt_right" headers="stub_1_26 mean_metric_mape">31.04%±12.15%</td>
+<td class="gt_row gt_right" headers="stub_1_26 mean_metric_rmse">18.20±2.39</td>
+<td class="gt_row gt_right" headers="stub_1_26 mean_metric_rsq">36.59%±12.01%</td>
 </tr>
 <tr class="odd">
 <th id="stub_1_27" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Regents US History&amp;Gov't (Framework)</th>
-<td class="gt_row gt_right" headers="stub_1_27 mean_metric_mae">11.47±0.57</td>
-<td class="gt_row gt_right" headers="stub_1_27 mean_metric_mape">20.57%±2.15%</td>
-<td class="gt_row gt_right" headers="stub_1_27 mean_metric_rmse">15.21±0.87</td>
-<td class="gt_row gt_right" headers="stub_1_27 mean_metric_rsq">46.85%±4.49%</td>
+<td class="gt_row gt_right" headers="stub_1_27 mean_metric_mae">11.72±0.67</td>
+<td class="gt_row gt_right" headers="stub_1_27 mean_metric_mape">18.95%±2.16%</td>
+<td class="gt_row gt_right" headers="stub_1_27 mean_metric_rmse">15.35±1.03</td>
+<td class="gt_row gt_right" headers="stub_1_27 mean_metric_rsq">48.57%±5.48%</td>
 </tr>
 <tr class="even">
-<th id="stub_1_28" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">RegentsMath7</th>
-<td class="gt_row gt_right" headers="stub_1_28 mean_metric_mae">15.00±7.37</td>
-<td class="gt_row gt_right" headers="stub_1_28 mean_metric_mape">15.45%±7.80%</td>
-<td class="gt_row gt_right" headers="stub_1_28 mean_metric_rmse">15.15±7.52</td>
-<td class="gt_row gt_right" headers="stub_1_28 mean_metric_rsq">—±—</td>
+<th id="stub_1_28" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">RegentsMath8</th>
+<td class="gt_row gt_right" headers="stub_1_28 mean_metric_mae">13.98±2.60</td>
+<td class="gt_row gt_right" headers="stub_1_28 mean_metric_mape">31.14%±11.73%</td>
+<td class="gt_row gt_right" headers="stub_1_28 mean_metric_rmse">17.59±3.85</td>
+<td class="gt_row gt_right" headers="stub_1_28 mean_metric_rsq">45.77%±12.15%</td>
 </tr>
 <tr class="odd">
-<th id="stub_1_29" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">RegentsMath8</th>
-<td class="gt_row gt_right" headers="stub_1_29 mean_metric_mae">14.27±1.48</td>
-<td class="gt_row gt_right" headers="stub_1_29 mean_metric_mape">39.91%±10.37%</td>
-<td class="gt_row gt_right" headers="stub_1_29 mean_metric_rmse">19.49±2.61</td>
-<td class="gt_row gt_right" headers="stub_1_29 mean_metric_rsq">34.44%±14.83%</td>
+<th id="stub_1_29" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">RegentsScience8</th>
+<td class="gt_row gt_right" headers="stub_1_29 mean_metric_mae">12.69±1.70</td>
+<td class="gt_row gt_right" headers="stub_1_29 mean_metric_mape">32.16%±8.02%</td>
+<td class="gt_row gt_right" headers="stub_1_29 mean_metric_rmse">16.95±1.82</td>
+<td class="gt_row gt_right" headers="stub_1_29 mean_metric_rsq">66.37%±9.90%</td>
 </tr>
 <tr class="even">
-<th id="stub_1_30" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">RegentsScience8</th>
-<td class="gt_row gt_right" headers="stub_1_30 mean_metric_mae">12.48±0.99</td>
-<td class="gt_row gt_right" headers="stub_1_30 mean_metric_mape">22.79%±2.86%</td>
-<td class="gt_row gt_right" headers="stub_1_30 mean_metric_rmse">17.04±1.65</td>
-<td class="gt_row gt_right" headers="stub_1_30 mean_metric_rsq">43.66%±11.72%</td>
+<th id="stub_1_30" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Science5</th>
+<td class="gt_row gt_right" headers="stub_1_30 mean_metric_mae">11.83±0.34</td>
+<td class="gt_row gt_right" headers="stub_1_30 mean_metric_mape">53.05%±3.18%</td>
+<td class="gt_row gt_right" headers="stub_1_30 mean_metric_rmse">15.09±0.48</td>
+<td class="gt_row gt_right" headers="stub_1_30 mean_metric_rsq">38.80%±3.93%</td>
 </tr>
 <tr class="odd">
-<th id="stub_1_31" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Science5</th>
-<td class="gt_row gt_right" headers="stub_1_31 mean_metric_mae">12.09±0.45</td>
-<td class="gt_row gt_right" headers="stub_1_31 mean_metric_mape">54.95%±7.73%</td>
-<td class="gt_row gt_right" headers="stub_1_31 mean_metric_rmse">15.40±0.49</td>
-<td class="gt_row gt_right" headers="stub_1_31 mean_metric_rsq">34.57%±3.49%</td>
-</tr>
-<tr class="even">
-<th id="stub_1_32" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Science8</th>
-<td class="gt_row gt_right" headers="stub_1_32 mean_metric_mae">12.67±0.49</td>
-<td class="gt_row gt_right" headers="stub_1_32 mean_metric_mape">76.05%±14.26%</td>
-<td class="gt_row gt_right" headers="stub_1_32 mean_metric_rmse">16.05±0.60</td>
-<td class="gt_row gt_right" headers="stub_1_32 mean_metric_rsq">18.70%±2.43%</td>
+<th id="stub_1_31" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row">Science8</th>
+<td class="gt_row gt_right" headers="stub_1_31 mean_metric_mae">14.80±0.42</td>
+<td class="gt_row gt_right" headers="stub_1_31 mean_metric_mape">80.37%±13.14%</td>
+<td class="gt_row gt_right" headers="stub_1_31 mean_metric_rmse">18.72±0.69</td>
+<td class="gt_row gt_right" headers="stub_1_31 mean_metric_rsq">14.52%±3.95%</td>
 </tr>
 </tbody>
 </table>
@@ -4048,6 +4047,24 @@ window.Quarto = {
 <p>We can apply this to get LOCO scores for this model:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb77"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">schools_loco</span> <span class="op">&lt;-</span> <span class="fu">calc_loco</span><span class="op">(</span><span class="va">schools_rf</span>, <span class="va">schools_cv</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Running Full Model (LOCO Baseline)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Running LOCO Model - Omitting SUBGROUP_NAME</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Running LOCO Model - Omitting ASSESSMENT_NAME</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Running LOCO Model - Omitting LUNCH_DISCOUNT</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Running LOCO Model - Omitting STUDENT_TEACHER_RATIO</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Running LOCO Model - Omitting FUNDING_PER_STUDENT</code></pre>
+</div>
 </div>
 <p>which gives us:</p>
 <div class="cell">
@@ -4510,28 +4527,28 @@ window.Quarto = {
 <tbody class="gt_table_body">
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">SUBGROUP_NAME</td>
-<td class="gt_row gt_center" headers="rmse">1.09 (18.58 -&gt; 19.67)</td>
-<td class="gt_row gt_center" headers="rsq">0.06 (0.5 -&gt; 0.44)</td>
+<td class="gt_row gt_center" headers="rmse">1.12 (18.59 -&gt; 19.72)</td>
+<td class="gt_row gt_center" headers="rsq">0.06 (0.49 -&gt; 0.43)</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">ASSESSMENT_NAME</td>
-<td class="gt_row gt_center" headers="rmse">3.88 (18.58 -&gt; 22.46)</td>
-<td class="gt_row gt_center" headers="rsq">0.22 (0.5 -&gt; 0.28)</td>
+<td class="gt_row gt_center" headers="rmse">4 (18.59 -&gt; 22.6)</td>
+<td class="gt_row gt_center" headers="rsq">0.23 (0.49 -&gt; 0.26)</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">LUNCH_DISCOUNT</td>
-<td class="gt_row gt_center" headers="rmse">4.22 (18.58 -&gt; 22.8)</td>
-<td class="gt_row gt_center" headers="rsq">0.25 (0.5 -&gt; 0.26)</td>
+<td class="gt_row gt_center" headers="rmse">4.07 (18.59 -&gt; 22.66)</td>
+<td class="gt_row gt_center" headers="rsq">0.24 (0.49 -&gt; 0.25)</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">STUDENT_TEACHER_RATIO</td>
-<td class="gt_row gt_center" headers="rmse">0.79 (18.58 -&gt; 19.37)</td>
-<td class="gt_row gt_center" headers="rsq">0.04 (0.5 -&gt; 0.46)</td>
+<td class="gt_row gt_center" headers="rmse">0.64 (18.59 -&gt; 19.23)</td>
+<td class="gt_row gt_center" headers="rsq">0.04 (0.49 -&gt; 0.46)</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">FUNDING_PER_STUDENT</td>
-<td class="gt_row gt_center" headers="rmse">0.29 (18.58 -&gt; 18.87)</td>
-<td class="gt_row gt_center" headers="rsq">0.02 (0.5 -&gt; 0.49)</td>
+<td class="gt_row gt_center" headers="rmse">0.35 (18.59 -&gt; 18.94)</td>
+<td class="gt_row gt_center" headers="rsq">0.02 (0.49 -&gt; 0.47)</td>
 </tr>
 </tbody>
 </table>
@@ -4548,7 +4565,7 @@ window.Quarto = {
 <p>Apply this LOCO technique to the Hotel Prediction case study from the <a href="https://www.tidymodels.org/start/case-study/"><code>tidymodels</code> tutorial</a>.</p>
 <p>For your convenience, I have copied and simplified the relevant parts of the case study below:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb78"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb84"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">hotels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html">read_csv</a></span><span class="op">(</span><span class="st">"https://tidymodels.org/start/case-study/hotels.csv"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -4634,11 +4651,11 @@ window.Quarto = {
 <div id="callout-23" class="callout-23-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb79"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lr_loco_results</span> <span class="op">&lt;-</span> <span class="fu">calc_loco</span><span class="op">(</span><span class="va">lr_best_workflow</span>, <span class="va">hotel_train</span>, v<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb85"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lr_loco_results</span> <span class="op">&lt;-</span> <span class="fu">calc_loco</span><span class="op">(</span><span class="va">lr_best_workflow</span>, <span class="va">hotel_train</span>, v<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>In a table,</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb80"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lr_loco_results</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb86"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lr_loco_results</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">full_model</span>, <span class="op">-</span><span class="va">loco_model</span>, <span class="op">-</span><span class="va">direction</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span>names_from<span class="op">=</span><span class="va">metric</span>, values_from<span class="op">=</span><span class="va">loco_score</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">roc_auc</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -5133,90 +5150,102 @@ Performance Measures
 <tbody class="gt_table_body">
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">total_of_special_requests</td>
-<td class="gt_row gt_right" headers="accuracy">0.02%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0008</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0124</td>
+<td class="gt_row gt_right" headers="accuracy">0.01%</td>
+<td class="gt_row gt_right" headers="brier_class">0.0006</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0094</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">reserved_room_type</td>
-<td class="gt_row gt_right" headers="accuracy">0.51%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0035</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0087</td>
+<td class="gt_row gt_right" headers="accuracy">0.53%</td>
+<td class="gt_row gt_right" headers="brier_class">0.0032</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0078</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">assigned_room_type</td>
-<td class="gt_row gt_right" headers="accuracy">0.05%</td>
+<td class="gt_row gt_right" headers="accuracy">0.07%</td>
 <td class="gt_row gt_right" headers="brier_class">0.0009</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0075</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0071</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">average_daily_rate</td>
-<td class="gt_row gt_right" headers="accuracy">0.03%</td>
+<td class="gt_row gt_right" headers="accuracy">0.15%</td>
 <td class="gt_row gt_right" headers="brier_class">0.0008</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0072</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0066</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">booking_changes</td>
-<td class="gt_row gt_right" headers="accuracy">−0.00%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0001</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0054</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">market_segment</td>
-<td class="gt_row gt_right" headers="accuracy">0.05%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0002</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0026</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_left" headers="LOCO_feature">customer_type</td>
-<td class="gt_row gt_right" headers="accuracy">0.02%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0001</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0024</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">meal</td>
 <td class="gt_row gt_right" headers="accuracy">0.03%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0004</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0022</td>
+<td class="gt_row gt_right" headers="brier_class">0.0001</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0052</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="LOCO_feature">customer_type</td>
+<td class="gt_row gt_right" headers="accuracy">0.01%</td>
+<td class="gt_row gt_right" headers="brier_class">0.0002</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0038</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="LOCO_feature">adults</td>
-<td class="gt_row gt_right" headers="accuracy">0.08%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0009</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0014</td>
+<td class="gt_row gt_left" headers="LOCO_feature">meal</td>
+<td class="gt_row gt_right" headers="accuracy">0.02%</td>
+<td class="gt_row gt_right" headers="brier_class">0.0003</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0025</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">hotel</td>
-<td class="gt_row gt_right" headers="accuracy">0.24%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0014</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0014</td>
+<td class="gt_row gt_right" headers="accuracy">0.15%</td>
+<td class="gt_row gt_right" headers="brier_class">0.0011</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0024</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="LOCO_feature">country</td>
-<td class="gt_row gt_right" headers="accuracy">−0.00%</td>
-<td class="gt_row gt_right" headers="brier_class">−0.0001</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0005</td>
+<td class="gt_row gt_left" headers="LOCO_feature">adults</td>
+<td class="gt_row gt_right" headers="accuracy">0.11%</td>
+<td class="gt_row gt_right" headers="brier_class">0.0010</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0013</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">previous_bookings_not_canceled</td>
+<td class="gt_row gt_left" headers="LOCO_feature">market_segment</td>
 <td class="gt_row gt_right" headers="accuracy">−0.00%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0004</td>
+<td class="gt_row gt_right" headers="brier_class">0.0001</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0011</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="LOCO_feature">distribution_channel</td>
-<td class="gt_row gt_right" headers="accuracy">0.00%</td>
+<td class="gt_row gt_left" headers="LOCO_feature">previous_bookings_not_canceled</td>
+<td class="gt_row gt_right" headers="accuracy">−0.01%</td>
 <td class="gt_row gt_right" headers="brier_class">0.0000</td>
 <td class="gt_row gt_right" headers="roc_auc">0.0002</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">days_in_waiting_list</td>
-<td class="gt_row gt_right" headers="accuracy">0.00%</td>
+<td class="gt_row gt_left" headers="LOCO_feature">distribution_channel</td>
+<td class="gt_row gt_right" headers="accuracy">−0.01%</td>
 <td class="gt_row gt_right" headers="brier_class">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0001</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0002</td>
 </tr>
 <tr class="odd">
+<td class="gt_row gt_left" headers="LOCO_feature">country</td>
+<td class="gt_row gt_right" headers="accuracy">−0.01%</td>
+<td class="gt_row gt_right" headers="brier_class">−0.0002</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0002</td>
+</tr>
+<tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">stays_in_week_nights</td>
+<td class="gt_row gt_right" headers="accuracy">−0.01%</td>
+<td class="gt_row gt_right" headers="brier_class">0.0000</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0000</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="LOCO_feature">is_repeated_guest</td>
+<td class="gt_row gt_right" headers="accuracy">−0.02%</td>
+<td class="gt_row gt_right" headers="brier_class">0.0001</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0000</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="LOCO_feature">required_car_parking_spaces</td>
+<td class="gt_row gt_right" headers="accuracy">−0.00%</td>
+<td class="gt_row gt_right" headers="brier_class">0.0000</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0000</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="LOCO_feature">arrival_date</td>
 <td class="gt_row gt_right" headers="accuracy">0.00%</td>
 <td class="gt_row gt_right" headers="brier_class">0.0000</td>
 <td class="gt_row gt_right" headers="roc_auc">0.0000</td>
@@ -5228,40 +5257,28 @@ Performance Measures
 <td class="gt_row gt_right" headers="roc_auc">0.0000</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="LOCO_feature">deposit_type</td>
-<td class="gt_row gt_right" headers="accuracy">0.00%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0000</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">arrival_date</td>
-<td class="gt_row gt_right" headers="accuracy">0.00%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0000</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_left" headers="LOCO_feature">required_car_parking_spaces</td>
-<td class="gt_row gt_right" headers="accuracy">0.00%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc">0.0000</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">lead_time</td>
-<td class="gt_row gt_right" headers="accuracy">0.02%</td>
-<td class="gt_row gt_right" headers="brier_class">0.0001</td>
-<td class="gt_row gt_right" headers="roc_auc">−0.0001</td>
-</tr>
-<tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">stays_in_weekend_nights</td>
-<td class="gt_row gt_right" headers="accuracy">0.01%</td>
+<td class="gt_row gt_right" headers="accuracy">−0.01%</td>
 <td class="gt_row gt_right" headers="brier_class">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc">−0.0001</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0000</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">is_repeated_guest</td>
-<td class="gt_row gt_right" headers="accuracy">0.01%</td>
+<td class="gt_row gt_left" headers="LOCO_feature">deposit_type</td>
+<td class="gt_row gt_right" headers="accuracy">−0.01%</td>
 <td class="gt_row gt_right" headers="brier_class">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc">−0.0001</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0000</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="LOCO_feature">lead_time</td>
+<td class="gt_row gt_right" headers="accuracy">0.04%</td>
+<td class="gt_row gt_right" headers="brier_class">0.0001</td>
+<td class="gt_row gt_right" headers="roc_auc">0.0000</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="LOCO_feature">days_in_waiting_list</td>
+<td class="gt_row gt_right" headers="accuracy">0.00%</td>
+<td class="gt_row gt_right" headers="brier_class">0.0000</td>
+<td class="gt_row gt_right" headers="roc_auc">−0.0003</td>
 </tr>
 </tbody>
 </table>
@@ -5292,7 +5309,7 @@ Performance Measures
 <div class="callout-body-container callout-body">
 <p>This function is a bit complex, will help coloring columns in a predictable and standardized way:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb81"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">color_cols_centered</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">gt_tbl</span>, <span class="va">...</span>, <span class="va">palette</span><span class="op">=</span><span class="st">"RdBu"</span>, <span class="va">.multiplier</span><span class="op">=</span><span class="fl">1.01</span><span class="op">)</span><span class="op">{</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb87"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">color_cols_centered</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">gt_tbl</span>, <span class="va">...</span>, <span class="va">palette</span><span class="op">=</span><span class="st">"RdBu"</span>, <span class="va">.multiplier</span><span class="op">=</span><span class="fl">1.01</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">tbl_body</span> <span class="op">&lt;-</span> <span class="va">gt_tbl</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://gt.rstudio.com/reference/extract_body.html">extract_body</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>    <span class="co">## tidyselect magic to handle the dots and allow helpers and `-` selectors</span></span>
 <span>    <span class="va">column_quosure</span> <span class="op">&lt;-</span> <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/enquo.html">enquos</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
@@ -5322,7 +5339,7 @@ Performance Measures
 </div>
 <p>With that in hand:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb82"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lr_coefs</span> <span class="op">&lt;-</span> <span class="va">lr_best_workflow</span> <span class="op">|&gt;</span> <span class="fu">fit</span><span class="op">(</span><span class="va">hotel_train</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb88"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lr_coefs</span> <span class="op">&lt;-</span> <span class="va">lr_best_workflow</span> <span class="op">|&gt;</span> <span class="fu">fit</span><span class="op">(</span><span class="va">hotel_train</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span><span class="va">lr_loco_results</span>, </span>
 <span>           <span class="va">lr_coefs</span>, </span>
@@ -5834,148 +5851,148 @@ LOCO Metric Measures
 <tbody class="gt_table_body">
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">average_daily_rate</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #00441B; color: #FFFFFF">−0.4559</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #EBF1F5; color: #000000">0.03%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #C7E0ED; color: #000000">0.0008</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #4E99C6; color: #FFFFFF">0.0072</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #00441B; color: #FFFFFF">−0.4638</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #B8D8E9; color: #000000">0.15%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #BFDCEB; color: #000000">0.0008</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #357DB8; color: #FFFFFF">0.0066</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">total_of_special_requests</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #006227; color: #FFFFFF">−0.4138</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #EEF3F5; color: #000000">0.02%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #C6DFED; color: #000000">0.0008</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #063365; color: #FFFFFF">0.0124</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #19803C; color: #FFFFFF">−0.3685</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #F3F5F6; color: #000000">0.01%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #D1E5F0; color: #000000">0.0006</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #063365; color: #FFFFFF">0.0094</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">adults</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #50B163; color: #FFFFFF">0.2701</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #DAE9F2; color: #000000">0.08%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #C0DCEB; color: #000000">0.0009</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #E2EDF3; color: #000000">0.0014</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #31994F; color: #FFFFFF">0.3223</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #CFE4F0; color: #000000">0.11%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #B2D5E7; color: #000000">0.0010</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #DDEBF2; color: #000000">0.0013</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">booking_changes</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #92D28F; color: #000000">−0.1897</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #F7F6F5; color: #000000">−0.00%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #F3F5F6; color: #000000">0.0001</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #88BEDA; color: #000000">0.0054</td>
-</tr>
-<tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">previous_bookings_not_canceled</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #A0D89A; color: #000000">0.1727</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #F7F6F5; color: #000000">−0.00%</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #3AA357; color: #FFFFFF">0.3039</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #F8F3F1; color: #000000">−0.01%</td>
 <td class="gt_row gt_right" headers="brier_class" style="background-color: #F6F6F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F2F4F6; color: #000000">0.0004</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">is_repeated_guest</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #ADDEA7; color: #000000">0.1531</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #F5F6F7; color: #000000">0.01%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #F5F6F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F7F6F5; color: #000000">−0.0001</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F2F5F6; color: #000000">0.0002</td>
 </tr>
 <tr class="odd">
+<td class="gt_row gt_left" headers="LOCO_feature">booking_changes</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #88CD86; color: #000000">−0.2061</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #EEF2F5; color: #000000">0.03%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #F4F5F6; color: #000000">0.0001</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #5A9FCA; color: #FFFFFF">0.0052</td>
+</tr>
+<tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">lead_time</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #DDF2D7; color: #000000">−0.0724</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #F0F3F6; color: #000000">0.02%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #F3F5F6; color: #000000">0.0001</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F7F6F6; color: #000000">−0.0001</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">days_in_waiting_list</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #EEF8EA; color: #000000">0.0297</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #F7F7F7; color: #000000">0.00%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F6F6F7; color: #000000">0.0001</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #AEDEA7; color: #000000">−0.1545</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #E9F0F4; color: #000000">0.04%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #EFF3F5; color: #000000">0.0001</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F7F6F6; color: #000000">0.0000</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="LOCO_feature">stays_in_week_nights</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #F3FBF1; color: #000000">−0.0117</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #F6F6F7; color: #000000">0.00%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #F7F6F6; color: #000000">0.0000</td>
+<td class="gt_row gt_left" headers="LOCO_feature">is_repeated_guest</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #BCE4B5; color: #000000">0.1330</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #F9F1EC; color: #000000">−0.02%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #F4F5F6; color: #000000">0.0001</td>
 <td class="gt_row gt_right" headers="roc_auc" style="background-color: #F7F7F7; color: #000000">0.0000</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">stays_in_weekend_nights</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #F7FCF5; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #F3F5F6; color: #000000">0.01%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F7F6F6; color: #000000">−0.0001</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #EDF8E9; color: #000000">0.0337</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #F8F4F2; color: #000000">−0.01%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #F6F7F7; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F7F7F7; color: #000000">0.0000</td>
 </tr>
 <tr class="odd">
+<td class="gt_row gt_left" headers="LOCO_feature">stays_in_week_nights</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #F0F9ED; color: #000000">−0.0215</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #F8F5F4; color: #000000">−0.01%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #F7F6F6; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F6F7F7; color: #000000">0.0000</td>
+</tr>
+<tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">previous_cancellations</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #F7FCF5; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #F7FCF5; color: #000000">0.0002</td>
 <td class="gt_row gt_right" headers="accuracy" style="background-color: #F7F7F7; color: #000000">0.00%</td>
 <td class="gt_row gt_right" headers="brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
 <td class="gt_row gt_right" headers="roc_auc" style="background-color: #F7F7F7; color: #000000">0.0000</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="LOCO_feature">days_in_waiting_list</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #F7FCF5; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #F7F7F7; color: #000000">0.00%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F8F3F0; color: #000000">−0.0003</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">hotel</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #7AB4D5; color: #000000">0.24%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #90C4DD; color: #000000">0.0014</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #E2EDF3; color: #000000">0.0014</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #B6D7E8; color: #000000">0.15%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #A5CEE3; color: #000000">0.0011</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #C0DCEB; color: #000000">0.0024</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">meal</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #ECF2F5; color: #000000">0.03%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #E2EDF3; color: #000000">0.0004</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #D5E7F1; color: #000000">0.0022</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #EFF3F5; color: #000000">0.02%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #E3EEF3; color: #000000">0.0003</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #BDDAEA; color: #000000">0.0025</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">country</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #F7F6F5; color: #000000">−0.00%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #F8F5F3; color: #000000">−0.0001</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #EFF3F6; color: #000000">0.0005</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #F8F5F4; color: #000000">−0.01%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #FAEDE5; color: #000000">−0.0002</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F4F5F6; color: #000000">0.0002</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">market_segment</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #E6EFF4; color: #000000">0.05%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #ECF2F5; color: #000000">0.0002</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #CFE4EF; color: #000000">0.0026</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #F7F6F5; color: #000000">−0.00%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #F3F5F6; color: #000000">0.0001</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #E1ECF3; color: #000000">0.0011</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">distribution_channel</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #F6F6F7; color: #000000">0.00%</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #F8F4F2; color: #000000">−0.01%</td>
 <td class="gt_row gt_right" headers="brier_class" style="background-color: #F6F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F4F5F6; color: #000000">0.0002</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F2F5F6; color: #000000">0.0002</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">reserved_room_type</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #063365; color: #FFFFFF">0.51%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #063365; color: #FFFFFF">0.0035</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #367EB9; color: #FFFFFF">0.0087</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #063365; color: #FFFFFF">0.53%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #063365; color: #FFFFFF">0.0032</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #1E60A4; color: #FFFFFF">0.0078</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">assigned_room_type</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #E3EEF3; color: #000000">0.05%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #BDDBEA; color: #000000">0.0009</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #4694C4; color: #FFFFFF">0.0075</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #DFECF3; color: #000000">0.07%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #BCDAEA; color: #000000">0.0009</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #2C72B2; color: #FFFFFF">0.0071</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">deposit_type</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #F7F7F7; color: #000000">0.00%</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #F8F5F4; color: #000000">−0.01%</td>
 <td class="gt_row gt_right" headers="brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F7F7F7; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #F7F7F6; color: #000000">0.0000</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">customer_type</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #EEF3F5; color: #000000">0.02%</td>
-<td class="gt_row gt_right" headers="brier_class" style="background-color: #F1F4F6; color: #000000">0.0001</td>
-<td class="gt_row gt_right" headers="roc_auc" style="background-color: #D3E6F0; color: #000000">0.0024</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #F5F6F7; color: #000000">0.01%</td>
+<td class="gt_row gt_right" headers="brier_class" style="background-color: #EDF2F5; color: #000000">0.0002</td>
+<td class="gt_row gt_right" headers="roc_auc" style="background-color: #93C6DE; color: #000000">0.0038</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">required_car_parking_spaces</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="accuracy" style="background-color: #F6F6F7; color: #000000">0.00%</td>
+<td class="gt_row gt_right" headers="accuracy" style="background-color: #F7F6F5; color: #000000">−0.00%</td>
 <td class="gt_row gt_right" headers="brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
 <td class="gt_row gt_right" headers="roc_auc" style="background-color: #F7F7F7; color: #000000">0.0000</td>
 </tr>
@@ -5994,7 +6011,7 @@ LOCO Metric Measures
 <p>Note that we have <code>NA</code> values for the regression coefficients for categorical features. Under the hood, <code>tidymodels</code> has encoded these as numerical features for us to use in modeling, but it is not evident how to construct a single ‘coefficient’ for display in this table.</p>
 <p>A visualization is perhaps a bit more helpful here:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb83"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggrepel.slowkow.com/">ggrepel</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb89"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggrepel.slowkow.com/">ggrepel</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://broom.tidymodels.org/">broom</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">lr_coefs</span> <span class="op">&lt;-</span> <span class="va">lr_best_workflow</span> <span class="op">|&gt;</span> <span class="fu">fit</span><span class="op">(</span><span class="va">hotel_train</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -6040,11 +6057,11 @@ LOCO Metric Measures
 <div id="callout-25" class="callout-25-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb84"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rf_loco_results</span> <span class="op">&lt;-</span> <span class="fu">calc_loco</span><span class="op">(</span><span class="va">rf_best_workflow</span>, <span class="va">hotel_train</span>, v<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb90"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rf_loco_results</span> <span class="op">&lt;-</span> <span class="fu">calc_loco</span><span class="op">(</span><span class="va">rf_best_workflow</span>, <span class="va">hotel_train</span>, v<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>As before, it is interesting to compare these results with the regression coefficients and LOCO scores arising from our logistic regression model:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb85"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lr_loco2</span> <span class="op">&lt;-</span> <span class="va">lr_loco_results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">metric</span>, lr_loco_score<span class="op">=</span><span class="va">loco_score</span>, <span class="va">LOCO_feature</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb91"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lr_loco2</span> <span class="op">&lt;-</span> <span class="va">lr_loco_results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">metric</span>, lr_loco_score<span class="op">=</span><span class="va">loco_score</span>, <span class="va">LOCO_feature</span><span class="op">)</span></span>
 <span><span class="va">rf_loco2</span> <span class="op">&lt;-</span> <span class="va">rf_loco_results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">metric</span>, rf_loco_score<span class="op">=</span><span class="va">loco_score</span>, <span class="va">LOCO_feature</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">inner_join</a></span><span class="op">(</span><span class="va">lr_loco2</span>, <span class="va">rf_loco2</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/join_by.html">join_by</a></span><span class="op">(</span><span class="va">LOCO_feature</span>, <span class="va">metric</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -6565,213 +6582,213 @@ Random Forest LOCO
 <tbody class="gt_table_body">
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">average_daily_rate</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #00441B; color: #FFFFFF">−0.4559</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #EBF1F5; color: #000000">0.03%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #C7E0ED; color: #000000">0.0008</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #4E99C6; color: #FFFFFF">0.0072</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #F9F0EB; color: #000000">−0.02%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #8ABFDB; color: #000000">0.0015</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #063365; color: #FFFFFF">0.0145</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #00441B; color: #FFFFFF">−0.4638</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #B8D8E9; color: #000000">0.15%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #BFDCEB; color: #000000">0.0008</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #357DB8; color: #FFFFFF">0.0066</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #B7D7E8; color: #000000">0.14%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #98C8E0; color: #000000">0.0014</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #063365; color: #FFFFFF">0.0125</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">total_of_special_requests</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #006227; color: #FFFFFF">−0.4138</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #EEF3F5; color: #000000">0.02%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #C6DFED; color: #000000">0.0008</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #063365; color: #FFFFFF">0.0124</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FCCEB6; color: #000000">−0.10%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #E0ECF3; color: #000000">0.0004</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #4C97C5; color: #FFFFFF">0.0085</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #19803C; color: #FFFFFF">−0.3685</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F3F5F6; color: #000000">0.01%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #D1E5F0; color: #000000">0.0006</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #063365; color: #FFFFFF">0.0094</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FAECE5; color: #000000">−0.04%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #E6EFF4; color: #000000">0.0003</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #61A3CC; color: #FFFFFF">0.0067</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">adults</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #50B163; color: #FFFFFF">0.2701</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #DAE9F2; color: #000000">0.08%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #C0DCEB; color: #000000">0.0009</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #E2EDF3; color: #000000">0.0014</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #175291; color: #FFFFFF">0.34%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #2368AD; color: #FFFFFF">0.0028</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #2F75B4; color: #FFFFFF">0.0107</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #31994F; color: #FFFFFF">0.3223</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #CFE4F0; color: #000000">0.11%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #B2D5E7; color: #000000">0.0010</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #DDEBF2; color: #000000">0.0013</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #3A84BC; color: #FFFFFF">0.32%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #549CC8; color: #FFFFFF">0.0021</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #2F75B4; color: #FFFFFF">0.0092</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">booking_changes</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #92D28F; color: #000000">−0.1897</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F7F6F5; color: #000000">−0.00%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F3F5F6; color: #000000">0.0001</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #88BEDA; color: #000000">0.0054</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #F5A784; color: #000000">−0.15%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #E4EEF3; color: #000000">0.0004</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #327AB6; color: #FFFFFF">0.0104</td>
-</tr>
-<tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">previous_bookings_not_canceled</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #A0D89A; color: #000000">0.1727</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F7F6F5; color: #000000">−0.00%</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #3AA357; color: #FFFFFF">0.3039</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F8F3F1; color: #000000">−0.01%</td>
 <td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F6F6F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F2F4F6; color: #000000">0.0004</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #F8F2EF; color: #000000">−0.01%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #E2EDF3; color: #000000">0.0016</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">is_repeated_guest</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #ADDEA7; color: #000000">0.1531</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F5F6F7; color: #000000">0.01%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F5F6F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F7F6F5; color: #000000">−0.0001</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FBCAB0; color: #000000">−0.10%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F7F6F5; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #E4EEF3; color: #000000">0.0015</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F2F5F6; color: #000000">0.0002</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #F8F4F2; color: #000000">−0.01%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F8F5F3; color: #000000">−0.0001</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #EEF2F5; color: #000000">0.0006</td>
 </tr>
 <tr class="odd">
+<td class="gt_row gt_left" headers="LOCO_feature">booking_changes</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #88CD86; color: #000000">−0.2061</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #EEF2F5; color: #000000">0.03%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F4F5F6; color: #000000">0.0001</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #5A9FCA; color: #FFFFFF">0.0052</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #F4F6F7; color: #000000">0.01%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #E2EDF3; color: #000000">0.0004</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #0B3C72; color: #FFFFFF">0.0120</td>
+</tr>
+<tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">lead_time</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #DDF2D7; color: #000000">−0.0724</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F0F3F6; color: #000000">0.02%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F3F5F6; color: #000000">0.0001</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F7F6F6; color: #000000">−0.0001</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FDD7C2; color: #000000">−0.08%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F1F4F6; color: #000000">0.0001</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #DDEBF2; color: #000000">0.0020</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="LOCO_feature">days_in_waiting_list</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #EEF8EA; color: #000000">0.0297</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F7F7F7; color: #000000">0.00%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F6F6F7; color: #000000">0.0001</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FBE9DE; color: #000000">−0.04%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F3F5F6; color: #000000">0.0001</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #E8F0F4; color: #000000">0.0012</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #AEDEA7; color: #000000">−0.1545</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #E9F0F4; color: #000000">0.04%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #EFF3F5; color: #000000">0.0001</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F7F6F6; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #F8F2EF; color: #000000">−0.02%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #DBEAF2; color: #000000">0.0019</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_left" headers="LOCO_feature">stays_in_week_nights</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #F3FBF1; color: #000000">−0.0117</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F6F6F7; color: #000000">0.00%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F7F6F6; color: #000000">0.0000</td>
+<td class="gt_row gt_left" headers="LOCO_feature">is_repeated_guest</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #BCE4B5; color: #000000">0.1330</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F9F1EC; color: #000000">−0.02%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F4F5F6; color: #000000">0.0001</td>
 <td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F7F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FCE4D6; color: #000000">−0.05%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F9EFE9; color: #000000">−0.0002</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #ECF2F5; color: #000000">0.0009</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #E9F0F4; color: #000000">0.04%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F8F4F2; color: #000000">−0.0001</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #F0F4F6; color: #000000">0.0005</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">stays_in_weekend_nights</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #F7FCF5; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F3F5F6; color: #000000">0.01%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F7F6F6; color: #000000">−0.0001</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FCCEB6; color: #000000">−0.10%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F9F0EA; color: #000000">−0.0002</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #E7EFF4; color: #000000">0.0012</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #EDF8E9; color: #000000">0.0337</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F8F4F2; color: #000000">−0.01%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F6F7F7; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F7F7F7; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FCE4D6; color: #000000">−0.07%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #FBE6DA; color: #000000">−0.0005</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #F9F0EB; color: #000000">−0.0006</td>
 </tr>
 <tr class="odd">
+<td class="gt_row gt_left" headers="LOCO_feature">stays_in_week_nights</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #F0F9ED; color: #000000">−0.0215</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F8F5F4; color: #000000">−0.01%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F7F6F6; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F6F7F7; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #F9F0EB; color: #000000">−0.02%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #FAEBE2; color: #000000">−0.0003</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #EBF1F5; color: #000000">0.0008</td>
+</tr>
+<tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">previous_cancellations</td>
-<td class="gt_row gt_right" headers="coefficient" style="background-color: #F7FCF5; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #F7FCF5; color: #000000">0.0002</td>
 <td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F7F7F7; color: #000000">0.00%</td>
 <td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
 <td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F7F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FBE9DE; color: #000000">−0.04%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F9F2EE; color: #000000">−0.0001</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #F5F6F7; color: #000000">0.0002</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #F7F7F7; color: #000000">0.00%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F9F1ED; color: #000000">−0.0002</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #F1F4F6; color: #000000">0.0004</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="LOCO_feature">days_in_waiting_list</td>
+<td class="gt_row gt_right" headers="coefficient" style="background-color: #F7FCF5; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F7F7F7; color: #000000">0.00%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F8F3F0; color: #000000">−0.0003</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FAEAE1; color: #000000">−0.04%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #FAEEE7; color: #000000">−0.0002</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #F8F4F3; color: #000000">−0.0002</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">hotel</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #7AB4D5; color: #000000">0.24%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #90C4DD; color: #000000">0.0014</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #E2EDF3; color: #000000">0.0014</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #B5D6E8; color: #000000">0.11%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #8BC0DB; color: #000000">0.0015</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #8BC0DB; color: #000000">0.0061</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #B6D7E8; color: #000000">0.15%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #A5CEE3; color: #000000">0.0011</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #C0DCEB; color: #000000">0.0024</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #E1ECF3; color: #000000">0.06%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #BDDBEA; color: #000000">0.0010</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #A2CDE2; color: #000000">0.0044</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">meal</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #ECF2F5; color: #000000">0.03%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #E2EDF3; color: #000000">0.0004</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #D5E7F1; color: #000000">0.0022</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #F8F2EF; color: #000000">−0.01%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #EBF1F5; color: #000000">0.0002</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #C8E0ED; color: #000000">0.0034</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #EFF3F5; color: #000000">0.02%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #E3EEF3; color: #000000">0.0003</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #BDDAEA; color: #000000">0.0025</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #E9F0F4; color: #000000">0.04%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F0F4F6; color: #000000">0.0001</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #C3DEEC; color: #000000">0.0031</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">country</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F7F6F5; color: #000000">−0.00%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F8F5F3; color: #000000">−0.0001</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #EFF3F6; color: #000000">0.0005</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FDD7C2; color: #000000">−0.08%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #FAEBE2; color: #000000">−0.0003</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #F7F7F7; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F8F5F4; color: #000000">−0.01%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #FAEDE5; color: #000000">−0.0002</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F4F5F6; color: #000000">0.0002</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FAEEE8; color: #000000">−0.03%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #FBE9DF; color: #000000">−0.0004</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #F8F5F4; color: #000000">−0.0002</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">market_segment</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #E6EFF4; color: #000000">0.05%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #ECF2F5; color: #000000">0.0002</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #CFE4EF; color: #000000">0.0026</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FDDDCA; color: #000000">−0.07%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F7F6F5; color: #000000">−0.00%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F3F5F6; color: #000000">0.0001</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #E1ECF3; color: #000000">0.0011</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #F8F5F4; color: #000000">−0.01%</td>
 <td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F3F5F6; color: #000000">0.0001</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #C4DEEC; color: #000000">0.0036</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #C0DCEB; color: #000000">0.0032</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">distribution_channel</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F6F6F7; color: #000000">0.00%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F8F4F2; color: #000000">−0.01%</td>
 <td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F6F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F4F5F6; color: #000000">0.0002</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FCE0D0; color: #000000">−0.06%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F2F5F6; color: #000000">0.0001</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #DCEAF2; color: #000000">0.0021</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F2F5F6; color: #000000">0.0002</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #E7F0F4; color: #000000">0.04%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F7F6F6; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #E9F0F4; color: #000000">0.0009</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">reserved_room_type</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #063365; color: #FFFFFF">0.51%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #063365; color: #FFFFFF">0.0035</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #367EB9; color: #FFFFFF">0.0087</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #063365; color: #FFFFFF">0.39%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #063365; color: #FFFFFF">0.0036</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #3882BB; color: #FFFFFF">0.0098</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #063365; color: #FFFFFF">0.53%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #063365; color: #FFFFFF">0.0032</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #1E60A4; color: #FFFFFF">0.0078</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #063365; color: #FFFFFF">0.48%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #063365; color: #FFFFFF">0.0037</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #124983; color: #FFFFFF">0.0114</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">assigned_room_type</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #E3EEF3; color: #000000">0.05%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #BDDBEA; color: #000000">0.0009</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #4694C4; color: #FFFFFF">0.0075</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #ADD2E6; color: #000000">0.12%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #97C7DF; color: #000000">0.0014</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #BFDBEB; color: #000000">0.0038</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #DFECF3; color: #000000">0.07%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #BCDAEA; color: #000000">0.0009</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #2C72B2; color: #FFFFFF">0.0071</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #94C6DE; color: #000000">0.19%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #75B0D3; color: #000000">0.0018</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #75B1D3; color: #000000">0.0061</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">deposit_type</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F7F7F7; color: #000000">0.00%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F8F5F4; color: #000000">−0.01%</td>
 <td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F7F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FAECE4; color: #000000">−0.03%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F2F5F6; color: #000000">0.0001</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #E5EEF4; color: #000000">0.0014</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F7F7F6; color: #000000">0.0000</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FAEEE8; color: #000000">−0.03%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F9EFE9; color: #000000">−0.0002</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #F6F6F7; color: #000000">0.0001</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">customer_type</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #EEF3F5; color: #000000">0.02%</td>
-<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F1F4F6; color: #000000">0.0001</td>
-<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #D3E6F0; color: #000000">0.0024</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #F9F1ED; color: #000000">−0.02%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F7F6F5; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #E3EDF3; color: #000000">0.0016</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F5F6F7; color: #000000">0.01%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #EDF2F5; color: #000000">0.0002</td>
+<td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #93C6DE; color: #000000">0.0038</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #EEF3F5; color: #000000">0.02%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F2F5F6; color: #000000">0.0001</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #BEDBEA; color: #000000">0.0033</td>
 </tr>
 <tr class="odd">
 <td class="gt_row gt_left" headers="LOCO_feature">required_car_parking_spaces</td>
 <td class="gt_row gt_right" headers="coefficient" style="background-color: #FFFFFF; color: #000000">—</td>
-<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F6F6F7; color: #000000">0.00%</td>
+<td class="gt_row gt_right" headers="lr_loco_score_accuracy" style="background-color: #F7F6F5; color: #000000">−0.00%</td>
 <td class="gt_row gt_right" headers="lr_loco_score_brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
 <td class="gt_row gt_right" headers="lr_loco_score_roc_auc" style="background-color: #F7F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #FCE1D2; color: #000000">−0.06%</td>
-<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #F7F7F7; color: #000000">0.0000</td>
-<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #E8F0F4; color: #000000">0.0012</td>
+<td class="gt_row gt_right" headers="rf_loco_score_accuracy" style="background-color: #F8F4F2; color: #000000">−0.01%</td>
+<td class="gt_row gt_right" headers="rf_loco_score_brier_class" style="background-color: #FAEEE7; color: #000000">−0.0002</td>
+<td class="gt_row gt_right" headers="rf_loco_score_roc_auc" style="background-color: #F8F4F2; color: #000000">−0.0003</td>
 </tr>
 <tr class="even">
 <td class="gt_row gt_left" headers="LOCO_feature">arrival_date</td>
@@ -6825,7 +6842,45 @@ Random Forest LOCO
 <li id="fn11"><p>It is not clear to me why we have to specify the <code>estimate</code> and <code>truth</code> columns automatically here. It seems like the kind of thing that should be inferred from the <code>recipe</code>, but it’s the way it is (for now).<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn12"><p>Scores like LOCO are sometimes called ‘model-free’, but I prefer to call them ‘model-agnostic’ or ‘model-flexible’. They can be applied to any single model at a time, but their results still depend on the model choice.<a href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn13"><p>For this an <em>much</em> more on the difficulty of having a single universal measure of ‘importance’, see <a href="https://arxiv.org/pdf/2505.15728">this paper</a>, which demonstrates challenges of consistency empirically, or <a href="https://www.annualreviews.org/content/journals/10.1146/annurev-statistics-040120-030919">this paper</a> which wrestles with the problem from a more theoretical point-of-view.<a href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol></section></div></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+</ol></section></div></main><!-- /main --><script type="text/javascript" id="exit-archive-script">
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.location.href.includes("archive")) {
+      // If on an 'archive' page, update archive warning bar exit
+      // to make sure it points to the associated 'current' page
+      document.getElementById('exit-archive-link').addEventListener('click', function() {
+        let currentUrl = window.location.href;
+        let newUrl = currentUrl.replace(/\/archive\/AY-\d{4}-[^\/]+\//, '/');
+        if (currentUrl !== newUrl) {
+          window.location.href = newUrl;
+        }
+        console.log("Archive URL detected: link redirect inserted.");
+      })
+    } else {
+        // Delete quarto announcement bar if not in archive
+        const exitLink = document.getElementById("exit-archive-link");
+        if (exitLink) {
+        // Find the "great-grand-div" surrounding the link, i.e., the native Quarto
+        // announcement container div
+        // Quarto's announcement bar uses the id '.quarto-announcement' for
+        // the outermost div
+        const announcementBar = exitLink.closest('#quarto-announcement');
+        if (announcementBar) {
+          // Delete the entire announcement bar element from the DOM and log
+          announcementBar.remove();
+          console.log("Current URL detected: Quarto announcement bar removed.");
+        } else {
+          // Fallback: walk up exactly two parent levels (a -> parentDiv -> grandDiv)
+          // and try to delete there
+          const grandParent = exitLink.parentElement?.pparentElement;
+          if (grandParent) {
+            grandParent.remove();
+            console.log("Current URL detected: Grandparent element removed manually.");
+          }
+        }
+      }
+    }
+});
+</script><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
     const anchorJS = new window.AnchorJS();

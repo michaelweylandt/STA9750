@@ -2,17 +2,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.37">
+<meta name="generator" content="quarto-1.10.18">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>STA 9750 Lecture #7 In-Class Activity: Data Import in R – STA 9750</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
 */
-code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -71,10 +74,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-f7b58eee2202a58c8e0dc5967ec053ef.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f755b185985a6dd5cfcae12724477981.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script src="../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
 <link href="../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "navbar",
@@ -103,7 +106,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script><script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script><link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+<script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script><script type="text/javascript">
 const typesetMath = (el) => {
   if (window.MathJax) {
     // MathJax Typeset
@@ -178,6 +181,10 @@ window.Quarto = {
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-prior-offerings">
 <li>
+    <a class="dropdown-item" href=".././archive/AY-2025-SPRING/">
+ <span class="dropdown-text">Spring 2026</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href=".././archive/AY-2025-FALL/">
  <span class="dropdown-text">Fall 2025</span></a>
   </li>  
@@ -196,7 +203,12 @@ window.Quarto = {
             <div class="quarto-navbar-tools">
 </div>
       </div> <!-- /container-fluid -->
-    </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+    </nav><div id="quarto-announcement" data-announcement-id="150402652995a384475e7e813773d159" class="alert alert-danger hidden">
+<i class="bi bi-exclamation-triangle-fill quarto-announcement-icon"></i><div class="quarto-announcement-content">
+<p><strong>Warning</strong> - This page is for a prior offering of STA 9750. For the latest offering, click <a href="#" id="exit-archive-link">here</a>.</p>
+</div>
+</div>
+</header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">On this page</h2>
    
@@ -251,7 +263,8 @@ window.Quarto = {
   
 
 
-</header><p><strong>Class #09: Thursday April 16, 2026 (Lecture #07: Data Import and File System Usage; APIs)</strong></p>
+</header><p><strong>Class #09: Tuesday November 03, 2026 and Thursday October 29, 2026</strong></p>
+<p><strong>Lecture #07: Advanced ggplot2 – maps, interactivity, animation</strong></p>
 <section id="slides" class="level1"><h1><a href="../slides/slides09.html">Slides</a></h1>
 <div class="cell">
 <div>
@@ -259,7 +272,7 @@ window.Quarto = {
 
 </div>
 <script type="webr-1-contents">
-eyJhdHRyIjp7ImVjaG8iOmZhbHNlLCJlZGl0IjpmYWxzZSwiZXZhbCI6dHJ1ZSwibWVzc2FnZSI6dHJ1ZX0sImNvZGUiOiJ3ZWJyOjppbnN0YWxsKFwiaHR0cHV2XCIsIHF1aWV0PVRSVUUpXG53ZWJyOjppbnN0YWxsKFwiZ3JhZGV0aGlzXCIsIHF1aWV0PVRSVUUpXG53ZWJyOjppbnN0YWxsKFwidGlkeXZlcnNlXCIsIHF1aWV0PVRSVUUpXG53ZWJyOjppbnN0YWxsKFwibnljZmxpZ2h0czEzXCIsIHF1aWV0PVRSVUUpXG5cbnN1cHByZXNzUGFja2FnZVN0YXJ0dXBNZXNzYWdlcyhsaWJyYXJ5KHRpZHl2ZXJzZSkpXG5cbmlmKHJlcXVpcmUoXCJncmFkZXRoaXNcIiwgcXVpZXRseSA9IFRSVUUpKXtcbiAgICBtZXNzYWdlKFwiQXV0by1ncmFkZXIgaW5pdGlhbGl6ZWQgc3VjY2Vzc2Z1bGx5LiBZb3UgY2FuIG5vdyBiZWdpbiBleGVyY2lzZXMuXCIpXG59In0=
+eyJhdHRyIjp7ImVjaG8iOmZhbHNlLCJlZGl0IjpmYWxzZSwiZXZhbCI6dHJ1ZSwibWVzc2FnZSI6dHJ1ZX0sImNvZGUiOiJ3ZWJyOjppbnN0YWxsKFwiaHR0cHV2XCIsIHF1aWV0PVRSVUUpXG53ZWJyOjppbnN0YWxsKFwiZ3JhZGV0aGlzXCIsIHF1aWV0PVRSVUUpXG53ZWJyOjppbnN0YWxsKFwidGlkeXZlcnNlXCIsIHF1aWV0PVRSVUUpXG53ZWJyOjppbnN0YWxsKFwibnljZmxpZ2h0czEzXCIsIHF1aWV0PVRSVUUpXG5cbnN1cHByZXNzUGFja2FnZVN0YXJ0dXBNZXNzYWdlcyhsaWJyYXJ5KHRpZHl2ZXJzZSkpXG5zdXBwcmVzc1BhY2thZ2VTdGFydHVwTWVzc2FnZXMobGlicmFyeShueWNmbGlnaHRzMTMpKVxuXG5pZihyZXF1aXJlKFwiZ3JhZGV0aGlzXCIsIHF1aWV0bHkgPSBUUlVFKSl7XG4gICAgbWVzc2FnZShcIkF1dG8tZ3JhZGVyIGluaXRpYWxpemVkIHN1Y2Nlc3NmdWxseS4gWW91IGNhbiBub3cgYmVnaW4gZXhlcmNpc2VzLlwiKVxufSJ9
 </script>
 </div>
 </div>
@@ -374,23 +387,23 @@ dbl (2): year, number
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
 <div class="cell-output-display">
-<div id="xvnxeanhhp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#xvnxeanhhp table {
+<div id="nkbztzbapk" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#nkbztzbapk table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#xvnxeanhhp thead, #xvnxeanhhp tbody, #xvnxeanhhp tfoot, #xvnxeanhhp tr, #xvnxeanhhp td, #xvnxeanhhp th {
+#nkbztzbapk thead, #nkbztzbapk tbody, #nkbztzbapk tfoot, #nkbztzbapk tr, #nkbztzbapk td, #nkbztzbapk th {
   border-style: none;
 }
 
-#xvnxeanhhp p {
+#nkbztzbapk p {
   margin: 0;
   padding: 0;
 }
 
-#xvnxeanhhp .gt_table {
+#nkbztzbapk .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -416,12 +429,12 @@ dbl (2): year, number
   border-left-color: #D3D3D3;
 }
 
-#xvnxeanhhp .gt_caption {
+#nkbztzbapk .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#xvnxeanhhp .gt_title {
+#nkbztzbapk .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -433,7 +446,7 @@ dbl (2): year, number
   border-bottom-width: 0;
 }
 
-#xvnxeanhhp .gt_subtitle {
+#nkbztzbapk .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -445,7 +458,7 @@ dbl (2): year, number
   border-top-width: 0;
 }
 
-#xvnxeanhhp .gt_heading {
+#nkbztzbapk .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -457,13 +470,13 @@ dbl (2): year, number
   border-right-color: #D3D3D3;
 }
 
-#xvnxeanhhp .gt_bottom_border {
+#nkbztzbapk .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#xvnxeanhhp .gt_col_headings {
+#nkbztzbapk .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -478,7 +491,7 @@ dbl (2): year, number
   border-right-color: #D3D3D3;
 }
 
-#xvnxeanhhp .gt_col_heading {
+#nkbztzbapk .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -498,7 +511,7 @@ dbl (2): year, number
   overflow-x: hidden;
 }
 
-#xvnxeanhhp .gt_column_spanner_outer {
+#nkbztzbapk .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -510,15 +523,15 @@ dbl (2): year, number
   padding-right: 4px;
 }
 
-#xvnxeanhhp .gt_column_spanner_outer:first-child {
+#nkbztzbapk .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#xvnxeanhhp .gt_column_spanner_outer:last-child {
+#nkbztzbapk .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#xvnxeanhhp .gt_column_spanner {
+#nkbztzbapk .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -530,11 +543,11 @@ dbl (2): year, number
   width: 100%;
 }
 
-#xvnxeanhhp .gt_spanner_row {
+#nkbztzbapk .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#xvnxeanhhp .gt_group_heading {
+#nkbztzbapk .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -560,7 +573,7 @@ dbl (2): year, number
   text-align: left;
 }
 
-#xvnxeanhhp .gt_empty_group_heading {
+#nkbztzbapk .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -575,15 +588,15 @@ dbl (2): year, number
   vertical-align: middle;
 }
 
-#xvnxeanhhp .gt_from_md > :first-child {
+#nkbztzbapk .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#xvnxeanhhp .gt_from_md > :last-child {
+#nkbztzbapk .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#xvnxeanhhp .gt_row {
+#nkbztzbapk .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -602,7 +615,7 @@ dbl (2): year, number
   overflow-x: hidden;
 }
 
-#xvnxeanhhp .gt_stub {
+#nkbztzbapk .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -615,7 +628,7 @@ dbl (2): year, number
   padding-right: 5px;
 }
 
-#xvnxeanhhp .gt_stub_row_group {
+#nkbztzbapk .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -629,15 +642,15 @@ dbl (2): year, number
   vertical-align: top;
 }
 
-#xvnxeanhhp .gt_row_group_first td {
+#nkbztzbapk .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#xvnxeanhhp .gt_row_group_first th {
+#nkbztzbapk .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#xvnxeanhhp .gt_summary_row {
+#nkbztzbapk .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -647,16 +660,16 @@ dbl (2): year, number
   padding-right: 5px;
 }
 
-#xvnxeanhhp .gt_first_summary_row {
+#nkbztzbapk .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#xvnxeanhhp .gt_first_summary_row.thick {
+#nkbztzbapk .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#xvnxeanhhp .gt_last_summary_row {
+#nkbztzbapk .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -666,7 +679,7 @@ dbl (2): year, number
   border-bottom-color: #D3D3D3;
 }
 
-#xvnxeanhhp .gt_grand_summary_row {
+#nkbztzbapk .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -676,7 +689,7 @@ dbl (2): year, number
   padding-right: 5px;
 }
 
-#xvnxeanhhp .gt_first_grand_summary_row {
+#nkbztzbapk .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -686,7 +699,7 @@ dbl (2): year, number
   border-top-color: #D3D3D3;
 }
 
-#xvnxeanhhp .gt_last_grand_summary_row_top {
+#nkbztzbapk .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -696,11 +709,11 @@ dbl (2): year, number
   border-bottom-color: #D3D3D3;
 }
 
-#xvnxeanhhp .gt_striped {
+#nkbztzbapk .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#xvnxeanhhp .gt_table_body {
+#nkbztzbapk .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -709,7 +722,7 @@ dbl (2): year, number
   border-bottom-color: #D3D3D3;
 }
 
-#xvnxeanhhp .gt_footnotes {
+#nkbztzbapk .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -723,7 +736,7 @@ dbl (2): year, number
   border-right-color: #D3D3D3;
 }
 
-#xvnxeanhhp .gt_footnote {
+#nkbztzbapk .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -732,7 +745,7 @@ dbl (2): year, number
   padding-right: 5px;
 }
 
-#xvnxeanhhp .gt_sourcenotes {
+#nkbztzbapk .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -746,7 +759,7 @@ dbl (2): year, number
   border-right-color: #D3D3D3;
 }
 
-#xvnxeanhhp .gt_sourcenote {
+#nkbztzbapk .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -754,72 +767,72 @@ dbl (2): year, number
   padding-right: 5px;
 }
 
-#xvnxeanhhp .gt_left {
+#nkbztzbapk .gt_left {
   text-align: left;
 }
 
-#xvnxeanhhp .gt_center {
+#nkbztzbapk .gt_center {
   text-align: center;
 }
 
-#xvnxeanhhp .gt_right {
+#nkbztzbapk .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#xvnxeanhhp .gt_font_normal {
+#nkbztzbapk .gt_font_normal {
   font-weight: normal;
 }
 
-#xvnxeanhhp .gt_font_bold {
+#nkbztzbapk .gt_font_bold {
   font-weight: bold;
 }
 
-#xvnxeanhhp .gt_font_italic {
+#nkbztzbapk .gt_font_italic {
   font-style: italic;
 }
 
-#xvnxeanhhp .gt_super {
+#nkbztzbapk .gt_super {
   font-size: 65%;
 }
 
-#xvnxeanhhp .gt_footnote_marks {
+#nkbztzbapk .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#xvnxeanhhp .gt_asterisk {
+#nkbztzbapk .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#xvnxeanhhp .gt_indent_1 {
+#nkbztzbapk .gt_indent_1 {
   text-indent: 5px;
 }
 
-#xvnxeanhhp .gt_indent_2 {
+#nkbztzbapk .gt_indent_2 {
   text-indent: 10px;
 }
 
-#xvnxeanhhp .gt_indent_3 {
+#nkbztzbapk .gt_indent_3 {
   text-indent: 15px;
 }
 
-#xvnxeanhhp .gt_indent_4 {
+#nkbztzbapk .gt_indent_4 {
   text-indent: 20px;
 }
 
-#xvnxeanhhp .gt_indent_5 {
+#nkbztzbapk .gt_indent_5 {
   text-indent: 25px;
 }
 
-#xvnxeanhhp .katex-display {
+#nkbztzbapk .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#xvnxeanhhp div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#nkbztzbapk div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -920,7 +933,7 @@ dbl (2): year, number
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Popularity Ranking"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="lab07_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="lab07_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -960,7 +973,7 @@ dbl (2): year, number
 <span>   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span>method<span class="op">=</span><span class="st">"lm"</span>, col<span class="op">=</span><span class="st">"red4"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="lab07_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="lab07_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1003,13 +1016,13 @@ dbl (2): year, number
 <span>   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position<span class="op">=</span><span class="st">"bottom"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guides.html">guides</a></span><span class="op">(</span>color<span class="op">=</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/guide_colourbar.html">guide_colorbar</a></span><span class="op">(</span>barwidth<span class="op">=</span><span class="fl">20</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>   <span class="fu"><a href="https://docs.r4photobiology.info/ggpmisc/reference/stat_poly_line.html">stat_poly_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>   <span class="fu"><a href="https://docs.r4photobiology.info/ggpmisc/reference/stat_poly_eq.html">stat_poly_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>   <span class="fu"><a href="https://docs.r4photobiology.info/ggpmisc/reference/stat_poly_eq.html">stat_poly_eq</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">xlab</a></span><span class="op">(</span><span class="st">"Number of Juan's Born Per Year"</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Number of Jose's Born Per Year"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="lab07_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="lab07_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1063,7 +1076,7 @@ dbl (2): year, number
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ylab</a></span><span class="op">(</span><span class="st">"Number of Marys Born Per Year"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="lab07_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="lab07_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1075,8 +1088,8 @@ dbl (2): year, number
 </section><section id="fs" class="level1"><h1>Using the File System</h1>
 <section id="exercise01" class="level2"><h2 class="anchored" data-anchor-id="exercise01">Exercises #01</h2>
 <ol start="0" type="1">
-<li><p>Use the <code><a href="https://rdrr.io/r/base/getwd.html">getwd()</a></code> to find your current working directory. For the following exercises to be most useful, you will want to ensure that this is your <code>STA9750-2026-SPRING</code> course directory. If you have somehow changed it please use the <code><a href="https://rdrr.io/r/base/getwd.html">setwd()</a></code> function to return to the proper directory.</p></li>
-<li><p>In your <code>STA9750-2026-SPRING</code> directory, you have a file called <code>index.qmd</code>. Use the <code>path</code> function from the <code>fs</code> package to create a <code>path</code> object pointing to that file and then use the <code>path_abs</code> function to convert that relative path to an absolute path.</p></li>
+<li><p>Use the <code><a href="https://rdrr.io/r/base/getwd.html">getwd()</a></code> to find your current working directory. For the following exercises to be most useful, you will want to ensure that this is your <code>STA9750-2026-FALL</code> course directory. If you have somehow changed it please use the <code><a href="https://rdrr.io/r/base/getwd.html">setwd()</a></code> function to return to the proper directory.</p></li>
+<li><p>In your <code>STA9750-2026-FALL</code> directory, you have a file called <code>index.qmd</code>. Use the <code>path</code> function from the <code>fs</code> package to create a <code>path</code> object pointing to that file and then use the <code>path_abs</code> function to convert that relative path to an absolute path.</p></li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
@@ -1163,7 +1176,7 @@ eyJhdHRyIjp7ImVkaXQiOnRydWUsImV2YWwiOnRydWV9LCJjb2RlIjoibGlicmFyeShmcylcbmZpbGVf
 </div>
 <ol start="4" type="1">
 <li>
-<p>A common pattern in working with files is wanting to find all files whose names match a certain pattern. This is known colloquially as <em>globbing</em>. The <code>dir_ls</code> function can be used to list all files in a directory. First use it to list all files in your <code>STA9750-2026-SPRING</code> course directory; then use the <code>glob</code> argument to list only the <code>qmd</code> files in that directory.</p>
+<p>A common pattern in working with files is wanting to find all files whose names match a certain pattern. This is known colloquially as <em>globbing</em>. The <code>dir_ls</code> function can be used to list all files in a directory. First use it to list all files in your <code>STA9750-2026-FALL</code> course directory; then use the <code>glob</code> argument to list only the <code>qmd</code> files in that directory.</p>
 <p><em>Hint: The <code>glob</code> argument should be a string with asterisks in it where you will allow any match. For example, <code>*.csv</code> will match all CSV files, <code>abc*</code> will match all files whose names start with <code>abc</code>, and <code>abc*.csv</code> will match files whose names start with <code>abc</code> and end with <code>.csv</code> with arbitrary text in between.</em></p>
 </li>
 </ol>
@@ -1374,6 +1387,16 @@ Body: empty</code></pre>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_string</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html">read_csv</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
+<pre><code>Warning: The `file` argument of `read_csv()` should use `I()` for literal data as of
+readr 2.2.0.
+  
+  # Bad (for example):
+  read_csv("x,y\n1,2")
+  
+  # Good:
+  read_csv(I("x,y\n1,2"))</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
 <pre><code>Rows: 2754 Columns: 5
 ── Column specification ────────────────────────────────────────────────────────
 Delimiter: ","
@@ -1420,16 +1443,16 @@ dbl (3): Y2000, Y2010, district
 <div id="callout-17" class="callout-17-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">"https://raw.githubusercontent.com"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path</span>(YOUR GITHUB ID</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>                 COURSE REPO, </span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"refs"</span>,</span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"heads"</span>,</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"main"</span>,</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"mp01.qmd"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">resp_check_status</span>() </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">"https://raw.githubusercontent.com"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path</span>(YOUR GITHUB ID</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                 COURSE REPO, </span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"refs"</span>,</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"heads"</span>,</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"main"</span>,</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"mp01.qmd"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">resp_check_status</span>() </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -1450,15 +1473,15 @@ dbl (3): Y2000, Y2010, district
 <div id="callout-18" class="callout-18-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">"https://raw.githubusercontent.com"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path</span>(YOUR GITHUB ID</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                 COURSE REPO, </span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"refs"</span>,</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"heads"</span>,</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"main"</span>,</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"mp04.qmd"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_perform</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">"https://raw.githubusercontent.com"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path</span>(YOUR GITHUB ID</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>                 COURSE REPO, </span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"refs"</span>,</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"heads"</span>,</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"main"</span>,</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"mp04.qmd"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_perform</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -1479,34 +1502,34 @@ dbl (3): Y2000, Y2010, district
 <div id="callout-19" class="callout-19-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>always_false <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="cn">FALSE</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">"https://raw.githubusercontent.com"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path</span>(YOUR GITHUB ID</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>                 COURSE REPO, </span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"refs"</span>,</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"heads"</span>,</span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"main"</span>,</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"mp04.qmd"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_error</span>(<span class="at">is_error =</span> always_false) <span class="sc">|&gt;</span></span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">resp_is_error</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>always_false <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="cn">FALSE</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">"https://raw.githubusercontent.com"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path</span>(YOUR GITHUB ID</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>                 COURSE REPO, </span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"refs"</span>,</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"heads"</span>,</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"main"</span>,</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"mp04.qmd"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_error</span>(<span class="at">is_error =</span> always_false) <span class="sc">|&gt;</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">resp_is_error</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><em>Note</em>: Using an <em>anonymous</em> function, we can write this a bit more compactly as</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">"https://raw.githubusercontent.com"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path</span>(YOUR GITHUB ID</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                 COURSE REPO, </span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"refs"</span>,</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"heads"</span>,</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"main"</span>,</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"mp04.qmd"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_error</span>(<span class="at">is_error =</span> \(x) <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">resp_is_error</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">request</span>(<span class="st">"https://raw.githubusercontent.com"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_url_path</span>(YOUR GITHUB ID</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                 COURSE REPO, </span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"refs"</span>,</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"heads"</span>,</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"main"</span>,</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"mp04.qmd"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_error</span>(<span class="at">is_error =</span> \(x) <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">resp_is_error</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -1530,20 +1553,20 @@ dbl (3): Y2000, Y2010, district
 <div id="callout-20" class="callout-20-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glue)</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>mp_is_missing <span class="ot">&lt;-</span> <span class="cf">function</span>(N) {</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">request</span>(<span class="st">"https://raw.githubusercontent.com"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_url_path</span>(YOUR GITHUB ID</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>                     COURSE REPO, </span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"refs"</span>,</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"heads"</span>,</span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"main"</span>,</span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">glue</span>(<span class="st">"mp0{N}.qmd"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_error</span>(<span class="at">is_error =</span> \(x) <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">resp_is_error</span>()</span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glue)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>mp_is_missing <span class="ot">&lt;-</span> <span class="cf">function</span>(N) {</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">request</span>(<span class="st">"https://raw.githubusercontent.com"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_url_path</span>(YOUR GITHUB ID</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>                     COURSE REPO, </span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"refs"</span>,</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"heads"</span>,</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"main"</span>,</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">glue</span>(<span class="st">"mp0{N}.qmd"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_error</span>(<span class="at">is_error =</span> \(x) <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">resp_is_error</span>()</span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -1567,22 +1590,22 @@ dbl (3): Y2000, Y2010, district
 <div id="callout-21" class="callout-21-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glue)</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>mp_is_missing <span class="ot">&lt;-</span> <span class="cf">function</span>(N) {</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">request</span>(<span class="st">"https://raw.githubusercontent.com"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_url_path</span>(YOUR GITHUB ID</span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>                     COURSE REPO, </span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"refs"</span>,</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"heads"</span>,</span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"main"</span>,</span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">glue</span>(<span class="st">"mp0{N}.qmd"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_error</span>(<span class="at">is_error =</span> \(x) <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">resp_is_error</span>()</span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="fu">map_lgl</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, mp_is_missing)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr2)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(glue)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>mp_is_missing <span class="ot">&lt;-</span> <span class="cf">function</span>(N) {</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">request</span>(<span class="st">"https://raw.githubusercontent.com"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_url_path</span>(YOUR GITHUB ID</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>                     COURSE REPO, </span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"refs"</span>,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"heads"</span>,</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"main"</span>,</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">glue</span>(<span class="st">"mp0{N}.qmd"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_error</span>(<span class="at">is_error =</span> \(x) <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">req_perform</span>() <span class="sc">|&gt;</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">resp_is_error</span>()</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a><span class="fu">map_lgl</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, mp_is_missing)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -1593,40 +1616,40 @@ dbl (3): Y2000, Y2010, district
 <p>Documentation for <code>cranlogs</code> can be found <a href="https://github.com/r-hub/cranlogs.app">in its GitHub <code>README</code></a> with a very small example at <a href="https://cranlogs.r-pkg.org/#jsonapi">here</a>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
 <p>The <code>cranlogs</code> documentation give the following example of how the <code>curl</code> program can call the API from the command line:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-100    82  100    82    0     0    430      0 --:--:-- --:--:-- --:--:--   431
-[{"start":"2026-04-08","end":"2026-04-14","downloads":474335,"package":"ggplot2"}]</code></pre>
+100    82  100    82    0     0    297      0 --:--:-- --:--:-- --:--:--   297
+[{"start":"2026-10-15","end":"2026-10-21","downloads":482354,"package":"ggplot2"}]</code></pre>
 </div>
 </div>
 <p>To see what type of data this URL provides us, you can simply <a href="https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2">open it in your browser</a> and observe that it returns <code>JSON</code> data. We can emulate this action in <code>R</code> and parse the data into an <code>R</code> object:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jeroen.r-universe.dev/jsonlite">jsonlite</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jeroen.r-universe.dev/jsonlite">jsonlite</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html">fromJSON</a></span><span class="op">(</span><span class="st">"https://cranlogs.r-pkg.org/downloads/total/last-week/ggplot2"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       start        end downloads package
-1 2026-04-17 2026-04-23    515995 ggplot2</code></pre>
+1 2026-10-15 2026-10-21    482354 ggplot2</code></pre>
 </div>
 </div>
 <p>And if we want to get download information for other packages, we can simply modify the URL:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jeroen.r-universe.dev/jsonlite">jsonlite</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jeroen.r-universe.dev/jsonlite">jsonlite</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html">fromJSON</a></span><span class="op">(</span><span class="st">"https://cranlogs.r-pkg.org/downloads/total/last-week/dplyr"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       start        end downloads package
-1 2026-04-17 2026-04-23    488687   dplyr</code></pre>
+1 2026-10-15 2026-10-21    409821   dplyr</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jeroen.r-universe.dev/jsonlite">jsonlite</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jeroen.r-universe.dev/jsonlite">jsonlite</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html">fromJSON</a></span><span class="op">(</span><span class="st">"https://cranlogs.r-pkg.org/downloads/total/last-week/readr"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>       start        end downloads package
-1 2026-04-17 2026-04-23    230371   readr</code></pre>
+1 2026-10-15 2026-10-21    179590   readr</code></pre>
 </div>
 </div>
 <p>and so on. But this quickly becomes repetitive and we would prefer a <em>programmatic</em> interface. This is where advanced functionality from the <code>httr2</code> package comes in.</p>
@@ -1643,14 +1666,14 @@ dbl (3): Y2000, Y2010, district
 <section id="build-a-request" class="level3"><h3 class="anchored" data-anchor-id="build-a-request">Build a Request</h3>
 <p>We can build a request using the <code>request</code> function:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span><span class="va">request</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>function (base_url) 
 {
     new_request(base_url)
 }
-&lt;bytecode: 0x322534710&gt;
+&lt;bytecode: 0x313035528&gt;
 &lt;environment: namespace:httr2&gt;</code></pre>
 </div>
 </div>
@@ -1661,7 +1684,7 @@ dbl (3): Y2000, Y2010, district
 </blockquote>
 <p>so our base request is:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_req</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://cranlogs.r-pkg.org"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_req</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://cranlogs.r-pkg.org"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">my_req</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>&lt;httr2_request&gt;
@@ -1672,7 +1695,7 @@ Body: empty</code></pre>
 <p>We see here that this is a <code>GET</code> request by default, indicating we would like a response from the server, but we are not sending data to the server for processing.</p>
 <p>We then modify the <em>path</em> of the request to point to the specific <em>resource</em> or <em>endpoint</em> we want to query. For example, if we want to get the “top” <code>R</code> packages for the last day, we can run the following:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_req</span> <span class="op">&lt;-</span> <span class="va">my_req</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_req</span> <span class="op">&lt;-</span> <span class="va">my_req</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path_append</a></span><span class="op">(</span><span class="st">"top"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path_append</a></span><span class="op">(</span><span class="st">"last-day"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">my_req</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1685,14 +1708,14 @@ Body: empty</code></pre>
 </section><section id="execute-a-request-to-get-a-response" class="level3"><h3 class="anchored" data-anchor-id="execute-a-request-to-get-a-response">Execute a Request to get a Response</h3>
 <p>Now that we have built our request, we pass it to <code>req_perform</code><a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> to execute (perform) the request:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_resp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="va">my_req</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_resp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="va">my_req</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">my_resp</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>&lt;httr2_response&gt;
 GET https://cranlogs.r-pkg.org/top/last-day
 Status: 200 OK
 Content-Type: application/json
-Body: In memory (444 bytes)</code></pre>
+Body: In memory (446 bytes)</code></pre>
 </div>
 </div>
 <p>The result of performing this request is a <em>response</em> object. We see several things in this response:</p>
@@ -1704,14 +1727,14 @@ Body: In memory (444 bytes)</code></pre>
 </h3>
 <p>Since we know our response is in <code>JSON</code> format, we can use the <code>resp_body_json</code> to get the “body” (content) of the response and parse it as <code>json</code>:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">downloads_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_json</a></span><span class="op">(</span><span class="va">my_resp</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">downloads_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_json</a></span><span class="op">(</span><span class="va">my_resp</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">downloads_raw</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$start
-[1] "2026-04-23T00:00:00.000Z"
+[1] "2026-10-21T00:00:00.000Z"
 
 $end
-[1] "2026-04-23T00:00:00.000Z"
+[1] "2026-10-21T00:00:00.000Z"
 
 $downloads
 $downloads[[1]]
@@ -1719,7 +1742,7 @@ $downloads[[1]]$package
 [1] "rlang"
 
 $downloads[[1]]$downloads
-[1] "97741"
+[1] "88573"
 
 
 $downloads[[2]]
@@ -1727,7 +1750,7 @@ $downloads[[2]]$package
 [1] "ggplot2"
 
 $downloads[[2]]$downloads
-[1] "90359"
+[1] "75323"
 
 
 $downloads[[3]]
@@ -1735,7 +1758,7 @@ $downloads[[3]]$package
 [1] "cli"
 
 $downloads[[3]]$downloads
-[1] "82327"
+[1] "72985"
 
 
 $downloads[[4]]
@@ -1743,7 +1766,7 @@ $downloads[[4]]$package
 [1] "vctrs"
 
 $downloads[[4]]$downloads
-[1] "81454"
+[1] "71122"
 
 
 $downloads[[5]]
@@ -1751,7 +1774,7 @@ $downloads[[5]]$package
 [1] "lifecycle"
 
 $downloads[[5]]$downloads
-[1] "77239"
+[1] "68761"
 
 
 $downloads[[6]]
@@ -1759,7 +1782,7 @@ $downloads[[6]]$package
 [1] "dplyr"
 
 $downloads[[6]]$downloads
-[1] "77216"
+[1] "66883"
 
 
 $downloads[[7]]
@@ -1767,7 +1790,7 @@ $downloads[[7]]$package
 [1] "Rcpp"
 
 $downloads[[7]]$downloads
-[1] "73273"
+[1] "66447"
 
 
 $downloads[[8]]
@@ -1775,31 +1798,31 @@ $downloads[[8]]$package
 [1] "glue"
 
 $downloads[[8]]$downloads
-[1] "70192"
+[1] "62119"
 
 
 $downloads[[9]]
 $downloads[[9]]$package
-[1] "curl"
+[1] "tibble"
 
 $downloads[[9]]$downloads
-[1] "68495"</code></pre>
+[1] "60818"</code></pre>
 </div>
 </div>
 <p>This gives us the type of data we were looking for!</p>
 <p>Note that <code>httr2</code> is designed for “piped” work, so we can write the entire process as</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://cranlogs.r-pkg.org"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://cranlogs.r-pkg.org"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path_append</a></span><span class="op">(</span><span class="st">"top"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path_append</a></span><span class="op">(</span><span class="st">"last-day"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_json</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$start
-[1] "2026-04-23T00:00:00.000Z"
+[1] "2026-10-21T00:00:00.000Z"
 
 $end
-[1] "2026-04-23T00:00:00.000Z"
+[1] "2026-10-21T00:00:00.000Z"
 
 $downloads
 $downloads[[1]]
@@ -1807,7 +1830,7 @@ $downloads[[1]]$package
 [1] "rlang"
 
 $downloads[[1]]$downloads
-[1] "97741"
+[1] "88573"
 
 
 $downloads[[2]]
@@ -1815,7 +1838,7 @@ $downloads[[2]]$package
 [1] "ggplot2"
 
 $downloads[[2]]$downloads
-[1] "90359"
+[1] "75323"
 
 
 $downloads[[3]]
@@ -1823,7 +1846,7 @@ $downloads[[3]]$package
 [1] "cli"
 
 $downloads[[3]]$downloads
-[1] "82327"
+[1] "72985"
 
 
 $downloads[[4]]
@@ -1831,7 +1854,7 @@ $downloads[[4]]$package
 [1] "vctrs"
 
 $downloads[[4]]$downloads
-[1] "81454"
+[1] "71122"
 
 
 $downloads[[5]]
@@ -1839,7 +1862,7 @@ $downloads[[5]]$package
 [1] "lifecycle"
 
 $downloads[[5]]$downloads
-[1] "77239"
+[1] "68761"
 
 
 $downloads[[6]]
@@ -1847,7 +1870,7 @@ $downloads[[6]]$package
 [1] "dplyr"
 
 $downloads[[6]]$downloads
-[1] "77216"
+[1] "66883"
 
 
 $downloads[[7]]
@@ -1855,7 +1878,7 @@ $downloads[[7]]$package
 [1] "Rcpp"
 
 $downloads[[7]]$downloads
-[1] "73273"
+[1] "66447"
 
 
 $downloads[[8]]
@@ -1863,63 +1886,63 @@ $downloads[[8]]$package
 [1] "glue"
 
 $downloads[[8]]$downloads
-[1] "70192"
+[1] "62119"
 
 
 $downloads[[9]]
 $downloads[[9]]$package
-[1] "curl"
+[1] "tibble"
 
 $downloads[[9]]$downloads
-[1] "68495"</code></pre>
+[1] "60818"</code></pre>
 </div>
 </div>
 <p>This data is not super helpful for us, since it’s in a “list of lists” format. This is not uncommon with <code>json</code> responses and it is usually at this point that we have a bit of work to do in order to make the data useable. Thankfully, API data is typically well-structured, so this doesn’t wind up being too hard. I personally find this type of complex <code>R</code> output a bit hard to parse, so I instead print it as a “string” (the ‘raw text’ of the unparsed JSON) and use the <code><a href="https://jeroen.r-universe.dev/jsonlite/reference/prettify.html">prettify()</a></code> function from the <code>jsonlite</code> package to make it extra readable:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jeroen.r-universe.dev/jsonlite">jsonlite</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jeroen.r-universe.dev/jsonlite">jsonlite</a></span><span class="op">)</span></span>
 <span><span class="va">my_resp</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_string</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/prettify.html">prettify</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>{
-    "start": "2026-04-23T00:00:00.000Z",
-    "end": "2026-04-23T00:00:00.000Z",
+    "start": "2026-10-21T00:00:00.000Z",
+    "end": "2026-10-21T00:00:00.000Z",
     "downloads": [
         {
             "package": "rlang",
-            "downloads": "97741"
+            "downloads": "88573"
         },
         {
             "package": "ggplot2",
-            "downloads": "90359"
+            "downloads": "75323"
         },
         {
             "package": "cli",
-            "downloads": "82327"
+            "downloads": "72985"
         },
         {
             "package": "vctrs",
-            "downloads": "81454"
+            "downloads": "71122"
         },
         {
             "package": "lifecycle",
-            "downloads": "77239"
+            "downloads": "68761"
         },
         {
             "package": "dplyr",
-            "downloads": "77216"
+            "downloads": "66883"
         },
         {
             "package": "Rcpp",
-            "downloads": "73273"
+            "downloads": "66447"
         },
         {
             "package": "glue",
-            "downloads": "70192"
+            "downloads": "62119"
         },
         {
-            "package": "curl",
-            "downloads": "68495"
+            "package": "tibble",
+            "downloads": "60818"
         }
     ]
 }
@@ -1934,7 +1957,7 @@ $downloads[[9]]$downloads
 </ol>
 <p>To do these steps, we will need to use functionality from the <code>purrr</code> package, which we will discuss in more detail later in the course. For now, it suffices to run:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/">purrr</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/">purrr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/">tibble</a></span><span class="op">)</span></span>
 <span><span class="va">downloads_df</span> <span class="op">&lt;-</span> <span class="va">downloads_raw</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"downloads"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1949,20 +1972,20 @@ $downloads[[9]]$downloads
 </ol>
 <p>The result is a very nice little data frame:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">downloads_df</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">downloads_df</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 9 × 2
   package   downloads
   &lt;chr&gt;     &lt;chr&gt;    
-1 rlang     97741    
-2 ggplot2   90359    
-3 cli       82327    
-4 vctrs     81454    
-5 lifecycle 77239    
-6 dplyr     77216    
-7 Rcpp      73273    
-8 glue      70192    
-9 curl      68495    </code></pre>
+1 rlang     88573    
+2 ggplot2   75323    
+3 cli       72985    
+4 vctrs     71122    
+5 lifecycle 68761    
+6 dplyr     66883    
+7 Rcpp      66447    
+8 glue      62119    
+9 tibble    60818    </code></pre>
 </div>
 </div>
 </section></section><section id="exercise03" class="level2"><h2 class="anchored" data-anchor-id="exercise03">Exercises #03</h2>
@@ -1987,7 +2010,7 @@ $downloads[[9]]$downloads
 <div id="callout-22" class="callout-22-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://cranlogs.r-pkg.org"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path_append</a></span><span class="op">(</span><span class="st">"top"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -2002,16 +2025,16 @@ $downloads[[9]]$downloads
 <pre><code># A tibble: 100 × 2
    package   downloads
    &lt;chr&gt;     &lt;chr&gt;    
- 1 rlang     97741    
- 2 ggplot2   90359    
- 3 cli       82327    
- 4 vctrs     81454    
- 5 lifecycle 77239    
- 6 dplyr     77216    
- 7 Rcpp      73273    
- 8 glue      70192    
- 9 curl      68495    
-10 magrittr  66048    
+ 1 rlang     88573    
+ 2 ggplot2   75323    
+ 3 cli       72985    
+ 4 vctrs     71122    
+ 5 lifecycle 68761    
+ 6 dplyr     66883    
+ 7 Rcpp      66447    
+ 8 glue      62119    
+ 9 tibble    60818    
+10 withr     60642    
 # ℹ 90 more rows</code></pre>
 </div>
 </div>
@@ -2037,7 +2060,7 @@ $downloads[[9]]$downloads
 <div id="callout-23" class="callout-23-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://cranlogs.r-pkg.org"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path_append</a></span><span class="op">(</span><span class="st">"downloads"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -2054,16 +2077,16 @@ $downloads[[9]]$downloads
 <pre><code># A tibble: 30 × 2
    day        downloads
    &lt;chr&gt;          &lt;int&gt;
- 1 2026-03-25     84324
- 2 2026-03-26     82543
- 3 2026-03-27     63567
- 4 2026-03-28     41680
- 5 2026-03-29     40636
- 6 2026-03-30     74240
- 7 2026-03-31     79241
- 8 2026-04-01     76140
- 9 2026-04-02     73048
-10 2026-04-03     56827
+ 1 2026-09-22     81686
+ 2 2026-09-23     83675
+ 3 2026-09-24     81722
+ 4 2026-09-25     70675
+ 5 2026-09-26     46814
+ 6 2026-09-27     45892
+ 7 2026-09-28     78655
+ 8 2026-09-29     83211
+ 9 2026-09-30     78497
+10 2026-10-01     76167
 # ℹ 20 more rows</code></pre>
 </div>
 </div>
@@ -2089,7 +2112,7 @@ $downloads[[9]]$downloads
 <div id="callout-24" class="callout-24-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="va">get_downloads</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">pkg</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://cranlogs.r-pkg.org"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -2113,16 +2136,16 @@ $downloads[[9]]$downloads
 <pre><code># A tibble: 30 × 3
    day        downloads package
    &lt;date&gt;         &lt;int&gt; &lt;chr&gt;  
- 1 2026-03-25     84324 ggplot2
- 2 2026-03-26     82543 ggplot2
- 3 2026-03-27     63567 ggplot2
- 4 2026-03-28     41680 ggplot2
- 5 2026-03-29     40636 ggplot2
- 6 2026-03-30     74240 ggplot2
- 7 2026-03-31     79241 ggplot2
- 8 2026-04-01     76140 ggplot2
- 9 2026-04-02     73048 ggplot2
-10 2026-04-03     56827 ggplot2
+ 1 2026-09-22     81686 ggplot2
+ 2 2026-09-23     83675 ggplot2
+ 3 2026-09-24     81722 ggplot2
+ 4 2026-09-25     70675 ggplot2
+ 5 2026-09-26     46814 ggplot2
+ 6 2026-09-27     45892 ggplot2
+ 7 2026-09-28     78655 ggplot2
+ 8 2026-09-29     83211 ggplot2
+ 9 2026-09-30     78497 ggplot2
+10 2026-10-01     76167 ggplot2
 # ℹ 20 more rows</code></pre>
 </div>
 </div>
@@ -2142,7 +2165,7 @@ $downloads[[9]]$downloads
 <code>tidyr</code> for the year and combine your results into a single data frame. Then plot the download trends for each package using <code>ggplot2</code>.</li>
 </ul>
 <p>You can do this by calling your function in a loop, but you should also try to apply the <code>map() |&gt; list_rbind()</code> idiom here as well.</p>
-<p>To get values for a specific window, replace <code>"last-month"</code> with a date range formatted as <code>"YYYY-MM-DD::YYYY-MM-DD"</code>. For this problem, you can use <code>strftime(Sys.Date(), "%Y-01-01:%Y-%m-%d")</code> which evaluates to the string “2026-01-01:2026-04-24”, <em>i.e.</em>, from the start of the year to today or <code>paste(Sys.Date() - 365, Sys.Date(), sep=":")</code> to get “2025-04-24:2026-04-24” for the last 365 days.</p>
+<p>To get values for a specific window, replace <code>"last-month"</code> with a date range formatted as <code>"YYYY-MM-DD::YYYY-MM-DD"</code>. For this problem, you can use <code>strftime(Sys.Date(), "%Y-01-01:%Y-%m-%d")</code> which evaluates to the string “2026-01-01:2026-10-22”, <em>i.e.</em>, from the start of the year to today or <code>paste(Sys.Date() - 365, Sys.Date(), sep=":")</code> to get “2025-10-22:2026-10-22” for the last 365 days.</p>
 </li>
 </ol>
 <div class="callout callout-style-default callout-note callout-titled" title="Solution">
@@ -2158,7 +2181,7 @@ $downloads[[9]]$downloads
 <div id="callout-25" class="callout-25-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb55"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb56"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">PACKAGES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, <span class="st">"dplyr"</span>, <span class="st">"httr2"</span>, <span class="st">"tibble"</span>, <span class="st">"purrr"</span>, <span class="st">"tidyr"</span><span class="op">)</span></span>
@@ -2203,7 +2226,7 @@ $downloads[[9]]$downloads
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>labels<span class="op">=</span><span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/label_number.html">label_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
-<figure class="figure"><p><img src="lab07_files/figure-html/unnamed-chunk-49-1.png" class="img-fluid figure-img" width="672"></p>
+<figure class="figure"><p><img src="lab07_files/figure-html/unnamed-chunk-48-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -2250,7 +2273,45 @@ W10=
 </li>
 <li id="fn4"><p>In this case, there is a <code>cranlogs</code> package for interacting with this API. This type of package is commonly called a “wrapper” because it shields the user from the details of the API and exposes a more idiomatic (and more useful) interface. In general, when you can find an <code>R</code> package that wraps an API, it is a good idea to use it. For certain very complex APIs, <em>e.g.</em>, the <a href="https://www.bloomberg.com/professional/support/api-library/">API that powers Bloomberg</a> Financial Information Services, use of the associated <a href="https://cran.r-project.org/web/packages/Rblpapi/vignettes/rblpapi-intro.html"><code>R</code> package</a> is almost mandatory because the underlying API is so complicated. For this in-class exercise, we will use the “raw” API as practice since you can’t always assume a nice <code>R</code> package will exist.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn5"><p>We will only use the basic <code>req_perform</code> for now, but <code>httr2</code> provides options for parallel execution, delayed execution, <em>etc.</em>.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol></section></div></main><!-- /main --><script type="ojs-module-contents">
+</ol></section></div></main><!-- /main --><script type="text/javascript" id="exit-archive-script">
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.location.href.includes("archive")) {
+      // If on an 'archive' page, update archive warning bar exit
+      // to make sure it points to the associated 'current' page
+      document.getElementById('exit-archive-link').addEventListener('click', function() {
+        let currentUrl = window.location.href;
+        let newUrl = currentUrl.replace(/\/archive\/AY-\d{4}-[^\/]+\//, '/');
+        if (currentUrl !== newUrl) {
+          window.location.href = newUrl;
+        }
+        console.log("Archive URL detected: link redirect inserted.");
+      })
+    } else {
+        // Delete quarto announcement bar if not in archive
+        const exitLink = document.getElementById("exit-archive-link");
+        if (exitLink) {
+        // Find the "great-grand-div" surrounding the link, i.e., the native Quarto
+        // announcement container div
+        // Quarto's announcement bar uses the id '.quarto-announcement' for
+        // the outermost div
+        const announcementBar = exitLink.closest('#quarto-announcement');
+        if (announcementBar) {
+          // Delete the entire announcement bar element from the DOM and log
+          announcementBar.remove();
+          console.log("Current URL detected: Quarto announcement bar removed.");
+        } else {
+          // Fallback: walk up exactly two parent levels (a -> parentDiv -> grandDiv)
+          // and try to delete there
+          const grandParent = exitLink.parentElement?.pparentElement;
+          if (grandParent) {
+            grandParent.remove();
+            console.log("Current URL detected: Grandparent element removed manually.");
+          }
+        }
+      }
+    }
+});
+</script><script type="ojs-module-contents">
 eyJjb250ZW50cyI6W119
 </script><script type="module">
 if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }

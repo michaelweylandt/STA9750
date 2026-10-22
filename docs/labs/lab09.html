@@ -2,17 +2,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.37">
+<meta name="generator" content="quarto-1.10.18">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>STA 9750 Lecture #9 In-Class Activity: Reading and Manipulating HTML in R – STA 9750</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
 */
-code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -71,12 +74,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-7f8f88aac4f3542376d5c11b86a4c14d.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-f7b58eee2202a58c8e0dc5967ec053ef.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
-<script src="../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
-<link href="../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
+<link href="../site_libs/bootstrap/bootstrap-f755b185985a6dd5cfcae12724477981.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
@@ -102,8 +103,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script type="module" src="../site_libs/quarto-ojs/quarto-ojs-runtime.js"></script><link href="../site_libs/quarto-ojs/quarto-ojs.css" rel="stylesheet">
-<link href="../site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+}</script><link href="../site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
 <script src="../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><script src="../site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><link href="../site_libs/leaflet-1.3.1/leaflet.css" rel="stylesheet">
 <script src="../site_libs/leaflet-1.3.1/leaflet.js"></script><link href="../site_libs/leafletfix-1.0.0/leafletfix.css" rel="stylesheet">
 <script src="../site_libs/proj4-2.6.2/proj4.min.js"></script><script src="../site_libs/Proj4Leaflet-1.0.1/proj4leaflet.js"></script><link href="../site_libs/rstudio_leaflet-1.3.1/rstudio_leaflet.css" rel="stylesheet">
@@ -157,6 +157,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-prior-offerings">
 <li>
+    <a class="dropdown-item" href=".././archive/AY-2025-SPRING/">
+ <span class="dropdown-text">Spring 2026</span></a>
+  </li>  
+        <li>
     <a class="dropdown-item" href=".././archive/AY-2025-FALL/">
  <span class="dropdown-text">Fall 2025</span></a>
   </li>  
@@ -175,7 +179,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
             <div class="quarto-navbar-tools">
 </div>
       </div> <!-- /container-fluid -->
-    </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+    </nav><div id="quarto-announcement" data-announcement-id="150402652995a384475e7e813773d159" class="alert alert-danger hidden">
+<i class="bi bi-exclamation-triangle-fill quarto-announcement-icon"></i><div class="quarto-announcement-content">
+<p><strong>Warning</strong> - This page is for a prior offering of STA 9750. For the latest offering, click <a href="#" id="exit-archive-link">here</a>.</p>
+</div>
+</div>
+</header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">On this page</h2>
    
@@ -196,14 +205,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<main class="content column-page-right" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
 <h1 class="title">STA 9750 Lecture #9 In-Class Activity: Reading and Manipulating HTML in <code>R</code>
 </h1>
 </div>
 
 
 
-<div class="quarto-title-meta">
+<div class="quarto-title-meta column-page-right">
 
     
   
@@ -212,7 +221,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   
 
 
-</header><p><strong>Class #11: Thursday April 23, 2026 (Lecture #09: Introduction to Web Technologies &amp; Web Scraping)</strong></p>
+</header><p><strong>Class #11: Tuesday November 17, 2026 and Thursday November 12, 2026</strong></p>
+<p><strong>Lecture #09: Introduction to Web Technologies &amp; Web Scraping</strong></p>
 <section id="slides" class="level1"><h1><a href="../slides/slides11.html">Slides</a></h1>
 </section><section id="review" class="level1"><h1>Review Practice</h1>
 <p>The <a href="https://opentdb.com/">Open Trivia Database</a> provides a simple API for trivia questions. You are going to use this API to create a trivia game for you and some friends.</p>
@@ -261,7 +271,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 GET https://opentdb.com/api.php?amount=50&amp;category=18&amp;type=multiple
 Status: 200 OK
 Content-Type: application/json
-Body: In memory (12457 bytes)</code></pre>
+Body: In memory (12578 bytes)</code></pre>
 </div>
 </div>
 </div>
@@ -298,19 +308,16 @@ Body: In memory (12457 bytes)</code></pre>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_json</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Waiting 2s for retry backoff ■■■■■■■■■■■■■■■                 </code></pre>
+<pre><code>Waiting 9s for retry backoff ■■■■                            </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Waiting 2s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■   </code></pre>
+<pre><code>Waiting 9s for retry backoff ■■■■■■■■■■■■■                   </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Waiting 4s for retry backoff ■■■■■■■■■■                      </code></pre>
+<pre><code>Waiting 9s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■         </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Waiting 4s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■    </code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Waiting 4s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </code></pre>
+<pre><code>Waiting 9s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>List of 2
@@ -318,34 +325,34 @@ Body: In memory (12457 bytes)</code></pre>
  $ results      :List of 3
   ..$ :List of 6
   .. ..$ type             : chr "multiple"
+  .. ..$ difficulty       : chr "hard"
+  .. ..$ category         : chr "Science: Computers"
+  .. ..$ question         : chr "Which of the following physical typologies are used with Ethernet Networks?"
+  .. ..$ correct_answer   : chr "Star"
+  .. ..$ incorrect_answers:List of 3
+  .. .. ..$ : chr "Ring"
+  .. .. ..$ : chr "Mesh"
+  .. .. ..$ : chr "Hex"
+  ..$ :List of 6
+  .. ..$ type             : chr "multiple"
   .. ..$ difficulty       : chr "medium"
   .. ..$ category         : chr "Science: Computers"
-  .. ..$ question         : chr "The teapot often seen in many 3D modeling applications is called what?"
-  .. ..$ correct_answer   : chr "Utah Teapot"
+  .. ..$ question         : chr ".rs is the top-level domain for what country?"
+  .. ..$ correct_answer   : chr "Serbia"
   .. ..$ incorrect_answers:List of 3
-  .. .. ..$ : chr "Pixar Teapot"
-  .. .. ..$ : chr "3D Teapot"
-  .. .. ..$ : chr "Tennessee Teapot"
+  .. .. ..$ : chr "Romania"
+  .. .. ..$ : chr "Russia"
+  .. .. ..$ : chr "Rwanda"
   ..$ :List of 6
   .. ..$ type             : chr "multiple"
   .. ..$ difficulty       : chr "hard"
   .. ..$ category         : chr "Science: Computers"
-  .. ..$ question         : chr "Which data structure does FILO apply to?"
-  .. ..$ correct_answer   : chr "Stack"
+  .. ..$ question         : chr "Which of these is not a key value of Agile software development?"
+  .. ..$ correct_answer   : chr "Comprehensive documentation"
   .. ..$ incorrect_answers:List of 3
-  .. .. ..$ : chr "Queue"
-  .. .. ..$ : chr "Heap"
-  .. .. ..$ : chr "Tree"
-  ..$ :List of 6
-  .. ..$ type             : chr "multiple"
-  .. ..$ difficulty       : chr "hard"
-  .. ..$ category         : chr "Science: Computers"
-  .. ..$ question         : chr "Who is the original author of the realtime physics engine called PhysX?"
-  .. ..$ correct_answer   : chr "NovodeX"
-  .. ..$ incorrect_answers:List of 3
-  .. .. ..$ : chr "Ageia"
-  .. .. ..$ : chr "Nvidia"
-  .. .. ..$ : chr "AMD"</code></pre>
+  .. .. ..$ : chr "Individuals and interactions"
+  .. .. ..$ : chr "Customer collaboration"
+  .. .. ..$ : chr "Responding to change"</code></pre>
 </div>
 </div>
 <p>We see here that the response comes in a list of two components: <code>response_code</code> and <code>results</code>, with the content we want being in the <code>results</code>. The 3 <code>results</code> look pretty straightforward, except for the <code>incorrect_answers</code> list, which we will need to keep an eye on.</p>
@@ -368,7 +375,7 @@ Body: In memory (12457 bytes)</code></pre>
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"api.php"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query</a></span><span class="op">(</span>amount   <span class="op">=</span> <span class="fl">3</span>, </span>
 <span>                  category <span class="op">=</span> <span class="fl">18</span>, </span>
@@ -382,33 +389,30 @@ Body: In memory (12457 bytes)</code></pre>
 <span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">as_tibble</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/list_c.html">list_rbind</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Waiting 3s for retry backoff ■■■■■■■■■■■■■                   </code></pre>
+<pre><code>Waiting 8s for retry backoff ■■■■■                           </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Waiting 3s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  </code></pre>
+<pre><code>Waiting 8s for retry backoff ■■■■■■■■■■■■■■■                 </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Waiting 6s for retry backoff ■■■■■■                          </code></pre>
+<pre><code>Waiting 8s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■      </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Waiting 6s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■         </code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Waiting 6s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </code></pre>
+<pre><code>Waiting 8s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 9 × 6
   type     difficulty category         question correct_answer incorrect_answers
   &lt;chr&gt;    &lt;chr&gt;      &lt;chr&gt;            &lt;chr&gt;    &lt;chr&gt;          &lt;list&gt;           
-1 multiple easy       Science: Comput… "The nu… Hexidecimal    &lt;chr [1]&gt;        
-2 multiple easy       Science: Comput… "The nu… Hexidecimal    &lt;chr [1]&gt;        
-3 multiple easy       Science: Comput… "The nu… Hexidecimal    &lt;chr [1]&gt;        
-4 multiple hard       Science: Comput… "What p… 80             &lt;chr [1]&gt;        
-5 multiple hard       Science: Comput… "What p… 80             &lt;chr [1]&gt;        
-6 multiple hard       Science: Comput… "What p… 80             &lt;chr [1]&gt;        
-7 multiple easy       Science: Comput… "What d… Universal Ser… &lt;chr [1]&gt;        
-8 multiple easy       Science: Comput… "What d… Universal Ser… &lt;chr [1]&gt;        
-9 multiple easy       Science: Comput… "What d… Universal Ser… &lt;chr [1]&gt;        </code></pre>
+1 multiple easy       Science: Comput… What is… Nougat         &lt;chr [1]&gt;        
+2 multiple easy       Science: Comput… What is… Nougat         &lt;chr [1]&gt;        
+3 multiple easy       Science: Comput… What is… Nougat         &lt;chr [1]&gt;        
+4 multiple easy       Science: Comput… What do… Captures what… &lt;chr [1]&gt;        
+5 multiple easy       Science: Comput… What do… Captures what… &lt;chr [1]&gt;        
+6 multiple easy       Science: Comput… What do… Captures what… &lt;chr [1]&gt;        
+7 multiple easy       Science: Comput… What is… Application    &lt;chr [1]&gt;        
+8 multiple easy       Science: Comput… What is… Application    &lt;chr [1]&gt;        
+9 multiple easy       Science: Comput… What is… Application    &lt;chr [1]&gt;        </code></pre>
 </div>
 </div>
 <p>Everything looks pretty good here, with two notes:</p>
@@ -439,7 +443,7 @@ Body: In memory (12457 bytes)</code></pre>
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://opentdb.com"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"api.php"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_query</a></span><span class="op">(</span>amount   <span class="op">=</span> <span class="fl">3</span>, </span>
 <span>                  category <span class="op">=</span> <span class="fl">18</span>, </span>
@@ -461,25 +465,22 @@ Body: In memory (12457 bytes)</code></pre>
 <span>           <span class="op">-</span><span class="va">category</span>, </span>
 <span>           <span class="op">-</span><span class="va">difficulty</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Waiting 3s for retry backoff ■■■■■■■■■■■■■                   </code></pre>
+<pre><code>Waiting 6s for throttling delay ■■■■■■■■■                       </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Waiting 3s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  </code></pre>
+<pre><code>Waiting 6s for throttling delay ■■■■■■■■■■■■■■■■■■■■■■■■        </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Waiting 4s for retry backoff ■■■■■■■■■■                      </code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Waiting 4s for retry backoff ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■  </code></pre>
+<pre><code>Waiting 6s for throttling delay ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ </code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 5
 # Groups:   question [3]
   question              correct_answer `incorrect-1` `incorrect-2` `incorrect-3`
   &lt;chr&gt;                 &lt;chr&gt;          &lt;chr&gt;         &lt;chr&gt;         &lt;chr&gt;        
-1 How many Hz does the… 50             59            60            25           
-2 Approximately how ma… 200            100           500           1000         
-3 On a standard Americ… Exclamation M… Dollar Sign   Percent Sign  Asterisk     </code></pre>
+1 Which of these is no… Comprehensive… Individuals … Customer col… Responding t…
+2 What five letter wor… Think          Click         Logic         Pixel        
+3 What was the name of… IMKO-1         Pravetz 82    Pravetz 8D    IZOT 1030    </code></pre>
 </div>
 </div>
 <p>You can use this to play a bit of trivia amongst your group. Set <code>amount</code> higher for more questions.</p>
@@ -619,7 +620,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 <div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://michael-weylandt.com/STA9750/labs/lab09.html"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">"#tbl-baruch-stats"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_table.html">html_table</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -636,7 +637,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 <p>In this exercise, we’re going to take our Baruch map from <a href="./lab01.html">Lab #01</a> and extend it to pull <em>all</em> CUNY campuses. This exercise is intended to help you practice scraping data from Wikipedia, which is a good example of a relatively plain HTML site that has a bit of extra Javascript that can make it a bit tricky to find the element(s) you want.</p>
 <p>The following code is a cleaned-up version of the map creation activity from Lab #01. Review it before beginning this activity:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rstudio.github.io/leaflet/">leaflet</a></span><span class="op">)</span></span>
 <span></span>
@@ -681,8 +682,10 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 <div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">get_cuny_coordinates</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">url</span><span class="op">)</span><span class="op">{</span></span>
-<span>    <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="va">url</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">get_cuny_coordinates</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">url</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="va">url</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>        <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_body_raw.html">resp_body_html</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">".geo"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>        <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_text.html">html_text</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>        <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_split.html">str_split_1</a></span><span class="op">(</span><span class="st">";"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -735,7 +738,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 <div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">"tbody"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"tr td:nth-child(2)"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># Second column of each row</span></span>
 <span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"a"</span><span class="op">)</span> </span>
@@ -745,7 +748,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </div>
 <p>If you are comfortable with the <code>purrr</code> family of functions, this can be written a bit more compactly as:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://xml2.r-lib.org/reference/read_xml.html">read_html</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org/wiki/List_of_City_University_of_New_York_institutions"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_element</a></span><span class="op">(</span><span class="st">"tbody"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"tr td:nth-child(2)"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rvest.tidyverse.org/reference/html_element.html">html_elements</a></span><span class="op">(</span><span class="st">"a"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -758,8 +761,8 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </div>
 <ol start="4" type="1">
 <li>
-<p>Modify the links extracted from the Wikipedia table to form full URLs.</p>
-<p>Proper URL handling is a bit subtle - it’s a common avenue for security holes - but a simple <code><a href="https://rdrr.io/r/base/paste.html">paste0()</a></code> will suffice here.</p>
+<p>Apply your HTML parsing function from Step 1 to each CUNY page using the <code>map</code> function or the <code><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise()</a></code> grouping structure:</p>
+<p><em>Hint</em>: You may need to use <code>unnest</code> to convert a list column into something more usable.</p>
 </li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
@@ -775,16 +778,37 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 <div id="callout-9" class="callout-9-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>link <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"https://en.wikipedia.org"</span>, <span class="va">link</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>info <span class="op">=</span> <span class="fu">get_cuny_coordinates</span><span class="op">(</span><span class="va">link</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">## Or with `map`</span></span>
+<span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>info <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">link</span>, <span class="va">get_cuny_coordinates</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Then unnest the info column</span></span>
+<span></span>
+<span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html">unnest</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">CUNYs</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 26 × 4
+   name                                               link    latitude longitude
+   &lt;chr&gt;                                              &lt;chr&gt;      &lt;dbl&gt;     &lt;dbl&gt;
+ 1 Baruch College                                     https:…     40.7     -74.0
+ 2 The City College                                   https:…     40.8     -74.0
+ 3 Graduate Center                                    https:…     40.7     -74.0
+ 4 Graduate School of Public Health and Health Policy https:…     40.8     -73.9
+ 5 Guttman Community College                          https:…     40.8     -74.0
+ 6 Hunter College                                     https:…     40.8     -74.0
+ 7 John Jay College of Criminal Justice               https:…     40.8     -74.0
+ 8 Macaulay Honors College                            https:…     40.8     -74.0
+ 9 Borough of Manhattan Community College             https:…     40.7     -74.0
+10 Newmark Graduate School of Journalism              https:…     40.8     -74.0
+# ℹ 16 more rows</code></pre>
+</div>
 </div>
 </div>
 </div>
 </div>
 <ol start="5" type="1">
-<li>
-<p>Apply your HTML parsing function from Step 1 to each CUNY page using the <code>map</code> function or the <code><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise()</a></code> grouping structure:</p>
-<p><em>Hint</em>: You may need to use <code>unnest</code> to convert a list column into something more usable.</p>
-</li>
+<li>Use your results to build a CUNY-wide map</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
@@ -799,52 +823,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 <div id="callout-10" class="callout-10-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>info <span class="op">=</span> <span class="fu">get_cuny_coordinates</span><span class="op">(</span><span class="va">link</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">## Or with `map`</span></span>
-<span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>info <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">link</span>, <span class="va">get_cuny_coordinates</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## Then unnest the info column</span></span>
-<span></span>
-<span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html">unnest</a></span><span class="op">(</span><span class="va">info</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">CUNYs</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 26 × 4
-   name                                             link      latitude longitude
-   &lt;chr&gt;                                            &lt;chr&gt;        &lt;dbl&gt;     &lt;dbl&gt;
- 1 Baruch College                                   https://…     40.7     -74.0
- 2 The City College                                 https://…     40.8     -74.0
- 3 Graduate Center                                  https://…     40.7     -74.0
- 4 Graduate School of Public Health &amp; Health Policy https://…     40.8     -73.9
- 5 Guttman Community College                        https://…     40.8     -74.0
- 6 Hunter College                                   https://…     40.8     -74.0
- 7 John Jay College of Criminal Justice             https://…     40.8     -74.0
- 8 Macaulay Honors College                          https://…     40.8     -74.0
- 9 Manhattan Community College                      https://…     40.7     -74.0
-10 Newmark Graduate School of Journalism            https://…     40.8     -74.0
-# ℹ 16 more rows</code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<ol start="6" type="1">
-<li>Use your results to build a CUNY-wide map</li>
-</ol>
-<div class="callout callout-style-default callout-tip callout-titled" title="Solution">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>Solution
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-11" class="callout-11-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">MAP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/leaflet.html">leaflet</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">MAP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/leaflet.html">leaflet</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-layers.html">addTiles</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-layers.html">addMarkers</a></span><span class="op">(</span>lng <span class="op">=</span> <span class="va">CUNYs</span><span class="op">$</span><span class="va">longitude</span>, </span>
 <span>               lat<span class="op">=</span><span class="va">CUNYs</span><span class="op">$</span><span class="va">latitude</span>, </span>
@@ -852,13 +831,13 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 <span></span>
 <span><span class="va">MAP</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
-<div class="leaflet html-widget html-fill-item" id="htmlwidget-a1ab2953c2acb569f361" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-a1ab2953c2acb569f361">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org/copyright/\">OpenStreetMap<\/a>,  <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL<\/a>"}]},{"method":"addMarkers","args":[[40.740159,40.8194,40.7485,40.79972,40.7529,40.768538,40.7703,40.774,40.71768,40.75523,40.754894,40.8194,40.748386,40.85806,40.8175,40.8725,40.63111,40.6958,40.57806,40.6663083,40.6,40.74361,40.737,40.75556,40.7477,40.702],[-73.98338,-73.95,-73.9836,-73.93889,-73.9841,-73.964741,-73.9883,-73.9802,-74.01188,-73.988827,-73.98185599999999,-73.95,-73.99008499999999,-73.91249999999999,-73.92722000000001,-73.89389,-73.9525,-73.988,-73.93306,-73.95664720000001,-74.15000000000001,-73.93444,-73.81699999999999,-73.75667,-73.94369,-73.795],null,null,null,{"interactive":true,"draggable":false,"keyboard":true,"title":"","alt":"","zIndexOffset":0,"opacity":1,"riseOnHover":false,"riseOffset":250},["Baruch College","The City College","Graduate Center","Graduate School of Public Health & Health Policy","Guttman Community College","Hunter College","John Jay College of Criminal Justice","Macaulay Honors College","Manhattan Community College","Newmark Graduate School of Journalism","School of Labor and Urban Studies","School of Medicine","School of Professional Studies","Bronx Community College","Hostos Community College","Lehman College","Brooklyn College","College of Technology","Kingsborough Community College","Medgar Evers College","College of Staten Island","LaGuardia Community College","Queens College","Queensborough Community College","School of Law","York College"],null,null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[40.57806,40.8725],"lng":[-74.15000000000001,-73.75667]}},"evals":[],"jsHooks":[]}</script>
+<div class="leaflet html-widget html-fill-item" id="htmlwidget-300a15935906a03bb079" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-300a15935906a03bb079">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org/copyright/\">OpenStreetMap<\/a>,  <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL<\/a>"}]},{"method":"addMarkers","args":[[40.740159,40.8194,40.7485,40.79972,40.7529,40.768538,40.7703,40.774,40.71768,40.75523,40.754894,40.820833,40.748386,40.85806,40.8175,40.8725,40.63111,40.6958,40.57806,40.6663083,40.6,40.74361,40.737,40.75556,40.7477,40.702],[-73.98338,-73.95,-73.9836,-73.93889,-73.9841,-73.964741,-73.9883,-73.9802,-74.01188,-73.988827,-73.98185599999999,-73.95,-73.99008499999999,-73.91249999999999,-73.92722000000001,-73.89389,-73.9525,-73.988,-73.93306,-73.95664720000001,-74.15000000000001,-73.93444,-73.81699999999999,-73.75667,-73.94369,-73.795],null,null,null,{"interactive":true,"draggable":false,"keyboard":true,"title":"","alt":"","zIndexOffset":0,"opacity":1,"riseOnHover":false,"riseOffset":250},["Baruch College","The City College","Graduate Center","Graduate School of Public Health and Health Policy","Guttman Community College","Hunter College","John Jay College of Criminal Justice","Macaulay Honors College","Borough of Manhattan Community College","Newmark Graduate School of Journalism","School of Labor and Urban Studies","School of Medicine","School of Professional Studies","Bronx Community College","Hostos Community College","Lehman College","Brooklyn College","College of Technology","Kingsborough Community College","Medgar Evers College","College of Staten Island","LaGuardia Community College","Queens College","Queensborough Community College","School of Law","York College"],null,null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[40.57806,40.8725],"lng":[-74.15000000000001,-73.75667]}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <p>If we want to add links to each page, we can do that as well, but we have to handle rendering the appropriate HTML element properly. Here we’ll write and then process some markdown</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>md <span class="op">=</span> <span class="fu">glue</span><span class="fu">::</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"[{name}]({link})"</span><span class="op">)</span>, </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">CUNYs</span> <span class="op">&lt;-</span> <span class="va">CUNYs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>md <span class="op">=</span> <span class="fu">glue</span><span class="fu">::</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"[{name}]({link})"</span><span class="op">)</span>, </span>
 <span>                         html <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map_chr</a></span><span class="op">(</span><span class="va">md</span>, <span class="fu">commonmark</span><span class="fu">::</span><span class="va"><a href="https://docs.ropensci.org/commonmark/reference/commonmark.html">markdown_html</a></span><span class="op">)</span>, </span>
 <span>                         html2 <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="va">html</span>, <span class="fu">htmltools</span><span class="fu">::</span><span class="va"><a href="https://rstudio.github.io/htmltools/reference/HTML.html">HTML</a></span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>   <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest.html">unnest</a></span><span class="op">(</span><span class="va">html2</span><span class="op">)</span></span>
@@ -868,8 +847,8 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 <span>        <span class="fu"><a href="https://rstudio.github.io/leaflet/reference/map-layers.html">addMarkers</a></span><span class="op">(</span>lng<span class="op">=</span><span class="va">longitude</span>, </span>
 <span>                   lat<span class="op">=</span><span class="va">latitude</span>, popup<span class="op">=</span><span class="va">html2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
-<div class="leaflet html-widget html-fill-item" id="htmlwidget-6294201d0fd30296c1b8" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-6294201d0fd30296c1b8">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org/copyright/\">OpenStreetMap<\/a>,  <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL<\/a>"}]},{"method":"addMarkers","args":[[40.740159,40.8194,40.7485,40.79972,40.7529,40.768538,40.7703,40.774,40.71768,40.75523,40.754894,40.8194,40.748386,40.85806,40.8175,40.8725,40.63111,40.6958,40.57806,40.6663083,40.6,40.74361,40.737,40.75556,40.7477,40.702],[-73.98338,-73.95,-73.9836,-73.93889,-73.9841,-73.964741,-73.9883,-73.9802,-74.01188,-73.988827,-73.98185599999999,-73.95,-73.99008499999999,-73.91249999999999,-73.92722000000001,-73.89389,-73.9525,-73.988,-73.93306,-73.95664720000001,-74.15000000000001,-73.93444,-73.81699999999999,-73.75667,-73.94369,-73.795],null,null,null,{"interactive":true,"draggable":false,"keyboard":true,"title":"","alt":"","zIndexOffset":0,"opacity":1,"riseOnHover":false,"riseOffset":250},["<p><a href=\"https://en.wikipedia.org/wiki/Baruch_College\">Baruch College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/City_College_of_New_York\">The City College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/CUNY_Graduate_Center\">Graduate Center<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/CUNY_Graduate_School_of_Public_Health_%26_Health_Policy\">Graduate School of Public Health &amp; Health Policy<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Guttman_Community_College\">Guttman Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Hunter_College\">Hunter College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/John_Jay_College_of_Criminal_Justice\">John Jay College of Criminal Justice<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/William_E._Macaulay_Honors_College\">Macaulay Honors College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Borough_of_Manhattan_Community_College\">Manhattan Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Craig_Newmark_Graduate_School_of_Journalism_at_the_City_University_of_New_York\">Newmark Graduate School of Journalism<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/CUNY_School_of_Labor_and_Urban_Studies\">School of Labor and Urban Studies<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/CUNY_School_of_Medicine\">School of Medicine<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/CUNY_School_of_Professional_Studies\">School of Professional Studies<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Bronx_Community_College\">Bronx Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Hostos_Community_College\">Hostos Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Lehman_College\">Lehman College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Brooklyn_College\">Brooklyn College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/New_York_City_College_of_Technology\">College of Technology<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Kingsborough_Community_College\">Kingsborough Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Medgar_Evers_College\">Medgar Evers College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/College_of_Staten_Island\">College of Staten Island<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/LaGuardia_Community_College\">LaGuardia Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Queens_College,_City_University_of_New_York\">Queens College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Queensborough_Community_College\">Queensborough Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/City_University_of_New_York_School_of_Law\">School of Law<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/York_College,_City_University_of_New_York\">York College<\/a><\/p>\n"],null,null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[40.57806,40.8725],"lng":[-74.15000000000001,-73.75667]}},"evals":[],"jsHooks":[]}</script>
+<div class="leaflet html-widget html-fill-item" id="htmlwidget-48ce587ee79e5f2b5488" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-48ce587ee79e5f2b5488">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org/copyright/\">OpenStreetMap<\/a>,  <a href=\"https://opendatacommons.org/licenses/odbl/\">ODbL<\/a>"}]},{"method":"addMarkers","args":[[40.740159,40.8194,40.7485,40.79972,40.7529,40.768538,40.7703,40.774,40.71768,40.75523,40.754894,40.820833,40.748386,40.85806,40.8175,40.8725,40.63111,40.6958,40.57806,40.6663083,40.6,40.74361,40.737,40.75556,40.7477,40.702],[-73.98338,-73.95,-73.9836,-73.93889,-73.9841,-73.964741,-73.9883,-73.9802,-74.01188,-73.988827,-73.98185599999999,-73.95,-73.99008499999999,-73.91249999999999,-73.92722000000001,-73.89389,-73.9525,-73.988,-73.93306,-73.95664720000001,-74.15000000000001,-73.93444,-73.81699999999999,-73.75667,-73.94369,-73.795],null,null,null,{"interactive":true,"draggable":false,"keyboard":true,"title":"","alt":"","zIndexOffset":0,"opacity":1,"riseOnHover":false,"riseOffset":250},["<p><a href=\"https://en.wikipedia.org/wiki/Baruch_College\">Baruch College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/City_College_of_New_York\">The City College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/CUNY_Graduate_Center\">Graduate Center<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/CUNY_Graduate_School_of_Public_Health_and_Health_Policy\">Graduate School of Public Health and Health Policy<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Guttman_Community_College\">Guttman Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Hunter_College\">Hunter College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/John_Jay_College_of_Criminal_Justice\">John Jay College of Criminal Justice<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/William_E._Macaulay_Honors_College\">Macaulay Honors College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Borough_of_Manhattan_Community_College\">Borough of Manhattan Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Craig_Newmark_Graduate_School_of_Journalism_at_the_City_University_of_New_York\">Newmark Graduate School of Journalism<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/CUNY_School_of_Labor_and_Urban_Studies\">School of Labor and Urban Studies<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/CUNY_School_of_Medicine\">School of Medicine<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/CUNY_School_of_Professional_Studies\">School of Professional Studies<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Bronx_Community_College\">Bronx Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Hostos_Community_College\">Hostos Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Lehman_College\">Lehman College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Brooklyn_College\">Brooklyn College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/New_York_City_College_of_Technology\">College of Technology<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Kingsborough_Community_College\">Kingsborough Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Medgar_Evers_College\">Medgar Evers College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/College_of_Staten_Island\">College of Staten Island<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/LaGuardia_Community_College\">LaGuardia Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Queens_College,_City_University_of_New_York\">Queens College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/Queensborough_Community_College\">Queensborough Community College<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/City_University_of_New_York_School_of_Law\">School of Law<\/a><\/p>\n","<p><a href=\"https://en.wikipedia.org/wiki/York_College,_City_University_of_New_York\">York College<\/a><\/p>\n"],null,null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[40.57806,40.8725],"lng":[-74.15000000000001,-73.75667]}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <p>Though this is a bit finicky because both <code><a href="https://docs.ropensci.org/commonmark/reference/commonmark.html">commonmark::markdown_html</a></code> and <code><a href="https://rstudio.github.io/htmltools/reference/HTML.html">htmltools::HTML</a></code> try to combine their inputs by default, so we have to use <code><a href="https://purrr.tidyverse.org/reference/map.html">map()</a></code> functions instead of simple vectorization.</p>
@@ -891,7 +870,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 <li>Write code to get a list of all pages you will need to process. Construct full URLs for your future requests.</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -900,10 +879,10 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
 <span></span>
@@ -1006,7 +985,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -1015,10 +994,10 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-13" class="callout-13-contents callout-collapse collapse">
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
 <span><span class="va">get_recipes</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">url</span><span class="op">)</span><span class="op">{</span></span>
@@ -1027,7 +1006,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </div>
 <p>We can test this <a href="https://cocktails.hadley.nz/tag-bubbles.html">against this page</a> and see that it works as expected:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">BUBBLES</span> <span class="op">&lt;-</span> <span class="fu">get_recipes</span><span class="op">(</span><span class="st">"https://cocktails.hadley.nz/tag-bubbles.html"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">BUBBLES</span> <span class="op">&lt;-</span> <span class="fu">get_recipes</span><span class="op">(</span><span class="st">"https://cocktails.hadley.nz/tag-bubbles.html"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">BUBBLES</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -1048,7 +1027,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 <li>Write a function that takes in a single recipe and returns a small data frame with the title and ingredients:</li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -1057,10 +1036,10 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div id="callout-13" class="callout-13-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
 <span><span class="va">process_recipe</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">art</span><span class="op">)</span><span class="op">{</span></span>
@@ -1072,7 +1051,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </div>
 <p>We can again test this using the recipes we extracted above:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">process_recipe</span><span class="op">(</span><span class="va">BUBBLES</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">process_recipe</span><span class="op">(</span><span class="va">BUBBLES</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 2
   title    ingredients      
@@ -1093,7 +1072,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -1102,10 +1081,10 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-15" class="callout-15-contents callout-collapse collapse">
+<div id="callout-14" class="callout-14-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
 <span></span>
@@ -1123,7 +1102,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </div>
 <p>We can test this on the page of bubbly recipes:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">process_url</span><span class="op">(</span><span class="st">"https://cocktails.hadley.nz/tag-bubbles.html"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">process_url</span><span class="op">(</span><span class="st">"https://cocktails.hadley.nz/tag-bubbles.html"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 29 × 2
    title          ingredients               
@@ -1171,7 +1150,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </li>
 </ol>
 <div class="callout callout-style-default callout-tip callout-titled" title="Solution">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -1180,10 +1159,10 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-16" class="callout-16-contents callout-collapse collapse">
+<div id="callout-15" class="callout-15-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
 <span></span>
@@ -1262,7 +1241,7 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </table>
 <p>by processing the character column <code>Ingredient</code> and splitting it into separate parts.</p>
 <div class="callout callout-style-default callout-caution callout-titled" title="FP Solution">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -1271,11 +1250,11 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-17" class="callout-17-contents callout-collapse collapse">
+<div id="callout-16" class="callout-16-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>If you are comfortable with (or want to become comfortable with) the functional programming tools of <code>purrr</code>, you can write this entire analysis in one swoop:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
 <span><span class="va">process_recipe</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">recipe</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="co"># Question for reflection - why can't I vectorize this? </span></span>
@@ -1322,27 +1301,44 @@ Table&nbsp;1: Selected Statistics Courses Offered at Baruch College
 </div>
 
 
-<script type="ojs-module-contents">
-eyJjb250ZW50cyI6W119
-</script><div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
-<div id="exercise-loading-status" class="d-flex gap-2">
-
-</div>
-<div class="spinner-grow spinner-grow-sm">
-
-</div>
-</div>
-<script type="vfs-file">
-W10=
-</script></section></section></main><!-- /main --><script type="ojs-module-contents">
-eyJjb250ZW50cyI6W119
-</script><script type="module">
-if (window.location.protocol === "file:") { alert("The OJS runtime does not work with file:// URLs. Please use a web server to view this document."); }
-window._ojs.paths.runtimeToDoc = "../../labs";
-window._ojs.paths.runtimeToRoot = "../..";
-window._ojs.paths.docToRoot = "..";
-window._ojs.selfContained = false;
-window._ojs.runtime.interpretFromScriptTags();
+</section></section></main><!-- /main --><script type="text/javascript" id="exit-archive-script">
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.location.href.includes("archive")) {
+      // If on an 'archive' page, update archive warning bar exit
+      // to make sure it points to the associated 'current' page
+      document.getElementById('exit-archive-link').addEventListener('click', function() {
+        let currentUrl = window.location.href;
+        let newUrl = currentUrl.replace(/\/archive\/AY-\d{4}-[^\/]+\//, '/');
+        if (currentUrl !== newUrl) {
+          window.location.href = newUrl;
+        }
+        console.log("Archive URL detected: link redirect inserted.");
+      })
+    } else {
+        // Delete quarto announcement bar if not in archive
+        const exitLink = document.getElementById("exit-archive-link");
+        if (exitLink) {
+        // Find the "great-grand-div" surrounding the link, i.e., the native Quarto
+        // announcement container div
+        // Quarto's announcement bar uses the id '.quarto-announcement' for
+        // the outermost div
+        const announcementBar = exitLink.closest('#quarto-announcement');
+        if (announcementBar) {
+          // Delete the entire announcement bar element from the DOM and log
+          announcementBar.remove();
+          console.log("Current URL detected: Quarto announcement bar removed.");
+        } else {
+          // Fallback: walk up exactly two parent levels (a -> parentDiv -> grandDiv)
+          // and try to delete there
+          const grandParent = exitLink.parentElement?.pparentElement;
+          if (grandParent) {
+            grandParent.remove();
+            console.log("Current URL detected: Grandparent element removed manually.");
+          }
+        }
+      }
+    }
+});
 </script><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
