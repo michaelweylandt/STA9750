@@ -276,7 +276,9 @@ leaflet() |>
 
 ```{r}
 get_cuny_coordinates <- function(url){
-    read_html(url) |> 
+    request(url) |> 
+        req_perform() |>
+        resp_body_html() |>
         html_element(".geo") |> 
         html_text() |> 
         str_split_1(";") |> 
@@ -340,20 +342,7 @@ CUNYs <- read_html("https://en.wikipedia.org/wiki/List_of_City_University_of_New
 
 :::
 
-4) Modify the links extracted from the Wikipedia table to form full URLs.
-
-   Proper URL handling is a bit subtle - it's a common avenue for 
-   security holes - but a simple `paste0()` will suffice here. 
- 
-::: {.callout-tip title="Solution" collapse="true"}
-   
-```{r}
-CUNYs <- CUNYs |> mutate(link = paste0("https://en.wikipedia.org", link))
-```
-
-:::
-
-5) Apply your HTML parsing function from Step 1 to each CUNY page
+4) Apply your HTML parsing function from Step 1 to each CUNY page
    using the `map` function or the `rowwise()` grouping structure: 
    
    *Hint*: You may need to use `unnest` to convert a list column into something
@@ -376,7 +365,7 @@ CUNYs
 
 :::   
    
-6) Use your results to build a CUNY-wide map
+5) Use your results to build a CUNY-wide map
 
 ::: {.callout-tip title="Solution" collapse="true"}
    
