@@ -513,15 +513,16 @@ I've uploaded my work for MiniProject #**02** - check it out!
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://stringr.tidyverse.org">stringr</a></span><span class="op">)</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rvest.tidyverse.org/">rvest</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://fs.r-lib.org">fs</a></span><span class="op">)</span></span>
 <span>  </span>
 <span>    <span class="va">state_formatted</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://stringr.tidyverse.org/reference/case.html">str_to_lower</a></span><span class="op">(</span><span class="va">state</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://stringr.tidyverse.org/reference/str_replace.html">str_replace_all</a></span><span class="op">(</span><span class="st">"\\s"</span>, <span class="st">""</span><span class="op">)</span></span>
 <span>    </span>
-<span>    <span class="va">dir_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="st">"data"</span>, <span class="st">"mp02"</span><span class="op">)</span></span>
-<span>    <span class="va">file_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">dir_name</span>, <span class="va">state_formatted</span><span class="op">)</span></span>
+<span>    <span class="va">dir_name</span> <span class="op">&lt;-</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/path.html">path</a></span><span class="op">(</span><span class="st">"data"</span>, <span class="st">"mp02"</span><span class="op">)</span></span>
+<span>    <span class="va">file_name</span> <span class="op">&lt;-</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/path.html">path</a></span><span class="op">(</span><span class="va">dir_name</span>, <span class="va">state_formatted</span><span class="op">)</span></span>
 <span>    </span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span><span class="op">(</span><span class="va">dir_name</span>, showWarnings<span class="op">=</span><span class="cn">FALSE</span>, recursive<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/create.html">dir_create</a></span><span class="op">(</span><span class="va">dir_name</span>, recurse<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span>    </span>
-<span>    <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/files.html">file.exists</a></span><span class="op">(</span><span class="va">file_name</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/file_access.html">file_exists</a></span><span class="op">(</span><span class="va">file_name</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>        <span class="va">BASE_URL</span> <span class="op">&lt;-</span> <span class="st">"https://www.eia.gov"</span></span>
 <span>        <span class="va">RESPONSE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="va">BASE_URL</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>          <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"electricity"</span>, </span>
@@ -530,6 +531,9 @@ I've uploaded my work for MiniProject #**02** - check it out!
 <span>          <span class="fu"><a href="https://httr2.r-lib.org/reference/req_headers.html">req_headers</a></span><span class="op">(</span></span>
 <span>            `User-Agent` <span class="op">=</span> <span class="st">"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0"</span></span>
 <span>            <span class="op">)</span> <span class="op">|&gt;</span>   </span>
+<span>          <span class="fu"><a href="https://httr2.r-lib.org/reference/req_retry.html">req_retry</a></span><span class="op">(</span></span>
+<span>                max_tries <span class="op">=</span> <span class="fl">4</span>, </span>
+<span>          <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>          <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="va">file_name</span><span class="op">)</span></span>
 <span>    </span>
 <span>        <span class="fu"><a href="https://httr2.r-lib.org/reference/resp_status.html">resp_check_status</a></span><span class="op">(</span><span class="va">RESPONSE</span><span class="op">)</span></span>
@@ -1432,15 +1436,20 @@ I've uploaded my work for MiniProject #**02** - check it out!
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://fs.r-lib.org">fs</a></span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co"># Create 'data/mp02' directory if not already present</span></span>
-<span>  <span class="va">DATA_DIR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="st">"data"</span>, <span class="st">"mp02"</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span><span class="op">(</span><span class="va">DATA_DIR</span>, showWarnings<span class="op">=</span><span class="cn">FALSE</span>, recursive<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="va">DATA_DIR</span> <span class="op">&lt;-</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/path.html">path</a></span><span class="op">(</span><span class="st">"data"</span>, <span class="st">"mp02"</span><span class="op">)</span></span>
+<span>  <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/create.html">dir_create</a></span><span class="op">(</span><span class="va">DATA_DIR</span>, recurse<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span>  <span class="va">NTD_ENERGY_FILE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">DATA_DIR</span>, <span class="st">"2025_ntd_energy.xlsx"</span><span class="op">)</span></span>
+<span>  <span class="va">NTD_ENERGY_FILE</span> <span class="op">&lt;-</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/path.html">path</a></span><span class="op">(</span><span class="va">DATA_DIR</span>, <span class="st">"2025_ntd_energy.xlsx"</span><span class="op">)</span></span>
 <span></span>
-<span>  <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/files.html">file.exists</a></span><span class="op">(</span><span class="va">NTD_ENERGY_FILE</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/file_access.html">file_exists</a></span><span class="op">(</span><span class="va">NTD_ENERGY_FILE</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span>  </span>
-<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://www.transit.dot.gov/sites/fta.dot.gov/files/2026-09/2025 Energy Consumption_260806.xlsx"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://www.transit.dot.gov/"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://httr2.r-lib.org/reference/req_url.html">req_url_path</a></span><span class="op">(</span><span class="st">"sites"</span>,</span>
+<span>                   <span class="st">"fta.dot.gov"</span>,</span>
+<span>                   <span class="st">"files"</span>,</span>
+<span>                   <span class="st">"2026-09"</span>,</span>
+<span>                   <span class="st">"2025 Energy Consumption_260806.xlsx"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>      <span class="fu"><a href="https://httr2.r-lib.org/reference/req_headers.html">req_headers</a></span><span class="op">(</span></span>
 <span>        `User-Agent` <span class="op">=</span> <span class="st">"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>      <span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html">req_perform</a></span><span class="op">(</span><span class="va">NTD_ENERGY_FILE</span><span class="op">)</span></span>
@@ -1448,7 +1457,7 @@ I've uploaded my work for MiniProject #**02** - check it out!
 <span>  </span>
 <span>  <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.info.html">file.info</a></span><span class="op">(</span><span class="va">NTD_ENERGY_FILE</span><span class="op">)</span><span class="op">$</span><span class="va">size</span> <span class="op">&lt;</span> <span class="fl">1e4</span><span class="op">)</span><span class="op">{</span></span>
 <span>        <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"I was unable to download the NTD Energy File. Please try again.\n"</span><span class="op">)</span></span>
-<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html">stop</a></span><span class="op">(</span><span class="st">"Download failed. Please delete corrupted file and try again."</span><span class="op">)</span></span>
+<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html">stop</a></span><span class="op">(</span><span class="st">"Download failed. Please delete the corrupted file by running `unlink('data/mp02/2025_ntd_energy.xlsx')` and try again."</span><span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
 <span></span>
 <span>  <span class="va">to_numeric_fill_0</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">{</span></span>
@@ -2171,12 +2180,12 @@ I've uploaded my work for MiniProject #**02** - check it out!
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://fs.r-lib.org">fs</a></span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="co"># Create 'data/mp02' directory if not already present</span></span>
-<span>  <span class="va">DATA_DIR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="st">"data"</span>, <span class="st">"mp02"</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span><span class="op">(</span><span class="va">DATA_DIR</span>, showWarnings<span class="op">=</span><span class="cn">FALSE</span>, recursive<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="va">DATA_DIR</span> <span class="op">&lt;-</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/path.html">path</a></span><span class="op">(</span><span class="st">"data"</span>, <span class="st">"mp02"</span><span class="op">)</span></span>
+<span>  <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/create.html">dir_create</a></span><span class="op">(</span><span class="va">DATA_DIR</span>, recurse<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span>  <span class="va">NTD_SERVICE_FILE</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html">file.path</a></span><span class="op">(</span><span class="va">DATA_DIR</span>, <span class="st">"2025_ntd_service.csv"</span><span class="op">)</span></span>
+<span>  <span class="va">NTD_SERVICE_FILE</span> <span class="op">&lt;-</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/path.html">path</a></span><span class="op">(</span><span class="va">DATA_DIR</span>, <span class="st">"2025_ntd_service.csv"</span><span class="op">)</span></span>
 <span></span>
-<span>  <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/files.html">file.exists</a></span><span class="op">(</span><span class="va">NTD_SERVICE_FILE</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/file_access.html">file_exists</a></span><span class="op">(</span><span class="va">NTD_SERVICE_FILE</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://httr2.r-lib.org">httr2</a></span><span class="op">)</span></span>
 <span>  </span>
 <span>    <span class="fu"><a href="https://httr2.r-lib.org/reference/request.html">request</a></span><span class="op">(</span><span class="st">"https://data.transportation.gov/resource/4fir-qbim.csv"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -2206,7 +2215,7 @@ I've uploaded my work for MiniProject #**02** - check it out!
 <span>  </span>
 <span>  <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.info.html">file.info</a></span><span class="op">(</span><span class="va">NTD_SERVICE_FILE</span><span class="op">)</span><span class="op">$</span><span class="va">size</span> <span class="op">&lt;</span> <span class="fl">1e4</span><span class="op">)</span><span class="op">{</span></span>
 <span>        <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"I was unable to download the NTD Service File. Please try again.\n"</span><span class="op">)</span></span>
-<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html">stop</a></span><span class="op">(</span><span class="st">"Download failed. Please delete corrupted file and try again."</span><span class="op">)</span></span>
+<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html">stop</a></span><span class="op">(</span><span class="st">"Download failed. Please delete the corrupted file by running `unlink('data/mp02/2025_ntd_service.xlsx')` and try again."</span><span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
 <span></span>
 <span>  <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html">read_csv</a></span><span class="op">(</span><span class="va">NTD_SERVICE_FILE</span><span class="op">)</span> <span class="op">|&gt;</span></span>

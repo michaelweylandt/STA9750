@@ -135,15 +135,16 @@ get_eia_sep <- function(state, abbr){
     library(stringr)
     library(httr2)
     library(rvest)
+    library(fs)
   
     state_formatted <- str_to_lower(state) |> str_replace_all("\\s", "")
     
-    dir_name <- file.path("data", "mp02")
-    file_name <- file.path(dir_name, state_formatted)
+    dir_name <- fs::path("data", "mp02")
+    file_name <- fs::path(dir_name, state_formatted)
     
-    dir.create(dir_name, showWarnings=FALSE, recursive=TRUE)
+    fs::dir_create(dir_name, recurse=TRUE)
     
-    if(!file.exists(file_name)){
+    if(!fs::file_exists(file_name)){
         BASE_URL <- "https://www.eia.gov"
         RESPONSE <- request(BASE_URL) |> 
           req_url_path("electricity", 
@@ -152,6 +153,9 @@ get_eia_sep <- function(state, abbr){
           req_headers(
             `User-Agent` = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0"
             ) |>   
+          req_retry(
+                max_tries = 4, 
+          ) |>
           req_perform(file_name)
     
         resp_check_status(RESPONSE)
@@ -273,15 +277,20 @@ load_ntd_energy <- function(){
   library(fs)
   
   # Create 'data/mp02' directory if not already present
-  DATA_DIR <- file.path("data", "mp02")
-  dir.create(DATA_DIR, showWarnings=FALSE, recursive=TRUE)
+  DATA_DIR <- fs::path("data", "mp02")
+  fs::dir_create(DATA_DIR, recurse=TRUE)
 
-  NTD_ENERGY_FILE <- file.path(DATA_DIR, "2025_ntd_energy.xlsx")
+  NTD_ENERGY_FILE <- fs::path(DATA_DIR, "2025_ntd_energy.xlsx")
 
-  if(!file.exists(NTD_ENERGY_FILE)){
+  if(!fs::file_exists(NTD_ENERGY_FILE)){
     library(httr2)
   
-    request("https://www.transit.dot.gov/sites/fta.dot.gov/files/2026-09/2025 Energy Consumption_260806.xlsx") |> 
+    request("https://www.transit.dot.gov/") |>
+      req_url_path("sites",
+                   "fta.dot.gov",
+                   "files",
+                   "2026-09",
+                   "2025 Energy Consumption_260806.xlsx") |> 
       req_headers(
         `User-Agent` = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0") |> 
       req_perform(NTD_ENERGY_FILE)
@@ -289,7 +298,7 @@ load_ntd_energy <- function(){
   
   if(file.info(NTD_ENERGY_FILE)$size < 1e4){
         cat("I was unable to download the NTD Energy File. Please try again.\n")
-        stop("Download failed. Please delete corrupted file and try again.")
+        stop("Download failed. Please delete the corrupted file by running `unlink('data/mp02/2025_ntd_energy.xlsx')` and try again.")
     }
 
   to_numeric_fill_0 <- function(x){
@@ -377,12 +386,12 @@ load_ntd_service <- function(){
   library(fs)
   
   # Create 'data/mp02' directory if not already present
-  DATA_DIR <- file.path("data", "mp02")
-  dir.create(DATA_DIR, showWarnings=FALSE, recursive=TRUE)
+  DATA_DIR <- fs::path("data", "mp02")
+  fs::dir_create(DATA_DIR, recurse=TRUE)
 
-  NTD_SERVICE_FILE <- file.path(DATA_DIR, "2025_ntd_service.csv")
+  NTD_SERVICE_FILE <- fs::path(DATA_DIR, "2025_ntd_service.csv")
 
-  if(!file.exists(NTD_SERVICE_FILE)){
+  if(!fs::file_exists(NTD_SERVICE_FILE)){
     library(httr2)
   
     request("https://data.transportation.gov/resource/4fir-qbim.csv") |>
@@ -412,7 +421,7 @@ load_ntd_service <- function(){
   
   if(file.info(NTD_SERVICE_FILE)$size < 1e4){
         cat("I was unable to download the NTD Service File. Please try again.\n")
-        stop("Download failed. Please delete corrupted file and try again.")
+        stop("Download failed. Please delete the corrupted file by running `unlink('data/mp02/2025_ntd_service.xlsx')` and try again.")
     }
 
   read_csv(NTD_SERVICE_FILE) |>
