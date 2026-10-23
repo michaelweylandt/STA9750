@@ -1,10 +1,10 @@
 ---
 mp_num: "02"
-mp_title: "No Amount of Money Ever Bought Another Second of Time [Tentative]"
-mp_skills: "Combining Data, Data Visualization"
-mp_application: "Survey Date, Social Sciences"
-mp_rhetoric: "Market Research"
-mp_max_ec: 6
+mp_title: "Identifying Environmentally Responsible US Public Transit Systems"
+mp_skills: "Data Integration, Data Visualization"
+mp_application: "Transit, Environmetrics"
+mp_rhetoric: "Press Release"
+mp_max_ec: 4
 aliases: 
   - "/miniprojects/mini02.html"
 ---
@@ -13,28 +13,32 @@ aliases:
 
 ## Introduction
 
-Welcome to Mini-Project #{{< meta mp_num >}}! In this mini-project, we will
-explore data from the *American Time Use Survey* (ATUS). ATUS is a joint effort
-of the US Bureau of Labor Statistics and the US Census Bureau, which attempts
-to characterize how Americans spend their time. Like most government data 
-products, ATUS data is released in two forms: 
+Welcome to Mini-Project #{{< meta mp_num >}}! 
 
-1. *Summary Data*: these are large-sample statistical aggregates that use 
-   advanced survey weighting methods to get the most accurate estimates from
-   small data sizes. These are not statements about individuals, *per se*, but
-   estimates about subpopulations of interest. (*E.g.*, middle aged men spend
-   5 hours a week on lawn care) These results are the highest-quality and most
-   accurate estimates available, but-as a consumer-you can only get the answers
-   the census bureau makes available to you. 
-2. *Public Use Microdata*: these are 'raw data' from a representative subset
-   of respondents. Because microdata are taken from a subset of the full survey
-   data, they are less accurate (smaller samples, higher variance) but they
-   allow analysts to ask their own questions of the data. 
-   
-In this mini-project, we will explore ATUS microdata from the past 20 years. You
-will see how other Americans spend their time and compare your findings with
-your own time usage patterns. Your will use your findings to estimate the total
-amount of unpaid labor in the US. 
+In this project, you will take on the role of Executive Director of the Green 
+Transit Alliance (GTA), as you prepare to publish your annual awards for the 
+"greenest" public transit agencies. Each year, GTA awards prizes to the 
+small, medium, and large transit agencies that score the highest on the GTA 
+Value Index (GTA VI). The GTA VI estimates the effective emissions reductions
+achieved by each agency, using a combination of: 
+
+- Local ridership data (both number and distance); and
+- Emissions estimates of public transit vehicles (either direct tailpipe 
+  emissions or upstream emissions from electrical generation) 
+  
+By comparing these to the tailpipe emissions that would have occured if all
+riders had instead driven to their destination, the VI identifies the most
+_valuable_ public transit agencies in the country. 
+
+Your final submission for this mini-project
+should take the form of a press release, announcing the winners of the various
+GTA awards and giving the key statistics that lead to their selection.
+
+For this project, you will use "multi-table" operations such as joins and pivots,
+to combine data from different sources to generate novel insights not attainable
+from any individual table. Our analysis will bring in data from two federal
+sources, the [National Transit Database](https://www.transit.dot.gov/ntd) and
+the [Energy Information Administration](https://www.eia.gov/). 
 
 In this mini-project, you will: 
 
@@ -63,12 +67,13 @@ statistical analyses. While not the main focus of this mini-project, you are
 also expected to provide basic data visualizations to support your findings; 
 the grading rubric, below, emphasizes the `dplyr` tools used in this project, 
 but reports without any visualization will be penalized severely. Note that data
-visualization will play a larger role in Mini-Project #03.
+visualization will play a larger role in [Mini-Project #03](./mini03.qmd).
 
 As before, I will provide code to automatically download and read in the data 
-used for this project. Also note that, as compared with Mini-Project #01, I am
-providing less 'scaffolding' for tabular display and EDA: students are more 
-responsible for directing their own analyses.
+used for this project. Also note that, as compared with 
+[Mini-Project #01](./mini01.qmd), I am providing less 'scaffolding' for 
+tabular display and EDA: students are more responsible for directing their 
+own analyses.
 
 ### Rubric
 
@@ -106,124 +111,322 @@ Reports completing all key steps outlined below essentially start with
 
 ### Data Acquisition
 
-For this project, we will use the *2003-2024* aggregate microdata files, 
-published at <https://www.bls.gov/tus/data/datafiles-0324.htm>. These combine
-data in a standard format from the past 21 years of ATUS. 
+#### Data Acquisition - State Electricity Profiles
 
-We will use the following tables: 
 
-- The [ATUS Activity Data File](https://www.bls.gov/tus/datafiles/atusact-0324.zip)
-  which contains (self-reported) time spent on various activities from over 
-  250,000 Americans over a 20 year period.[^day]
-- The [ATUS Respondent File](https://www.bls.gov/tus/datafiles/atusresp-0324.zip)
-  which contains demographic information for the survey respondents. 
-- The [ATUS Roster File](https://www.bls.gov/tus/datafiles/atusrost-0324.zip) 
-  which includes additional demographic information on who was present for
-  various activities. *E.g.*, if a mother of two responded to ATUS, the respondent
-  file will contain her demographics, while the roster file will also contain
-  information on the age of her children if they were present for any activities
-  she performed during the reporting period. This is probably the least important
-  file and you might not use it often, but I'm making it available if you want it.
-- An [instructor-provided CSV](./atus_activity_codes.csv) that can be used to 
-  map ATUS activity codes to actual activities.[^atus_activity_codes]
-  
-[^day]: Note that the survey collects daily activities for a single day 
-per respondent; this is not 250,000 Americans all of whom were tracked for 
-20 years.
-  
-[^atus_activity_codes]: This data was extracted from ATUS Lexicon files at
-<https://www.bls.gov/tus/lexicons.htm> but the code necessary to convert these
-files to a usable format was fragile and well-beyond the scope of this course, 
-so I'm providing the cleaned-up data directly.
+For purposes of this analysis, we will assume that all electricity generation
+in a state is fungible. That is, we will assign the average generation emissions
+to all electric transit in a state, even if the transit authority officially
+has a "green supply" agreement in place. 
 
-The following code snippets will download the relevant files into a `data/mp02`
-directory in your `{{< var course.repo >}}` folder for use: 
+The following code will parse the EIA SEP summary pages and create a "tidy"
+table for your use: 
 
 ```{r}
+#| message: false
+#| warning: false
 library(tidyverse)
-library(glue)
-library(readxl)
+library(stringr)
 library(httr2)
+library(rvest)
 
-load_atus_data <- function(file_base = c("resp", "rost", "act")){
-    if(!dir.exists(file.path("data", "mp02"))){
-        dir.create(file.path("data", "mp02"), showWarnings=FALSE, recursive=TRUE)
+get_eia_sep <- function(state, abbr){
+    library(tidyverse)
+    library(stringr)
+    library(httr2)
+    library(rvest)
+  
+    state_formatted <- str_to_lower(state) |> str_replace_all("\\s", "")
+    
+    dir_name <- file.path("data", "mp02")
+    file_name <- file.path(dir_name, state_formatted)
+    
+    dir.create(dir_name, showWarnings=FALSE, recursive=TRUE)
+    
+    if(!file.exists(file_name)){
+        BASE_URL <- "https://www.eia.gov"
+        RESPONSE <- request(BASE_URL) |> 
+          req_url_path("electricity", 
+                       "state", 
+                       state_formatted) |>
+          req_headers(
+            `User-Agent` = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0"
+            ) |>   
+          req_perform(file_name)
+    
+        resp_check_status(RESPONSE)
     }
     
-    file_base <- match.arg(file_base)
+    TABLE <- read_html(file_name) |> 
+        html_element("table") |> 
+        html_table() |>
+        mutate(Item = str_to_lower(Item))
     
-    file_name_out <- file.path("data", 
-                               "mp02", 
-                               glue("atus{file_base}_0324.dat"))
-        
-    if(!file.exists(file_name_out)){
-        
-        url_end <- glue("atus{file_base}-0324.zip")
-        
-        temp_zip <- tempfile(fileext=".zip")
-        temp_dir <- tools::file_path_sans_ext(temp_zip)
-        
-        request("https://www.bls.gov") |>
-            req_url_path("tus", "datafiles", url_end) |>
-            req_headers(`User-Agent` = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0") |>
-            req_perform(temp_zip)
-    
-        unzip(temp_zip, exdir = temp_dir)
-        
-        temp_file <- file.path(temp_dir, basename(file_name_out))
-        
-        file.copy(temp_file, file_name_out)
+    if("U.S. rank" %in% colnames(TABLE)){
+        TABLE <- TABLE |> rename(Rank = `U.S. rank`)
     }
     
-    file <- read_csv(file_name_out, 
-                     show_col_types = FALSE)
+    CO2_MWh <- TABLE |> 
+        filter(Item == "carbon dioxide (lbs/mwh)") |>
+        pull(Value) |> 
+        str_replace_all(",", "") |>
+        as.numeric()
     
-    switch(file_base, 
-           resp=file |> 
-                  rename(survey_weight = TUFNWGTP, 
-                         time_alone = TRTALONE, 
-                         survey_year = TUYEAR),
-           rost=file |>
-                  mutate(sex = case_match(TESEX, 1 ~ "M", 2 ~ "F")), 
-           act =file |>
-                mutate(activity_n_of_day = TUACTIVITY_N, 
-                       time_spent_min = TUACTDUR24, 
-                       start_time = TUSTARTTIM,
-                       stop_time = TUSTOPTIME, 
-                       level1_code = paste0(TRTIER1P, "0000"), 
-                       level2_code = paste0(TRTIER2P, "00"),
-                       level3_code = TRCODEP) 
-           ) |> 
-                rename(participant_id = TUCASEID) |>
-                select(matches("[:lower:]", 
-                               ignore.case=FALSE))
+    PRIMARY <- TABLE |> 
+        filter(Item == "primary energy source") |> 
+        pull(Rank)
+    
+    RATE <- TABLE |>
+        filter(Item == "average retail price (cents/kwh)") |>
+        pull(Value) |>
+        as.numeric()
+    
+    GENERATION_MWh <- TABLE |>
+        filter(Item == "net generation (megawatthours)") |>
+        pull(Value) |>
+        str_replace_all(",", "") |>
+        as.numeric()
+    
+    data.frame(CO2_MWh               = CO2_MWh, 
+               primary_source        = PRIMARY,
+               electricity_price_MWh = RATE * 10, # / 100 cents to dollars &
+               # * 1000 kWh to MWH 
+               generation_MWh        = GENERATION_MWh, 
+               state                 = state, 
+               abbreviation          = abbr
+    )
 }
 
-load_atus_activities <- function(){
-    if(!dir.exists(file.path("data", "mp02"))){
-        dir.create(file.path("data", "mp02"), showWarnings=FALSE, recursive=TRUE)
-    }
-    
-    dest_file <- file.path("data",
-                           "mp02",
-                           "atus_activity_codes.csv")
-    
-    if(!file.exists(dest_file)){
-        download.file("https://michael-weylandt.com/STA9750/mini/atus_activity_codes.csv", 
-                      quiet=TRUE, 
-                      destfile=dest_file, 
-                      mode="wb")
-    }
-    
-    read_csv(dest_file, show_col_types = FALSE) 
-}
+EIA_SEP_REPORT <- map2(state.name, state.abb, get_eia_sep) |> list_rbind()
+```
+
+This code should run without issues, but you might need to run it more than
+once, ideally with a small time break in between to avoid data throttling on
+the server side. Once you have downloaded this data once, a copy will be saved
+locally so you do not need to repeatedly connect to the EIA data pages. 
+
+::: {.callout-tip title="Task 1a: Data Acquisition - State Electricity Profiles"}
+
+Using the code above, acquire the relevant data. Copy the code into
+your Quarto document and make sure it runs successfully. After doing so, 
+consider which types of joins and filters will be appropriate for this data. 
+
+:::
+
+
+::: {.callout-caution title="Do Not `git add` Data Files"}
+
+Make sure that `git` is set to ignore data files, such as the one created above.
+Check the `git` pane in `RStudio` and make sure that the files created in 
+`data/mp02` do not appear. (If you set up your `.gitignore` file correctly in
+[MP#00](./mini00.qmd), it should already be ignored.) If it is appearing, you
+may need to edit your `.gitignore` file.
+
+Removing a large data file from `git` is possible, but difficult. Don't get
+into a bad state!
+
+:::
+
+
+This produces the following table: 
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+library(gt)
+EIA_SEP_REPORT |> 
+    arrange(desc(generation_MWh)) |>
+    gt(id="eia_sep") |>
+    cols_label(CO2_MWh="Pounds of CO2 Emitted Per MWh of Electricity Produced",
+               primary_source="Primary Source of Electricity Generation",
+               electricity_price_MWh="Average Retail Price for 1000 kWh",
+               generation_MWh = "Total Generation Capacity (MWh)",
+               state="State") |>
+    cols_merge(c(state, abbreviation), pattern="{1} ({2})") |>
+    fmt_number(columns=c(CO2_MWh, generation_MWh), 
+               decimals=0) |>
+    fmt_currency(columns=electricity_price_MWh)
 ```
 
 
-::: {.callout-tip title="Task 1: Data Acquisition"}
 
-Using the code above, acquire the relevant ATUS files. Copy the code into
-your Quarto document and make sure it runs successfully. 
+Here, we have collected the effective emissions per MWh[^mwh] as well as price
+and total state-wide generation capacity. We will use this data to compare the
+emissions of different transit modalities. We next turn to the National Transit
+Database to get information on various public transit authorities. B
+
+
+#### Data Acquisition - Energy Consumption
+
+Next, we download the [2025 Annual Database Energy
+Consumption](https://www.transit.dot.gov/ntd/data-product/2025-annual-database-energy-consumption)
+report. This report is shared as a Excel spreadsheet (`.xlsx` filetype), so we
+use the `readxl` package to import it to `R`. 
+
+```{r}
+#| warning: false
+load_ntd_energy <- function(){
+  library(readxl)
+  library(httr2)
+  library(tidyverse)
+  library(fs)
+  
+  # Create 'data/mp02' directory if not already present
+  DATA_DIR <- file.path("data", "mp02")
+  dir.create(DATA_DIR, showWarnings=FALSE, recursive=TRUE)
+
+  NTD_ENERGY_FILE <- file.path(DATA_DIR, "2025_ntd_energy.xlsx")
+
+  if(!file.exists(NTD_ENERGY_FILE)){
+    library(httr2)
+  
+    request("https://www.transit.dot.gov/sites/fta.dot.gov/files/2026-09/2025 Energy Consumption_260806.xlsx") |> 
+      req_headers(
+        `User-Agent` = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0") |> 
+      req_perform(NTD_ENERGY_FILE)
+  }
+  
+  if(file.info(NTD_ENERGY_FILE)$size < 1e4){
+        cat("I was unable to download the NTD Energy File. Please try again.\n")
+        stop("Download failed. Please delete corrupted file and try again.")
+    }
+
+  to_numeric_fill_0 <- function(x){
+    x <- if_else(x == "-", NA, x)
+    replace_na(as.numeric(x), 0)
+  }
+
+  read_excel(NTD_ENERGY_FILE) |> 
+    select(-c(`Reporter Type`, 
+              `Reporting Module`, 
+              `Gallons of Other Fuel`, 
+              `Other Fuel Description`)) |>
+    mutate(across(-c(`Agency Name`, 
+                     `Mode`,
+                     `TOS`), 
+                  to_numeric_fill_0)) |>
+    group_by(`NTD ID`, `Mode`, `Agency Name`) |>
+    summarize(across(where(is.numeric), sum), 
+              .groups = "keep") |>
+    mutate(ENERGY = sum(c_across(c(where(is.numeric))))) |>
+    filter(ENERGY > 0) |>
+    select(-ENERGY) |>
+    ungroup()
+}
+
+NTD_ENERGY <- load_ntd_energy()
+```
+
+
+::: {.callout-tip title="Task 1b: Data Acquisition - NTD Energy Usage"}
+
+Using the code above, acquire the relevant data. Copy the code into
+your Quarto document and make sure it runs successfully. After doing so, 
+consider which types of joins and filters will be appropriate for this data. 
+
+:::
+
+
+::: {.callout-caution title="Do Not `git add` Data Files"}
+
+Make sure that `git` is set to ignore data files, such as the one created above.
+Check the `git` pane in `RStudio` and make sure that the files created in 
+`data/mp02` do not appear. (If you set up your `.gitignore` file correctly in
+[MP#00](./mini00.qmd), it should already be ignored.) If it is appearing, you
+may need to edit your `.gitignore` file.
+
+Removing a large data file from `git` is possible, but difficult. Don't get
+into a bad state!
+
+:::
+
+
+The resulting table is almost ready for us to work with: 
+
+```{r}
+#| echo: false
+library(gt)
+NTD_ENERGY |>
+  slice_sample(n=10) |> 
+  gt(id="ntd_table") 
+```
+
+Here, the first 3 columns (`NTD ID`, `Mode`, and `Agency Name`) identify the
+operating agency and the relevant mode of transportation while the remaining
+columns denote how much of each type of fuel that agency used during 2023. 
+The non-electric sources are all quoted in gallons, while `Electric Battery`
+and `Electric Propulsion` are quoted in kWh used. 
+    
+The `Mode` column is important: it is used to distinguish multiple transport
+types operated the same agency, *e.g.* MTA subways and buses in NYC. The
+two letter codes used by the NTD, however, are not immediately interpretable. 
+
+#### Data Acquisition - Transit Service Provided
+
+Next, we download the [2025 Service by
+Agency](https://www.transit.dot.gov/ntd/data-product/2025-service) report, from
+which we will extract characteristics of typical passenger trips on each 
+transit service. 
+
+```{r}
+#| warning: false
+load_ntd_service <- function(){
+  library(httr2)
+  library(tidyverse)
+  library(fs)
+  
+  # Create 'data/mp02' directory if not already present
+  DATA_DIR <- file.path("data", "mp02")
+  dir.create(DATA_DIR, showWarnings=FALSE, recursive=TRUE)
+
+  NTD_SERVICE_FILE <- file.path(DATA_DIR, "2025_ntd_service.csv")
+
+  if(!file.exists(NTD_SERVICE_FILE)){
+    library(httr2)
+  
+    request("https://data.transportation.gov/resource/4fir-qbim.csv") |>
+      req_url_query(`$query`=paste(
+        "SELECT  `_5_digit_ntd_id` AS `NTD_ID`", 
+        "`max_agency` AS `AGENCY`",
+        "`max_reporter_type` AS `reporter_type`",
+        "`max_organization_type` AS `organization_type`",
+        "`max_city` AS `city`",
+        "`max_state` AS `state`",
+        "`mode`",
+        "`type_of_service`",
+        "`max_primary_uza_code` as `uza_code`",
+        "`max_primary_uza_name` as `uza_name`",
+        "`max_primary_uza_area_sq_miles` as `uza_sq_miles`",
+        "`max_primary_uza_population` as `uza_population`",
+        "`max_service_area_sq_miles` as `service_area_sq_miles`",
+        "`max_service_area_population` as `service_area_population`",
+        "`questionable_record` as `flagged_likely_inaccurate`",
+        "`sum_unlinked_passenger_trips_upt` + `sum_ada_upt` + `sum_sponsored_service_upt` as `total_upt`",
+        "`sum_passenger_miles` WHERE caseless_one_of(`report_year`, '2025') limit 50000", 
+        sep=",")) |>
+      req_headers(
+        `User-Agent` = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0") |> 
+      req_perform(NTD_SERVICE_FILE)
+  }
+  
+  if(file.info(NTD_SERVICE_FILE)$size < 1e4){
+        cat("I was unable to download the NTD Service File. Please try again.\n")
+        stop("Download failed. Please delete corrupted file and try again.")
+    }
+
+  read_csv(NTD_SERVICE_FILE) |>
+    mutate(flagged_likely_inaccurate = !is.na(flagged_likely_inaccurate))
+}
+
+NTD_SERVICE <- load_ntd_service()
+```
+
+
+::: {.callout-tip title="Task 1c: Data Acquisition - Service Provided"}
+
+Using the code above, acquire the relevant transit service data. 
+Copy the code intoyour Quarto document and make sure it runs successfully. 
 
 :::
 
@@ -240,28 +443,144 @@ into a bad state!
 
 :::
 
-### Data Cleaning and Preparation 
+Here `UPT` is the number of total _Unlinked Passenger Trips_ during 2025; that
+is, the number of distinct (non-transfer) trips taken. *E.g.*, if you transfer
+from the `7` to the `6` to get to Baruch. You ride two segments, but only take
+1 UPT to get to Baruch (2 total UPT if you go home the same way). 
 
-Use the two functions above to create _four_ data frames suitable for 
-your analyses: three of these will be created using the `load_atus_data` 
-function with different inputs and one with the `load_atus_activities` function.
 
-After each data frame has been read into `R`, use the baseline type and 
-distribution checks described 
+### Data Cleaning and Preparation
+
+Use the functions above to create the 3 data frames you will use for
+this assignment. After each data frame has been read into `R`, use the baseline 
+type and distribution checks described 
 [in the previous assignment](./mini01.qmd#exploratory-analysis)
-to confirm that you understand the types of all columns in the four tables and
-that they will be suitable for your analyses. 
+to confirm that you understand the types of all columns in the various tables and
+that they will be suitable for your analyses. You do not need to actually 
+include the output of `dplyr::glimpse()` or `skimr::skim()` in your final
+submission, but it is good to get in the habit of using them regularly. 
 
 As part of this analysis, review the various tables and begin to map out how
 they fit together and will be used for your analysis; see [below]{#ec01} for 
 one possible way to visualize and explore data of this format. 
 
+The above data is relatively standardized and easy to work with, but the `Mode`
+columns in the NTD files are not easy to work with and should be recoded into
+more easily intepreted values. 
+
+::: {.callout-tip title="Task 2: Recoding the `Mode` column"}
+
+First, find the unique `Mode` codes in our data using the `distinct()` function. 
+Next, examine the NTD website and find the interpretations of these codes. 
+Complete the following snippet to recode the `Mode` column.
+
+```{r}
+#| eval: false 
+## This code needs to be completed
+NTD_ENERGY <- NTD_ENERGY |>
+    mutate(Mode=recode_values(Mode, 
+        "HR" ~ "Heavy Rail", 
+        ...
+        ...
+        default="Unknown"))
+```
+
+*Alternative approach, more advanced, not required*: Modify the 
+`load_ntd_service()` function above to additionally query the `mode_name` 
+column. This column will give you the 'expanded' names for each two-letter mode
+code and can be used, along with clever use of joins, to recode the 
+`NTD_ENERGY` table as well. 
+
+
+:::
+
+### Data Integration and Initial Exploration {#eda}
+
+::: {.callout-caution title="Instructor Adjustment"}
+
+Because I am releasing this a bit behind schedule, students are only
+required to answer **8** of the following questions. You must have at
+least 2 inline answers, 2 table answers, and 2 plots among the
+questions you select. (You are of course welcome to do all of these
+questions and more!)
+
+:::
+
+#### EDA - EIA State Electricity Profiles
+
+::: {.callout-tip title="Task 3a: Initial Analysis of SEP Data"}
+
+Answer the following questions using the `EIA_SEP_REPORT` data. For each 
+question, answer in the specified format (inline, table, or with a graph)
+
+1. Which 5 states have the most expensive retail electricity? (Graph)
+2. Which 5 states have the 'dirtiest' electricity mix? (Table)
+3. On average, how many pounds of CO2 are emitted per MWh of electricity
+   produced in the US? (Note that you will need to use a suitably _weighted_
+   average here.) (Inline answer)
+4. What are the three rarest primary energy sources in the US? What is the
+   associated cost of electricity associated with each source and in what
+   states are they used? (Table answer)
+5. My home state, Texas, has a reputation as being the home of "dirty fossil
+   fuels" while NY has a reputation as a leader in clean energy. How many times
+   cleaner is NY's energy mix than that of Texas?  (Inline answer)
+
+:::
+
+#### EDA - NTD Energy Usage
+
+::: {.callout-tip title="Task 3b: Explore NTD Service Data"}
+
+Answer the following questions using the `NTD_ENERGY` data. For each 
+question, answer in the specified format (inline, table, or with a graph)
+
+1. Which five transit agencies used the most gallons of fuel (all sources) and
+   how did it breakdown by type? (Table)
+2. Across all US public transit, visualize the amounts of each type of fuel 
+   used (Graph)
+3. What is the least commonly used fuel source for US public transit?
+   (Inline)
+   
+:::
+
+
+#### EDA - NTD Service
+
+::: {.callout-tip title="Task 3c: Explore NTD Service Data"}
+
+Answer the following questions using the `NTD_SERVICE` data. For each 
+question, answer in the specified format (inline, table, or with a graph)
+
+1. Which five transit services have the most UPT annually? (Graph)
+2. What is the average trip length of a trip on MTA NYC? (Inline)
+3. Which transit service in NYC has the _longest_ average trip length? 
+   (Inline)
+
+   *Hint*: You need to be careful with the `City` column here. Certain MTA 
+   services are officially located in "New York City" while others are 
+   located in   Brooklyn.)
+4. Which five states has the _fewest_ total miles travelled by public transit?
+   (Graph)
+5. Are all states represented in this data? If no, which ones are missing?
+   The `state.name` and `state.abb` objects built into `R` may be useful here, 
+   as well as the `anti_join()` function.[^anti_join]  (Inline)
+   
+:::
+
+[^anti_join]: You do not need to use an `anti_join()` here. You can achieve
+the same effect with clever use of the `%in%` operator. 
+
+#### Data Integration
+
 Before proceeding, you will want to consider how you will want to join these
 data files together. In this case, there are sometimes *several* possible ways
-to join together a pair of tables. This mental checklist will help you maximize
-the probability that you're using the correct join for your analysis.[^foolproof]
+to join together a pair of tables. The following mental checklist will help you 
+maximize the probability that you're using the correct join for your 
+analyses.[^foolproof]
 
 [^foolproof]: This process isn't fool-proof, but it should cover most use-cases.
+
+::: {.callout-note title="Selecting a Join" collapse="true"}
 
 1.  What two pieces of information am I looking to connect? *Answer(s)*: two
     columns from different tables. (If the columns are already in the same 
@@ -334,438 +653,165 @@ the join-design flowchart would go something like this:
     Sadly, our datasets were incomplete and we lost track of 
     [Keith Richards](https://en.wikipedia.org/wiki/Keith_Richards), guitarist in
     the Rolling Stones. 
-
-::: {.callout-tip title="Task 2: Practice Joining Data Files"}
-
-Work through the join-design flowchart for the following questions based on the
-ATUS data: 
-
-1. How many total hours were recorded on sleeping-type activities? 
-
-   *Hint*: Make sure you identify the correct "level" of task precision to
-   construct your join. 
-2. How many female participants reported spending no time alone in 2003?
-
-*Note*: You do not need to actually include your answers to these questions in
-your submission. You will demonstrate knowledge of proper joining strategies
-in the EDA questions and your final deliverable.
-
-:::
-
-When dealing with complex datasets, it is important to be able to interpret
-and make use of the documentation to interpret complex data representations. 
-For surveys like ATUS, where the respondent gives an interview, the survey
-administrator will "code" the qualitative responses into quantitative values: 
-*e.g.*, after asking the respondent their gender, which can elicit a wide range
-of responses ("male", "man", "guy", *etc.*), the response will be encoded
-as a simple `1` or `2` using pre-defined rules. This simplified representation
-is easier to work with than free-text responses. When working with data in `R`,
-it is typically easier to use a (standardized) set of string values (*e.g.*, 
-"male" and "female" or "man" and "woman"), rather than an uninterpretable 
-numeric value. 
-
-::: {.callout-tip title="Task 3: Adding Additional Demographic Variables"}
-
-You will need to add a few more demographic variables to the data frames 
-generated by `load_atus_data` to complete your analysis. Specifically, modify
-`load_atus_data` to additionally report the following information: 
-
-1.  How many children under the age of 18 live in the respondent's home?
-2.  Is the respondent married? 
-
-    *Instructor Correction*: This official variable for this question is not 
-    in the files I prepared for you; it can be found in the `atuscps` file. You 
-    may either extend my download code above to support the `cps` file as well 
-    OR develop a reasonable proxy for this question based on some combination of 
-    i) whether the person spent any time with their spouse; and ii) spouse 
-    employment info (if the spouse has a job or is retired, that implies they 
-    exist). This may miss a small number of cases-*e.g.*, a couple where the 
-    spouse never had a job, so isn't retired, but also spent no time with the 
-    respondent during the survey period-but I hope the effect is reasonably 
-    marginal. Apologies for any confusion. 
-   
-    If you want to use the CPS file, which has lots of other interesting info as
-    described [here](https://www.bls.gov/tus/dictionaries/atuscpscodebk0324.pdf),
-    make the following changes to my code above: 
-   
-    ```{r}
-    #| eval: false
-                                                                 # Add CPS
-    load_atus_data <- function(file_base = c("resp", "rost", "act", "cps")){
-    ...
-    switch(file_base, 
-           # Add CPS
-           # Add more processing here if useful
-           cps =file,
-           # Continue as before
-           resp=...
-    ```
-   
-   
-3.  What is the respondent's employment status (employed, unemployed, retired, 
-    *etc.*)?
-4.  Location of activity
-5.  Is the respondent enrolled in a college or university (not high school)? 
-
-    *Hint*: This will require use of at least two ATUS variables which will need
-    to be combined using Boolean operators.
-
-Use the [ATUS Data 
-Dictionary](https://www.bls.gov/tus/dictionaries/atusintcodebk0324.pdf) to 
-identify appropriate variables and to determine a suitable mapping from 
-numeric codes to interpretable values, *e.g.*, recoding the `TESEX` variable
-from 1/2 to "M"/"F". You will want to use the `case_match` function to implement
-these transformations. 
-
-Note that some of these variables are present in multiple files and can be 
-incorporated in the data set in multiple ways.
-
-*Note*: You do not need to have a copy of "my" `load_atus_data` and your 
-modified `load_atus_data` function. Just include the final version in your
-submission.
-
-
-:::
-
-### Data Integration and Initial Exploration {#eda}
-
-#### Survey Weighting 
-
-When working with microdata, you rarely want to use 'raw' averages from the
-sampled subjects to estimate population averages. Because survey respondent 
-distributions rarely match the actual population distributions (*e.g.*, because
-younger people are less likely to respond to phone polls than senior citizens),
-_weighted_ averages are used to adjust the sample to match the demographics
-of the population. 
-
-For example, if a survey has 100 men and 200 women reply, but we want to make
-an inference about the US population as a whole (50% male and 50% female), we
-will want to upweight the men vs the women so we have "in effect" 
-200 men and 200 women, matching the 50/50 split of the population. In particular, 
-we would use code like: 
-
-```{r}
-data.frame(gender = rep(c("M", "F"), times=c(100, 200)), 
-           income = rnorm(300, mean=50000, sd=10000)) |>
-    summarize(avg_income = weighted.mean(income, 
-                                         w=if_else(gender=="M", 2, 1)))
-```
-
-
-This is not too hard to do with a single simple feature like gender, but these  
-calculations can become quite complex when trying to match on a variety of 
-demographic attributes (income bracket, gender, race, age, state, urban/rural, 
-education level, *etc.*). Thankfully, the Census Bureau provides us with a set 
-of pre-computed weights that we can use. These are used to adjust ATUS to broader
-estimates of US demographics like the decadal census and the Current Population
-Survey (CPS). 
-
-These are represented by the `TUFNWGTP` variable, which I have renamed as 
-`survey_weight`. If we want to know how much time the average American spent
-alone every year, we might do something like: 
-
-```{r}
-#| eval: false
-load_atus_data("resp") |> 
-    summarize(avg_time_alone = weighted.mean(time_alone, survey_weight))
-```
-
-where we would find that the average American spent about 5 hours (298 minutes) 
-alone per day over the previous two decades. If we want to break this out 
-further by year, we might do something like: 
-
-```{r}
-load_atus_data("resp") |> 
-    group_by(survey_year) |>
-    summarize(avg_time_alone = weighted.mean(time_alone, survey_weight)) |>
-    mutate(point_color = if_else(survey_year == 2020, "red", "black")) |>
-    ggplot(aes(x=survey_year, 
-               y=avg_time_alone, 
-               color=point_color)) + 
-        theme_bw() + 
-        xlab("ATUS Survey Year") + 
-        ylab("Average Time Spent Alone [Minutes]") + 
-        scale_y_continuous(sec.axis=sec_axis(~ . / 60, 
-                                             name="Average Time Spent Alone [Hours]")) + 
-        geom_point() + 
-        geom_path() + 
-        scale_color_identity() + 
-        ggtitle("ATUS Population-Weighted Estimates of Average Time Spent Alone", 
-                "2020 Estimates (Red) are Unreliable") + 
-        labs(caption="Estimates Created Using 2003-2024 Public Use Microdata Samples")
-```
-
-We see here an increasing trend in time spent alone, with the post-2020 period
-leading to significant increases in time spent alone, perhaps indicative of
-broader trends of social isolation.[^covid_weight]
-
-Note that we can use the same weighting variable here and, because the Census
-Bureau has done the hard work of developing survey weights for us, the switch
-from whole-sample to per-year weights does not require adjustments to our
-code beyond the obvious `group_by`. 
-
-[^covid_weight]: ATUS cautions against using 2020 data and the usual weights,
-providing an alternative weight variable `TU20FWGT` for 2020 data that also 
-weights by date to ensure the "peak social isolation" period of March 18 - May 9
-is represented. You can ignore this subtlety, but I'm flagging it here in case
-pandemic-effect questions are of interest. 
-
-Appendix J of the [ATUS User's Guide](https://www.bls.gov/tus/atususersguide.pdf)
-gives some more worked examples of how these weights can be used, but note that
-some of the variable names might differ from what we find in the combined year 
-file. The [2003-2024 ATUS
-Codebook](https://www.bls.gov/tus/dictionaries/atusintcodebk0324.pdf) is your
-best reference for the data used in this analysis. 
-
-#### Exploratory Questions
-
-As in [the previous mini-project](./mini01.qmd), we are going to structure our
-EDA around several sets of exploratory questions. This time, I am providing
-**three** sets of questions to be answered in different formats: inline values,
-tables, plots. 
-
-::: {.callout-tip title="Task 4: Exploratory Questions - Inline Values"}
-
-Answer the following questions: report your answers using 
-Quarto's [inline code](https://quarto.org/docs/computations/inline-code.html)
-functionality to place the values in a sentence; that is, you should answer in
-complete sentences, written as normal text with inline code for computed values.
-
-1. How many different respondents have answered an ATUS survey since 2003?
-2. Americans enjoy watching a variety of sports. How many different sports does
-   ATUS ask about watching as a "Level 3" task?
-3. Approximately what percent of Americans are retired? 
-
-   *Hint*: You will first want to create a new variable for retirement status;
-   after creating this variable, use a weighted version of the "mean of Boolean"
-   trick to answer this question. 
-4. On average, how many hours do Americans sleep per night? 
-5. On average, how many hours do Americans with one or more children in the home
-   spend taking care of their children (all activities including healthcare and
-   involvement in their children's education)? 
-
-See the [previous mini-project](./mini01.qmd#eda) for advice on formatting your
-responses. 
-
-:::
-
-
-::: {.callout-tip title="Task 5: Exploratory Questions - Table Answers"}
-
-Answer the following questions: each of these questions can be answered with a 
-table of just a few rows. Use the `gt` package, introduced in the previous MP, 
-or a similar package to to present your results in an attractive
-'publication-quality' format, not just a "raw" `R` output. 
-
-1. Do retired persons spend more time on lawn-care than people who have 
-   full-time employment?
-2. How does the amount of time spent on social and recreational activities
-   typically compare for married and unmarried people? 
-3. Where do high-earning Americans spend the majority of their time? 
-
-   You may define "high-earning" however you see fit. 
-4. What are the most common activities reported by Americans when on a bus, 
-   train, subway, boat, or ferry? 
-5.  How much time per day do Americans spend on *your four favorite activities* 
-    and how does this vary by age group? 
-   
-    *Hint*: The `cut` function can be used to 'bin' a continuous variable.
-    This is useful when trying to break a continuous variable into 'buckets' for
-    display in a table. *E.g.*,
-   
-    ```{r}
-    #| message: false
-    #| warning: false
-    library(gt)
-    penguins |> 
-        mutate(body_mass = cut(body_mass/1000, breaks=6, dig.lab=3)) |> 
-        group_by(species, body_mass, .drop=FALSE) |> 
-        count() |> 
-        ungroup() |> 
-        drop_na() |>
-        pivot_wider(names_from=body_mass, 
-                    values_from=n) |>
-        gt(id="tab_penguin_cut_example") |> # ID argument not required
-        cols_label(species="Species 🐧") |>
-        tab_spanner(columns=2:7, 
-                    "Body Mass (kg)") |>
-        tab_header(title="Distribution of Penguin Body Mass by Species") |>
-        tab_source_note(md(
-          "Data originally published in by K.B. Gorman, T.D. Williams, and 
-          W. R. Fraser in 'Ecological Sexual Dimorphism and Environmental 
-          Variability within a Community of Antarctic Penguins (Genus 
-          *Pyogscelis*). *PLoS One* 9(3): e90081.
-          <https://doi.org/10.1371/journal.pone.0090081>. Later popularized via 
-          the `R` package [`palmerpenguins`](https://allisonhorst.github.io/palmerpenguins/)"))
-    ```
-
-
-See the [previous mini-project](./mini01.qmd#eda) for advice on formatting your
-responses. 
-
-:::
-
-
-::: {.callout-tip title="Task 6: Exploratory Questions - Graph Answers"}
-
-Answer the following questions: for each query, produce both i) an appropriate
-'publication-quality' plot that answers the question; and ii) a sentence or two
-interpreting the plot. Note that the text needs to guide the reader through
-the answer: it is not enough to simple 'point to' the plot and expect it to be
-self-describing. 
-
-E.g., if the question were "What is the largest species in the `penguins` data?",
-you might produce a plot like: 
-
-```{r}
-penguins |>
-    select(-island, -sex, -year) |>
-    mutate(body_mass = body_mass / 1000) |>
-    group_by(species) |>
-    summarize(across(where(is.numeric), \(x) mean(x, na.rm=TRUE))) |>
-    pivot_longer(-species, 
-                 names_to="measure",
-                 values_to="species_mean") |>
-    mutate(measure = recode_values(measure, 
-        "bill_dep" ~ "Bill Depth (mm)", 
-        "bill_len" ~ "Bill Length (mm)", 
-        "body_mass" ~ "Body Mass (kg)", 
-        "flipper_len" ~ "Flipper Length (mm)")) |>
-    mutate(measure = factor(measure), 
-           measure = fct_relevel(measure, "Body Mass (kg)")) |> 
-    ggplot(aes(x=measure, 
-               y=species_mean, 
-               fill=species)) + 
-    geom_col(position="dodge") + 
-    facet_wrap(~measure, scales="free", nrow=1) + 
-    theme_minimal() + 
-    xlab(NULL) + 
-    ylab("Species Mean") + 
-    theme(legend.position="bottom", 
-          axis.text.x=element_blank(), 
-          strip.text=element_text(size=rel(1))) + 
-    scale_fill_brewer(type="qual", 
-                      palette=2, 
-                      name="Species")
-```
-
-and include text to the effect of "By mass, Gentoo penguins are the
-largest species studied, weighing almost  1.5 kg more than Adelie or
-Chinstrap penguins on average; despite this, Gentoo
-bills are typically a bit smaller than other species on multiple dimensions, 
-and Gentoo flipper lengths are broadly in line. This suggests that
-the extra mass of Gentoo penguins may be an artifact of a larger average
-torso, but that the other extremities do not scale accordingly." This
-sentence directly answers the simplest interpretation of the question
-(largest by mass), but it also uses some other data to give a fuller
-context. Additionally, while the plot can be used to give precise
-figures, the text gives rough figures ("roughly 1.5 kg", "a bit smaller", 
-"broadly in line") for the qualitative comparisons.
-
-1. How does the amount of time spent on household activities change
-   as Americans age?
-2. A major perk of working in education is the freedom to spend summers how
-   you wish. What are the most popular activities for Americans employed in
-   education during the summer months (June, July, and August)? 
-   
-   *Hint*: There are several variables that can be used to access the occupation
-   of the respondent. Make sure to pick one that gives you enough detail to
-   focus your analysis to people on a "school year schedule", but you do not 
-   need to be 100% accurate here. 
-3. It is often remarked that "education is a privilege wasted on the young". 
-   Among respondents who report being enrolled in a higher-education program, 
-   how does the amount of time allocated to various educational activities
-   (attending class, doing homework, studying, *etc.*) vary by age? Does it seem
-   to be true that older students dedicate more time to their education?
-4. A ["bump plot"](https://r-graph-gallery.com/web-bump-plot-with-highlights.html)
-   is an effective way to display _ranking_ (ordinal) data and to show how it
-   changes over time. Use a bump plot to show how the relative interest in
-   different sports changes as a function of either age or income (your choice).
-   
-   *Hint*: Because bump plots require a discretized $x$-axis, the `cut` function
-   may again be your friend here. 
-   
-5. ["Middle-child syndrome"](https://en.wikipedia.org/wiki/Middle_child_syndrome)
-   can be explained, at least in part, by the idea that parents have less time
-   to spend _per child_ when they have multiple children. 
-   
-   *E.g.*, a couple with their first child may be able to spend 6 hours per day
-   on child care while maintaining their full-time jobs. After their second
-   child is born, the parents may be able to find some extra time in their
-   schedules and devote 8 hours per day to child care, or approximately four
-   hours per child. Consequently, the second child reports getting 33% less 
-   parental attention than their holder sibling. 
-   
-   How does the amount of time parents spend *per child* change as family size
-   increases? 
-   
-As with the other exploratory questions, some of these are intentionally a bit
-open-ended and can be answered in several different equally valid ways.
-
-:::
-
-### Final Deliverable: Market Research on Time Use Patterns in Target Demographics
-
-You are the product manager for a start-up hoping to launch a new time-tracking
-app. Unlike regular calendar apps, your product will allow users to compare how
-they spend their time against other demographically-similar users (*e.g.*, 
-"Congratulations! You spent 3 more hours exercising this week than other users
-like you!"), with an intent of using gamification to help instill healthy
-time-use habits. 
-
-In order to design the user interface of this new app, the graphics design team
-has asked you to prepare estimates of 'typical' time use for representative
-users in your target demographics. For each of these sample users, you need to
-do the following: 
-
-i) Identify typical demographic parameters for your sample users. Depending on 
-   the sample user and target demographic, different demographic parameters or
-   different ranges may be more appropriate. (*I.e.*, an 18 year-old high-school
-   senior and a 25-year new college graduate just settling into their first job
-   may only be seven years apart, but they are in very distinct 'life stages'.
-   Conversely, a 38 year-old suburban father of two and a 45 year-old suburban
-   father of two are pretty comparable.)
-
-   One of your example users may be a woman who is 23 years, 5 months, and 6 
-   days old, but you won't have very many respondents in your data set who are 
-   the exact same age, so you might define her comparable population to be women
-   22 to 26. If you're defining her peer group as "young women fresh out of
-   college", you might filter for women age 22 to 26 who have a college degree
-   but are not currently enrolled in an educational program. 
-   
-ii) Identify key activities for your target demographic. These should be 
-    activities that are significant time usage and things that your target demo
-    is likely to want to maximize. *E.g.*, college students might sleep more
-    than middle-aged men, but middle-aged men are likely to care more about 
-    getting enough sleep. Similarly, time spent on exercise is likely far less
-    than time at work for most employed individuals, but your users are more
-    likely to want to prioritize exercise. 
     
-iii) Identify a 'target level' and 'typical level' of time spent by your 
-     target demographic on each activity. For the typical level, compute 
-     'low', 'medium', and 'high' values; for the target level, use your best
-     judgement to define a level. 
-    
-iv)  Determine what fraction of people in your target demographic actually hit
-     the target level of time spent on the key activities. 
+:::
+
+::: {.callout-tip title="Task 4: Practice Joining Data Files"}
+
+Work through the join-design steps for the following questions based on the
+data files loaded above. 
+
+1. How many UPTs were recorded in states where the primary energy source was
+   nuclear power?
+
+2. In what metro area were the most gallons of bio-diesel used by public transit
+   agencies?
+
+**NB**: You *are not required* to actually include your answers to these 
+questions in your submission. You will demonstrate knowledge of proper 
+joining strategies in next section (Data Analysis) and your final deliverable. 
+This is just a set of 'warmups' to help you orient yourself. 
+
+:::
+
+### Data Analysis
+
+#### Calculate Total Emissions
+
+Compute the total emissions associated with each Agency + Mode pair. 
+
+::: {.callout-tip title="Task 5: Calculate Emissions"}
+
+You will need to join the three tables (`NTD_SERVICE`, `NTD_ENERGY`, and 
+`EIA_SEP_REPORT`) together. You should create a table with the following format:
+
+- Each row should be an Agency + Mode Pair
+- Each row should include the state in which the Agency is located (per
+  the `NTD_SERVICE` table)
+- Each row should include all fuel sources from the `NTD_ENERGY` table
+- Each row should include the EIA estimated CO2 emissions per MWh from the
+  `EIA_SEP_REPORT` table. 
+
+Once this table is created, use a (long-ish) arithmetic formula within a 
+`mutate` to compute the total emissions for that row. Note that you will need
+additional data to convert combustion fuels to CO2 emissions; these conversions
+can be found on [the EIA
+website](https://www.eia.gov/environment/emissions/co2_vol_mass.php). (You may
+hard code these values in your submission. Note that the fuel names used by
+the EIA do not exactly match those reported by the NTD; you will need to align
+these manually to best effort.)
+
+:::
+
+#### Relate Total Emissions and Passenger Service
+
+Now that you have computed the total emissions for each Agency + Mode pair, it
+is time to normalize these by the actual size of the transit agency. *E.g.*, 
+the NYC Subway almost certainly has higher total emissions than local bus service
+in Ithaca, NY, but it also serves **many** more riders, so the *per capita* 
+or *per transit* emissions may be lower. 
+
+::: {.callout-tip title="Task 6: Normalize Emissions to Transit Usage"}
+
+Using the total emissions calculated above, compute the emissions: 
+
+1) Per UPT; and 
+2) Per passenger mile
+
+Which agencies are most efficient on these bases? You may want to filter out
+extremely small agencies and to create "small", "medium", and "large" agencies
+so that you can give multiple awards. 
+
+Note that transit usage is reported at the Agency level, so you may need to 
+sum emissions across multiple modes. 
+
+:::
+
+
+#### Idenitify 'Greenest' Transit Agencies
+
+::: {.callout-caution title="Instructor Adjustment"}
+
+Because I am releasing this a bit behind schedule, students are only required
+to construct **2** of the following awards. At least one should be of your
+own creation (either a "best of" or "wort of" award). You are of course welcome
+to develop all four award metrics and to identify winners. 
+
+Your final press release should still have at least two publication quality
+visualizations (*cf.* Task 8 below). 
+
+:::
+
+With the above analysis, determine the winners of the GTA IV
+awards: 
+
+1) Greenest Transit Agency
+2) Most Emissions Avoided
+3) A third award of your creation
+4) A "Worst Of" award of your creation
+
+The Greenest Transit Agency award can be determined using your analysis above.
+
+For the "Most Emissions Avoided" award, you should first compute the total 
+emissions if all transit usage were replaced with driving individual vehicles. 
+Then use US [CAFE standards](https://www.nhtsa.gov/press-releases/usdot-announces-new-vehicle-fuel-economy-standards-model-year-2024-2026)
+to convert miles to gallons of motor fuel used and convert motor fuel to total
+emissions as per above. Compare this to the actual emissions associated
+with that agency to determine emissions avoided. 
+
+For the third award, determine an additional metric on which a transit agency
+can be considered to be highly green (*e.g.*, highest percentage of
+electrification) and then determine the appropriate winner. 
+
+Finally, for the fourth award, "name and shame" an agency which does not have
+particularly 'green' operations. As with the third award, you can determine
+a metric you think is best. 
+
+Per discussion above, you may choose to break these down into multiple
+categories (or honorable mention awards) to recognize smaller agencies. 
+
+::: {.callout-tip title="Task 7: Determine Award Winners"}
+
+Design and implement metrics for the four GTA IV Green Transit Awards and
+determine winners. 
+
+:::
+
+## Deliverable: Transit Award "Press Release"
+
+After completing your analysis, prepare a "press release" announcing the
+winners in each category. For each award given, your press release should
+include at a minimum: 
+
+i)  A short description of the way in which the relevant metric was calculated. 
+ii) The winning agency and/or transit mode and the *value* of their metric. 
+iii) A 'reference' value that makes the winner look particularly impressive, 
+     *e.g.* how did the _median_ agency do on that same metric? 
      
+::: {.callout-tip title="Task 8: Final Deliverable"}
 
-::: {.callout-tip title="Task 7: Time Use Categories for Target Demographics"}
+Write a press release announcing your winners, as described above. 
 
-Write up your findings for the product team. Make sure to *define* your target
-demographic, the key activities you identified, and give the various time levels.
-You can use tables or graphs (or a blend of each) to best communicate your 
-finding. 
+For at least two of the four awards, create a suitable visualization 
+demonstrating the 'green-ness' of the award winners, both in absolute terms and
+relative to other agencies and/or private modes of transporation. 
 
-Your target demographics are: 
+These should be included in your press release as media supplements that can
+be used by, *e.g.*, a local news report in their nightly broadcast. As such, 
+these graphics should: 
 
-i)   "Stay-at-home" dads. 
-ii)  College undergraduates. 
-iii) A demographic of your choosing. (This can be a demographic group you 
-     identify with or one you simple select out of thin air.)
-     
+i)  Have professional-quality ("publication ready") formatting;[^font]
+ii) Have low-clutter / high-information density; 
+iii) Be self-contained and accessible to a general reader without significant
+     additional description retired. 
+iv)  Include citations to original data sources used
+
 :::
-    
+
+[^font]: Make sure to set fonts and figure dimensions large enough to be legible
+on a large screen.
+
+
 {{< include _aidisclosure.qmd >}}
 
 
@@ -776,9 +822,9 @@ iii) A demographic of your choosing. (This can be a demographic group you
 
 **Possible Extra Credit: Up to 2 Points**
 
-After completing Task 01, examine the structure of your data sets and create a
-suitable *data relationship diagram*. An *data relationship diagram* is a visual 
-representation of: 
+After completing the data import steps, examine the structure of your data sets
+and create a suitable *data relationship diagram*. A *data relationship diagram*
+is a visual representation of: 
 
 1) The data tables available for an analysis
 2) The columns (names and types) present in each table
@@ -793,39 +839,23 @@ of the depicted relationships.
 
 Note that this data is not 'fully normalized' so there may be cross-table
 relationships between one or more columns, particularly when connecting a 'wide'
-and 'long' data set. Note also that some of the join  keys are a bit more
+and 'long' data set. Note also that some of the join keys are a bit more
 complex than typical of a standard database set up so you may wish to annotate
 when a relationship more complex than simple quality is required. 
 
+### Extra Credit Opportunity #02: Hilarity Ensues {#ec02}
 
-### Extra Credit Opportunity #02: Ring Visualizations {#ec02}
+**Possible Extra Credit: Up to 2 Points**
 
-**Possible Extra Credit: Up to 4 Points**
+Peer evaluators are encouraged to give up to 2points of extra credit for
 
-After completing Task 07, your engineering team has now started working on the
-visual components of the user interface (UI). Using `ggplot2` and extension 
-packages, mock up a possible UI based on the Apple Watch 
-["Activity Rings"](https://www.apple.com/watch/close-your-rings/). Display your
-mock-up showing time use target and typical values for your demographic 
-(Target Demographic 3), as well as your own time use over the previous week.
-Use this visualization to compare how you "should have" spent your time to how 
-you have actually spent your time.[^fake]
-
-[^fake]: If you don't want to reveal your actual time use patterns or if your 
-Target Demographic 3 is a group to which you don't belong, feel free to use
-made-up values here. No one is actually monitoring how you spend your time 
-outside of class.
-
-This must be an easy-to-read visual / graphical display, not a table. Note that
-here you are optimizing for a blend of beauty and easy legibility, not 
-"statistical clarity" or "informational efficiency", so you can explore
-different types of graphics than we have used in class. Make sure to choose a
-"modern" color scheme, font choice, *etc.*
-
-Up to four points of extra credit may be awarded for visualizations that are
-particularly artful, effective, or otherwise impressive. "Standard" statistical
-visualizations (*i.e.*, a generic `ggplot2` bar chart) will not be given extra
-credit.
+1) Press release writing that is particularly funny, punny, or otherwise
+   enjoyable to read; and 
+2) Award criteria that are particularly creative and insight-generating. When
+   awarding extra credit, peer evaluators should be sure to assess the quality
+   of the insight generated by these additional awards: finding that, *e.g.*,
+   the NYC subway is highly efficient on two different but highly correlated
+   metrics is not a remarkable insight. 
 
 {{< include _footer.qmd >}}
 
