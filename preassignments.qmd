@@ -36,9 +36,9 @@ library(tidyverse)
 DATES <- readr::read_csv("key_dates.csv") |>
     rename(element=`Course Element`,
            item=`Item Number`) |>
-    mutate(Date = strftime(Date, "%B %d, %Y (%A)"), 
-           dt = case_when(is.na(Time) ~ as.character(Date),
-                          TRUE ~ paste(Date, "at", Time)))
+    mutate(Date_str = strftime(Date, "%B %d, %Y (%A)"), 
+           dt = case_when(is.na(Time) ~ as.character(Date_str),
+                          TRUE ~ paste(Date_str, "at", Time)))
 ```
 
 In lieu of traditional homework, {{< var course.short >}} has weekly
@@ -70,7 +70,7 @@ no credit will be given for completing it - but it may be helpful.
 
 #### Pre-Assignment for Week #01 / Lecture #01
 
-None.
+None. There is no assignment due before the first day of class. 
 
 #### Pre-Assignment for Week #02 / Lecture #02 - `{r} get_pa_title(2)`
 
@@ -81,8 +81,8 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 2)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> slice_min(Date) |> pull(dt)`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> slice_max(Date) |> pull(dt)`**
 
 In [this Pre-Assignment](./pre/pa02.qmd), you will familiarize yourself
 with the basics of `Markdown`, an easy way to write and format documents. In class,
@@ -98,8 +98,8 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 3)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> slice_min(Date) |> pull(dt)`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> slice_max(Date) |> pull(dt)`**
 
 In [this week's preassignment](./pre/pa03.qmd), you
 will familiarize yourself with some basic "calculator math"
@@ -117,19 +117,17 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 4)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> slice_min(Date) |> pull(dt)`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> slice_max(Date) |> pull(dt)`**
   
 In [this week's preassignment](./pre/pa04.qmd), you will review
 `dplyr`'s "single-table" verbs. These are functions that take a _single_ data 
 frame and do something, typically returning another data frame. We can divide
 these into three major groups: 
 
-- Subsetting rows (`filter`) and columns (`select`); 
-- Changing and creating columns (`mutate` and less commonly, `rename`); 
-- operating with group structure (`group_by`, `summarize`)
-
-
+- Subsetting rows (`dplyr::filter()`) and columns (`dplyr::select()`); 
+- Changing and creating columns (`dplyr::mutate()` and less commonly, `dplyr::rename()`); 
+- operating with group structure (`dplyr::group_by()`, `dplyr::summarize()`)
 
 #### Pre-Assignment for Week #05
 
@@ -140,7 +138,7 @@ None.
 cs <-  DATES |> filter(element == "Class Session", item == 5)
 ```
 
-The `r cs |> pull(Date) |> paste(collapse=" and ")` class `r session` will
+The `r cs |> pull(Date_str) |> paste(collapse=" and ")` class `r session` will
 be dedicated to [Course Project Proposals](./project.qmd).
 
 #### Pre-Assignment for Week #06 / Lecture #05 - `{r} get_pa_title(5)`
@@ -152,19 +150,19 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 5)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> slice_min(Date) |> pull(dt)`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> slice_max(Date) |> pull(dt)`**
 
 In [this week's preassignment](./pre/pa05.qmd), you will review
 `dplyr`'s most important "multi-table" verbs, the `join` operators. These are
 functions that take _multiple_ data frames and combine them together. You will
 need to use this type of functionality to combine data from different sources
 together in a principled and organized fashion. You will also learn a bit
-about the `pivot_longer` and `pivot_wider` functions used to change the
+about the `tidyr::pivot_longer()` and `tidyr::pivot_wider()` functions used to change the
 _shape_ of data frames. These are particularly useful in conjunction with 
 joins: you will often need to reshape two tables to "join" properly
-(typically, lengthening them with `pivot_longer`) and then reshape them
-for downstream presentation (typically with `pivot_wider`). 
+(typically, lengthening them with `tidyr::pivot_longer()`) and then reshape them
+for downstream presentation (typically with `tidyr::pivot_wider()`). 
 
 
 #### Pre-Assignment for Week #07 / Lecture #06 - `{r} get_pa_title(6)`
@@ -176,8 +174,8 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 6)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> slice_min(Date) |> pull(dt)`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> slice_max(Date) |> pull(dt)`**
 
 In [this week's preassignment](./pre/pa06.qmd), we begin to explore
 the wonderful world of _statistical graphics_.
@@ -191,7 +189,7 @@ None.
 cs <-  DATES |> filter(element == "Class Session", item == 08)
 ```
 
-The `r cs |> pull(Date) |> paste(collapse=" and ")` class `r session` will
+The `r cs |> pull(Date_str) |> paste(collapse=" and ")` class `r session` will
 be dedicated to [Course Project Mid-Semester Check-Ins](./project.qmd).
 
 
@@ -204,8 +202,8 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 7)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> slice_min(Date) |> pull(dt)`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> slice_max(Date) |> pull(dt)`**
 
 
 In [this week's preassignment](./pre/pa07.qmd), we dive deeper into
@@ -220,8 +218,8 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 8)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> slice_min(Date) |> pull(dt)`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> slice_max(Date) |> pull(dt)`**
 
 
 In [this week's preassignment](./pre/pa08.qmd), we review the basics
@@ -236,8 +234,8 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 9)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> slice_min(Date) |> pull(dt)`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> slice_max(Date) |> pull(dt)`**
 
 In [this week's preassignment](./pre/pa09.qmd), students are introduced
 to the basics of CSS selectors.
@@ -251,8 +249,8 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 10)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> slice_min(Date) |> pull(dt)`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> slice_max(Date) |> pull(dt)`**
 
 In [this week's pre-assignment](./pre/pa10.qmd), we begin to explore 
 the world of text data. For the pre-assignment, we introduce some of the useful
@@ -269,7 +267,7 @@ None.
 cs <-  DATES |> filter(element == "Class Session", item == 13)
 ```
 
-The `r cs |> pull(Date) |> paste(collapse=" and ")` class `r session`
+The `r cs |> pull(Date_str) |> paste(collapse=" and ")` class `r session`
 will be dedicated to [Course Project Final Presentations](./project.qmd).
 
 
@@ -283,8 +281,8 @@ pa <-  DATES |> filter(element == "Pre-Assignments", item == 11)
 
 **Due Dates:**
 
-  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> pull(dt) |> min()`
-  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> pull(dt) |> max()`**
+  - Released to Students: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Released")) |> slice_min(Date) |> pull(dt)`
+  - **Due on Brightspace: `{r} pa |> filter(str_detect(Details, "Pre-Assignment Due")) |> slice_max(Date) |> pull(dt)`**
 
 In [this week's preassignment](./pre/pa11.qmd), we briefly introduce some of 
 the basic statistical functionality of `R`.
