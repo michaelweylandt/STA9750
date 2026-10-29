@@ -11,6 +11,8 @@ class_date:
 format: 
   revealjs:
     echo: true
+filters:
+  - shinylive
 course_repo: "`r yaml::read_yaml('_variables.yml')$course$repo`"
 ---
 
@@ -22,507 +24,859 @@ Today: `r TODAY_TOPIC`
 
 . . . 
 
-::: {.smaller}
 
 - Communicating Results (`quarto`)  ✅
 - `R` Basics  ✅
 - Data Manipulation in `R`  ✅
 - Data Visualization in `R`  ⬅️
-- Getting Data into `R` ⬅️
-  - Files and APIs  ⬅️
-  - Web Scraping
-  - Cleaning and Processing Text
+  - Static Plots  ✅
+  - Interactivity, Maps, Animated Plots  ⬅️
+- Getting Data into `R`
 - Statistical Modeling in `R`
-
-:::
-
-
-## {{< var course.short >}} Week {{< meta session >}} 
-
-Today: `r TODAY_TOPIC`
-
-::: {.small}
-
-- Course Administration
-- Warm-Up Exercises
-- Using the File System 
-- How The Web *Actually* Works
-- JSON and APIs
-- Wrap-Up
-
-:::
 
 # Today
 
 ## Today
 
 - Course Administration
-- Warm-Up Exercise
-- New Material
-  - Files and the File System
-  - HTTP and Web Access
-  - API Usage
+- Review Exercise
+- Advanced `ggplot2`
+  - Spatial Data (Maps)
+  - Animation
+  - Interactivity
 - Wrap-Up
   - Life Tip of the Day
 
-# Course Administration
+# Administrative Business
 
-## Mini-Project #03
+## {{< var course.short >}} Mini-Projects
 
-[MP#03](../mini/mini02.html) - `r get_mp_title(3)`
+Upcoming: 
 
-**Due `r get_mp_deadline(3)`**
+- Mini-Project #01 (`r get_mp_deadline(1)`)
+  - Submission ✅ 
+  - Peer Feedback ⬅️
+- Mini-Project #02 (`r get_mp_deadline(2)`)
+  - Submission ⬅️
+  - Peer Feedback
+- Mini-Project #03 (`r get_mp_deadline(3)`)
+- Mini-Project #04 (`r get_mp_deadline(4)`)
 
-. . . 
 
-Topics covered: 
-
-::: {.incremental .smaller}
-
-- Data Import
-  - Using Published Packages (`tidycensus`)
-  - Downloading and Parsing Static Files
-  - Using APIs
-- Data Manipulation
-
-:::
-
-## Course Support
-
-- Synchronous: MW Office Hours 2x / week: 
-  - **Wednesdays 5pm** in-person
-  - **Thursdays 5pm** on Zoom
-- Asynchronous: Piazza
-
-## Future Mini-Projects
-
-- MP#04: `r get_mp_title(4)`
-  - Deadline: `r get_mp_deadline(4)`
-  - Web Parsing (`Olympedia`) to predict the 2028 Olympics
-  
-Already posted - subject to minor revisions before `r get_mp_assigned(4)`
+{{< include _chunks/office_hours.qmd >}}
 
 ## Course Project
 
-[Course Project](../project.html) should be your *main focus* for rest of course
+[Course Project](../project.html) should be your *main focus* 
+for rest of course
 
-- You have received second round of feedback from me
-- Starting with the tools of today, you can import data into `R` for EDA
-  - Next two weeks will dive deeper into data *cleaning* and *preparation*
+- But you still need to do mini-projects and pre-assignments(!)
 
-But you still need to do other mini-projects and pre-assignments(!)
+## Course Project
+
+Final submissions: 
+
+::: {.incremental}
+
+- Detailed rubrics for group report + individual report
+  - [Final Group Report](../project.html#rubric-group-report)
+  - [Final Individual Report](../project.html#rubric-individual-report)
+  
+:::
+
+
+. . . 
+
+Notes added on _integration_ of SQs and strategies for estimating
+causal effects. Ask questions! I'm happy to fill these out further.
 
 # Review Exercise
 
-## Flat / Plain Text Files
+## SSA Registered Births
 
-'Plain text' files:
-
-::: {.incremental}
-
-- Simple _human readable_ and _human writeable_ file formats
-- Not specific to one piece of software
-- Examples: `.csv`, `.txt`, `.tsv`
-- Anti-Examples: `.docx`, `.pdf`, `.jpg`
-- Line isn't 100% clear
-
-:::
+Time series data of babies born and registered with the 
+Social Security Administration (previously in [Lab #05](../labs/lab05.qmd))
 
 . . . 
-
-Import into `R` with `read*` functions (*e.g.*, `readr::read_csv` )
-
-## SSA Baby Names
-
-From [the US Social Security Administration](https://www.ssa.gov/OACT/babynames/index.html) 
-Baby Names records: 
-
-- State, Sex, Name, Number Born
-
-. . . 
-
-Read into `R` (`readr::read_csv`) and make plots to answer various questions: 
-
-1) How popular is the name "Michael" in NY?
-2) Are *Mary*s becoming less common in the past decade?
-3) Did *Juan* and *Jose* become popular names at the same time?
-
-## Breakout Rooms {.scrollable}
-
-::: {.smaller}
 
 ```{r}
 #| echo: false
-BREAKOUT_TABLE
+
+if(!file.exists("births.csv")){
+    download.file("https://raw.githubusercontent.com/michaelweylandt/STA9750/main/births.csv", 
+                  destfile="births.csv")
+}
+library(readr)
+library(dplyr)
+
+births <- read_csv("births.csv")
+glimpse(births)
 ```
 
-:::
+## SSA Registered Births
 
-Review activities from [today's lab](`r url_full`#review)
+Practice visualization: 
 
-# Files and the File System
+1. Are there months with more births?
+2. Are there days of the week with more births? 
+3. Is there a long-term trend in births?
 
-## Files and the File System
+See [Lab #08](`r url_full`#review) for details.
 
-The _file system_ is the way your computer organizes and provides access to files: 
 
-::: {.incremental}
+{{< include _chunks/breakout.qmd >}}
 
-- Tree like-structure: 
-  - Files in folders in folders in folders ... 
-    - Separated by `/`
-    - *e.g.* `{{< meta course_repo >}}/data/mp01/data_file.csv`
-  - End point (or starting point) is the _root_: 
-    - Called `/` on Mac/Linux
-    - Drive name on Windows (`C:/`)
-  
-:::
+# Advanced `ggplot2`
 
-## Home Directory
+## Spatial Data
 
-Typically, all user files are stored in a "home directory": 
+Maps are more interesting than you think!
 
-::: {.incremental}
+- The world isn't flat!
 
-- `/Users/YOURNAME` on Mac/Linux
-- `C:/Users/YOURNAME` on Windows
-- Subfolders include `Downloads`, `Desktop`, `Documents`, *etc*
-- Commonly abbreviated as `~`
-  - My desktop is `~/Desktop`
-  - My general course material is in `~/STA9750`
-  - Semester specific material is in `~/{{< meta course_repo >}}`
-  
-:::
+. . . 
 
-## Paths
+This can get *intense*, but we will get by with simple features (`sf`)
 
-Two ways to specify a file: 
+## Map Projections
 
-::: {.incremental .smaller}
+{{< video https://www.youtube.com/watch?v=UPaca-SrvEk width="80%" height="400px">}}
 
-- Absolute path:
-  - Starts from root and gives "full name"
-  - `/Users/michaelweylandt/STA9750/docs/index.html`
-  - GPS coordinates
-- Relative path: 
-  - Starts from _working directory_ (`getwd()`) and gives directions
-  - If I am in `STA9750`, path is just `docs/index.html`
-  - `./`  means "this directory": could also write `./docs/index.html`
-  - `../` means "up one level"
-    - If I were in `STA9750/docs`, source at `../index.qmd`
-  - Driving directions
-  
-:::
+## WGS 84
 
-## Using the File System in R
+[WGS 84](https://en.wikipedia.org/wiki/World_Geodetic_System#WGS_84) is a 
+robust and widely-used way of creating maps from 3D coordinates. 
 
-Use the `fs` package to interact with the file system: 
+- Good default
+- Convert existing `sf` using `sf::st_transform(4326)`
 
-::: {.incremental}
+. . . 
 
-- `dir_ls()`, `dir_create()`, `dir_exists()`, `dir_delete()`
-- `path()`, `path_home()`, `path_abs()`, `path_rel()`
-- `file_create()`, `file_exists()`, `file_delete()`, `file_info()`
+Not universal!
 
-:::
+{{< video https://www.youtube.com/watch?v=L9Di-UVC-_4 width="40%" height="200px" >}}
 
-## Activity #01
+NYC also has a bespoke projection optimized for local accuracy 
 
-Return to breakout rooms to practice file system usage: 
+## sf Package
 
-- Convert relative paths to absolute paths
-- List files in a directory
-- Examine metadata the largest file(s) in your `{{< meta course_repo >}}`
-  directory
+The `sf` package provides tools for dealing with spatial data: 
 
-# Accessing Data from the Web: URLs, HTTP, JSON
+- `st_read` for reading `geojson` or `shp` files
+- `st_join` for combining spatial data
+- Integrates with `ggplot2::geom_sf()`  for plotting
 
-## URLs
+## sf Objects
 
-URLs are an extension of file paths for the internet: 
+`sf` object - `data.frame` with additional _geometry_ information 
 
-::: {.incremental}
+```{r}
+#| echo: true
+library(sf); library(tidyverse)
+nc <- st_read(system.file("shape/nc.shp", package="sf"))
+```
 
-- Protocol / Scheme: _How_ data should be transferred
-  - HTTP(S), SMS (Texting), POP3/IMAP (Email)
-- Domain: Name of the other computer
-  - In practice, often a 'placeholder' for something more complex
-- Path: Files on the other computer
-  - In practice, hide functionalty behind file-like paths
-  
-:::
+---
 
-## URLs
+```{r}
+#| echo: true
+glimpse(nc)
+```
 
-From `geeksforgeeks.org`
+This last row-`geometry`-is where the magic happens.
 
-![](../images/url_parts.png){width="60%" fig-align="center"}
+## Map Visualization
 
-## Static Data Transfer
+`sf` integrates well with `ggplot2`: 
 
-`R`'s basic `download.file` can be used for downloading simple files:
+- `geom_sf` knows how to handle geometries
+- other features all work as expected (fill, animation, legends, *etc.*)
+
+. . . 
 
 ::: {.small}
 
 ```{r}
-args(download.file)
+#| echo: true
+#| code-line-numbers: "|2|3"
+ggplot(nc, 
+       aes(geometry=geometry)) + 
+  geom_sf()
 ```
 
 :::
 
-Basic file download capabilities: 
+## Chloropleths
 
-- `url`: source
-- `destfile`: where on your computer to store it
+A map whose fill depends on the value of interest is called a _chloropleth_:
 
-. . .
-
-::: {.smallest}
-
-Customizable behavior, but defaults often work well: 
-
-- `method`: what software to use in the background to download
-- `mode`: is this a text or binary file
-- `cacheOK`: are you ok with a cached version of the file
-- `headers`: do you need to send any additional info in your request
-
-:::
-
-## download.file()
+::: {.small}
 
 ```{r}
-#| eval: false
-download.file("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/births.csv", 
-              destfile="births.csv")
+ggplot(nc, aes(fill=BIR79 / BIR74 - 1, geometry=geometry)) + 
+  geom_sf() + 
+  guides(fill="none") + 
+  ggtitle("% Change in Number of Children Born Per Year 1974-1979")
 ```
 
-Note use of _relative_ path here, so saves in current working directory
+:::
+
+From the Greek for 'color-abundance'  ("pleth" as in "plethora")
+
+## Breakout Exercises
+
+Two sets of spatial exercises: 
+
+- Chloropleths
+- Cartograms
 
 . . . 
 
-Be polite: 
+[Spatial Data in this week's Lab](`r url_full`#maps)
 
-- Try to avoid unnecessarily downloading files
-- Save file and only download if `!file_exists(destfile)`
+# Animation
 
-## Data Transfer - download.file()
+## Animated Graphics
 
-```{r}
-#| eval: false
-if(!file_exists("births.csv")){
-    download.file("https://raw.githubusercontent.com/michaelweylandt/STA9750/refs/heads/main/births.csv", 
-                  destfile="births.csv")
-}
+`gganimate` is the *de facto* standard for animated `ggplot2`: 
 
-read_csv("births.csv")
-```
+- Make a bunch of `png` files
+- Combine into a `gif`
 
-## JSON
+. . . 
 
-`JSON`:
+Most commonly: `+transition_time(VARIABLE)`
 
-- Short for `JavaScript Object Notation`
-- Popular plain-text representation for hierarchical data. 
-- Closer to Python objects (`dict`s of `dict`s of `dict`s) than `R` `data.frame`s
-- *Widely* used for web-based data transfer
+**NB:** Unlike `facet_wrap`, no `~` before `VARIABLE`
 
-## JSON
+## transition_*() functions
 
-Example: 
-
-```
-{
-    "data": {
-        "id": 27992,
-        "title": "A Sunday on La Grande Jatte — 1884",
-        "image_id": "1adf2696-8489-499b-cad2-821d7fde4b33"
-    },
-    "config": {
-        "iiif_url": "https://www.artic.edu/iiif/2",
-    }
-}
-```
-
-## JSON
-
-Read JSON in `R` with `jsonlite` package (alternatives exist)
+Animation is implemented via a new plot element: `transition_*()`: 
 
 ```{r}
-library(jsonlite)
-# A JSON array of primitives
-json <- '["Mario", "Peach", null, "Bowser"]'
-
-# Simplifies into an atomic vector
-fromJSON(json)
+#| code-line-numbers: "4"
+library(gganimate)
+ggplot(births, aes(x=day_of_year, y=births)) +
+  geom_line() + 
+  transition_time(year)
 ```
 
-## JSON
+## transition_*() functions
+
+Add a title to indicate _time_ being shown: 
 
 ```{r}
-json <-
-'[
-  {"Name" : "Mario", "Age" : 32, "Occupation" : "Plumber"}, 
-  {"Name" : "Peach", "Age" : 21, "Occupation" : "Princess"},
-  {},
-  {"Name" : "Bowser", "Occupation" : "Koopa"}
-]'
-mydf <- fromJSON(json)
-mydf
+#| code-line-numbers: "4"
+library(gganimate)
+ggplot(births, aes(x=day_of_year, y=births)) +
+  geom_line() + 
+  transition_time(year) + ggtitle("Year: {frame_time}")
 ```
 
-## JSON - A Web Standard
+
+## transition_*() functions
+
+`gganimate` "tweens" (interpolates) between frames for
+smoothness - works best for _continuous_ time data. 
+
+It's a bit weird here and we might prefer a more discrete
+interpolation:
 
 ```{r}
-#| cache: true
-fromJSON("https://official-joke-api.appspot.com/random_joke")
+#| code-line-numbers: "4"
+library(gganimate)
+ggplot(births, aes(x=day_of_year, y=births)) +
+  geom_line() + 
+  transition_states(year) + ggtitle("Year: {closest_state}")
 ```
 
-Compare to [browser access](https://official-joke-api.appspot.com/random_joke)
+## Easing
 
-## Data Transfer: HTTP
+Use the `ease_` functions (or `enter_()`/`exit_*()` separately) for finer control: 
 
-HTTP
+```{r}
+ggplot(births, aes(x=day_of_year, y=births, group=year)) +
+  geom_line() + transition_states(year, transition_length = 4, state_length=1) + 
+  ggtitle("Year: {closest_state}") + enter_grow() + exit_fade()
+```
 
-- HyperText Transfer Protocol
-- Most common (but not only) internet protocol
-- Also `ftp`, `smtp`, `ssh`, ... 
+## Grouping
 
-"Low-level" mechanism of internet transfer
+The `group`  variable is used to determine whether something is permanent over time. 
 
-- Many `R` packages add a friendly UX
-- `httr2` for low-level work (today)
+```{r}
+penguins |> drop_na() |>
+  ggplot(aes(x = bill_dep, y = body_mass)) +
+  geom_point() + ggtitle("{frame_time}") + 
+  transition_time(year)
+```
 
-## HTTP
+. . . 
 
-<style>
-.container{
-    display: flex;
-}
-.col{
-    flex: 1;
-}
-</style>
+**Bad!** Doesn't make sense to _interpolate_ penguins
+
+## Grouping
+
+```{r}
+penguins |> drop_na() |>
+  ggplot(aes(x = bill_dep, y = body_mass, group=year)) +
+  geom_point() + ggtitle("{floor(frame_time)}") + 
+  transition_time(year)
+```
+
+See [`gganimate` Getting Started
+Documentation](https://gganimate.com/articles/gganimate.html) 
+for more
+
+## Breakout Exercises
+
+Animation exercises: 
+
+- `gapminder` data
+- How has the world gotten healthier and richer over the past century?
+
+[Animated Visualizations in Lab #08](`r url_full`#animated)
+
+## Animated Graphics
+
+When it works, `gganimate` is great
+
+- PITA when external software is busted
+
+. . . 
+
+Alternatives: 
+
+- Facet plots
+- Split facets over pages and scroll quickly: `ggforce::facet_wrap_paginate()`
+- Interactivity with autoplay
+
+. . . 
+
+Caution: think about how transitions should be structured
+
+# Interactivity
+
+## Interactivity 
+
+The `ggiraph` package provides for _interactive_ `ggplot2` 
+
+- Principally focused on `tooltips` (mouseover) and simple click actions
 
 
-HTTP has two stages: 
+Not _full dashboards_ - those come next
 
-::: {.container}
+. . . 
 
-:::: {.col}
+Basic workflow: 
 
-- Request
-  - URL (Host + Path)
-  - Method (VERB)
-  - Headers
-  - Content
-  - Cookies
-::::
+- Replace 'standard' `geom` with interactive alternatives (`geom_point()` to `geom_point_interactive()`)
+- Add `tooltip` or `data_id` `aes`thetics
+- run through `ggiraph::giraph()` before rendering
 
-:::: {.col}
-- Response
-  - Status Code
-  - Headers
-  - Content
+
+## ggiraph
+
+```{r}
+#| echo: true
+#| code-line-numbers: "|3|4|5"
+library(tidyverse); library(ggiraph)
+g <- ggplot(penguins, 
+       aes(x=flipper_len, y=body_mass, color=species, tooltip=species)) + 
+  geom_point_interactive()
+girafe(g)
+```
+
+Here `tooltip` specifies mouseover message
+
+--- 
+
+Use standard `ggplot2` customization and extensions: 
+
+```{r}
+#| echo: true
+g <- g + theme_bw() + scale_color_brewer(name="Species", palette=2, type="qual") + 
+         xlab("Flipper Length (mm)") + ylab("Body Mass (g)") + theme(legend.position="bottom")
+girafe(g)
+```
+
+---
+
+To 'correlate' elements, use `data_id`: 
+
+```{r}
+g <- ggplot(penguins, 
+       aes(x=flipper_len, y=body_mass, 
+           color=species, tooltip=species, data_id=species)) + 
+  geom_point_interactive()
+girafe(g)
+```
+
+---
+
+Can even link across facets:
+
+```{r}
+girafe(g + facet_wrap(~island))
+```
+
+
+--- 
+
+Or even more complex panels (in conjunction with `patchwork`)
+
+::: {.smaller}
+```{r}
+library(patchwork) # Lets us 'add' plots together
+g_basic <- ggplot(penguins, aes(color=species, tooltip=species, data_id=species))
+g1 <- g_basic + geom_point_interactive(aes(x=body_mass, y=flipper_len))
+g2 <- g_basic + geom_point_interactive(aes(x=bill_dep, y=bill_len))
+girafe(g1 + g2)
+```
+:::
+
+--- 
+
+With a bit of custom Javascript (beyond this class), can have custom `click` events: 
+
+```{r}
+#| echo: false
+library(ggplot2)
+library(ggiraph)
+library(dplyr)
+library(glue)
+
+g <- penguins |> 
+    filter(!is.na(body_mass), 
+           !is.na(bill_len), 
+           !is.na(sex)) |>
+    mutate(
+        click_action = glue('window.open("https://en.wikipedia.org/wiki/{species}_penguin");'), 
+        tooltip=glue("This is a {species} penguin from {island} Island! It weighs {body_mass} g and has a flipper length of {flipper_len} millimeters.")) |>
+    ggplot(aes(x=bill_len, y=body_mass, color=species)) +
+      geom_point_interactive(
+        aes(tooltip = tooltip,
+            onclick = click_action),
+        size = 2.5,
+        alpha = 0.8) + 
+    theme_bw() +
+    labs(subtitle = "Hover for tooltip, Click any point to learn more",
+        x = "Bill Length (mm)",
+        y = "Body Mass (g)")
+girafe(g)
+```
+
+## Breakout Exercises
+
+Interactivity exercises: 
+
+- Adding 
+- How has the world gotten healthier and richer over the past century?
+
+[Mouseover Visualizations in Lab #08](`r url_full`#animated)
+
+## Alternatives
+
+The `plotly` package provides a `ggplotly()` function which 
+works similarly. 
+
+. . . 
+
+Advantages: 
+
+- Has a more sophisticated "time change" interactivity
+
+. . . 
+
+Disadvantages
+
+- Doesn't support all of `ggplot2`
+- `ggiraph` works well with (essentially) all `ggplot2` features
+
+
+## Alternatives
+
+`ggplotly` - `frame` gives rise to a time slider:
+
+```{r}
+#| code-line-numbers: "2|4"
+library(plotly)
+G <- ggplot(births, aes(x=day_of_year, y=births, frame=year)) +
+  geom_point() + geom_line() + theme_bw()
+ggplotly(G)
+```
+
+# Shiny
+
+## Shiny
+
+The `shiny` framework provides for *reactive* programming
+
+- The system 'waits' for user input and responds accordingly, updating 
+  (Think `Excel`)
+
+---
+
+
+```{shinylive-r}
+#| standalone: true
+#| echo: false
+#| viewerHeight: 420
+library(shiny)
+library(shinylive)
+library(ggplot2)
+
+ui <- fluidPage(
+  titlePanel("Interactive T-Test Power Calculator"),
   
-::::
+  sidebarLayout(
+    sidebarPanel(
+      numericInput("delta", "True Difference in Means (delta):", value = 0.5, step = 0.1),
+      numericInput("sd", "Standard Deviation (sd):", value = 1.0, min = 0.1, step = 0.1),
+      numericInput("n", "Sample Size per Group (n):", value = 30, min = 2, step = 1),
+      numericInput("sig.level", "Significance Level (alpha):", value = 0.05, min = 0.001, max = 0.2, step = 0.01),
+      selectInput("alternative", "Alternative Hypothesis:", 
+                  choices = c("Two-Sided" = "two.sided", "One-Sided" = "one.sided")),
+      selectInput("type", "Test Type:", 
+                  choices = c("Two-Sample" = "two.sample", "One-Sample" = "one.sample", "Paired" = "paired"))
+    ),
+    
+    mainPanel(
+      h4(textOutput("powerText")),
+      hr(),
+      plotOutput("powerPlot")
+    )
+  )
+)
 
-:::
+server <- function(input, output) {
   
-Modern (easy) APIs put _most_ of the behavior in the URL
+  power_res <- reactive({
+    power.t.test(
+      n = input$n,
+      delta = input$delta,
+      sd = input$sd,
+      sig.level = input$sig.level,
+      alternative = input$alternative,
+      type = input$type
+    )
+  })
+  
+  output$powerText <- renderText({
+    res <- power_res()
+    paste0("Estimated Statistical Power (1 - \u03b2): ", round(res$power * 100, 2), "%")
+  })
+  
+  output$powerPlot <- renderPlot({
+    max_n <- max(100, input$n * 2)
+    n_seq <- seq(max(2, input$n %/% 2), max_n, by = 1)
+    
+    power_vals <- sapply(n_seq, function(n_val) {
+      power.t.test(
+        n = n_val,
+        delta = input$delta,
+        sd = input$sd,
+        sig.level = input$sig.level,
+        alternative = input$alternative,
+        type = input$type
+      )$power
+    })
+    
+    df <- data.frame(n = n_seq, power = power_vals)
+    current_power <- power_res()$power
+    
+    ggplot(df, aes(x = n, y = power)) +
+      geom_line(color = "steelblue", linewidth = 1.2) +
+      geom_point(aes(x = input$n, y = current_power), 
+                 color = "firebrick", 
+                 size = 4) +
+      geom_hline(yintercept = 0.80, 
+                 linetype = "dashed", 
+                 color = "gray50", linewidth = 0.8) +
+      annotate("text", x = max(n_seq) * 0.75, y = 0.82, 
+               label = "Target Power (80%)", color = "gray40",
+               fontface = "italic") +
+      labs(
+        title = "Power Curve across Sample Sizes",
+        subtitle = "Red dot highlights your current sample size selection",
+        x = "Sample Size per Group (n)",
+        y = "Statistical Power (1 - \u03b2)"
+      ) +
+      theme_minimal(base_size = 14) +
+      ylim(0, 1)
+  })
+}
 
-## HTTP in the Browser
-
-In Firefox: Right-Click + `Inspect`
-
-In Chrome: Right-Click + `Developer Tools`
-
-. . . 
-
-[Mozilla Developer Network (MDN) Docs for HTTP](https://developer.mozilla.org/en-US/docs/Web/HTTP)
-
-## HTTP with httr2
-
-`httr2` (pronounced "hitter-2") is *low-level* manipulation of
-HTTP. 
-
-```{r}
-library(httr2)
-request(example_url())
+shinyApp(ui = ui, server = server)
 ```
 
-Pretty simple so far: 
+---
 
-- `example_url()` starts a tiny local web host
-- `127.0.0.1` is `localhost`
+New Concepts: 
 
-## httr2 Requests
+::: {.incremental}
 
-Build a request: 
+- `ui`: "front-end" specifies user-facing behavior
+- `server`: "back-end" performs calculations in response to `ui` input
+- `*Input` elements: takes user input and binds to a _reactive_ `R` variable
+- `reactive` blocks: code that should be re-run in response to `ui` changes
 
-- `request`
-- `req_method`
-- `req_body_*`
-- `req_cookies_set`
-- `req_auth_basic` / `req_oauth`
+:::
 
-## httr2 Requests
+## Example - UI {.scrollable}
 
-Behaviors: 
+UI from Previous Example: 
 
-- `req_cache`
-- `req_timeout`
+```{r}
+#| echo: true
+#| eval: false
+
+ui <- fluidPage(
+  titlePanel("Interactive T-Test Power Calculator"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      numericInput("delta", "True Difference in Means (delta):", value = 0.5, step = 0.1),
+      numericInput("sd", "Standard Deviation (sd):", value = 1.0, min = 0.1, step = 0.1),
+      numericInput("n", "Sample Size per Group (n):", value = 30, min = 2, step = 1),
+      numericInput("sig.level", "Significance Level (alpha):", value = 0.05, min = 0.001, max = 0.2, step = 0.01),
+      selectInput("alternative", "Alternative Hypothesis:", 
+                  choices = c("Two-Sided" = "two.sided", "One-Sided" = "one.sided")),
+      selectInput("type", "Test Type:", 
+                  choices = c("Two-Sample" = "two.sample", "One-Sample" = "one.sample", "Paired" = "paired"))
+    ),
+    
+    mainPanel(
+      h4(textOutput("powerText")),
+      hr(),
+      plotOutput("powerPlot")
+    )
+  )
+)
+```
+
+## Example - Server {.scrollable}
+
+```{r}
+#| echo: true
+#| eval: false
+
+server <- function(input, output) {
+  
+  power_res <- reactive({
+    power.t.test(
+      n = input$n,
+      delta = input$delta,
+      sd = input$sd,
+      sig.level = input$sig.level,
+      alternative = input$alternative,
+      type = input$type
+    )
+  })
+  
+  output$powerText <- renderText({
+    res <- power_res()
+    paste0("Estimated Statistical Power (1 - \u03b2): ", round(res$power * 100, 2), "%")
+  })
+  
+  output$powerPlot <- renderPlot({
+    max_n <- max(100, input$n * 2)
+    n_seq <- seq(max(2, input$n %/% 2), max_n, by = 1)
+    
+    power_vals <- sapply(n_seq, function(n_val) {
+      power.t.test(
+        n = n_val,
+        delta = input$delta,
+        sd = input$sd,
+        sig.level = input$sig.level,
+        alternative = input$alternative,
+        type = input$type
+      )$power
+    })
+    
+    df <- data.frame(n = n_seq, power = power_vals)
+    current_power <- power_res()$power
+    
+    ggplot(df, aes(x = n, y = power)) +
+      geom_line(color = "steelblue", linewidth = 1.2) +
+      geom_point(aes(x = input$n, y = current_power), color = "firebrick", size = 4) +
+      geom_hline(yintercept = 0.80, linetype = "dashed", color = "gray50", linewidth = 0.8) +
+      annotate("text", x = max(n_seq) * 0.75, y = 0.82, label = "Target Power (80%)", color = "gray40", fontface = "italic") +
+      labs(
+        title = "Power Curve across Sample Sizes",
+        subtitle = "Red dot highlights your current sample size selection",
+        x = "Sample Size per Group (n)",
+        y = "Statistical Power (1 - \u03b2)"
+      ) +
+      theme_minimal(base_size = 14) +
+      ylim(0, 1)
+  })
+}
+```
+
+## Example - Combining
+
+```{r}
+#| echo: true
+#| eval: false
+library(shiny)
+library(tidyverse)
+
+shinyApp(ui = ui, server = server)
+```
+
+
+# Plotting FAQs
+
+## ggplot2 & Pie Charts
+
+Why do Pie Charts have a bad reputation?
+
+- Use of _area_ and _angle_ over _length_: less accurate perception
+- Depends on `fill` to convey category - limited categories
 
 . . . 
 
-Execution: 
+But primarily - "insider smugness"  and hate of `Excel`
 
-- `req_perform`
 
-## httr2 Responses
+## ggplot2 Plot Type Choice
 
-Request status
+For me: 
 
-- `resp_status` / `resp_status_desc`
+- Exploratory mode: 
+  - Simple: line, scatter, bar, frequency
+- Publication mode:
+  - Very context specific
+  - "Simplicity" / "Elegance" depend on audience expectations
 
-Content: 
+## ggplot2 Font Sizing
 
-- `resp_header*`
-- `resp_body_*`
+Theme machinery!
 
-## Live Demo
+```{r}
+ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width)) + 
+    geom_point() + theme(axis.text = element_text(size=24))
+```
 
-Demo: Using `httr2` to get a random joke from 
+## Overplotting / ScatterBlobs
 
-[https://official-joke-api.appspot.com/](https://official-joke-api.appspot.com/)
+Student asked about "scatterblobs" - typo(?) but I love it!
 
-# API Usage
+. . . 
 
-## Exercise - CRAN Logs API
+- Density based plotting: hexbins, histograms, rugplots
+- Data reduction: summarization or sub-sampling
 
-See Part #03 from [Today's Lab](`r url_full`#api)
+## Optimizing ggplot2 Performance
+
+Active project of `ggplot2` team - not much you can do
+
+. . . 
+
+*Practical advice*: 
+
+- Plot less (see previous slide)
+- Take advantage of [`quarto` Caching](https://quarto.org/docs/computations/caching.html)
+
+## ggplot2 Beyond Scatter and Line
+
+Some favorite semi-advanced plot types: 
+
+- Violin plots: combination of boxplot and histogram
+- Ridgelines
+- Beeswarms
+
+_Deep_ rabbit hole
+
+## ggplot2 + High-Dimensional Data
+
+High-dimensional data: measure many variables per observation ("wide")
+
+High-dimensional data is _hard_ to visualize
+
+. . . 
+
+Approaches: 
+
+- Pair plots for "moderate" HDD
+- PCA (or similar dimension reduction. Take 9890!)
+
+## Custom ggplot2 Theme
+
+```{r}
+my_theme <- theme_bw() + theme(panel.background = element_rect(fill = 'lightblue'))
+ggplot(iris, aes(x=Sepal.Length, y = Sepal.Width)) + geom_point() + my_theme
+```
+
+Advanced: 
+
+- `theme_set()` - change `ggplot2` defaults for that session
+- `.Rprofile` - set code to run every time you start `R`
+
+## ggplot2 - When Not to Use 
+
+`ggplot2` is designed to make good statistical graphics. Sub-par for: 
+
+- Very advanced interactivity (unless combined with `shiny` or custom JS)
+- _Really_ big data
+- Hardcore customization / "infographics"
+
+## `git` WTF
+
+Reference: [Happy Git with R](https://happygitwithr.com/)
 
 # Wrap-Up
 
 ## Review
 
-Web Data Access
+Advanced `ggplot2`: 
 
-- Local Files
-- Static Files & `download.file`
-- HTTP and JSON
-- API Usage
+- `ggplot2` as a platform for powerful extensions
+- Spatial data: `sf`
+- Animation: `gganimate`
+- Interactivity: `ggiraph`, `shiny`
+
+```{r}
+#| echo: false
+#| eval: true
+# Ensure gifs are copied to docs
+
+fs::dir_ls(glue("slides0{session}_files/figure-revealjs/")) |>
+  fs::file_copy(glue("docs/slides/slides0{session}_files/figure-revealjs/"), 
+                overwrite=TRUE)
+```
+
+
+# Wrap-Up
 
 ## Orientation
 
 - Communicating Results (`quarto`)  ✅
 - `R` Basics  ✅
 - Data Manipulation in `R`  ✅
-- Data Visualization in `R`  ⬅️ [**NEXT TUESDAY**]
-- Getting Data into `R` ⬅️ [**Continued Thursday**]
+- Data Visualization in `R`  ✅
+  - Static Plots  ✅
+  - Interactivity, Maps, Animated Plots  ✅
+- Getting Data into `R`
+- Statistical Modeling in `R`
+
+
+## Next Time
+
+- Communicating Results (`quarto`)  ✅
+- `R` Basics  ✅
+- Data Manipulation in `R`  ✅
+- Data Visualization in `R`  ✅
+- Getting Data into `R` ⬅️
+  - Files and APIs ⬅️
+  - Web Scraping 
+  - Cleaning and Processing Text
 - Statistical Modeling in `R`
 
 . . . 
 
-Reminder: we're finishing *plotting* on Tuesday. Video recording to be posted for those who can't make it.
+Pre-Assignment: Structure of the File System and of HTTP
 
 {{< include _end.qmd >}}
+
