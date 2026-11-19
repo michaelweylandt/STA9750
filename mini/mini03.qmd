@@ -363,7 +363,9 @@ features that will be useful:
 
 - the ability to automatically download shapefile information associated with
   each result; 
-- the ability to cache results automatically. 
+- ~~the ability to cache results automatically.~~ (Recent versions of 
+  `tidycensus` have disabled the built-in caching. You should instead save your
+  results to a local and implement manual caching.)
 
 You will want to use both of these in this assignment. 
 
@@ -380,7 +382,7 @@ tidycensus::census_api_key("YOUR_KEY_HERE", install=TRUE)
 in `R` to store it appropriately. Once you do this, you will be able to access
 the advanced functionality of the `tidycensus` package. You should only need to
 do this one time, so **do not** record your API key in your `qmd` file. (It is
-your private information!)
+your private information, akin to a password!)
 
 :::
 
@@ -389,10 +391,10 @@ your private information!)
 Use the `get_acs()` function from the `tidycensus` package to acquire
 [CBSA](https://en.wikipedia.org/wiki/Core-based_statistical_area)-level
 (`geography="cbsa"`) estimates of total population (`B01003_001`) and a 
-population of interest to you based on the latest[^latest] ACS-1. You may
-or may not need the `geometry` (shape file) data here, depending on how you
-perform your analysis below, but if you wind up needing it, make sure to 
-download it here. Read the help page for `get_acs()` to identify 
+population of interest to you based on the latest[^latest] ACS-1 or 
+ACS-5.[^acs_num] You may or may not need the `geometry` (shape file) data here,
+depending on how you perform your analysis below, but if you wind up needing it,
+make sure to download it here. Read the help page for `get_acs()` to identify 
 the shape file download arguments. 
 
 Make sure to **cache** your results as described above. 
@@ -403,6 +405,12 @@ Make sure to **cache** your results as described above.
 2024, so interpret words like "current" or "present" to refer to 2024. If 2025
 data become available when you are working on this project, please use those 
 instead to perform more accurate analyses. 
+
+[^acs_num]: If you are not getting values for ACS-1, it may be because the
+census suppresses small counts to maintain privacy. This is particularly 
+likely when looking into demographic subgroups. If you are getting only missing
+values, switch to ACS-5 and the issue should resolve itself. If you are still
+exclusively getting missing values for ACS-5, please contact the instructor.
 
 ::: {.callout-tip title="Task 2: Data Acquisition - NYC Tract Population Breakdown"}
 

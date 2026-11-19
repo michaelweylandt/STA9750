@@ -2179,7 +2179,8 @@ I've uploaded my work for MiniProject #**03** - check it out!
 <p>Note how we could use a <em>named vector</em> as the first argument to <code><a href="https://walker-data.com/tidycensus/reference/get_acs.html">get_acs()</a></code> lets us control the name the result is given in <code>R</code>. <code><a href="https://walker-data.com/tidycensus/reference/get_acs.html">get_acs()</a></code> has two additional features that will be useful:</p>
 <ul>
 <li>the ability to automatically download shapefile information associated with each result;</li>
-<li>the ability to cache results automatically.</li>
+<li>
+<del>the ability to cache results automatically.</del> (Recent versions of <code>tidycensus</code> have disabled the built-in caching. You should instead save your results to a local and implement manual caching.)</li>
 </ul>
 <p>You will want to use both of these in this assignment.</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Task 0: Data Acquisition - Census API Key">
@@ -2196,7 +2197,7 @@ I've uploaded my work for MiniProject #**03** - check it out!
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">tidycensus</span><span class="fu">::</span><span class="fu"><a href="https://walker-data.com/tidycensus/reference/census_api_key.html">census_api_key</a></span><span class="op">(</span><span class="st">"YOUR_KEY_HERE"</span>, install<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>in <code>R</code> to store it appropriately. Once you do this, you will be able to access the advanced functionality of the <code>tidycensus</code> package. You should only need to do this one time, so <strong>do not</strong> record your API key in your <code>qmd</code> file. (It is your private information!)</p>
+<p>in <code>R</code> to store it appropriately. Once you do this, you will be able to access the advanced functionality of the <code>tidycensus</code> package. You should only need to do this one time, so <strong>do not</strong> record your API key in your <code>qmd</code> file. (It is your private information, akin to a password!)</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-tip callout-titled" title="Task 1: Data Acquisition - CBSA Population Breakdown">
@@ -2209,7 +2210,7 @@ I've uploaded my work for MiniProject #**03** - check it out!
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Use the <code><a href="https://walker-data.com/tidycensus/reference/get_acs.html">get_acs()</a></code> function from the <code>tidycensus</code> package to acquire <a href="https://en.wikipedia.org/wiki/Core-based_statistical_area">CBSA</a>-level (<code>geography="cbsa"</code>) estimates of total population (<code>B01003_001</code>) and a population of interest to you based on the latest<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> ACS-1. You may or may not need the <code>geometry</code> (shape file) data here, depending on how you perform your analysis below, but if you wind up needing it, make sure to download it here. Read the help page for <code><a href="https://walker-data.com/tidycensus/reference/get_acs.html">get_acs()</a></code> to identify the shape file download arguments.</p>
+<p>Use the <code><a href="https://walker-data.com/tidycensus/reference/get_acs.html">get_acs()</a></code> function from the <code>tidycensus</code> package to acquire <a href="https://en.wikipedia.org/wiki/Core-based_statistical_area">CBSA</a>-level (<code>geography="cbsa"</code>) estimates of total population (<code>B01003_001</code>) and a population of interest to you based on the latest<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> ACS-1 or ACS-5.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> You may or may not need the <code>geometry</code> (shape file) data here, depending on how you perform your analysis below, but if you wind up needing it, make sure to download it here. Read the help page for <code><a href="https://walker-data.com/tidycensus/reference/get_acs.html">get_acs()</a></code> to identify the shape file download arguments.</p>
 <p>Make sure to <strong>cache</strong> your results as described above.</p>
 </div>
 </div>
@@ -2274,7 +2275,7 @@ I've uploaded my work for MiniProject #**03** - check it out!
 <code>st_intersects</code>: Does a point from the first table fall in a region from the second table? (Points first argument, regions second argument)</li>
 </ul>
 <p>These functions are passed (without parentheses or any arguments) as the <code>join</code> argument of <code>st_join</code>. Either of these can work for this step; you simply need to make sure you’re passing the <code>join</code> that corresponds to the order of the tables. A naive join, however, can result in <em>too many</em> rows if a tract crosses multiple NTAs. (This is likely as the Census and the City do not coordinate these boundaries.) We will instead just assign each tract to the NTA with which it has the <em>largest</em> intersection, using the <code>largest=TRUE</code> argument to <code>st_join</code>.</p>
-<p>After joining these data sets, we can use <code>st_drop_geometry()</code> to temporarily drop the geometry and summarize our data as usual.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> Finally, we can join our summarized census data with our original NTA data to connect it back to the shape information.</p>
+<p>After joining these data sets, we can use <code>st_drop_geometry()</code> to temporarily drop the geometry and summarize our data as usual.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> Finally, we can join our summarized census data with our original NTA data to connect it back to the shape information.</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="Task 4: Aggregate Tract Data to the NTA Level">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2335,7 +2336,7 @@ I've uploaded my work for MiniProject #**03** - check it out!
 </div>
 <div class="callout-body-container callout-body">
 <p>Answer the following questions to perform your Exploratory Data Analysis of the various data sets used in this project. For each question, answer using inline values, a table, or a graphic as you feel is most effective, though you should plan to have <em>at least</em>: 2 tables, 2 inline values, 1 non-spatial plot, 1 spatial plot among your several answers.</p>
-<p>Note that you will need to determine which data sets are best suited to answer each question and may need to return to earlier steps and acquire more data:<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> some questions might require joining multiple data sets to answer fully.</p>
+<p>Note that you will need to determine which data sets are best suited to answer each question and may need to return to earlier steps and acquire more data:<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a> some questions might require joining multiple data sets to answer fully.</p>
 <ol type="1">
 <li>
 <p>Which NYC census tract has the most office floor area in NYC?</p>
@@ -2460,8 +2461,9 @@ Your text goes here.
 <li id="fn3"><p>This the level of “ChatGPT-level” prose, without obvious flaws but lacking the style and elegance associated with true quality writing.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn4"><p>Throughout this section, replace <code>YOUR_GITHUB_ID</code> with your GitHub ID from <a href="./mini00.html">Mini-Project #00</a>. Note that the automated course infrastructure will be looking for precise formatting, so follow these instructions closely.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn5"><p>As of the time of writing this assignment, the latest ACS data are 2024, so interpret words like “current” or “present” to refer to 2024. If 2025 data become available when you are working on this project, please use those instead to perform more accurate analyses.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>If you don’t drop the geometry column first, you have to combine <code>geometry</code> elements during your <code>summarize</code> step. This is slow and unwieldy, so it’s far easier to drop, summarize, and then join back to the original data.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn7"><p>Depending on what additional data you need and how exactly you structure your code, you might need to <em>delete</em> your cached data file to force a re-download with the additional variables. The question of knowing when to delete the cache is known as <em>cache invalidation</em> and it is a hard problem in computer science and system design.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>If you are not getting values for ACS-1, it may be because the census suppresses small counts to maintain privacy. This is particularly likely when looking into demographic subgroups. If you are getting only missing values, switch to ACS-5 and the issue should resolve itself. If you are still exclusively getting missing values for ACS-5, please contact the instructor.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>If you don’t drop the geometry column first, you have to combine <code>geometry</code> elements during your <code>summarize</code> step. This is slow and unwieldy, so it’s far easier to drop, summarize, and then join back to the original data.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>Depending on what additional data you need and how exactly you structure your code, you might need to <em>delete</em> your cached data file to force a re-download with the additional variables. The question of knowing when to delete the cache is known as <em>cache invalidation</em> and it is a hard problem in computer science and system design.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></div></main><!-- /main --><script type="text/javascript" id="exit-archive-script">
 document.addEventListener("DOMContentLoaded", function() {
     if (window.location.href.includes("archive")) {
